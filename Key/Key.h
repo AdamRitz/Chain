@@ -2,41 +2,23 @@
 
 #include <string>
 #include <vector>
-
-struct LocalKeyInfo
+#include <sodium.h>
+using namespace  std;
+struct Wallet
 {
-    std::string private_pem_path;
-    std::string public_pem_path;
-    std::string public_hex_path;
-    std::string address_path;
-
-    std::string public_key_hex;
-    std::string address;
+    array<uint8_t, crypto_sign_PUBLICKEYBYTES> public_key;
+    array<uint8_t, crypto_sign_SECRETKEYBYTES> private_key;
 };
+Wallet mywallet;
+Wallet GenerateWallet() {
+    Wallet wallet;
+    // 传入公钥和私钥的存储位置（指针），写入公私钥数据到目标位置。
+    crypto_sign_keypair(wallet.public_key.data(), wallet.private_key.data());
 
-bool generate_and_store_keypair(const std::string& dir, LocalKeyInfo& out, std::string& err);
+    return wallet;
 
-bool load_public_key_hex_from_pem(const std::string& public_pem_path,
-                                  std::string& public_key_hex,
-                                  std::string& err);
+}
+void InitWallet() {
+    mywallet=GenerateWallet();
+}
 
-bool get_public_key_hex_from_private_pem(const std::string& private_pem_path,
-                                         std::string& public_key_hex,
-                                         std::string& err);
-
-bool derive_address_from_public_key_hex(const std::string& public_key_hex,
-                                        std::string& address,
-                                        std::string& err);
-
-bool sign_message_with_private_key(const std::string& private_pem_path,
-                                   const std::vector<unsigned char>& message,
-                                   std::vector<unsigned char>& signature,
-                                   std::string& err);
-
-bool verify_message_with_public_key_hex(const std::string& public_key_hex,
-                                        const std::vector<unsigned char>& message,
-                                        const std::vector<unsigned char>& signature,
-                                        std::string& err);
-
-std::string hex_encode(const std::vector<unsigned char>& data);
-bool hex_decode(const std::string& hex, std::vector<unsigned char>& out, std::string& err);

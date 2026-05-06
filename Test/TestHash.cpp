@@ -93,7 +93,7 @@ void print_result(const BenchResult& r)
               << '\n';
 }
 
-int main()
+int main10()
 {
     try {
         const std::vector<std::size_t> input_sizes = {
@@ -133,4 +133,18 @@ int main()
         std::cerr << "benchmark failed: " << e.what() << std::endl;
         return 1;
     }
+}
+struct Number {
+    int value;
+    Number operator+(const Number a) {
+        Number result;
+        result.value=value+a.value;
+        return  result;
+    }
+
+};
+int main() {
+    Number a{10};
+    Number b{13};
+    std::cout<<(a+b).value;
 }

@@ -7,7 +7,6 @@
 #include <iostream>
 #include <system_error>
 #include <fstream>
-#include <coroutine>
 using  namespace  boost::asio;
 
 int Example1() {
@@ -50,9 +49,7 @@ int Example2() {
 void printer(std::error_code& /*e*/,steady_timer*) {
 
 }
-Task<int> ExampleTask() {
 
-}
 
 void ExampleReadFile() {
     // 三种文件流
@@ -110,7 +107,23 @@ void ExampleErrorCode() {
     }
 
 }
-int main() {
-    Example2();
+struct Number {
+    int value;
+    Number operator+(const Number a) {
+        Number result;
+        result.value=value+a.value;
+        return  result;
+    }
+    Number operator-(const Number a) {
+        Number result;
+        result.value=value-a.value;
+        return  result;
+    }
+};
 
+
+int main() {
+    Number a{10};
+    Number b{13};
+    std::cout<<(a+b).value;
 }
