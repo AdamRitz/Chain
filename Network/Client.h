@@ -14,7 +14,7 @@ using namespace std;
 using namespace nlohmann;
 
 using tcp = ip::tcp;
-vector<tcp::socket> socketpool;
+vector<tcp::socket> socketPool;
 
 awaitable<optional<tcp::socket>> Connect(string ipaddr,unsigned short port) {
     auto executor = co_await this_coro::executor;
@@ -27,36 +27,32 @@ awaitable<optional<tcp::socket>> Connect(string ipaddr,unsigned short port) {
     cout<<"连接成功"<<endl;
     co_return std::move(socket);
 }
-awaitable<void> Send(string msg) {
-    msg += "\n";
-    for (auto it = socketpool.begin(); it != socketpool.end();) {
+awaitable<void> SendData(span<uint8_t> byte) {
+    for (size_t i = 0; i < socketPool.size();) {
         boost::system::error_code ec;
-        size_t n = co_await async_write(*it, buffer(msg), redirect_error(use_awaitable, ec));
+        size_t n = co_await async_write(socketPool[i], buffer(byte), redirect_error(use_awaitable, ec));
         if (ec) {
             cout << "send failed: " << ec.message() << endl;
-
             boost::system::error_code ignored;
-            it->close(ignored);
-
-            it = socketpool.erase(it);
-            continue;
+            socketPool[i].close(ignored);
+            socketPool.erase(socketPool.begin() + i);
+        } else {
+            ++i;
         }
-        cout << "sent bytes: " << n << endl;
-        ++it;
     }
-
     co_return;
 }
 awaitable<void> ConnectSeed() {
     auto s = co_await Connect("127.0.0.1",8089);
     if (s.has_value()) {
-        socketpool.push_back(std::move(*s));
+        socketPool.push_back(std::move(*s));
     }
     auto executor = co_await this_coro::executor;
     steady_timer timer(executor);
 
     for (;;) {
-        co_await Send("6666");
+        vector<uint8_t> byte={1,2,3};
+        co_await SendData(byte);
         timer.expires_after(std::chrono::seconds(1));
         co_await timer.async_wait(use_awaitable);
     }

@@ -9,6 +9,7 @@
 #include "../Key/Key.h"
 #include "../DB/DB.h"
 using namespace std;
+// -----------------------------------------------------------------------交易/交易池定义-------------------------------------------------------------------------------------------------
 struct Transaction {
     array<uint8_t,32> sender;
     array<uint8_t,32> receiver;
@@ -25,7 +26,7 @@ struct GetMapHash{
     }
 };
 unordered_map<array<uint8_t,32>,array<uint8_t,176>,GetMapHash> txpool;
-
+// -----------------------------------------------------------------------交易序列化/反序列化-----------------------------------------------------------------------------------------------
 // 为 Hash 序列化交易数据：发送者，接收者，数值，nonce。为了 hash 创建的序列化，所以此处没有序列化 Hash 和 签名因为还没生成
 array<uint8_t,80> SerializeTxForHash(const Transaction& tx) {
     array<uint8_t,80> partByte;
@@ -39,6 +40,7 @@ array<uint8_t,80> SerializeTxForHash(const Transaction& tx) {
     memcpy(partByte.data()+offset,&tx.nonce,8);
     return partByte;
 }
+// 序列化整个交易。
 array<uint8_t,176> SerializeTxALL(const Transaction& tx,const array<uint8_t,80>& partByte) {
     array<uint8_t,176> txByte;
     int offset = 0;
@@ -51,6 +53,7 @@ array<uint8_t,176> SerializeTxALL(const Transaction& tx,const array<uint8_t,80>&
     return txByte;
 
 }
+// 反序列化交易
 Transaction UnserializeTx(array<uint8_t,176> txBytes) {
     Transaction tx{};
     int offset=0;
@@ -68,7 +71,9 @@ Transaction UnserializeTx(array<uint8_t,176> txBytes) {
     offset+= 64;
     return tx;
 }
-array<uint8_t,176> GenerateTransaction(array<uint8_t,32> sender,array<uint8_t,32> receiver,uint64_t amount,uint64_t nonce, Wallet mywallet) {
+
+// -----------------------------------------------------------------------交易生成/验证-------------------------------------------------------------------------------------------------
+array<uint8_t,176> GenerateTx(array<uint8_t,32> sender,array<uint8_t,32> receiver,uint64_t amount,uint64_t nonce, Wallet mywallet) {
     Transaction tx{.sender=sender,.receiver = receiver,.amount = amount,.nonce = nonce};
     array<uint8_t,80> partByte = SerializeTxForHash(tx);
     crypto_generichash(tx.hash.data(),tx.hash.size(),partByte.data(),partByte.size(),nullptr,0);
@@ -78,23 +83,21 @@ array<uint8_t,176> GenerateTransaction(array<uint8_t,32> sender,array<uint8_t,32
 
 bool VerifyTransaction(array<uint8_t,176> txbyte) {
     if (crypto_sign_verify_detached(txbyte.data()+80+32,txbyte.data()+80,32,mywallet.public_key.data())!=0) {
+        cout<<"Transaction Verification Failure."<<endl;
         return false;
     }
     return true;
 }
 
-array<uint8_t,32> StoreTransaction(const array<uint8_t,176> txByte) {
-    array<uint8_t,32> hash;
-    memcpy(hash.data(),txByte.data()+80,32);
-    DBWriteTx(hash,txByte);
-    return hash;
-}
+
+// -----------------------------------------------------------------------工具函数-------------------------------------------------------------------------------------------------
 array<uint8_t,32> GetTransactionHash(const array<uint8_t,176>& txByte) {
     array<uint8_t,32> hash;
     memcpy(hash.data(),txByte.data()+80,32);
     return hash;
 }
-// 出块前的交易处理函数：收到的交易验证后放入交易池即可
+// -------------------------------------------------------------------交易处理入口---------------------------------------------------------------------------------------------------
+// 网络中收到交易后通过该入口函数处理，成功后放入交易池
 void ProcessTransactionBeforeBlock(array<uint8_t,176> txbyte) {
     // 交易验证失败就不进行处理。
     if (!VerifyTransaction(txbyte)) {

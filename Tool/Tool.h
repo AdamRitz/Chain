@@ -7,6 +7,7 @@
 #include <stdio.h>
 #include <array>
 #include <cstdint>
+#include <stdio.h>
 using namespace std;
 void PrintHexForArray32(const array<uint8_t, 32>& data) {
     cout<<"0x";

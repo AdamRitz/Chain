@@ -8,6 +8,7 @@
 #include "DB/DB.h"
 #include <boost/asio.hpp>
 #include "Tool/Tool.h"
+#include "Transaction/Block.h"
 using namespace std;
 using namespace nlohmann;
 
@@ -17,6 +18,41 @@ void Init() {
     if (sodium_init()<0) {
         cout<< "*** Sodium Init Error! ***"<<endl;
     }
+}
+
+
+int TestTx() {
+    InitDB();
+    mywallet=GenerateWallet();
+    array<uint8_t, 32> sender=mywallet.public_key;
+    auto data = GenerateTx(sender,sender,1,1,mywallet);
+    cout<<"Verify Result:"<<VerifyTransaction(data)<<endl;
+    DBWriteTx(GetTransactionHash(data),data);
+    DBReadTx(GetTransactionHash(data));
+}
+
+void TestBlock() {
+    InitDB();
+    mywallet=GenerateWallet();
+    GenerateGenesisBlock();
+    for (int i=0;i<=80;i++) {
+        array<uint8_t, 32> sender=mywallet.public_key;
+        auto data = GenerateTx(sender,sender,i,1,mywallet);
+        txpool[GetTransactionHash(data)] = data;
+    }
+
+    auto block = GenerateBlock();
+    cout<< "Result:"<<VerifyBlock(block);
+
+}
+void Sender() {
+    auto txByte= GenerateTx(mywallet.public_key,mywallet.public_key,1,1,mywallet);
+    while (true) {
+        SendData(txByte);
+        sleep(1);
+    }
+
+
 }
 int main1(int argc,char* argv[]) {
     Init();
@@ -39,14 +75,7 @@ int main1(int argc,char* argv[]) {
     // auto name=a["Pi"];
     // cout << name << std::endl;
 }
-
-
 int main() {
-    InitDB();
-    mywallet=GenerateWallet();
-    array<uint8_t, 32> sender=mywallet.public_key;
-    auto data = GenerateTransaction(sender,sender,1,1,mywallet);
-    cout<<"Verify Result:"<<VerifyTransaction(data)<<endl;
-    auto hash= StoreTransaction(data);
-    DBReadTx(hash);
+
+    TestBlock();
 }

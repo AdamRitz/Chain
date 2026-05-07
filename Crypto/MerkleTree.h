@@ -21,7 +21,9 @@ array<uint8_t,32> HashHash(const array<uint8_t,32>& a,const array<uint8_t,32>& b
     return ressult;
 }
 std::array<uint8_t, 32> MerkleCompute(std::span<const std::array<uint8_t, 32>> list) {
-    assert(!list.empty());
+    if (list.empty()) {
+        return {};
+    }
     vector<array<uint8_t, 32>> current(list.begin(), list.end());
     while (current.size() > 1) {
         if (current.size() % 2 != 0) {
