@@ -9,15 +9,17 @@
 #include <boost/asio.hpp>
 #include "Tool/Tool.h"
 #include "Transaction/Block.h"
+#include <spdlog/spdlog.h>
 using namespace std;
 using namespace nlohmann;
+io_context io;
 
 
-
-void Init() {
+void InitSodium() {
     if (sodium_init()<0) {
         cout<< "*** Sodium Init Error! ***"<<endl;
     }
+    spdlog::info("Sodium Started.");
 }
 
 
@@ -46,36 +48,42 @@ void TestBlock() {
 
 }
 void Sender() {
-    auto txByte= GenerateTx(mywallet.public_key,mywallet.public_key,1,1,mywallet);
+    cout<<"Sender Started."<<endl;
     while (true) {
-        SendData(txByte);
+        for (int i=0;i<=101;i++) {
+            auto txByte= GenerateTx(mywallet.public_key,mywallet.public_key,rand(),rand(),mywallet);
+            lock_guard<mutex> lock(txpoolMutex);
+            txpool.emplace(GetTransactionHash(txByte),txByte);
+        }
         sleep(1);
     }
 
 
 }
-int main1(int argc,char* argv[]) {
-    Init();
-    string mode = argv[1];
-    io_context io;
-    if (mode == "listen") {
-        co_spawn(io,ServerInit(),detached);
-    }
-    else if (mode == "client") {
-        co_spawn(io,ConnectSeed(),detached);
-    }else {
-        cout<<"输入正确的模式";
-        return 1;
-    }
-    io.run();
-
+int main(int argc,char* argv[]) {
+    spdlog::info("node starting...");
+    // 初始化区域
+    InitSodium(); // 初始化随机数
+    InitDB(); // 初始化数据库
+    InitWallet(); // 初始化钱包
+    co_spawn(io,Listen(8089),detached); // 启动服务端
+    //co_spawn(io,ConnectSeed(),detached); // 启动客户端
+    std::thread ioThread([](){io.run();}); // 启动上下文
+    GenerateGenesisBlock();
+    // 启动 Sender 线程
+    thread t2(Sender);
+    // 启动打包线程
+    thread t1(PeriodSendBlock);
+    t1.detach();
+    sleep(10000);
     //ServerInit();
 
     // json a=json::parse(R"({"Pi":3.14,"name":"luowenbin"})");
     // auto name=a["Pi"];
     // cout << name << std::endl;
 }
-int main() {
 
-    TestBlock();
-}
+// int main() {
+//
+//     TestBlock();
+// }

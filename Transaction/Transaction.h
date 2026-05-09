@@ -26,6 +26,7 @@ struct GetMapHash{
     }
 };
 unordered_map<array<uint8_t,32>,array<uint8_t,176>,GetMapHash> txpool;
+std::mutex txpoolMutex;
 // -----------------------------------------------------------------------交易序列化/反序列化-----------------------------------------------------------------------------------------------
 // 为 Hash 序列化交易数据：发送者，接收者，数值，nonce。为了 hash 创建的序列化，所以此处没有序列化 Hash 和 签名因为还没生成
 array<uint8_t,80> SerializeTxForHash(const Transaction& tx) {
@@ -82,8 +83,11 @@ array<uint8_t,176> GenerateTx(array<uint8_t,32> sender,array<uint8_t,32> receive
 }
 
 bool VerifyTransaction(array<uint8_t,176> txbyte) {
-    if (crypto_sign_verify_detached(txbyte.data()+80+32,txbyte.data()+80,32,mywallet.public_key.data())!=0) {
-        cout<<"Transaction Verification Failure."<<endl;
+    array<uint8_t,32> sender;
+    memcpy(sender.data(),txbyte.data(),32);
+    if (crypto_sign_verify_detached(txbyte.data()+80+32,txbyte.data()+80,32,sender.data())!=0) {
+        spdlog::info("Tx Verification Failed");
+
         return false;
     }
     return true;
@@ -98,11 +102,12 @@ array<uint8_t,32> GetTransactionHash(const array<uint8_t,176>& txByte) {
 }
 // -------------------------------------------------------------------交易处理入口---------------------------------------------------------------------------------------------------
 // 网络中收到交易后通过该入口函数处理，成功后放入交易池
-void ProcessTransactionBeforeBlock(array<uint8_t,176> txbyte) {
+void ProcessTx(array<uint8_t,176> txbyte) {
     // 交易验证失败就不进行处理。
     if (!VerifyTransaction(txbyte)) {
         return;
     }
+    lock_guard<mutex> lock(txpoolMutex);
     txpool[GetTransactionHash(txbyte)] = txbyte;
 }
 // 出块后的交易处理函数：把交易存储到本地的 RockDB 而不是交易池，见出块函数逻辑，此处不再单独编写一个函数。

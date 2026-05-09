@@ -60,9 +60,16 @@ vector<uint8_t> GenerateBlock() {
     Block block;
     block.previousHash=DBReadCurrentBlock();
     vector<array<uint8_t,32>> txhashs;
-    for (auto kv : txpool) {
-        block.txs.emplace_back(kv.second);
-        txhashs.push_back(kv.first);
+    // 此处加锁是因为一个线程在添加交易到交易池，另一个线程产生区块。
+    lock_guard<mutex> lock(txpoolMutex);
+    if (txpool.size()==0) {
+        vector<uint8_t> txbyte{};
+        return txbyte;
+    }
+    for (auto kv =txpool.begin(); kv != txpool.end(); ) {
+        block.txs.emplace_back(kv->second);
+        txhashs.push_back(kv->first);
+        kv = txpool.erase(kv);
     }
     block.merkleRoot=MerkleCompute(txhashs);
     block.height=DBReadBlockHeight()+1;
@@ -105,7 +112,9 @@ bool VerifyBlock(vector<uint8_t> blockByte) {
     // 验证 交易正确性 和 MerkleRoot
     vector<array<uint8_t,32>> txHashs;
     for (auto tx : block.txs) {
-        if (VerifyTransaction(tx)==false) return false;
+        if (VerifyTransaction(tx)==false) {
+            spdlog::info("Block's Tx Verification Failed");
+        };
         array<uint8_t,32> txHash;
         memcpy(txHash.data(),tx.data()+80,32);
         txHashs.emplace_back(txHash);
@@ -134,11 +143,14 @@ void GenerateGenesisBlock() {
     DBWriteBlock(block.hash,blockData);
     cout<< "Genesis Block Generated. Current Block Height: 1 "<<endl;
 }
-// -----------------------------------------------------------------------区块处理入口函数-------------------------------------------------------------------------------------------------
+// -----------------------------------------------------------------------核心入口函数：区块处理/定时打包区块-------------------------------------------------------
 // 网络中收到区块时交给该入口函数处理，成功后记录区块
 void ProcessBlock(vector<uint8_t> blockByte) {
     // 验证区块
-    VerifyBlock(blockByte);
+    if (VerifyBlock(blockByte)== false) {
+        spdlog::info("Block Verification Failed");
+        return;
+    }
     Block block=UnSerializeBlock(blockByte);
     // 更新当前区块 Hash 和 高度
     DBWriteBlockHeight(block.height);
@@ -153,6 +165,19 @@ void ProcessBlock(vector<uint8_t> blockByte) {
     }
     cout<< "Confirm A Block"<<endl;
 
+}
+
+void PeriodSendBlock() {
+    while (true) {
+        sleep(1);
+        cout<< "TX num in pool:"<<txpool.size()<<endl;
+        auto data=GenerateBlock();
+        if (data.size()==0) {
+            sleep(1);
+            continue;
+        }
+        ProcessBlock(data);
+    }
 }
 
 

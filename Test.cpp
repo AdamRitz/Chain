@@ -121,9 +121,9 @@ struct Number {
     }
 };
 
-
+#include <chrono>
+using namespace chrono;
 int main() {
-    Number a{10};
-    Number b{13};
-    std::cout<<(a+b).value;
+    time_point a = steady_clock::now();
+    std::cout << a.time_since_epoch().count();
 }
