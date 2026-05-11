@@ -85,6 +85,7 @@ vector<uint8_t> GenerateBlock() {
         memcpy(blockData.data()+offset,tx.data(),176);
         offset += 176;
     }
+
     return blockData;
 }
 

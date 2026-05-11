@@ -123,7 +123,9 @@ struct Number {
 
 #include <chrono>
 using namespace chrono;
+
 int main() {
     time_point a = steady_clock::now();
-    std::cout << a.time_since_epoch().count();
+    std::cout << duration_cast<nanoseconds>(a.time_since_epoch()).count();
+
 }

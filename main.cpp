@@ -10,6 +10,7 @@
 #include "Tool/Tool.h"
 #include "Transaction/Block.h"
 #include <spdlog/spdlog.h>
+#include "./Time/Time.h"
 using namespace std;
 using namespace nlohmann;
 io_context io;
