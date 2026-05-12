@@ -20,37 +20,42 @@ using tcp = ip::tcp;
 
 
 awaitable<void> session(ip::tcp::socket socket) {
-    array<uint8_t, 1024> message;
+    array<uint8_t, 5> header;
 
     for (;;) {
         boost::system::error_code ec;
-        std::size_t n = co_await socket.async_read_some(buffer(message), redirect_error(use_awaitable, ec));
+        // 读取消息头：类型和消息长度
+        // 消息类型大小为 1 字节 uint8_t
+        // 消息大小字段为 4 字节 uint32_t
+        co_await async_read(socket,buffer(header), redirect_error(use_awaitable, ec));
         if (ec) {
             std::cout << "client disconnected: " << ec.message() << std::endl;
             co_return;
         }
-        // 读取消息头：类型和消息长度
-        // 消息类型大小为 1 字节 uint8_t
-        // 消息大小字段为 4 字节 uint32_t
+        // 处理消息头
         uint8_t type = 0;
         uint32_t size = 0;
         int offset = 0;
-        memcpy(&type, message.data(), 1);
+        memcpy(&type, header.data(), 1);
         offset += 1;
-        memcpy(&size,message.data() + offset, 4);
+        memcpy(&size,header.data() + offset, 4);
         offset += 4;
         // 正式处理消息
+        vector<uint8_t> message;
+        message.resize(size);
+        co_await async_read(socket,buffer(message), redirect_error(use_awaitable, ec));
         // type = 1 代表交易消息
         if (type == 1) {
+            if (size != 176) {spdlog::info("Read Wrong Tx");}
             array<uint8_t,176> byte{};
-            memcpy(byte.data(), message.data() + offset, size);
+            memcpy(byte.data(), message.data() , size);
             ProcessTx(byte);
         }
         // type = 2 代表区块消息
         else if (type == 2) {
             vector<uint8_t> byte{};
             byte.resize(size);
-            memcpy(byte.data(), message.data() + offset, size);
+            memcpy(byte.data(), message.data() , size);
             ProcessBlock(byte);
         }
         // type = 3 表示时间消息
@@ -79,7 +84,7 @@ awaitable<void> session(ip::tcp::socket socket) {
         else if (type == 6) {
             // 反序列化得到查询的区块编号 blockNum
             uint64_t blockNum = 0;
-            memcpy(&blockNum, message.data()+offset, 8);
+            memcpy(&blockNum, message.data(), 8);
             // 序列化返回的区块编号
             auto byte= GenerateBlockMessage(blockNum);
             co_await (SendData(socket,byte));
@@ -89,18 +94,17 @@ awaitable<void> session(ip::tcp::socket socket) {
         {
             // 获取消息长度
             uint32_t length = 0;
-            memcpy(&length, message.data()+offset, 4);
+            memcpy(&length, message.data(), 4);
             offset += 4;
             uint64_t blockNum = 0;
-            memcpy(&blockNum, message.data()+offset, 8);
+            memcpy(&blockNum, message.data(), 8);
             offset += 8;
             vector<uint8_t> blockByte{};
             blockByte.resize(length-8);
-            memcpy(blockByte.data(), message.data()+offset, length-8);
+            memcpy(blockByte.data(), message.data(), length-8);
             co_await (SendData(socket,blockByte)) ;
         }
-        // 其余消息类型丢弃
-        co_return;
+        // 其余消息逻辑需要解决
     }
 }
 

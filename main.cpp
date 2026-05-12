@@ -72,7 +72,7 @@ int main(int argc,char* argv[]) {
     std::thread ioThread([](){io.run();}); // 启动上下文
     GenerateGenesisBlock();
     // 启动 Sender 线程
-    thread t2(Sender);
+    //thread t2(Sender);
     // 启动打包线程
     thread t1(PeriodSendBlock);
     t1.detach();

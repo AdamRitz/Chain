@@ -37,15 +37,17 @@ void DBReadTx(const array<uint8_t,32>& key) {
 
 void DBWriteBlock(const array<uint8_t,32>& key,const vector<uint8_t>& value) {
     uint64_t height=0;
-    memcpy(&height,value.data()+64,value.size());
-    db->Put(rocksdb::WriteOptions(),rocksdb::Slice(reinterpret_cast<const char*>(key.data())),rocksdb::Slice(reinterpret_cast<const char*>(value.data())));
-    db->Put(rocksdb::WriteOptions(),to_string(height),rocksdb::Slice(reinterpret_cast<const char*>(key.data())));
+    memcpy(&height,value.data()+64,8);
+    // 存 Hash - > 区块
+    db->Put(rocksdb::WriteOptions(),rocksdb::Slice(reinterpret_cast<const char*>(key.data()),key.size()),rocksdb::Slice(reinterpret_cast<const char*>(value.data()),value.size()));
+    // 存高度 - > Hash
+    db->Put(rocksdb::WriteOptions(),to_string(height),rocksdb::Slice(reinterpret_cast<const char*>(key.data()),key.size()));
 }
 
 vector<uint8_t> DBReadBlockByHash(const array<uint8_t,32>& key) {
     vector<uint8_t> result;
     string s;
-    db->Get(rocksdb::ReadOptions(),rocksdb::Slice(reinterpret_cast<const char*>(key.data())),&s);
+    db->Get(rocksdb::ReadOptions(),rocksdb::Slice(reinterpret_cast<const char*>(key.data()),key.size()),&s);
     result.resize(s.size());
     memcpy(result.data(),s.data(),s.size());
     return result;

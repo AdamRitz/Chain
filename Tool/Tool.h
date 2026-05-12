@@ -9,11 +9,21 @@
 #include <cstdint>
 #include <stdio.h>
 using namespace std;
+
+
 void PrintHexForArray32(const array<uint8_t, 32>& data) {
     cout<<"0x";
     for (auto i:data) {
         cout<<hex<<setw(2)<<setfill('0')<<int(i);
     }
+}
+string U32ToHex(const array<uint8_t, 32>& data) {
+    stringstream ss;
+    for (auto i:data) {
+        ss<<hex<<setw(2)<<setfill('0')<<int(i);
+    }
+    return ss.str();
+
 }
 void PrintHexForString(const std::string& s) {
     for (unsigned char c : s) {

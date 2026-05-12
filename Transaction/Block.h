@@ -142,7 +142,7 @@ void GenerateGenesisBlock() {
     memcpy(blockData.data(),blockHeaderByte.data(),80);
     memcpy(blockData.data()+80,block.hash.data(),32);
     DBWriteBlock(block.hash,blockData);
-    cout<< "Genesis Block Generated. Current Block Height: 1 "<<endl;
+    spdlog::info("Genesis Block Generated. Current Block Height: 1 ");
 }
 // -----------------------------------------------------------------------核心入口函数：区块处理/定时打包区块-------------------------------------------------------
 // 网络中收到区块时交给该入口函数处理，成功后记录区块
@@ -158,20 +158,25 @@ void ProcessBlock(vector<uint8_t> blockByte) {
     DBWriteCurrentBlock(block.hash);
     // 写入区块
     DBWriteBlock(block.hash,blockByte);
+    int num = 0;
     // 写入交易
     for (auto tx : block.txs) {
+        num++;
         array<uint8_t,32> txHash;
         memcpy(txHash.data(),tx.data()+80,32);
         DBWriteTx(txHash,tx);
     }
-    cout<< "Confirm A Block"<<endl;
+    spdlog::info("New Block Confirmed! Height:{},TxNum:{},Hash:{}",block.height,num,U32ToHex(block.hash));
 
 }
 
 void PeriodSendBlock() {
     while (true) {
         sleep(1);
-        cout<< "TX num in pool:"<<txpool.size()<<endl;
+        {
+            lock_guard<mutex> lock(txpoolMutex);
+            spdlog::info("TX num in pool: {}",txpool.size());
+        }
         auto data=GenerateBlock();
         if (data.size()==0) {
             sleep(1);
