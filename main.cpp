@@ -69,19 +69,25 @@ int main(int argc,char* argv[]) {
     InitWallet(); // 初始化钱包
     co_spawn(io,Listen(8089),detached); // 启动服务端
     //co_spawn(io,ConnectSeed(),detached); // 启动客户端
-    std::thread ioThread([](){io.run();}); // 启动上下文
+    // 初始化多线程
+    auto guard = make_work_guard(io);
+    vector<thread> threads;
+    int num = thread::hardware_concurrency();
+    for (int i=0;i<num;i++) {
+        threads.emplace_back(thread([&]{io.run();}));
+    }
     GenerateGenesisBlock();
     // 启动 Sender 线程
     //thread t2(Sender);
     // 启动打包线程
+
     thread t1(PeriodSendBlock);
     t1.detach();
-    sleep(10000);
+    for (auto& t : threads) {
+        t.join();
+    }
     //ServerInit();
 
-    // json a=json::parse(R"({"Pi":3.14,"name":"luowenbin"})");
-    // auto name=a["Pi"];
-    // cout << name << std::endl;
 }
 
 // int main() {

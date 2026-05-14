@@ -8,6 +8,7 @@
 #include <iostream>
 #include <vector>
 #include "../DB/DB.h"
+#include "../Network/Client.h"
 using namespace std;
 vector<uint8_t> GenerateBlockMessage(const uint64_t& blockNum) {
     auto block = DBReadBlockByHeight(to_string(blockNum));
@@ -28,5 +29,11 @@ vector<uint8_t> GenerateBlockMessage(const uint64_t& blockNum) {
     // 填充 blockByte
     memcpy(byte.data()+offset, block.data() , block.size());
     return byte;
+}
+
+vector<uint8_t> GeneratePeerDiscoverMessage() {
+
+
+
 }
 #endif //CHAIN_MESSAGE_H

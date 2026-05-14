@@ -50,7 +50,7 @@ awaitable<void> Sender() {
 
     auto sock = co_await ConnectNode();
         for( uint64_t i = 1; i <INT64_MAX; i++) {
-            if (i%100000==0){sleep(1);cout<<"Tx send num :"<<i<<endl;}
+            if (i%10000==0){sleep(1);cout<<"Tx send num :"<<i<<endl;}
         auto txByte= GenerateTxMessage(i);
         co_await async_write(sock,buffer(txByte),redirect_error(use_awaitable,ec));
         if (ec) {cout << ec.message() << endl;co_return;}

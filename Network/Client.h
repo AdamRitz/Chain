@@ -4,6 +4,7 @@
 
 #ifndef CHAIN_CLIENT_H
 #define CHAIN_CLIENT_H
+#include <deque>
 #include <utility>
 #include <iostream>
 #include <boost/asio.hpp>
@@ -13,54 +14,102 @@
 using namespace boost::asio;
 using namespace std;
 using namespace nlohmann;
-
 using tcp = ip::tcp;
-vector<tcp::socket> socketPool;
-// -----------------------------------------------------------发送消息函数---------------------------------------------------------------------------------------------
-awaitable<void> BroadcastData(span<uint8_t> byte) {
-    for (size_t i = 0; i < socketPool.size();) {
-        boost::system::error_code ec;
-        size_t n = co_await async_write(socketPool[i], buffer(byte), redirect_error(use_awaitable, ec));
-        if (ec) {
-            spdlog::info("Broadcast data failed.");
-            boost::system::error_code ignored;
-            socketPool[i].close(ignored);
-            socketPool.erase(socketPool.begin() + i);
-        } else {
-            ++i;
-        }
-    }
-    co_return;
+
+// -----------------------------------------------------------节点结构体/节点池/节点锁初始化---------------------------------------------------------------------------------------------
+// 节点结构体
+// socket: socket 连接
+// strand: asio 用于顺序执行的对象
+// messageQueue: 消息队列，为支持并发写入 socket 需要用消息队列，否则需要给 socket 上锁。
+// writing: 写入状态符
+struct Peer:enable_shared_from_this<Peer>{
+    tcp::socket socket;
+    strand<any_io_executor> strand;
+    deque<vector<uint8_t>> messageQueue;
+    bool writing = false;
+    Peer(tcp::socket sock) : socket(std::move(sock)), strand(make_strand(socket.get_executor())) {}
+};
+
+vector<shared_ptr<Peer>> peerPool;
+mutex peerMutex;
+// -----------------------------------------------------------连接管理函数-----------------------------------------------------------------------------------------------------------
+shared_ptr<Peer> AddPeer(tcp::socket socket) {
+    auto peer = make_shared<Peer>(std::move(socket));
+    lock_guard lock(peerMutex);
+    peerPool.push_back(peer);
+    return peer;
 }
-awaitable<void> SendData(tcp::socket& socket,const span<uint8_t>& data) {
-    boost::system::error_code ec;
-    size_t n = co_await async_write(socket, data, redirect_error(use_awaitable, ec));
-    if (ec) {
-        spdlog::info("Send data failed.");
+
+void AddSocketFromPTR(const shared_ptr<Peer>& s) {
+    lock_guard lock(peerMutex);
+    peerPool.push_back(s);
+}
+
+void RemovePeer(const shared_ptr<Peer>& peer) {
+    lock_guard lock(peerMutex);
+    erase(peerPool, peer);
+}
+// -----------------------------------------------------------发送消息函数---------------------------------------------------------------------------------------------
+
+awaitable<void> WriteLoop(shared_ptr<Peer> peer) {
+    while (!peer->messageQueue.empty()) {
+        boost::system::error_code ec;
+        co_await async_write(peer->socket, buffer(peer->messageQueue.front()), redirect_error(use_awaitable, ec));
+        if (ec) {
+            spdlog::info("Send failed: {}", ec.message());
+            boost::system::error_code ignored;
+            peer->socket.close(ignored);
+            peer->messageQueue.clear();
+            peer->writing = false;
+            co_return;
+        }
+        peer->messageQueue.pop_front();
+    }
+    peer->writing = false;
+}
+
+awaitable<void> QueueSend(shared_ptr<Peer> peer, std::vector<uint8_t> data) {
+    peer->messageQueue.push_back(std::move(data));
+    if (!peer->writing) {
+        peer->writing = true;
+        co_spawn(peer->strand, WriteLoop(peer), detached);
     }
     co_return;
 }
 
+void SendData(std::shared_ptr<Peer> peer, std::vector<uint8_t> data) {
+    co_spawn(peer->strand, QueueSend(peer, data), detached);
+}
+
+awaitable<void> BroadcastData(vector<uint8_t> byte) {
+    vector<shared_ptr<Peer>> peers;
+    {
+        lock_guard lock(peerMutex);
+        peers = peerPool;
+    }
+    for (auto& peeer : peers) {
+        SendData(peeer, byte);
+    }
+    co_return;
+}
 // -----------------------------------------------------------客户端入口函数---------------------------------------------------------------------------------------------
-awaitable<optional<tcp::socket>> Connect(string ipaddr,unsigned short port) {
+awaitable<void> Connect(string ipaddr,unsigned short port) {
     auto executor = co_await this_coro::executor;
-    tcp::socket socket(executor);
     boost::system::error_code ec;
+    tcp::socket socket(executor);
+
     tcp::endpoint endpoint(ip::make_address(ipaddr,ec),port);
-    if (ec) {cout << ec.message() << endl;}
+    if (ec) {spdlog::info(ec.message());co_return;}
     co_await socket.async_connect(endpoint,redirect_error(use_awaitable, ec));
-    if (ec) {cout << ec.message() << endl;co_return nullopt;}
-    cout<<"连接成功"<<endl;
-    co_return std::move(socket);
+    if (ec) {spdlog::info(ec.message());co_return;}
+    AddPeer(move(socket));
+    co_return;
 }
 awaitable<void> ConnectSeed() {
-    auto s = co_await Connect("127.0.0.1",8089);
-    if (s.has_value()) {
-        socketPool.push_back(std::move(*s));
-    }
+    co_await Connect("127.0.0.1",8089);
+    // 以下为测试代码
     auto executor = co_await this_coro::executor;
     steady_timer timer(executor);
-
     for (;;) {
         vector<uint8_t> byte={1,2,3};
         co_await BroadcastData(byte);
@@ -72,30 +121,28 @@ awaitable<void> ConnectSeed() {
 }
 // -----------------------------------------------------------客户端定时函数---------------------------------------------------------------------------------------------
 
-awaitable<void> QueryHeight(tcp::socket& socket) {
+awaitable<void> QueryHeight(shared_ptr<Peer>& peer) {
     vector<uint8_t> messageByte={4};
-    co_await SendData(socket,messageByte);
+    SendData(peer,messageByte);
 }
-awaitable<void> QueryBlock( tcp::socket& socket,uint64_t blockNum) {
+awaitable<void> QueryBlock( shared_ptr<Peer>& peer,uint64_t blockNum) {
     vector<uint8_t> messageByte;
     messageByte.resize(9);
     uint8_t type = 6;
     memcpy(messageByte.data(),&type,1);
     memcpy(messageByte.data(),&blockNum,8);
-    co_await SendData(socket,messageByte);
+    SendData(peer,messageByte);
 }
 
 awaitable<void> SyncBlock() {
-    co_await QueryHeight(socketPool[0]);
+    co_await QueryHeight(peerPool[0]);
     auto maxHeight = DBReadBlockMaxHeight();
     auto currentHeight = DBReadBlockHeight();
     if (maxHeight>currentHeight) {
         while (currentHeight<maxHeight) {
-            QueryBlock(socketPool[0],currentHeight+1);
+            QueryBlock(peerPool[0],currentHeight+1);
             currentHeight +=1;
         }
     }
-
-
 }
 #endif //CHAIN_CLIENT_H

@@ -66,10 +66,13 @@ vector<uint8_t> GenerateBlock() {
         vector<uint8_t> txbyte{};
         return txbyte;
     }
+    int num = 0;
     for (auto kv =txpool.begin(); kv != txpool.end(); ) {
+        if (num==6000)break;
         block.txs.emplace_back(kv->second);
         txhashs.push_back(kv->first);
         kv = txpool.erase(kv);
+        num++;
     }
     block.merkleRoot=MerkleCompute(txhashs);
     block.height=DBReadBlockHeight()+1;
@@ -141,7 +144,7 @@ void GenerateGenesisBlock() {
     blockData.resize(80+32);
     memcpy(blockData.data(),blockHeaderByte.data(),80);
     memcpy(blockData.data()+80,block.hash.data(),32);
-    DBWriteBlock(block.hash,blockData);
+    DBWriteBlockALL(block.hash,blockData);
     spdlog::info("Genesis Block Generated. Current Block Height: 1 ");
 }
 // -----------------------------------------------------------------------核心入口函数：区块处理/定时打包区块-------------------------------------------------------
@@ -157,7 +160,7 @@ void ProcessBlock(vector<uint8_t> blockByte) {
     DBWriteBlockHeight(block.height);
     DBWriteCurrentBlock(block.hash);
     // 写入区块
-    DBWriteBlock(block.hash,blockByte);
+    DBWriteBlockALL(block.hash,blockByte);
     int num = 0;
     // 写入交易
     for (auto tx : block.txs) {
@@ -172,19 +175,21 @@ void ProcessBlock(vector<uint8_t> blockByte) {
 
 void PeriodSendBlock() {
     while (true) {
-        sleep(1);
-        {
-            lock_guard<mutex> lock(txpoolMutex);
-            spdlog::info("TX num in pool: {}",txpool.size());
-        }
+        this_thread::sleep_for(std::chrono::milliseconds(500));
         auto data=GenerateBlock();
         if (data.size()==0) {
-            sleep(1);
+            this_thread::sleep_for(std::chrono::milliseconds(500));
             continue;
         }
         ProcessBlock(data);
     }
 }
-
+void PeriodTxMonitor() {
+    sleep(1);
+    {
+        lock_guard<mutex> lock(txpoolMutex);
+        spdlog::info("TX num in pool: {}",txpool.size());
+    }
+}
 
 #endif //CHAIN_BLOCK_H

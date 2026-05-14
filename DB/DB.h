@@ -35,7 +35,7 @@ void DBReadTx(const array<uint8_t,32>& key) {
 
 //---------------------------------------------------区块读写--------------------------------------------------------------------------------------------------------------------------
 
-void DBWriteBlock(const array<uint8_t,32>& key,const vector<uint8_t>& value) {
+void DBWriteBlockALL(const array<uint8_t,32>& key,const vector<uint8_t>& value) {
     uint64_t height=0;
     memcpy(&height,value.data()+64,8);
     // 存 Hash - > 区块

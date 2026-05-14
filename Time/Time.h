@@ -46,4 +46,9 @@ vector<uint8_t> GetTime() {
     memcpy(data.data(),&timeValue,8);
     return data;
 }
+
+void TestTime() {
+    int a;
+   auto p =  make_shared<int>(a);
+}
 #endif //CHAIN_TIME_H

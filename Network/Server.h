@@ -18,8 +18,8 @@ using namespace nlohmann;
 using tcp = ip::tcp;
 
 
-
-awaitable<void> session(ip::tcp::socket socket) {
+// ------------------------------------------------------------------监听函数--------------------------------------------------------------------------------------------------------
+awaitable<void> session(shared_ptr<Peer> peer) {
     array<uint8_t, 5> header;
 
     for (;;) {
@@ -27,9 +27,12 @@ awaitable<void> session(ip::tcp::socket socket) {
         // 读取消息头：类型和消息长度
         // 消息类型大小为 1 字节 uint8_t
         // 消息大小字段为 4 字节 uint32_t
-        co_await async_read(socket,buffer(header), redirect_error(use_awaitable, ec));
+        // 此处必须用 async_read 而不能用 async_read_some ，后者只是从 Socket 读取一些数据就返回（TCP 半包问题）。前者是必须读取到多少字节才返回。
+        co_await async_read(peer->socket,buffer(header), redirect_error(use_awaitable, ec));
         if (ec) {
-            std::cout << "client disconnected: " << ec.message() << std::endl;
+            spdlog::info("Client Disconnected");
+            peer->socket.close();
+            RemovePeer(peer);
             co_return;
         }
         // 处理消息头
@@ -43,10 +46,10 @@ awaitable<void> session(ip::tcp::socket socket) {
         // 正式处理消息
         vector<uint8_t> message;
         message.resize(size);
-        co_await async_read(socket,buffer(message), redirect_error(use_awaitable, ec));
+        co_await async_read(peer->socket,buffer(message), redirect_error(use_awaitable, ec));
         // type = 1 代表交易消息
         if (type == 1) {
-            if (size != 176) {spdlog::info("Read Wrong Tx");}
+            if (size != 176) {spdlog::info("Read Wrong Tx");continue;}
             array<uint8_t,176> byte{};
             memcpy(byte.data(), message.data() , size);
             ProcessTx(byte);
@@ -69,12 +72,12 @@ awaitable<void> session(ip::tcp::socket socket) {
             vector<uint8_t> byte{};
             byte.resize(8);
             memcpy(byte.data(), &height, 8);
-            co_await(SendData(socket,byte)) ;
+            SendData(peer,byte);
         }
         // type = 5 接收 QueryHeight 返回值
         else if (type==5) {
             uint64_t maxHeight = 0;
-            memcpy(&maxHeight, message.data()+offset, 8);
+            memcpy(&maxHeight, message.data(), 8);
             if (maxHeight >= DBReadBlockHeight()) {
                 DBWriteBlockMaxHeight(maxHeight);
             }
@@ -87,22 +90,24 @@ awaitable<void> session(ip::tcp::socket socket) {
             memcpy(&blockNum, message.data(), 8);
             // 序列化返回的区块编号
             auto byte= GenerateBlockMessage(blockNum);
-            co_await (SendData(socket,byte));
+            SendData(peer,byte);
         }
         // type = 7 接收 QueryBlock 响应
+        // 消息：MessageHeader || Payload
+        // Payload : BlockHeader || Txs
         else if (type == 7)
         {
-            // 获取消息长度
-            uint32_t length = 0;
-            memcpy(&length, message.data(), 4);
-            offset += 4;
-            uint64_t blockNum = 0;
-            memcpy(&blockNum, message.data(), 8);
-            offset += 8;
+            array<uint8_t,32> blockhash{};
+            memcpy(blockhash.data(), message.data()+80, 32);
             vector<uint8_t> blockByte{};
-            blockByte.resize(length-8);
-            memcpy(blockByte.data(), message.data(), length-8);
-            co_await (SendData(socket,blockByte)) ;
+            blockByte.resize(size);
+            memcpy(blockByte.data(), message.data(), size);
+            DBWriteBlockALL(blockhash,blockByte);
+
+        }
+        // type = 8 接收节点发送消息
+        else if (type == 8) {
+
         }
         // 其余消息逻辑需要解决
     }
@@ -121,16 +126,23 @@ awaitable<void> Listen(unsigned short port) {
 
         tcp::socket socket = co_await acceptor.async_accept(redirect_error(use_awaitable, ec));
 
-        if (ec) {
-            std::cout << "accept failed: " << ec.message() << std::endl;
-            continue;
-        }
+        if (ec) {spdlog::info("New Client Connection Failed");continue;}
 
-        std::cout << "new client connected" << std::endl;
-
-        co_spawn(executor, session(std::move(socket)), detached);
+        // 考虑是否将连接自身的节点加入 socket 池
+        auto peer = AddPeer(std::move(socket));
+        spdlog::info("New Client Connected");
+        co_spawn(executor, session(peer), detached);
     }
 }
 
+// ------------------------------------------------------------------工具函数--------------------------------------------------------------------------------------------------------
+bool IsLocalPeer(tcp::socket& socket) {
+    boost::system::error_code ec;
+    auto ep = socket.remote_endpoint(ec);
+    if (ec) {
+        return false;
+    }
 
+    return ep.address().is_loopback();
+}
 #endif //CHAIN_SERVER_H
