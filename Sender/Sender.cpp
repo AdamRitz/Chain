@@ -24,6 +24,9 @@ awaitable<tcp::socket> ConnectNode() {
     ip::tcp::endpoint endpoint(ip::make_address("127.0.0.1"),8089);
     co_await sock.async_connect(endpoint,redirect_error(use_awaitable,ec));
     if (ec) {cout << ec.message() << endl;co_return nullptr;}
+    array<uint8_t, 1> data;
+    data[0] = 2;
+    co_await async_write(sock,buffer(data),redirect_error(use_awaitable,ec));
     spdlog::info("SenderConnected");
     co_return std::move(sock);
 }

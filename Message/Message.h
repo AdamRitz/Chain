@@ -31,9 +31,18 @@ vector<uint8_t> GenerateBlockMessage(const uint64_t& blockNum) {
     return byte;
 }
 
-vector<uint8_t> GeneratePeerDiscoverMessage() {
+vector<uint8_t> GenerateRequestDiscoveryMessage() {
+    vector<uint8_t> message;
+    message.resize(5);
+    // 填充 type
+    uint8_t type = 8;
+    int offset = 0;
+    memcpy(message.data()+offset,&type,1);
+    offset += 1;
+    // 填充 length
+    uint32_t length = 0;
+    memcpy(message.data()+offset,&length,4);
+    return message;
+};
 
-
-
-}
 #endif //CHAIN_MESSAGE_H

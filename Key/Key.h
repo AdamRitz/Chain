@@ -3,6 +3,8 @@
 #include <string>
 #include <vector>
 #include <sodium.h>
+#include <array>
+
 using namespace  std;
 struct Wallet
 {

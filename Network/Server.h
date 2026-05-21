@@ -12,6 +12,7 @@
 #include "Client.h"
 #include "../Transaction/Block.h"
 #include "../Transaction/Transaction.h"
+#include "../Crypto/VRF.h"
 using namespace boost::asio;
 using namespace std;
 using namespace nlohmann;
@@ -19,7 +20,7 @@ using tcp = ip::tcp;
 
 
 // ------------------------------------------------------------------监听函数--------------------------------------------------------------------------------------------------------
-awaitable<void> session(shared_ptr<Peer> peer) {
+awaitable<void> session(uint64_t key,shared_ptr<Peer> peer) {
     array<uint8_t, 5> header;
 
     for (;;) {
@@ -32,7 +33,7 @@ awaitable<void> session(shared_ptr<Peer> peer) {
         if (ec) {
             spdlog::info("Client Disconnected");
             peer->socket.close();
-            RemovePeer(peer);
+            RemovePeer(key);
             co_return;
         }
         // 处理消息头
@@ -105,9 +106,13 @@ awaitable<void> session(shared_ptr<Peer> peer) {
             DBWriteBlockALL(blockhash,blockByte);
 
         }
-        // type = 8 接收节点发送消息
+        // type = 8 接收节点数据请求
         else if (type == 8) {
-
+            SendData(peer,GenerateDiscoverMessage());
+        }
+        // type = 9 接收节点数据返回
+        else if (type == 9) {
+            ProcessDiscoverMessage(message);
         }
         // 其余消息逻辑需要解决
     }
@@ -127,11 +132,24 @@ awaitable<void> Listen(unsigned short port) {
         tcp::socket socket = co_await acceptor.async_accept(redirect_error(use_awaitable, ec));
 
         if (ec) {spdlog::info("New Client Connection Failed");continue;}
+        // 读取连接的类型
+        // 1 - 正常节点
+        // 2 - Sender 只发交易，不进入 peerPool
+        array<uint8_t, 1> type;
+        co_await async_read(socket, buffer(type), redirect_error(use_awaitable, ec));
+        if (type[0]==1) {
+            // 考虑是否将连接自身的节点加入 socket 池
+            auto [key,peer] = AddPeer(std::move(socket));
+            spdlog::info("New Client Connected");
+            co_spawn(executor, session(key,peer), detached);
+        }
+        else if (type[0]==2) {
+            spdlog::info("Sender Connected");
+            auto peer =make_shared<Peer>(std::move(socket));
+            co_spawn(executor, session(0,peer), detached);
 
-        // 考虑是否将连接自身的节点加入 socket 池
-        auto peer = AddPeer(std::move(socket));
-        spdlog::info("New Client Connected");
-        co_spawn(executor, session(peer), detached);
+        }
+
     }
 }
 
