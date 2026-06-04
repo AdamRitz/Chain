@@ -99,8 +99,8 @@ bool VRFVerify(vector<uint8_t> message,vector<uint8_t> m,array<uint8_t,crypto_co
     int offset = 0;
     memcpy(VRFValue.data(),message.data()+offset,VRFValue.size());
     offset += VRFValue.size();
-    memcpy(gammar.data(),message.data(),gammar.size());
-    offset += message.size();
+    memcpy(gammar.data(),message.data()+offset,gammar.size());
+    offset += gammar.size();
     memcpy(c.data(),message.data()+offset,c.size());
     offset += c.size();
     memcpy(s.data(),message.data()+offset,s.size());
@@ -110,24 +110,49 @@ bool VRFVerify(vector<uint8_t> message,vector<uint8_t> m,array<uint8_t,crypto_co
     array<uint8_t,crypto_core_ed25519_BYTES> gs;
     crypto_scalarmult_ed25519_base_noclamp(gs.data(),s.data());
     array<uint8_t,crypto_core_ed25519_BYTES> u;
+    // u = pk^c * g^s
     crypto_core_ed25519_add(u.data(),gs.data(),pkc.data());
-    array<uint8_t,32> h;
-    crypto_generichash(h.data(),32,m.data(),m.size(),nullptr,0);
+    array<uint8_t,32> hash;
+    crypto_generichash(hash.data(),32,m.data(),m.size(),nullptr,0);
+    array<uint8_t, crypto_core_ed25519_BYTES> h;
+    crypto_core_ed25519_from_uniform(h.data(),hash.data());
+
     array<uint8_t,crypto_core_ed25519_BYTES> gammarc,hs;
     crypto_scalarmult_ed25519_noclamp(gammarc.data(),c.data(),gammar.data());
     crypto_scalarmult_ed25519_noclamp(hs.data(),s.data(),h.data());
     array<uint8_t,crypto_core_ed25519_BYTES> v;
     crypto_core_ed25519_add(v.data(),gammarc.data(),hs.data());
     // cHash = Hash(cByte) = Hash (g,h,PK,gammar,u,v)
-    array<uint8_t,crypto_core_ed25519_SCALARBYTES> cHash;
+    array<uint8_t,64> cHash;
     array<uint8_t,crypto_core_ed25519_BYTES*6> cByte;
     offset = 0;
+    memcpy(cByte.data()+offset,g.data(),g.size());
+    offset += g.size();
+    memcpy(cByte.data()+offset,h.data(),h.size());
+    offset += h.size();
+    memcpy(cByte.data()+offset,pk.data(),pk.size());
+    offset += pk.size();
+    memcpy(cByte.data()+offset,gammar.data(),gammar.size());
+    offset += gammar.size();
+    memcpy(cByte.data()+offset,u.data(),u.size());
+    offset += u.size();
+    memcpy(cByte.data()+offset,v.data(),v.size());
+    crypto_generichash(cHash.data(),64,cByte.data(),cByte.size(),nullptr,0);
+    array<uint8_t,crypto_core_ed25519_SCALARBYTES> cScalar;
+    crypto_core_ed25519_scalar_reduce(cScalar.data(),cHash.data());
+    if (sodium_memcmp(c.data(),cScalar.data(),crypto_core_ed25519_SCALARBYTES)!=0) {
+        return false;
+    };
+    // 计算 VRF
+    array<uint8_t,crypto_core_ed25519_BYTES> gammarf;
+    array<uint8_t,32> beta;
+    crypto_scalarmult_ed25519_noclamp(gammarf.data(),eight.data(),gammar.data());
+    crypto_generichash(beta.data(),32,gammarf.data(),gammarf.size(),nullptr,0);
 
-
-
-
-
-
+    if (sodium_memcmp(beta.data(),VRFValue.data(),32)!=0) {
+        return false;
+    }
+    return true;
 }
 
 #endif //CHAIN_VRF_H

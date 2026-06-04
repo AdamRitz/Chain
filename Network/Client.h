@@ -16,6 +16,7 @@
 
 using namespace boost::asio;
 using namespace std;
+using namespace std::chrono;
 using namespace nlohmann;
 using tcp = ip::tcp;
 
@@ -29,6 +30,8 @@ struct Peer:enable_shared_from_this<Peer>{
     tcp::socket socket;
     strand<any_io_executor> strand;
     deque<vector<uint8_t>> messageQueue;
+    system_clock::time_point T1;
+    long long lag;
     bool writing = false;
     Peer(tcp::socket sock) : socket(std::move(sock)), strand(make_strand(socket.get_executor())) {}
 };
@@ -165,6 +168,20 @@ awaitable<void> SyncBlock() {
         }
     }
 }
+void OpenShareTxTimeMode() {
+    while (true) {
+        unordered_map<uint64_t,shared_ptr<Peer>> peers;
+        {
+            lock_guard lock(peerMutex);
+            peers = peerPool;
+        }
+        for (auto i : peers) {
+            SendData(i.second,GenerateTxTimeMessage());
+            i.second->T1=system_clock::now();
+        }
+        sleep(2);
+    }
+}
 // -----------------------------------------------------------消息函数---------------------------------------------------------------------------------------------
 // 节点发现消息生成函数：当一个节点向本节点请求节点信息时候，返回此数据。
 // 主要作用为打包节点池的数据，序列化为 vector。
@@ -204,6 +221,33 @@ awaitable<void> ProcessDiscoverMessage(vector<uint8_t> message) {
         memcpy(&port,message.data()+offset+4,2);
         offset+=6;
         co_spawn(executor,Connect(ipByte,port));
+    }
+}
+
+// 填充交易
+void ProcessTxTimeACKMessage(vector<uint8_t> message,system_clock::time_point T4,shared_ptr<Peer> peer) {
+    long long T2Data,T3Data;
+    memcpy(&T2Data,message.data(),8);
+    memcpy(&T3Data,message.data()+8,8);
+    system_clock::time_point T2{milliseconds(T2Data)};
+    system_clock::time_point T3{milliseconds(T3Data)};
+    auto duration = (T2-peer->T1+T3-T4).count()/2;
+    peer->lag=duration;
+}
+
+// -----------------------------------------------------------循环函数---------------------------------------------------------------------------------------------
+
+awaitable<void> MainLoop() {
+    auto executor = co_await this_coro::executor;
+    while (true) {
+        auto end = steady_clock::now() + milliseconds(200);
+        while (steady_clock::now() < end) {
+            this_thread::sleep_for(milliseconds(10));
+        }
+        end = steady_clock::now() + milliseconds(500);
+        while (steady_clock::now() < end) {
+            // 打包交易
+        }
     }
 }
 

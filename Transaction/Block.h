@@ -22,6 +22,8 @@ struct Block {
     vector<array<uint8_t,176>> txs;
 };
 
+unordered_map<uint64_t,Block> blockPool;
+mutex blockMutex;
 // -----------------------------------------------------------------------区块序列化/反序列化-------------------------------------------------------------------------------------------------
 array<uint8_t,80> SerializeBlockHeader(const Block& block) {
     array<uint8_t,80> header{};
@@ -161,6 +163,9 @@ void ProcessBlock(vector<uint8_t> blockByte) {
         return;
     }
     Block block=UnSerializeBlock(blockByte);
+    if (blockPool.count(block.height)!=0) {
+
+    }
     // 更新当前区块 Hash 和 高度
     DBWriteBlockHeight(block.height);
     DBWriteCurrentBlock(block.hash);

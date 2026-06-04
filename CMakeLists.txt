@@ -20,6 +20,8 @@ target_link_libraries(test PRIVATE ws2_32 mswsock )
 
 
 add_executable(sender Sender/Sender.cpp)
+add_executable(crypto Crypto/CryptoTest.cpp)
 
 target_include_directories(sender PRIVATE D:/Project/Includes/boost_1_91_0)
 target_link_libraries(sender PRIVATE ws2_32  mswsock RocksDB::rocksdb sodium spdlog::spdlog )
+target_link_libraries(crypto PRIVATE ws2_32  mswsock RocksDB::rocksdb sodium spdlog::spdlog )

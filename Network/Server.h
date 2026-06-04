@@ -13,6 +13,7 @@
 #include "../Transaction/Block.h"
 #include "../Transaction/Transaction.h"
 #include "../Crypto/VRF.h"
+
 using namespace boost::asio;
 using namespace std;
 using namespace nlohmann;
@@ -113,6 +114,20 @@ awaitable<void> session(uint64_t key,shared_ptr<Peer> peer) {
         // type = 9 接收节点数据返回
         else if (type == 9) {
             ProcessDiscoverMessage(message);
+        }
+        // type = 10 收到带时间戳的打包交易消息，进行处理并发送 ACK 消息
+        //
+        else if (type == 10) {
+            auto T2 = GetTime();
+            ProcessTxPackage(message);
+            auto time = GenerateTxTimeACKMessage(T2);
+            SendData(peer,time);
+        }
+        // type = 11 打包交易消息的 ACK
+        else if (type == 11) {
+            auto T4 = system_clock::now();
+            ProcessTxTimeACKMessage(message,T4,peer);
+
         }
         // 其余消息逻辑需要解决
     }

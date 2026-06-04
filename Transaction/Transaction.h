@@ -114,4 +114,21 @@ void ProcessTx(array<uint8_t,176> txbyte) {
     txpool[GetTransactionHash(txbyte)] = txbyte;
 }
 // 出块后的交易处理函数：把交易存储到本地的 RockDB 而不是交易池，见出块函数逻辑，此处不再单独编写一个函数。
+
+// 处理交易包函数
+void ProcessTxPackage(vector<uint8_t> data) {
+    int offset = 0;
+    int l = data.size()/176;
+    array<uint8_t,32> hash;
+    lock_guard lock(txpoolMutex);
+    for (int i=0;i<=l-1;i++) {
+        memcpy(hash.data(),data.data()+offset+80,32);
+        array<uint8_t,176> tx;
+        memcpy(tx.data(),data.data()+offset,176);
+        if (txpool.count(hash)==0) {
+            txpool[hash]=tx;
+        }
+    }
+}
+
 #endif //CHAIN_TRANSACTION_H
