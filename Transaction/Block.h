@@ -65,18 +65,20 @@ vector<uint8_t> GenerateBlock() {
     block.previousHash=DBReadCurrentBlock();
     vector<array<uint8_t,32>> txhashs;
     // 此处加锁是因为一个线程在添加交易到交易池，另一个线程产生区块。
-    lock_guard<mutex> lock(txpoolMutex);
     if (txpool.size()==0) {
         vector<uint8_t> txbyte{};
         return txbyte;
     }
-    int num = 0;
-    for (auto kv =txpool.begin(); kv != txpool.end(); ) {
-        if (num==6000)break;
-        block.txs.emplace_back(kv->second);
-        txhashs.push_back(kv->first);
-        kv = txpool.erase(kv);
-        num++;
+    {
+        lock_guard<mutex> lock(txpoolMutex);
+        int num = 0;
+        for (auto kv =txpool.begin(); kv != txpool.end(); ) {
+            if (num==6000)break;
+            block.txs.emplace_back(kv->second);
+            txhashs.push_back(kv->first);
+            kv = txpool.erase(kv);
+            num++;
+        }
     }
     block.merkleRoot=MerkleCompute(txhashs);
     block.height=epoch;
