@@ -163,7 +163,7 @@ void ProcessBlock(vector<uint8_t> blockByte) {
     }
     // 3.判断是否放入缓存 0 < block.height - height < 3
     //  （1）交易多被选中 （2）交易相等，则 Hash 小的被选中
-    if (block.height - epoch >0 && block.height - epoch <=3) {
+    if (block.height - epoch >=0 && block.height - epoch <=2) {
         if ((block.txNum > BlockBuffer[block.height - epoch].first.txNum) || block.txNum == BlockBuffer[block.height].first.txNum&&block.hash < BlockBuffer[block.height].first.hash) {
             BlockBuffer[block.height - epoch].first = block;
             BlockBuffer[block.height - epoch].second = blockByte;
@@ -173,17 +173,7 @@ void ProcessBlock(vector<uint8_t> blockByte) {
 
 }
 
-void PeriodSendBlock() {
-    while (true) {
-        this_thread::sleep_for(std::chrono::milliseconds(500));
-        auto data=GenerateBlock();
-        if (data.size()==0) {
-            this_thread::sleep_for(std::chrono::milliseconds(500));
-            continue;
-        }
-        ProcessBlock(data);
-    }
-}
+
 void PeriodTxMonitor() {
     sleep(1);
     {

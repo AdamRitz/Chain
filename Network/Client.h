@@ -270,13 +270,20 @@ void MainLoop() {
     auto bias = steady_clock::now()-steady_clock::now();
     while (true) {
         // 等待 200 ms
-        auto end = steady_clock::now() + milliseconds(200);
+        auto end = steady_clock::now() + milliseconds(100);
         while (steady_clock::now()+bias < end) {
             this_thread::sleep_for(milliseconds(10));
         }
 
         // 500 ms 处理区块
         end = steady_clock::now() + milliseconds(500);
+        auto data=GenerateBlock();
+        if (data.size()==0) {
+            this_thread::sleep_for(std::chrono::milliseconds(500));
+            continue;
+        }
+        ProcessBlock(data);
+
         pair<Block,vector<uint8_t>> block;
         // 更新当前区块 Hash 和 高度
         {
@@ -284,6 +291,7 @@ void MainLoop() {
             block = BlockBuffer[0];
             BlockBuffer[0]=BlockBuffer[1];
             BlockBuffer[1]=BlockBuffer[2];
+            epoch=epoch+1;
         }
         // 验证 previousHash
         array<uint8_t, 32> previousHash=DBReadCurrentBlock();

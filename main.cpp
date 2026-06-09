@@ -83,8 +83,7 @@ int main(int argc,char* argv[]) {
     //thread t2(Sender);
     // 启动打包线程
 
-    thread t1(PeriodSendBlock);
-    t1.detach();
+
     thread t2(MainLoop);
     t2.detach();
     for (auto& t : threads) {
