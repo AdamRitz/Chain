@@ -11,7 +11,7 @@
 #include <nlohmann/json.hpp>
 #include <optional>
 #include <spdlog/spdlog.h>
-
+#include "../Transaction/Block.h"
 #include "../Message/Message.h"
 
 using namespace boost::asio;
@@ -168,20 +168,7 @@ awaitable<void> SyncBlock() {
         }
     }
 }
-void OpenShareTxTimeMode() {
-    while (true) {
-        unordered_map<uint64_t,shared_ptr<Peer>> peers;
-        {
-            lock_guard lock(peerMutex);
-            peers = peerPool;
-        }
-        for (auto i : peers) {
-            SendData(i.second,GenerateTxTimeMessage());
-            i.second->T1=system_clock::now();
-        }
-        sleep(2);
-    }
-}
+
 // -----------------------------------------------------------消息函数---------------------------------------------------------------------------------------------
 // 节点发现消息生成函数：当一个节点向本节点请求节点信息时候，返回此数据。
 // 主要作用为打包节点池的数据，序列化为 vector。
@@ -190,13 +177,15 @@ vector<uint8_t> GenerateDiscoverMessage() {
     vector<uint8_t> message;
     lock_guard lock(peerMutex);
     uint32_t size = peerPool.size()*6;
+    message.resize(size);
+
     int offset = 0;
     uint8_t type = 9;
     memcpy(message.data(),&type,1);
     offset += 1;
     memcpy(message.data(),&size,4);
     offset += 4;
-    message.resize(size);
+
     // 消息体填充
     for (auto i : peerPool) {
         memcpy(message.data()+offset,i.second->socket.remote_endpoint().address().to_v4().to_bytes().data(),4);
@@ -223,7 +212,31 @@ awaitable<void> ProcessDiscoverMessage(vector<uint8_t> message) {
         co_spawn(executor,Connect(ipByte,port));
     }
 }
-
+vector<uint8_t> GenerateTxTimeMessage() {
+    // 复制交易池
+    unordered_map<array<uint8_t, 32>, array<uint8_t, 176>, GetMapHash> txPoolCopy;
+    vector<uint8_t> message;
+    {
+        lock_guard lock(txpoolMutex);
+        txPoolCopy = txpool;
+    }
+    int num = txPoolCopy.size();
+    message.resize(5+num*176);
+    // 填充 type
+    uint8_t type = 10;
+    int offset = 0;
+    memcpy(message.data()+offset,&type,1);
+    offset += 1;
+    // 填充 length
+    uint32_t length=64;
+    memcpy(message.data()+offset,&length,4);
+    // 填充消息体
+    for (auto pair: txPoolCopy) {
+        memcpy(message.data()+offset,pair.second.data(),pair.second.size());
+        offset += pair.second.size();
+    }
+    return message;
+}
 // 填充交易
 void ProcessTxTimeACKMessage(vector<uint8_t> message,system_clock::time_point T4,shared_ptr<Peer> peer) {
     long long T2Data,T3Data;
@@ -236,18 +249,71 @@ void ProcessTxTimeACKMessage(vector<uint8_t> message,system_clock::time_point T4
 }
 
 // -----------------------------------------------------------循环函数---------------------------------------------------------------------------------------------
-
-awaitable<void> MainLoop() {
-    auto executor = co_await this_coro::executor;
+// 需要实现的有：过时的区块不再接收 - 过时的定义为 如当前高度为 L，则小于等于 L 的区块都不接收 逻辑已经实现在 ProcessBlock
+//
+void OpenShareTxTimeMode() {
     while (true) {
+        unordered_map<uint64_t,shared_ptr<Peer>> peers;
+        {
+            lock_guard lock(peerMutex);
+            peers = peerPool;
+        }
+        for (auto i : peers) {
+            SendData(i.second,GenerateTxTimeMessage());
+            i.second->T1=system_clock::now();
+        }
+        sleep(2);
+    }
+}
+void MainLoop() {
+
+    auto bias = steady_clock::now()-steady_clock::now();
+    while (true) {
+        // 等待 200 ms
         auto end = steady_clock::now() + milliseconds(200);
+        while (steady_clock::now()+bias < end) {
+            this_thread::sleep_for(milliseconds(10));
+        }
+
+        // 500 ms 处理区块
+        end = steady_clock::now() + milliseconds(500);
+        pair<Block,vector<uint8_t>> block;
+        // 更新当前区块 Hash 和 高度
+        {
+            lock_guard lock(blockBufferLock);
+            block = BlockBuffer[0];
+            BlockBuffer[0]=BlockBuffer[1];
+            BlockBuffer[1]=BlockBuffer[2];
+        }
+        // 验证 previousHash
+        array<uint8_t, 32> previousHash=DBReadCurrentBlock();
+        if (block.first.previousHash==previousHash) {
+            DBWriteBlockHeight(block.first.height);
+            auto height  =block.first.height ;
+            DBWriteCurrentBlock(block.first.hash);
+            // 写入区块
+            DBWriteBlockALL(block.first.hash,block.second);
+            int num = 0;
+            // 写入交易
+            for (auto tx : block.first.txs) {
+                num++;
+                array<uint8_t,32> txHash;
+                memcpy(txHash.data(),tx.data()+80,32);
+                DBWriteTx(txHash,tx);
+            }
+            spdlog::info("New Block Confirmed! Height:{},TxNum:{},Hash:{}",block.first.height,num,U32ToHex(block.first.hash));
+            while (steady_clock::now() < end) {
+                // 等待时间流逝
+            }
+        }
+        bias = steady_clock::now()-steady_clock::now();
+        if (steady_clock::now() > end) {
+            bias = bias + (steady_clock::now()-end);
+        }
         while (steady_clock::now() < end) {
             this_thread::sleep_for(milliseconds(10));
         }
-        end = steady_clock::now() + milliseconds(500);
-        while (steady_clock::now() < end) {
-            // 打包交易
-        }
+
     }
 }
 

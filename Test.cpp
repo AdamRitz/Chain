@@ -120,12 +120,12 @@ struct Number {
         return  result;
     }
 };
-
+#include <yaml-cpp/yaml.h>
 #include <chrono>
 using namespace chrono;
 
 int main() {
-    time_point a = steady_clock::now();
-    std::cout << duration_cast<nanoseconds>(a.time_since_epoch()).count();
+    YAML::Node config = YAML::LoadFile("../config.yaml");
+    std::cout<<config["node"]["id"].as<int>();
 
 }

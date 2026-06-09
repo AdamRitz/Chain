@@ -1,0 +1,4 @@
+node:
+  port: 8089
+  id: 1
+  name: Watson

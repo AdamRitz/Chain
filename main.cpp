@@ -11,6 +11,7 @@
 #include "Transaction/Block.h"
 #include <spdlog/spdlog.h>
 #include "./Time/Time.h"
+#include<yaml-cpp/yaml.h>
 using namespace std;
 using namespace nlohmann;
 io_context io;
@@ -62,12 +63,13 @@ void Sender() {
 
 }
 int main(int argc,char* argv[]) {
+    YAML::Node config=YAML::LoadFile("../config.yaml");
     spdlog::info("node starting...");
     // 初始化区域
     InitSodium(); // 初始化随机数
     InitDB(); // 初始化数据库
     InitWallet(); // 初始化钱包
-    co_spawn(io,Listen(8089),detached); // 启动服务端
+    co_spawn(io,Listen(config["node"]["port"].as<int>()),detached); // 启动服务端
     //co_spawn(io,ConnectSeed(),detached); // 启动客户端
     // 初始化多线程
     auto guard = make_work_guard(io);
@@ -83,6 +85,8 @@ int main(int argc,char* argv[]) {
 
     thread t1(PeriodSendBlock);
     t1.detach();
+    thread t2(MainLoop);
+    t2.detach();
     for (auto& t : threads) {
         t.join();
     }

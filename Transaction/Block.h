@@ -21,9 +21,12 @@ struct Block {
     // 交易数据
     vector<array<uint8_t,176>> txs;
 };
-
+uint64_t epoch = 2;
+pair<Block,vector<uint8_t>> BlockBuffer[3];
+mutex blockBufferLock;
 unordered_map<uint64_t,Block> blockPool;
 mutex blockMutex;
+
 // -----------------------------------------------------------------------区块序列化/反序列化-------------------------------------------------------------------------------------------------
 array<uint8_t,80> SerializeBlockHeader(const Block& block) {
     array<uint8_t,80> header{};
@@ -38,7 +41,6 @@ array<uint8_t,80> SerializeBlockHeader(const Block& block) {
     offset += 8;
     return header;
 }
-
 
 Block UnSerializeBlock(const vector<uint8_t>& blockByte) {
     Block block{};
@@ -77,7 +79,7 @@ vector<uint8_t> GenerateBlock() {
         num++;
     }
     block.merkleRoot=MerkleCompute(txhashs);
-    block.height=DBReadBlockHeight()+1;
+    block.height=epoch;
     block.txNum=block.txs.size();
     array<uint8_t,80> blockHeaderByte= SerializeBlockHeader(block);
     crypto_generichash(block.hash.data(),32,blockHeaderByte.data(),80,nullptr,0);
@@ -98,16 +100,7 @@ vector<uint8_t> GenerateBlock() {
 bool VerifyBlock(vector<uint8_t> blockByte) {
     // 反序列化
     Block block=UnSerializeBlock(blockByte);
-    // 高度判断
-    int height=DBReadBlockHeight();
-    if (block.height<=height) {
-        return false;
-    }
-    // 验证 previousHash
-    array<uint8_t, 32> previousHash=DBReadCurrentBlock();
-    if (block.previousHash!=previousHash) {
-        return false;
-    }
+
     // 验证 Hash
     auto blockHeader = SerializeBlockHeader(block);
     array<uint8_t,32> hash;
@@ -130,6 +123,7 @@ bool VerifyBlock(vector<uint8_t> blockByte) {
     }
     return true;
 }
+
 // 创世块生成
 void GenerateGenesisBlock() {
     Block block;
@@ -155,31 +149,27 @@ void GenerateGenesisBlock() {
 
 
 // -----------------------------------------------------------------------核心入口函数：区块处理/定时打包区块-------------------------------------------------------
-// 网络中收到区块时交给该入口函数处理，成功后记录区块
+// 网络中收到区块时交给该入口函数处理，此处只把区块放入 blockBuffer，不写入区块链。由主定时函数定时读取 blockBuffer 写入区块链。
 void ProcessBlock(vector<uint8_t> blockByte) {
-    // 验证区块
+    // 1.验证区块
     if (VerifyBlock(blockByte)== false) {
         spdlog::info("Block Verification Failed");
         return;
     }
+    // 2.反序列化
     Block block=UnSerializeBlock(blockByte);
     if (blockPool.count(block.height)!=0) {
 
     }
-    // 更新当前区块 Hash 和 高度
-    DBWriteBlockHeight(block.height);
-    DBWriteCurrentBlock(block.hash);
-    // 写入区块
-    DBWriteBlockALL(block.hash,blockByte);
-    int num = 0;
-    // 写入交易
-    for (auto tx : block.txs) {
-        num++;
-        array<uint8_t,32> txHash;
-        memcpy(txHash.data(),tx.data()+80,32);
-        DBWriteTx(txHash,tx);
+    // 3.判断是否放入缓存 0 < block.height - height < 3
+    //  （1）交易多被选中 （2）交易相等，则 Hash 小的被选中
+    if (block.height - epoch >0 && block.height - epoch <=3) {
+        if ((block.txNum > BlockBuffer[block.height - epoch].first.txNum) || block.txNum == BlockBuffer[block.height].first.txNum&&block.hash < BlockBuffer[block.height].first.hash) {
+            BlockBuffer[block.height - epoch].first = block;
+            BlockBuffer[block.height - epoch].second = blockByte;
+        }
     }
-    spdlog::info("New Block Confirmed! Height:{},TxNum:{},Hash:{}",block.height,num,U32ToHex(block.hash));
+
 
 }
 
