@@ -8,6 +8,8 @@
 #include <cstdint>
 #include "../Key/Key.h"
 #include "../DB/DB.h"
+#include "Remotery.h"
+
 using namespace std;
 // -----------------------------------------------------------------------交易/交易池定义-------------------------------------------------------------------------------------------------
 struct Transaction {
@@ -106,6 +108,7 @@ array<uint8_t,32> GetTransactionHash(const array<uint8_t,176>& txByte) {
 // -------------------------------------------------------------------交易处理入口---------------------------------------------------------------------------------------------------
 // 网络中收到交易后通过该入口函数处理，成功后放入交易池
 void ProcessTx(array<uint8_t,176> txbyte) {
+    rmt_ScopedCPUSample(ProcessTx, RMTSF_Aggregate);
     // 交易验证失败就不进行处理。
     if (!VerifyTransaction(txbyte)) {
         return;

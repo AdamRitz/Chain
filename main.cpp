@@ -12,6 +12,7 @@
 #include <spdlog/spdlog.h>
 #include "./Time/Time.h"
 #include<yaml-cpp/yaml.h>
+#include "Remotery.h"
 using namespace std;
 using namespace nlohmann;
 io_context io;
@@ -63,6 +64,10 @@ void Sender() {
 
 }
 int main(int argc,char* argv[]) {
+    Remotery* rmt = nullptr;
+    rmt_CreateGlobalInstance(&rmt);
+    rmt_SetCurrentThreadName("main");
+
     YAML::Node config=YAML::LoadFile("../config.yaml");
     spdlog::info("node starting...");
     // 初始化区域

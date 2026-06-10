@@ -13,7 +13,7 @@
 #include "../Transaction/Block.h"
 #include "../Transaction/Transaction.h"
 #include "../Crypto/VRF.h"
-
+#include "Remotery.h"
 using namespace boost::asio;
 using namespace std;
 using namespace nlohmann;
@@ -30,14 +30,18 @@ awaitable<void> session(uint64_t key,shared_ptr<Peer> peer) {
         // 消息类型大小为 1 字节 uint8_t
         // 消息大小字段为 4 字节 uint32_t
         // 此处必须用 async_read 而不能用 async_read_some ，后者只是从 Socket 读取一些数据就返回（TCP 半包问题）。前者是必须读取到多少字节才返回。
-        co_await async_read(peer->socket,buffer(header), redirect_error(use_awaitable, ec));
+
+            co_await async_read(peer->socket,buffer(header), redirect_error(use_awaitable, ec));
+
+
         if (ec) {
             spdlog::info("Client Disconnected");
             peer->socket.close();
             RemovePeer(key);
             co_return;
         }
-        // 处理消息头
+
+             // 处理消息头
         uint8_t type = 0;
         uint32_t size = 0;
         int offset = 0;
@@ -49,6 +53,8 @@ awaitable<void> session(uint64_t key,shared_ptr<Peer> peer) {
         vector<uint8_t> message;
         message.resize(size);
         co_await async_read(peer->socket,buffer(message), redirect_error(use_awaitable, ec));
+        {
+            rmt_ScopedCPUSample(NetworkMessageProcess, RMTSF_Aggregate);
         // type = 1 代表交易消息
         if (type == 1) {
             if (size != 176) {spdlog::info("Read Wrong Tx");continue;}
@@ -131,6 +137,8 @@ awaitable<void> session(uint64_t key,shared_ptr<Peer> peer) {
         }
         // 其余消息逻辑需要解决
     }
+        }
+
 }
 
 awaitable<void> Listen(unsigned short port) {

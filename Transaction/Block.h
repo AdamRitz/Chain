@@ -10,6 +10,7 @@
 #include "../Key/Key.h"
 #include "../DB/DB.h"
 #include "../Crypto/MerkleTree.h"
+#include "Remotery.h"
 // -----------------------------------------------------------------------区块定义-------------------------------------------------------------------------------------------------
 struct Block {
     // 区块头 80 字节
@@ -153,6 +154,7 @@ void GenerateGenesisBlock() {
 // -----------------------------------------------------------------------核心入口函数：区块处理/定时打包区块-------------------------------------------------------
 // 网络中收到区块时交给该入口函数处理，此处只把区块放入 blockBuffer，不写入区块链。由主定时函数定时读取 blockBuffer 写入区块链。
 void ProcessBlock(vector<uint8_t> blockByte) {
+    rmt_ScopedCPUSample(ProcessBlock, RMTSF_Aggregate);
     // 1.验证区块
     if (VerifyBlock(blockByte)== false) {
         spdlog::info("Block Verification Failed");
@@ -166,7 +168,7 @@ void ProcessBlock(vector<uint8_t> blockByte) {
     // 3.判断是否放入缓存 0 < block.height - height < 3
     //  （1）交易多被选中 （2）交易相等，则 Hash 小的被选中
     if (block.height - epoch >=0 && block.height - epoch <=2) {
-        if ((block.txNum > BlockBuffer[block.height - epoch].first.txNum) || block.txNum == BlockBuffer[block.height].first.txNum&&block.hash < BlockBuffer[block.height].first.hash) {
+        if ((block.txNum > BlockBuffer[block.height - epoch].first.txNum) || block.txNum == BlockBuffer[block.height - epoch].first.txNum&&block.hash < BlockBuffer[block.height].first.hash) {
             BlockBuffer[block.height - epoch].first = block;
             BlockBuffer[block.height - epoch].second = blockByte;
         }

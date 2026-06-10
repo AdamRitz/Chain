@@ -6,13 +6,19 @@ set(CMAKE_PREFIX_PATH "D:/Software/Code/Language/MinGW64/ucrt64")
 add_executable(boost main.cpp)
 # 添加头文件搜索目录
 target_include_directories(boost PRIVATE D:/Project/Includes/boost_1_91_0)
+add_library(remotery STATIC
+        D:/Software/Remotery/Remotery-main/Remotery-main/lib/Remotery.c
+)
 
+target_include_directories(remotery PUBLIC
+        D:/Software/Remotery/Remotery-main/Remotery-main/lib/
+)
 find_package(yaml-cpp CONFIG REQUIRED)
 find_package(RocksDB CONFIG REQUIRED)
 find_package(spdlog REQUIRED)
 
 # 链接头文件
-target_link_libraries(boost PRIVATE ws2_32  mswsock RocksDB::rocksdb sodium spdlog::spdlog yaml-cpp)
+target_link_libraries(boost PRIVATE  remotery ws2_32  mswsock RocksDB::rocksdb sodium spdlog::spdlog yaml-cpp  winmm )
 
 
 add_executable(test Test.cpp)
@@ -24,5 +30,5 @@ add_executable(sender Sender/Sender.cpp)
 add_executable(crypto Crypto/CryptoTest.cpp)
 
 target_include_directories(sender PRIVATE D:/Project/Includes/boost_1_91_0)
-target_link_libraries(sender PRIVATE ws2_32  mswsock RocksDB::rocksdb sodium spdlog::spdlog )
+target_link_libraries(sender PRIVATE remotery ws2_32  mswsock RocksDB::rocksdb sodium spdlog::spdlog  winmm )
 target_link_libraries(crypto PRIVATE ws2_32  mswsock RocksDB::rocksdb sodium spdlog::spdlog )
