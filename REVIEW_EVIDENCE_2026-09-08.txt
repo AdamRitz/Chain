@@ -1,0 +1,614 @@
+Chain 审查验证记录 — 2026-09-08
+目标: D:\Project\Chain
+基准 HEAD: 1ad2b6c3f589e4a9adddc62c38c246ae817188b0；以当前未提交工作区为准。
+仅在 Codex work 目录构建与运行探针，未启动原节点，未写原数据库。
+构建: CMake 4.0.2 / GCC 15.2.0 / Ninja 1.12.1 / Debug；4 个目标均成功；CTest Total Tests: 0。
+探针退出码 0 表示 8 项缺陷均复现，不代表正确性测试通过。
+独立探针关闭 Remotery，并直接包含原项目头文件；辅助标准库 include 仅用于让头文件脱离主入口编译。
+探针第一次使用 -lrocksdb 链接未通过，最终采用原 CMake 目标使用的 librocksdb.a 及其依赖后通过；下面保留最终构建和运行结果。
+
+构建复现命令（PowerShell，在本次 Codex 工作目录执行）:
+$env:PATH = 'D:\Software\Code\Language\MinGW64\ucrt64\bin;' + $env:PATH
+& 'D:\Software\Code\IDE\CLion 2025.2.5\bin\cmake\win\x64\bin\cmake.exe' -S 'D:/Project/Chain' -B 'work/chain-review-build' -G Ninja '-DCMAKE_MAKE_PROGRAM=D:/Software/Code/IDE/CLion 2025.2.5/bin/ninja/win/x64/ninja.exe' '-DCMAKE_CXX_COMPILER=D:/Software/Code/Language/MinGW64/ucrt64/bin/g++.exe' '-DCMAKE_C_COMPILER=D:/Software/Code/Language/MinGW64/ucrt64/bin/gcc.exe' -DCMAKE_BUILD_TYPE=Debug
+& 'D:\Software\Code\IDE\CLion 2025.2.5\bin\cmake\win\x64\bin\cmake.exe' --build work/chain-review-build --parallel 2
+& 'D:\Software\Code\IDE\CLion 2025.2.5\bin\cmake\win\x64\bin\ctest.exe' --test-dir work/chain-review-build -N
+
+探针编译命令（先把下方探针源码保存为 work/review_probe.cpp）:
+& 'D:\Software\Code\Language\MinGW64\ucrt64\bin\g++.exe' -std=c++20 -O0 -g -DRMT_ENABLED=0 -DSPDLOG_COMPILED_LIB -DSPDLOG_FMT_EXTERNAL -DSPDLOG_SHARED_LIB '-ID:/Software/Remotery/Remotery-main/Remotery-main/lib' work/review_probe.cpp -o work/review_probe.exe 'D:/Software/Code/Language/MinGW64/ucrt64/lib/librocksdb.a' -lsodium -lspdlog -lfmt -lsnappy -lz -lbz2 -llz4 -lzstd -lshlwapi -lrpcrt4
+
+探针只能在新建的隔离工作目录运行：它会在进程当前目录中创建/写入 test 数据库。
+New-Item -ItemType Directory -Force -Path work/probe-runtime | Out-Null
+Push-Location work/probe-runtime
+try { & '../review_probe.exe' } finally { Pop-Location }
+
+========== 配置日志 ==========
+-- The C compiler identification is GNU 15.2.0
+-- The CXX compiler identification is GNU 15.2.0
+-- Detecting C compiler ABI info
+-- Detecting C compiler ABI info - done
+-- Check for working C compiler: D:/Software/Code/Language/MinGW64/ucrt64/bin/gcc.exe - skipped
+-- Detecting C compile features
+-- Detecting C compile features - done
+-- Detecting CXX compiler ABI info
+-- Detecting CXX compiler ABI info - done
+-- Check for working CXX compiler: D:/Software/Code/Language/MinGW64/ucrt64/bin/g++.exe - skipped
+-- Detecting CXX compile features
+-- Detecting CXX compile features - done
+-- Found ZLIB: D:/Software/Code/Language/MinGW64/ucrt64/lib/libz.dll.a (found version "1.3.1")
+-- Found BZip2: D:/Software/Code/Language/MinGW64/ucrt64/lib/libbz2.dll.a (found version "1.0.8")
+-- Looking for BZ2_bzCompressInit
+-- Looking for BZ2_bzCompressInit - found
+-- Found lz4: D:/Software/Code/Language/MinGW64/ucrt64/lib/liblz4.dll.a
+-- Found zstd: D:/Software/Code/Language/MinGW64/ucrt64/lib/libzstd.dll.a
+-- Performing Test CMAKE_HAVE_LIBC_PTHREAD
+-- Performing Test CMAKE_HAVE_LIBC_PTHREAD - Success
+-- Found Threads: TRUE
+-- Configuring done (5.8s)
+CMake Warning (dev) at CMakeLists.txt:21 (target_link_libraries):
+  The library that is being linked to, yaml-cpp, is marked as being
+  deprecated by the owner.  The message provided by the developer is:
+
+  The target yaml-cpp is deprecated and will be removed in version 0.10.0.
+  Use the yaml-cpp::yaml-cpp target instead.
+
+This warning is for project developers.  Use -Wno-dev to suppress it.
+
+CMake Warning (dev) at CMakeLists.txt:21 (target_link_libraries):
+  The library that is being linked to, yaml-cpp, is marked as being
+  deprecated by the owner.  The message provided by the developer is:
+
+  The target yaml-cpp is deprecated and will be removed in version 0.10.0.
+  Use the yaml-cpp::yaml-cpp target instead.
+
+This warning is for project developers.  Use -Wno-dev to suppress it.
+
+CMake Warning (dev) at CMakeLists.txt:26 (target_link_libraries):
+  The library that is being linked to, yaml-cpp, is marked as being
+  deprecated by the owner.  The message provided by the developer is:
+
+  The target yaml-cpp is deprecated and will be removed in version 0.10.0.
+  Use the yaml-cpp::yaml-cpp target instead.
+
+This warning is for project developers.  Use -Wno-dev to suppress it.
+
+CMake Warning (dev) at CMakeLists.txt:26 (target_link_libraries):
+  The library that is being linked to, yaml-cpp, is marked as being
+  deprecated by the owner.  The message provided by the developer is:
+
+  The target yaml-cpp is deprecated and will be removed in version 0.10.0.
+  Use the yaml-cpp::yaml-cpp target instead.
+
+This warning is for project developers.  Use -Wno-dev to suppress it.
+
+CMake Warning (dev) at CMakeLists.txt:21 (target_link_libraries):
+  The library that is being linked to, yaml-cpp, is marked as being
+  deprecated by the owner.  The message provided by the developer is:
+
+  The target yaml-cpp is deprecated and will be removed in version 0.10.0.
+  Use the yaml-cpp::yaml-cpp target instead.
+
+This warning is for project developers.  Use -Wno-dev to suppress it.
+
+CMake Warning (dev) at CMakeLists.txt:21 (target_link_libraries):
+  The library that is being linked to, yaml-cpp, is marked as being
+  deprecated by the owner.  The message provided by the developer is:
+
+  The target yaml-cpp is deprecated and will be removed in version 0.10.0.
+  Use the yaml-cpp::yaml-cpp target instead.
+
+This warning is for project developers.  Use -Wno-dev to suppress it.
+
+CMake Warning (dev) at CMakeLists.txt:26 (target_link_libraries):
+  The library that is being linked to, yaml-cpp, is marked as being
+  deprecated by the owner.  The message provided by the developer is:
+
+  The target yaml-cpp is deprecated and will be removed in version 0.10.0.
+  Use the yaml-cpp::yaml-cpp target instead.
+
+This warning is for project developers.  Use -Wno-dev to suppress it.
+
+CMake Warning (dev) at CMakeLists.txt:26 (target_link_libraries):
+  The library that is being linked to, yaml-cpp, is marked as being
+  deprecated by the owner.  The message provided by the developer is:
+
+  The target yaml-cpp is deprecated and will be removed in version 0.10.0.
+  Use the yaml-cpp::yaml-cpp target instead.
+
+This warning is for project developers.  Use -Wno-dev to suppress it.
+
+CMake Warning (dev) at CMakeLists.txt:21 (target_link_libraries):
+  The library that is being linked to, yaml-cpp, is marked as being
+  deprecated by the owner.  The message provided by the developer is:
+
+  The target yaml-cpp is deprecated and will be removed in version 0.10.0.
+  Use the yaml-cpp::yaml-cpp target instead.
+
+This warning is for project developers.  Use -Wno-dev to suppress it.
+
+CMake Warning (dev) at CMakeLists.txt:26 (target_link_libraries):
+  The library that is being linked to, yaml-cpp, is marked as being
+  deprecated by the owner.  The message provided by the developer is:
+
+  The target yaml-cpp is deprecated and will be removed in version 0.10.0.
+  Use the yaml-cpp::yaml-cpp target instead.
+
+This warning is for project developers.  Use -Wno-dev to suppress it.
+
+CMake Warning (dev) at CMakeLists.txt:21 (target_link_libraries):
+  The library that is being linked to, yaml-cpp, is marked as being
+  deprecated by the owner.  The message provided by the developer is:
+
+  The target yaml-cpp is deprecated and will be removed in version 0.10.0.
+  Use the yaml-cpp::yaml-cpp target instead.
+
+This warning is for project developers.  Use -Wno-dev to suppress it.
+
+CMake Warning (dev) at CMakeLists.txt:21 (target_link_libraries):
+  The library that is being linked to, yaml-cpp, is marked as being
+  deprecated by the owner.  The message provided by the developer is:
+
+  The target yaml-cpp is deprecated and will be removed in version 0.10.0.
+  Use the yaml-cpp::yaml-cpp target instead.
+
+This warning is for project developers.  Use -Wno-dev to suppress it.
+
+CMake Warning (dev) at CMakeLists.txt:26 (target_link_libraries):
+  The library that is being linked to, yaml-cpp, is marked as being
+  deprecated by the owner.  The message provided by the developer is:
+
+  The target yaml-cpp is deprecated and will be removed in version 0.10.0.
+  Use the yaml-cpp::yaml-cpp target instead.
+
+This warning is for project developers.  Use -Wno-dev to suppress it.
+
+CMake Warning (dev) at CMakeLists.txt:26 (target_link_libraries):
+  The library that is being linked to, yaml-cpp, is marked as being
+  deprecated by the owner.  The message provided by the developer is:
+
+  The target yaml-cpp is deprecated and will be removed in version 0.10.0.
+  Use the yaml-cpp::yaml-cpp target instead.
+
+This warning is for project developers.  Use -Wno-dev to suppress it.
+
+-- Generating done (0.1s)
+-- Build files have been written to: C:/Users/61485/Documents/Codex/2026-09-08/yue-d/work/chain-review-build
+
+
+========== 项目构建日志 ==========
+[1/18] Scanning D:/Project/Chain/Test.cpp for CXX dependencies
+[2/18] Scanning D:/Project/Chain/main.cpp for CXX dependencies
+[3/18] Scanning D:/Project/Chain/Crypto/CryptoTest.cpp for CXX dependencies
+[4/18] Generating CXX dyndep file CMakeFiles/boost.dir/CXX.dd
+[5/18] Scanning D:/Project/Chain/Sender/Sender.cpp for CXX dependencies
+[6/18] Generating CXX dyndep file CMakeFiles/test.dir/CXX.dd
+[7/18] Generating CXX dyndep file CMakeFiles/sender.dir/CXX.dd
+[8/18] Generating CXX dyndep file CMakeFiles/crypto.dir/CXX.dd
+[9/18] Building C object CMakeFiles/remotery.dir/D_/Software/Remotery/Remotery-main/Remotery-main/lib/Remotery.c.obj
+[10/18] Linking C static library libremotery.a
+[11/18] Building CXX object CMakeFiles/test.dir/Test.cpp.obj
+[12/18] Building CXX object CMakeFiles/boost.dir/main.cpp.obj
+In file included from D:/Project/Chain/Network/Server.h:11,
+                 from D:/Project/Chain/main.cpp:3:
+D:/Project/Chain/Message/Message.h: In function 'std::vector<unsigned char> GenerateHeightMessage()':
+D:/Project/Chain/Message/Message.h:39:1: warning: no return statement in function returning non-void [-Wreturn-type]
+   39 | }
+      | ^
+In file included from D:/Project/Chain/Network/Server.h:12:
+D:/Project/Chain/Network/Client.h: In function 'boost::asio::awaitable<void> QueryHeight(std::shared_ptr<Peer>&)':
+D:/Project/Chain/Network/Client.h:150:1: warning: no return statement in function returning non-void [-Wreturn-type]
+  150 | }
+      | ^
+D:/Project/Chain/Network/Client.h: In function 'boost::asio::awaitable<void> QueryBlock(std::shared_ptr<Peer>&, uint64_t)':
+D:/Project/Chain/Network/Client.h:158:1: warning: no return statement in function returning non-void [-Wreturn-type]
+  158 | }
+      | ^
+D:/Project/Chain/Network/Client.h: In function 'boost::asio::awaitable<void> SyncBlock()':
+D:/Project/Chain/Network/Client.h:166:23: warning: ignoring returned value of type 'boost::asio::awaitable<void>', declared with attribute 'nodiscard' [-Wunused-result]
+  166 |             QueryBlock(peerPool[0],currentHeight+1);
+      |             ~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+D:/Project/Chain/Network/Client.h:151:17: note: in call to 'boost::asio::awaitable<void> QueryBlock(std::shared_ptr<Peer>&, uint64_t)', declared here
+  151 | awaitable<void> QueryBlock( shared_ptr<Peer>& peer,uint64_t blockNum) {
+      |                 ^~~~~~~~~~
+In file included from D:/Project/Includes/boost_1_91_0/boost/asio.hpp:31,
+                 from D:/Project/Chain/Network/Server.h:9:
+D:/Project/Includes/boost_1_91_0/boost/asio/awaitable.hpp:53:28: note: 'boost::asio::awaitable<void>' declared here
+   53 | class BOOST_ASIO_NODISCARD awaitable
+      |                            ^~~~~~~~~
+D:/Project/Chain/Network/Client.h: In function 'boost::asio::awaitable<void> ProcessDiscoverMessage(std::vector<unsigned char>)':
+D:/Project/Chain/Network/Client.h:212:17: warning: ignoring returned value of type 'boost::asio::deferred_async_operation<void(std::__exception_ptr::exception_ptr), boost::asio::detail::initiate_co_spawn<boost::asio::any_io_executor>, boost::asio::detail::awaitable_as_function<void, boost::asio::any_io_executor> >', declared with attribute 'nodiscard' [-Wunused-result]
+  212 |         co_spawn(executor,Connect(ipByte,port));
+      |         ~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+In file included from D:/Project/Includes/boost_1_91_0/boost/asio/co_spawn.hpp:523,
+                 from D:/Project/Includes/boost_1_91_0/boost/asio.hpp:69:
+D:/Project/Includes/boost_1_91_0/boost/asio/impl/co_spawn.hpp:375:1: note: in call to 'auto boost::asio::co_spawn(const Executor&, awaitable<void, AwaitableExecutor>, CompletionToken&&, constraint_t<((bool)((is_executor<Executor>::value || execution::is_executor<T>::value) && std::is_convertible<_Alloc, _Tp>::value))>) [with Executor = any_io_executor; AwaitableExecutor = any_io_executor; CompletionToken = deferred_t; constraint_t<((bool)((is_executor<Executor>::value || execution::is_executor<T>::value) && std::is_convertible<_Alloc, _Tp>::value))> = int]', declared here
+  375 | co_spawn(const Executor& ex,
+      | ^~~~~~~~
+In file included from D:/Project/Includes/boost_1_91_0/boost/asio/default_completion_token.hpp:91,
+                 from D:/Project/Includes/boost_1_91_0/boost/asio/async_result.hpp:1003,
+                 from D:/Project/Includes/boost_1_91_0/boost/asio/detail/handler_type_requirements.hpp:53,
+                 from D:/Project/Includes/boost_1_91_0/boost/asio/impl/execution_context.hpp:19,
+                 from D:/Project/Includes/boost_1_91_0/boost/asio/execution_context.hpp:586,
+                 from D:/Project/Includes/boost_1_91_0/boost/asio/any_io_executor.hpp:23,
+                 from D:/Project/Includes/boost_1_91_0/boost/asio/any_completion_handler.hpp:20,
+                 from D:/Project/Includes/boost_1_91_0/boost/asio.hpp:21:
+D:/Project/Includes/boost_1_91_0/boost/asio/deferred.hpp:305:28: note: 'boost::asio::deferred_async_operation<void(std::__exception_ptr::exception_ptr), boost::asio::detail::initiate_co_spawn<boost::asio::any_io_executor>, boost::asio::detail::awaitable_as_function<void, boost::asio::any_io_executor> >' declared here
+  305 | class BOOST_ASIO_NODISCARD deferred_async_operation
+      |                            ^~~~~~~~~~~~~~~~~~~~~~~~
+D:/Project/Chain/Network/Client.h: In function 'void MainLoop()':
+D:/Project/Chain/Network/Client.h:324:22: warning: ignoring returned value of type 'boost::asio::awaitable<void>', declared with attribute 'nodiscard' [-Wunused-result]
+  324 |         BroadcastData(GenerateNewBlockMessage(data));
+      |         ~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+D:/Project/Chain/Network/Client.h:93:17: note: in call to 'boost::asio::awaitable<void> BroadcastData(std::vector<unsigned char>)', declared here
+   93 | awaitable<void> BroadcastData(vector<uint8_t> byte) {
+      |                 ^~~~~~~~~~~~~
+D:/Project/Includes/boost_1_91_0/boost/asio/awaitable.hpp:53:28: note: 'boost::asio::awaitable<void>' declared here
+   53 | class BOOST_ASIO_NODISCARD awaitable
+      |                            ^~~~~~~~~
+D:/Project/Chain/Network/Client.h:366:22: warning: ignoring returned value of type 'boost::asio::awaitable<void>', declared with attribute 'nodiscard' [-Wunused-result]
+  366 |         BroadcastData(GenerateHeightMessage());
+      |         ~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~
+D:/Project/Chain/Network/Client.h:93:17: note: in call to 'boost::asio::awaitable<void> BroadcastData(std::vector<unsigned char>)', declared here
+   93 | awaitable<void> BroadcastData(vector<uint8_t> byte) {
+      |                 ^~~~~~~~~~~~~
+D:/Project/Includes/boost_1_91_0/boost/asio/awaitable.hpp:53:28: note: 'boost::asio::awaitable<void>' declared here
+   53 | class BOOST_ASIO_NODISCARD awaitable
+      |                            ^~~~~~~~~
+D:/Project/Chain/Network/Server.h: In function 'boost::asio::awaitable<void> session(uint64_t, std::shared_ptr<Peer>)':
+D:/Project/Chain/Network/Server.h:123:35: warning: ignoring returned value of type 'boost::asio::awaitable<void>', declared with attribute 'nodiscard' [-Wunused-result]
+  123 |             ProcessDiscoverMessage(message);
+      |             ~~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~
+D:/Project/Chain/Network/Client.h:199:17: note: in call to 'boost::asio::awaitable<void> ProcessDiscoverMessage(std::vector<unsigned char>)', declared here
+  199 | awaitable<void> ProcessDiscoverMessage(vector<uint8_t> message) {
+      |                 ^~~~~~~~~~~~~~~~~~~~~~
+D:/Project/Includes/boost_1_91_0/boost/asio/awaitable.hpp:53:28: note: 'boost::asio::awaitable<void>' declared here
+   53 | class BOOST_ASIO_NODISCARD awaitable
+      |                            ^~~~~~~~~
+D:/Project/Chain/main.cpp: In function 'int TestTx()':
+D:/Project/Chain/main.cpp:37:1: warning: no return statement in function returning non-void [-Wreturn-type]
+   37 | }
+      | ^
+In file included from D:/Project/Chain/Network/Server.h:15:
+D:/Project/Chain/Crypto/VRF.h: In function 'std::vector<unsigned char> VRFGen(std::vector<unsigned char>)':
+D:/Project/Chain/Crypto/VRF.h:34:38: warning: ignoring return value of 'int crypto_scalarmult_ed25519_noclamp(unsigned char*, const unsigned char*, const unsigned char*)' declared with attribute 'warn_unused_result' [-Wunused-result]
+   34 |     crypto_scalarmult_ed25519_noclamp(gammar.data(),myVRFWallet.sk.data(),h.data());
+      |     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+D:/Project/Chain/Crypto/VRF.h:53:38: warning: ignoring return value of 'int crypto_scalarmult_ed25519_noclamp(unsigned char*, const unsigned char*, const unsigned char*)' declared with attribute 'warn_unused_result' [-Wunused-result]
+   53 |     crypto_scalarmult_ed25519_noclamp(hx.data(),myVRFWallet.sk.data(),h.data());
+      |     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+D:/Project/Chain/Crypto/VRF.h:63:38: warning: ignoring return value of 'int crypto_scalarmult_ed25519_noclamp(unsigned char*, const unsigned char*, const unsigned char*)' declared with attribute 'warn_unused_result' [-Wunused-result]
+   63 |     crypto_scalarmult_ed25519_noclamp(hk.data(),k.data(),h.data());
+      |     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+D:/Project/Chain/Crypto/VRF.h:81:38: warning: ignoring return value of 'int crypto_scalarmult_ed25519_noclamp(unsigned char*, const unsigned char*, const unsigned char*)' declared with attribute 'warn_unused_result' [-Wunused-result]
+   81 |     crypto_scalarmult_ed25519_noclamp(gammarf.data(),eight.data(),gammar.data());
+      |     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+D:/Project/Chain/Crypto/VRF.h: In function 'bool VRFVerify(std::vector<unsigned char>, std::vector<unsigned char>, std::array<unsigned char, 32>)':
+D:/Project/Chain/Crypto/VRF.h:109:38: warning: ignoring return value of 'int crypto_scalarmult_ed25519_noclamp(unsigned char*, const unsigned char*, const unsigned char*)' declared with attribute 'warn_unused_result' [-Wunused-result]
+  109 |     crypto_scalarmult_ed25519_noclamp(pkc.data(),c.data(),pk.data());
+      |     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+D:/Project/Chain/Crypto/VRF.h:121:38: warning: ignoring return value of 'int crypto_scalarmult_ed25519_noclamp(unsigned char*, const unsigned char*, const unsigned char*)' declared with attribute 'warn_unused_result' [-Wunused-result]
+  121 |     crypto_scalarmult_ed25519_noclamp(gammarc.data(),c.data(),gammar.data());
+      |     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+D:/Project/Chain/Crypto/VRF.h:122:38: warning: ignoring return value of 'int crypto_scalarmult_ed25519_noclamp(unsigned char*, const unsigned char*, const unsigned char*)' declared with attribute 'warn_unused_result' [-Wunused-result]
+  122 |     crypto_scalarmult_ed25519_noclamp(hs.data(),s.data(),h.data());
+      |     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+D:/Project/Chain/Crypto/VRF.h:149:38: warning: ignoring return value of 'int crypto_scalarmult_ed25519_noclamp(unsigned char*, const unsigned char*, const unsigned char*)' declared with attribute 'warn_unused_result' [-Wunused-result]
+  149 |     crypto_scalarmult_ed25519_noclamp(gammarf.data(),eight.data(),gammar.data());
+      |     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+D:/Project/Chain/Network/Client.h: In function 'std::pair<long long unsigned int, std::shared_ptr<Peer> > AddPeer(boost::asio::ip::tcp::socket)':
+D:/Project/Chain/Network/Client.h:48:11: warning: 'void* memcpy(void*, const void*, size_t)' writing 2 bytes into a region of size 0 overflows the destination [-Wstringop-overflow=]
+   48 |     memcpy(&key+4, &port, 2);
+      |     ~~~~~~^~~~~~~~~~~~~~~~~~
+D:/Project/Chain/Network/Client.h:46:14: note: at offset 32 into destination object 'key' of size 8
+   46 |     uint64_t key =0;
+      |              ^~~
+[13/18] Building CXX object CMakeFiles/crypto.dir/Crypto/CryptoTest.cpp.obj
+In file included from D:/Project/Chain/Crypto/CryptoTest.cpp:5:
+D:/Project/Chain/Crypto/VRF.h: In function 'std::vector<unsigned char> VRFGen(std::vector<unsigned char>)':
+D:/Project/Chain/Crypto/VRF.h:34:38: warning: ignoring return value of 'int crypto_scalarmult_ed25519_noclamp(unsigned char*, const unsigned char*, const unsigned char*)' declared with attribute 'warn_unused_result' [-Wunused-result]
+   34 |     crypto_scalarmult_ed25519_noclamp(gammar.data(),myVRFWallet.sk.data(),h.data());
+      |     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+D:/Project/Chain/Crypto/VRF.h:53:38: warning: ignoring return value of 'int crypto_scalarmult_ed25519_noclamp(unsigned char*, const unsigned char*, const unsigned char*)' declared with attribute 'warn_unused_result' [-Wunused-result]
+   53 |     crypto_scalarmult_ed25519_noclamp(hx.data(),myVRFWallet.sk.data(),h.data());
+      |     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+D:/Project/Chain/Crypto/VRF.h:63:38: warning: ignoring return value of 'int crypto_scalarmult_ed25519_noclamp(unsigned char*, const unsigned char*, const unsigned char*)' declared with attribute 'warn_unused_result' [-Wunused-result]
+   63 |     crypto_scalarmult_ed25519_noclamp(hk.data(),k.data(),h.data());
+      |     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+D:/Project/Chain/Crypto/VRF.h:81:38: warning: ignoring return value of 'int crypto_scalarmult_ed25519_noclamp(unsigned char*, const unsigned char*, const unsigned char*)' declared with attribute 'warn_unused_result' [-Wunused-result]
+   81 |     crypto_scalarmult_ed25519_noclamp(gammarf.data(),eight.data(),gammar.data());
+      |     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+D:/Project/Chain/Crypto/VRF.h: In function 'bool VRFVerify(std::vector<unsigned char>, std::vector<unsigned char>, std::array<unsigned char, 32>)':
+D:/Project/Chain/Crypto/VRF.h:109:38: warning: ignoring return value of 'int crypto_scalarmult_ed25519_noclamp(unsigned char*, const unsigned char*, const unsigned char*)' declared with attribute 'warn_unused_result' [-Wunused-result]
+  109 |     crypto_scalarmult_ed25519_noclamp(pkc.data(),c.data(),pk.data());
+      |     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+D:/Project/Chain/Crypto/VRF.h:121:38: warning: ignoring return value of 'int crypto_scalarmult_ed25519_noclamp(unsigned char*, const unsigned char*, const unsigned char*)' declared with attribute 'warn_unused_result' [-Wunused-result]
+  121 |     crypto_scalarmult_ed25519_noclamp(gammarc.data(),c.data(),gammar.data());
+      |     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+D:/Project/Chain/Crypto/VRF.h:122:38: warning: ignoring return value of 'int crypto_scalarmult_ed25519_noclamp(unsigned char*, const unsigned char*, const unsigned char*)' declared with attribute 'warn_unused_result' [-Wunused-result]
+  122 |     crypto_scalarmult_ed25519_noclamp(hs.data(),s.data(),h.data());
+      |     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+D:/Project/Chain/Crypto/VRF.h:149:38: warning: ignoring return value of 'int crypto_scalarmult_ed25519_noclamp(unsigned char*, const unsigned char*, const unsigned char*)' declared with attribute 'warn_unused_result' [-Wunused-result]
+  149 |     crypto_scalarmult_ed25519_noclamp(gammarf.data(),eight.data(),gammar.data());
+      |     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[14/18] Linking CXX executable boost.exe
+[15/18] Linking CXX executable test.exe
+[16/18] Linking CXX executable crypto.exe
+[17/18] Building CXX object CMakeFiles/sender.dir/Sender/Sender.cpp.obj
+In file included from D:/Project/Chain/Network/Client.h:15,
+                 from D:/Project/Chain/Sender/Sender.cpp:13:
+D:/Project/Chain/Message/Message.h: In function 'std::vector<unsigned char> GenerateHeightMessage()':
+D:/Project/Chain/Message/Message.h:39:1: warning: no return statement in function returning non-void [-Wreturn-type]
+   39 | }
+      | ^
+D:/Project/Chain/Network/Client.h: In function 'boost::asio::awaitable<void> QueryHeight(std::shared_ptr<Peer>&)':
+D:/Project/Chain/Network/Client.h:150:1: warning: no return statement in function returning non-void [-Wreturn-type]
+  150 | }
+      | ^
+D:/Project/Chain/Network/Client.h: In function 'boost::asio::awaitable<void> QueryBlock(std::shared_ptr<Peer>&, uint64_t)':
+D:/Project/Chain/Network/Client.h:158:1: warning: no return statement in function returning non-void [-Wreturn-type]
+  158 | }
+      | ^
+D:/Project/Chain/Network/Client.h: In function 'boost::asio::awaitable<void> SyncBlock()':
+D:/Project/Chain/Network/Client.h:166:23: warning: ignoring returned value of type 'boost::asio::awaitable<void>', declared with attribute 'nodiscard' [-Wunused-result]
+  166 |             QueryBlock(peerPool[0],currentHeight+1);
+      |             ~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+D:/Project/Chain/Network/Client.h:151:17: note: in call to 'boost::asio::awaitable<void> QueryBlock(std::shared_ptr<Peer>&, uint64_t)', declared here
+  151 | awaitable<void> QueryBlock( shared_ptr<Peer>& peer,uint64_t blockNum) {
+      |                 ^~~~~~~~~~
+In file included from D:/Project/Includes/boost_1_91_0/boost/asio.hpp:31,
+                 from D:/Project/Chain/Sender/Sender.cpp:5:
+D:/Project/Includes/boost_1_91_0/boost/asio/awaitable.hpp:53:28: note: 'boost::asio::awaitable<void>' declared here
+   53 | class BOOST_ASIO_NODISCARD awaitable
+      |                            ^~~~~~~~~
+D:/Project/Chain/Network/Client.h: In function 'boost::asio::awaitable<void> ProcessDiscoverMessage(std::vector<unsigned char>)':
+D:/Project/Chain/Network/Client.h:212:17: warning: ignoring returned value of type 'boost::asio::deferred_async_operation<void(std::__exception_ptr::exception_ptr), boost::asio::detail::initiate_co_spawn<boost::asio::any_io_executor>, boost::asio::detail::awaitable_as_function<void, boost::asio::any_io_executor> >', declared with attribute 'nodiscard' [-Wunused-result]
+  212 |         co_spawn(executor,Connect(ipByte,port));
+      |         ~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+In file included from D:/Project/Includes/boost_1_91_0/boost/asio/co_spawn.hpp:523,
+                 from D:/Project/Includes/boost_1_91_0/boost/asio.hpp:69:
+D:/Project/Includes/boost_1_91_0/boost/asio/impl/co_spawn.hpp:375:1: note: in call to 'auto boost::asio::co_spawn(const Executor&, awaitable<void, AwaitableExecutor>, CompletionToken&&, constraint_t<((bool)((is_executor<Executor>::value || execution::is_executor<T>::value) && std::is_convertible<_Alloc, _Tp>::value))>) [with Executor = any_io_executor; AwaitableExecutor = any_io_executor; CompletionToken = deferred_t; constraint_t<((bool)((is_executor<Executor>::value || execution::is_executor<T>::value) && std::is_convertible<_Alloc, _Tp>::value))> = int]', declared here
+  375 | co_spawn(const Executor& ex,
+      | ^~~~~~~~
+In file included from D:/Project/Includes/boost_1_91_0/boost/asio/default_completion_token.hpp:91,
+                 from D:/Project/Includes/boost_1_91_0/boost/asio/async_result.hpp:1003,
+                 from D:/Project/Includes/boost_1_91_0/boost/asio/detail/handler_type_requirements.hpp:53,
+                 from D:/Project/Includes/boost_1_91_0/boost/asio/impl/execution_context.hpp:19,
+                 from D:/Project/Includes/boost_1_91_0/boost/asio/execution_context.hpp:586,
+                 from D:/Project/Includes/boost_1_91_0/boost/asio/any_io_executor.hpp:23,
+                 from D:/Project/Includes/boost_1_91_0/boost/asio/any_completion_handler.hpp:20,
+                 from D:/Project/Includes/boost_1_91_0/boost/asio.hpp:21:
+D:/Project/Includes/boost_1_91_0/boost/asio/deferred.hpp:305:28: note: 'boost::asio::deferred_async_operation<void(std::__exception_ptr::exception_ptr), boost::asio::detail::initiate_co_spawn<boost::asio::any_io_executor>, boost::asio::detail::awaitable_as_function<void, boost::asio::any_io_executor> >' declared here
+  305 | class BOOST_ASIO_NODISCARD deferred_async_operation
+      |                            ^~~~~~~~~~~~~~~~~~~~~~~~
+D:/Project/Chain/Network/Client.h: In function 'void MainLoop()':
+D:/Project/Chain/Network/Client.h:324:22: warning: ignoring returned value of type 'boost::asio::awaitable<void>', declared with attribute 'nodiscard' [-Wunused-result]
+  324 |         BroadcastData(GenerateNewBlockMessage(data));
+      |         ~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+D:/Project/Chain/Network/Client.h:93:17: note: in call to 'boost::asio::awaitable<void> BroadcastData(std::vector<unsigned char>)', declared here
+   93 | awaitable<void> BroadcastData(vector<uint8_t> byte) {
+      |                 ^~~~~~~~~~~~~
+D:/Project/Includes/boost_1_91_0/boost/asio/awaitable.hpp:53:28: note: 'boost::asio::awaitable<void>' declared here
+   53 | class BOOST_ASIO_NODISCARD awaitable
+      |                            ^~~~~~~~~
+D:/Project/Chain/Network/Client.h:366:22: warning: ignoring returned value of type 'boost::asio::awaitable<void>', declared with attribute 'nodiscard' [-Wunused-result]
+  366 |         BroadcastData(GenerateHeightMessage());
+      |         ~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~
+D:/Project/Chain/Network/Client.h:93:17: note: in call to 'boost::asio::awaitable<void> BroadcastData(std::vector<unsigned char>)', declared here
+   93 | awaitable<void> BroadcastData(vector<uint8_t> byte) {
+      |                 ^~~~~~~~~~~~~
+D:/Project/Includes/boost_1_91_0/boost/asio/awaitable.hpp:53:28: note: 'boost::asio::awaitable<void>' declared here
+   53 | class BOOST_ASIO_NODISCARD awaitable
+      |                            ^~~~~~~~~
+D:/Project/Chain/Network/Client.h: In function 'std::pair<long long unsigned int, std::shared_ptr<Peer> > AddPeer(boost::asio::ip::tcp::socket)':
+D:/Project/Chain/Network/Client.h:48:11: warning: 'void* memcpy(void*, const void*, size_t)' writing 2 bytes into a region of size 0 overflows the destination [-Wstringop-overflow=]
+   48 |     memcpy(&key+4, &port, 2);
+      |     ~~~~~~^~~~~~~~~~~~~~~~~~
+D:/Project/Chain/Network/Client.h:46:14: note: at offset 32 into destination object 'key' of size 8
+   46 |     uint64_t key =0;
+      |              ^~~
+[18/18] Linking CXX executable sender.exe
+
+
+========== 探针最终编译日志 ==========
+In file included from work/review_probe.cpp:9:
+D:/Project/Chain/Message/Message.h: In function 'std::vector<unsigned char> GenerateHeightMessage()':
+D:/Project/Chain/Message/Message.h:39:1: warning: no return statement in function returning non-void [-Wreturn-type]
+   39 | }
+      | ^
+
+
+========== 探针运行结果 ==========
+modified_amount_accepted=REPRODUCED
+invalid_signature_block_accepted=REPRODUCED
+two_tx_package_keeps_first_only=REPRODUCED
+package_accepts_invalid_signature=REPRODUCED
+block_frame_length_five_too_large=REPRODUCED
+uninitialized_time_is_zero=REPRODUCED
+height_lookup_returns_hash_not_block=REPRODUCED
+genesis_resets_existing_head=REPRODUCED
+reproduced=8/8
+
+
+========== 探针源码 ==========
+#include <iostream>
+#include <iomanip>
+#include <sstream>
+#include <cstring>
+#include <unordered_map>
+#include <mutex>
+#include <unistd.h>
+#include "D:/Project/Chain/Transaction/Block.h"
+#include "D:/Project/Chain/Message/Message.h"
+
+int observed = 0;
+void check(const char* name, bool reproduces) {
+    std::cout << name << "=" << (reproduces ? "REPRODUCED" : "NOT_REPRODUCED") << '\n';
+    observed += reproduces;
+}
+
+int main() {
+    if (sodium_init() < 0) return 2;
+    spdlog::set_level(spdlog::level::off);
+    auto wallet = GenerateWallet();
+    auto tx = GenerateTx(wallet.public_key, wallet.public_key, 1, 1, wallet);
+    if (!VerifyTransaction(tx)) return 3;
+    auto altered = tx;
+    altered[64] ^= 0x01;
+    std::array<uint8_t, 32> recomputed{};
+    crypto_generichash(recomputed.data(), 32, altered.data(), 80, nullptr, 0);
+    check("modified_amount_accepted", VerifyTransaction(altered) && recomputed != GetTransactionHash(altered));
+
+    auto invalid = tx;
+    invalid[112] ^= 0x01;
+    if (VerifyTransaction(invalid)) return 4;
+    Block block{};
+    block.height = 2;
+    block.txNum = 1;
+    block.merkleRoot = GetTransactionHash(invalid);
+    auto header = SerializeBlockHeader(block);
+    crypto_generichash(block.hash.data(), 32, header.data(), 80, nullptr, 0);
+    std::vector<uint8_t> encoded(112 + 176);
+    std::memcpy(encoded.data(), header.data(), 80);
+    std::memcpy(encoded.data() + 80, block.hash.data(), 32);
+    std::memcpy(encoded.data() + 112, invalid.data(), 176);
+    check("invalid_signature_block_accepted", VerifyBlock(encoded));
+
+    auto tx2 = GenerateTx(wallet.public_key, wallet.public_key, 1, 2, wallet);
+    std::vector<uint8_t> package(352);
+    std::memcpy(package.data(), tx.data(), 176);
+    std::memcpy(package.data() + 176, tx2.data(), 176);
+    txpool.clear();
+    ProcessTxPackage(package);
+    check("two_tx_package_keeps_first_only", txpool.size() == 1 && txpool.count(GetTransactionHash(tx2)) == 0);
+    txpool.clear();
+    ProcessTxPackage(std::vector<uint8_t>(invalid.begin(), invalid.end()));
+    check("package_accepts_invalid_signature", txpool.size() == 1);
+
+    auto framed = GenerateNewBlockMessage(encoded);
+    uint32_t declared = 0;
+    std::memcpy(&declared, framed.data() + 1, 4);
+    check("block_frame_length_five_too_large", declared == framed.size() && declared == framed.size() - 5 + 5);
+    auto time = GetTime();
+    uint64_t timestamp = 1;
+    std::memcpy(&timestamp, time.data(), 8);
+    check("uninitialized_time_is_zero", timestamp == 0);
+
+    // InitDB uses the process working directory; run only in an isolated work folder.
+    InitDB();
+    if (!db) return 5;
+    GenerateGenesisBlock();
+    DBWriteBlockALL(block.hash, encoded);
+    DBWriteCurrentBlock(block.hash);
+    DBWriteBlockHeight(2);
+    auto byHeight = DBReadBlockByHeight("2");
+    check("height_lookup_returns_hash_not_block", byHeight.size() == 32 && byHeight != encoded);
+    GenerateGenesisBlock();
+    check("genesis_resets_existing_head", DBReadBlockHeight() == 1 && DBReadCurrentBlock() != block.hash);
+    db.reset();
+    std::cout << "reproduced=" << observed << "/8\n";
+    return observed == 8 ? 0 : 1;
+}
+
+
+========== 被审查源码 SHA256 与行数 ==========
+[
+  {
+    "Path": "CMakeLists.txt",
+    "SHA256": "A51B84A8D02127009C3E58099476A069E7C30D33711C2A755A1906C8FE3563E8",
+    "Lines": 34
+  },
+  {
+    "Path": "Crypto/CryptoTest.cpp",
+    "SHA256": "BAA167B7EFC9052883142FE8D43B897B2A0DDA5DAA96E27CC040C529086C5AEE",
+    "Lines": 75
+  },
+  {
+    "Path": "Crypto/MerkleTree.h",
+    "SHA256": "380B361ED489A46C2760EAE60382DAA5E82FE597061E272CD31CEEEC145EFB3D",
+    "Lines": 45
+  },
+  {
+    "Path": "Crypto/VRF.h",
+    "SHA256": "88CC22840B7BF599FC99C41E93724B9FA412E98D685E5123D073420F2C5B9842",
+    "Lines": 158
+  },
+  {
+    "Path": "DB/DB.h",
+    "SHA256": "F6D52C792FBA143E83AE1269A1818ACF141F079F4021ACA7355CD1333BC53303",
+    "Lines": 92
+  },
+  {
+    "Path": "ForEfficiency",
+    "SHA256": "7CBF362F4C9BAB404E48F949F5B853245202DD388E6551DD2142233A3055250E",
+    "Lines": 5
+  },
+  {
+    "Path": "Key/Key.h",
+    "SHA256": "36B6E5E26723A5B9EA72C16D004268689889CA8D4FB43FCC7A524E5CEEA0C9F9",
+    "Lines": 26
+  },
+  {
+    "Path": "Message/Message.h",
+    "SHA256": "6BCDC5257F40FC1256C6565C97F2A4FAF1BDDE7A86EE8364981518D3AF631684",
+    "Lines": 93
+  },
+  {
+    "Path": "Network/Client.h",
+    "SHA256": "58D9C81C9D1E097EEC30E5D6D4387869041AE75C9BCBFA42ACE6BE1B6A456392",
+    "Lines": 398
+  },
+  {
+    "Path": "Network/Server.h",
+    "SHA256": "5E0E849233D7B1F5BAC373C0C43C059FAE6E752C2BE2DB7846B9D2439E8174EA",
+    "Lines": 203
+  },
+  {
+    "Path": "Sender/Sender.cpp",
+    "SHA256": "4BB68473C95CC8357BE6B25D50F34E990E63A0847FD66C7510B8D0CFD8247968",
+    "Lines": 74
+  },
+  {
+    "Path": "Test.cpp",
+    "SHA256": "CE6EB870230E4DD4EADD98D963C7726CBB51543A3AD91B8D55E196897738323E",
+    "Lines": 131
+  },
+  {
+    "Path": "Test/TestHash.cpp",
+    "SHA256": "8F67185F32D2E9AF80968D2A1C2303A44845791390C00632EB3782B12E275DAF",
+    "Lines": 150
+  },
+  {
+    "Path": "Test/TxTest.h",
+    "SHA256": "FE0A6592B925F655788777135FE720B895CB4BBBCBC9E98D6C9692F38B337C07",
+    "Lines": 10
+  },
+  {
+    "Path": "Time/Time.h",
+    "SHA256": "C5C8F5216C8AD456195EA8C4BBA07598764452077513457493F5649DB6827934",
+    "Lines": 60
+  },
+  {
+    "Path": "Tool/Tool.h",
+    "SHA256": "4D1ACF253650BB2107521EE533CA886FACFB5AA8526A8E37D5C275E0E528E2C8",
+    "Lines": 34
+  },
+  {
+    "Path": "Transaction/Block.h",
+    "SHA256": "CDBBD777A3126FFF536E5E48E5429B5D672FF458B6BEA8C061D5ACC254C96021",
+    "Lines": 189
+  },
+  {
+    "Path": "Transaction/Transaction.h",
+    "SHA256": "F4AD6A4C886E5E06B00B0F15B8069535F3F76D8B22459BC139A98B260679115A",
+    "Lines": 137
+  },
+  {
+    "Path": "config.yaml",
+    "SHA256": "6B5B4E4DCF95DBF72BE881582E015B232E89EB75E461C3F2BA06532251431274",
+    "Lines": 4
+  },
+  {
+    "Path": "main.cpp",
+    "SHA256": "27D604FE08F04BB138D12A167AA81AF2F99B824BFDE1EA67A55D123585BF5632",
+    "Lines": 104
+  }
+]

@@ -31,14 +31,14 @@ struct Peer:enable_shared_from_this<Peer>{
     strand<any_io_executor> strand;
     deque<vector<uint8_t>> messageQueue;
     system_clock::time_point T1;
-    long long lag;
+    milliseconds lag;
     bool writing = false;
     Peer(tcp::socket sock) : socket(std::move(sock)), strand(make_strand(socket.get_executor())) {}
 };
 
 unordered_map<uint64_t,shared_ptr<Peer>> peerPool;
 mutex peerMutex;
-
+auto  endTime = steady_clock::now() + milliseconds(500);
 // -----------------------------------------------------------连接管理函数-----------------------------------------------------------------------------------------------------------
 pair<uint64_t,shared_ptr<Peer>> AddPeer(tcp::socket socket) {
     auto ip = socket.remote_endpoint().address().to_v4().to_bytes();
@@ -212,7 +212,7 @@ awaitable<void> ProcessDiscoverMessage(vector<uint8_t> message) {
         co_spawn(executor,Connect(ipByte,port));
     }
 }
-vector<uint8_t> GenerateTxTimeMessage() {
+vector<uint8_t> GenerateTxsMessage() {
     // 复制交易池
     unordered_map<array<uint8_t, 32>, array<uint8_t, 176>, GetMapHash> txPoolCopy;
     vector<uint8_t> message;
@@ -237,21 +237,21 @@ vector<uint8_t> GenerateTxTimeMessage() {
     }
     return message;
 }
-// 填充交易
+// 计算节点延迟
 void ProcessTxTimeACKMessage(vector<uint8_t> message,system_clock::time_point T4,shared_ptr<Peer> peer) {
     long long T2Data,T3Data;
     memcpy(&T2Data,message.data(),8);
     memcpy(&T3Data,message.data()+8,8);
     system_clock::time_point T2{milliseconds(T2Data)};
     system_clock::time_point T3{milliseconds(T3Data)};
-    auto duration = (T2-peer->T1+T3-T4).count()/2;
+    auto duration = milliseconds((T2-peer->T1+T3-T4).count()/2);
     peer->lag=duration;
 }
 
 // -----------------------------------------------------------循环函数---------------------------------------------------------------------------------------------
 // 需要实现的有：过时的区块不再接收 - 过时的定义为 如当前高度为 L，则小于等于 L 的区块都不接收 逻辑已经实现在 ProcessBlock
 //
-void OpenShareTxTimeMode() {
+void OpenShareTxMode() {
     while (true) {
         unordered_map<uint64_t,shared_ptr<Peer>> peers;
         {
@@ -259,10 +259,36 @@ void OpenShareTxTimeMode() {
             peers = peerPool;
         }
         for (auto i : peers) {
-            SendData(i.second,GenerateTxTimeMessage());
+            SendData(i.second,GenerateTxsMessage());
             i.second->T1=system_clock::now();
         }
         sleep(2);
+    }
+}
+milliseconds ComputeResonanceLag(vector<pair<uint64_t, milliseconds>> ResonanceCopy ) {
+    unordered_map<uint64_t, int> count;
+    unordered_map<uint64_t, milliseconds> sum;
+    {
+        for (auto& [height, bias] : ResonanceCopy) {
+            count[height]++;
+            sum[height] += bias;
+        }
+
+        if (count.empty()) {
+            return milliseconds{0};
+        }
+
+        uint64_t highest = 0;
+        int bestCount = 0;
+
+        for (auto& [height, c] : count) {
+            if (c > bestCount) {
+                highest = height;
+                bestCount = c;
+            }
+        }
+
+        return sum[highest] / bestCount;
     }
 }
 void MainLoop() {
@@ -270,20 +296,33 @@ void MainLoop() {
     auto bias = steady_clock::now()-steady_clock::now();
     while (true) {
         // 等待 200 ms
-        auto end = steady_clock::now() + milliseconds(100);
-        while (steady_clock::now()+bias < end) {
+        auto waitTime = steady_clock::now() + milliseconds(100);
+        while (steady_clock::now()+bias < waitTime) {
             this_thread::sleep_for(milliseconds(10));
         }
 
+        // 调整周期时长
+        vector<pair<uint64_t, milliseconds>> ResonanceCopy;
+        {
+            lock_guard lock(ResonanceMutex);
+            ResonanceCopy  = ResonanceLag;
+            ResonanceLag.clear();
+        }
+        auto lag = ComputeResonanceLag(ResonanceCopy);
         // 500 ms 处理区块
-        end = steady_clock::now() + milliseconds(500);
+        endTime = steady_clock::now() + milliseconds(500) + lag;
+        // 生成区块
+
         auto data=GenerateBlock();
         if (data.size()==0) {
             this_thread::sleep_for(std::chrono::milliseconds(500));
             continue;
         }
+        // 放入区块池
         ProcessBlock(data);
-
+        // 广播区块
+        BroadcastData(GenerateNewBlockMessage(data));
+        //  确认区块
         pair<Block,vector<uint8_t>> block;
         // 更新当前区块 Hash 和 高度
         {
@@ -297,7 +336,7 @@ void MainLoop() {
         array<uint8_t, 32> previousHash=DBReadCurrentBlock();
         if (block.first.previousHash==previousHash) {
             DBWriteBlockHeight(block.first.height);
-            auto height  =block.first.height ;
+            auto height  =block.first.height;
             DBWriteCurrentBlock(block.first.hash);
             // 写入区块
             DBWriteBlockALL(block.first.hash,block.second);
@@ -310,17 +349,21 @@ void MainLoop() {
                 DBWriteTx(txHash,tx);
             }
             spdlog::info("New Block Confirmed! Height:{},TxNum:{},Hash:{}",block.first.height,num,U32ToHex(block.first.hash));
-            while (steady_clock::now() < end) {
+            while (steady_clock::now() < endTime) {
                 // 等待时间流逝
             }
         }
-        bias = steady_clock::now()-steady_clock::now();
-        if (steady_clock::now() > end) {
-            bias = bias + (steady_clock::now()-end);
+
+
+        if (steady_clock::now() > endTime) {
+            bias = bias + (steady_clock::now()-endTime);
         }
-        while (steady_clock::now() < end) {
+
+        while (steady_clock::now() < endTime) {
             this_thread::sleep_for(milliseconds(10));
         }
+        // 发起共振
+        BroadcastData(GenerateHeightMessage());
 
     }
 }

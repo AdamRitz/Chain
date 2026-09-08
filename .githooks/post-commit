@@ -1,0 +1,21 @@
+#!/bin/sh
+# Opt-in per clone. Never amend, rebase, pull, or force-push.
+[ "$(git config --bool chain.autoPush 2>/dev/null)" = true ] || exit 0
+[ "${CHAIN_SKIP_AUTO_PUSH:-0}" = 1 ] && exit 0
+
+branch=$(git symbolic-ref --quiet --short HEAD) || {
+    echo "[Chain sync] Detached HEAD: local commit saved; automatic push skipped." >&2
+    exit 0
+}
+remote=$(git config --get chain.syncRemote)
+[ -n "$remote" ] || remote=origin
+log=$(git rev-parse --git-path chain-sync.log)
+
+if GIT_TERMINAL_PROMPT=0 git push --set-upstream "$remote" "HEAD:refs/heads/$branch" >"$log" 2>&1; then
+    echo "[Chain sync] Pushed $branch to $remote."
+else
+    echo "[Chain sync] Local commit saved, but push failed. Retry: git push $remote HEAD:refs/heads/$branch" >&2
+    cat "$log" >&2
+fi
+# A push failure must not suggest that the local commit was lost.
+exit 0

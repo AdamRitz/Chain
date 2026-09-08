@@ -10,6 +10,33 @@
 #include "../DB/DB.h"
 #include "../Time/Time.h"
 using namespace std;
+
+vector<uint8_t> GenerateNewBlockMessage(const vector<uint8_t>& blockByte) {
+    uint8_t type = 2;
+    uint32_t size = blockByte.size()+5;
+    int offset = 0;
+    vector<uint8_t> block;
+    block.resize(size);
+    memcpy(block.data(), &type, 1);
+    offset += 1;
+    memcpy(block.data()+offset, &size, 4);
+    offset += 4;
+    memcpy(block.data()+offset, blockByte.data(), blockByte.size());
+    return block;
+}
+vector<uint8_t> GenerateHeightMessage() {
+    uint8_t type = 12;
+    uint32_t size = 8;
+    auto height = DBReadBlockHeight();
+    vector<uint8_t> message;
+    message.resize(size);
+    int offset = 0;
+    memcpy(message.data(), &type, 1);
+    offset += 1;
+    memcpy(message.data()+offset, &size, 4);
+    offset += 4;
+    memcpy(message.data()+offset, &height, 8);
+}
 vector<uint8_t> GenerateBlockMessage(const uint64_t& blockNum) {
     auto block = DBReadBlockByHeight(to_string(blockNum));
     vector<uint8_t> byte{};

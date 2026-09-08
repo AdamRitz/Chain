@@ -13,6 +13,7 @@
 #include "../Transaction/Block.h"
 #include "../Transaction/Transaction.h"
 #include "../Crypto/VRF.h"
+#include "../Time/Time.h"
 #include "Remotery.h"
 using namespace boost::asio;
 using namespace std;
@@ -133,6 +134,19 @@ awaitable<void> session(uint64_t key,shared_ptr<Peer> peer) {
         else if (type == 11) {
             auto T4 = system_clock::now();
             ProcessTxTimeACKMessage(message,T4,peer);
+
+        }
+        // type = 12，共振时间同步，计算预计偏差
+        else if (type == 12) {
+            uint64_t blockNum = 0;
+            // 误差 = 现在时间 - 共振时间点 - 网络延迟，如果它们的共振时间在现在时间之后也就是最终结果为负数 ，那么我就要提前共振我就需要加上误差
+            //
+            auto bias = duration_cast<milliseconds>( steady_clock::now() - peer->lag - endTime);
+            memcpy(&blockNum, message.data(), 8);
+            {
+                lock_guard lock(ResonanceMutex);
+                ResonanceLag.emplace_back(blockNum,bias);
+            }
 
         }
         // 其余消息逻辑需要解决

@@ -1,0 +1,2 @@
+.githooks/* text eol=lf
+scripts/*.ps1 text eol=lf

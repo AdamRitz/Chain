@@ -39,5 +39,7 @@ std::array<uint8_t, 32> MerkleCompute(std::span<const std::array<uint8_t, 32>> l
 
     return current[0];
 }
+void testfunc() {
 
+}
 #endif //CHAIN_HASH_H

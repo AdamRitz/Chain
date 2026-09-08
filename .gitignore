@@ -1,0 +1,56 @@
+# Build and compiler output
+/cmake-build-*/
+/build/
+/out/
+/CMakeFiles/
+/CMakeCache.txt
+/compile_commands.json
+*.exe
+*.dll
+*.a
+*.lib
+*.o
+*.obj
+*.pdb
+
+# Local IDE settings
+/.idea/
+/.vs/
+
+# RocksDB runtime files (keep Test/*.cpp and Test/*.h)
+*.sst
+*.ldb
+*.log
+**/CURRENT
+**/IDENTITY
+**/LOCK
+**/LOG
+**/LOG.old.*
+**/MANIFEST-*
+**/OPTIONS-*
+/data/
+/chaindata/
+
+# Local runs and scratch files
+/run*.out
+/run*.err
+/_tmp_*
+*.tmp
+*.bak
+
+# Credentials and wallet material; Key/*.h remains versioned
+.env
+.env.*
+!.env.example
+!.env.template
+*.pem
+*.key
+*.p12
+*.pfx
+id_rsa
+id_ed25519
+wallet.dat
+wallet.json
+keystore/
+secrets/
+config.local.yaml
