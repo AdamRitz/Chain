@@ -54,3 +54,10 @@ wallet.json
 keystore/
 secrets/
 config.local.yaml
+
+# Isolated tests and benchmark datasets
+/bench-results/
+/test-data/
+/network-test-data/
+__pycache__/
+*.pyc

@@ -1,137 +1,139 @@
-//
-// Created by 61485 on 2026/4/30.
-//
-
 #ifndef CHAIN_TRANSACTION_H
 #define CHAIN_TRANSACTION_H
-#include <array>
-#include <cstdint>
+#include <algorithm>
+#include <atomic>
+#include <condition_variable>
+#include <mutex>
+#include <span>
+#include <unordered_map>
+#include <unordered_set>
+#include <vector>
 #include "../Key/Key.h"
 #include "../DB/DB.h"
-#include "Remotery.h"
-
 using namespace std;
-// -----------------------------------------------------------------------交易/交易池定义-------------------------------------------------------------------------------------------------
+
+// ------------------------------------------------交易和交易池------------------------------------------------
 struct Transaction {
     array<uint8_t,32> sender;
     array<uint8_t,32> receiver;
     uint64_t amount;
     uint64_t nonce;
-    array<uint8_t,crypto_generichash_BYTES> hash; // BLAKE2b
-    array<uint8_t,64> signature; // Ed25519
+    array<uint8_t,32> hash;
+    array<uint8_t,64> signature;
 };
-struct GetMapHash{
-    size_t operator()(const std::array<uint8_t, 32>& data) const noexcept {
-        size_t h = 0;
-        std::memcpy(&h, data.data(), sizeof(size_t));
-        return h;
+struct GetMapHash {
+    size_t operator()(const array<uint8_t,32>& data) const noexcept {
+        size_t hash=0;
+        memcpy(&hash,data.data(),sizeof(hash));
+        return hash;
     }
 };
 unordered_map<array<uint8_t,32>,array<uint8_t,176>,GetMapHash> txpool;
-std::mutex txpoolMutex;
-// -----------------------------------------------------------------------交易序列化/反序列化-----------------------------------------------------------------------------------------------
-// 为 Hash 序列化交易数据：发送者，接收者，数值，nonce。为了 hash 创建的序列化，所以此处没有序列化 Hash 和 签名因为还没生成
-array<uint8_t,80> SerializeTxForHash(const Transaction& tx) {
-    array<uint8_t,80> partByte;
-    int offset = 0;
-    memcpy(partByte.data(),tx.sender.data(),tx.sender.size());
-    offset += tx.sender.size();
-    memcpy(partByte.data()+offset,tx.receiver.data(),tx.receiver.size());
-    offset += tx.receiver.size();
-    memcpy(partByte.data()+offset,&tx.amount,8);
-    offset += 8;
-    memcpy(partByte.data()+offset,&tx.nonce,8);
-    return partByte;
+mutex txpoolMutex;
+condition_variable txpoolCondition;
+void WakeMainLoop() {
+    lock_guard lock(txpoolMutex);
+    txpoolCondition.notify_one();
 }
-// 序列化整个交易。
-array<uint8_t,176> SerializeTxALL(const Transaction& tx,const array<uint8_t,80>& partByte) {
-    array<uint8_t,176> txByte;
-    int offset = 0;
-    memcpy(txByte.data(),partByte.data(),80);
-    offset += 80;
-    memcpy(txByte.data()+offset,tx.hash.data(),32);
-    offset += 32;
-    memcpy(txByte.data()+offset,tx.signature.data(),64);
-    offset += 64;
-    return txByte;
+size_t maxPoolTx=200000;
+size_t maxBlockTx=6000;
+atomic<uint64_t> receivedTx{0},validTx{0},invalidTx{0},duplicateTx{0},rejectedTx{0};
+atomic<uint64_t> txCommitWaitNs{0},txReadNs{0},txPoolWaitNs{0};
+atomic<uint64_t> verifyNs{0},poolNs{0},committedTx{0},firstTxTime{0},lastCommitTime{0};
+atomic<bool> nodeRunning{true},nodeFailed{false};
 
+// ------------------------------------------------序列化------------------------------------------------
+array<uint8_t,80> SerializeTxForHash(const Transaction& tx) {
+    array<uint8_t,80> data;
+    memcpy(data.data(),tx.sender.data(),32);
+    memcpy(data.data()+32,tx.receiver.data(),32);
+    WriteU64(data.data()+64,tx.amount);
+    WriteU64(data.data()+72,tx.nonce);
+    return data;
 }
-// 反序列化交易
-Transaction UnserializeTx(array<uint8_t,176> txBytes) {
+array<uint8_t,176> SerializeTxALL(const Transaction& tx,const array<uint8_t,80>& partByte) {
+    array<uint8_t,176> data;
+    memcpy(data.data(),partByte.data(),80);
+    memcpy(data.data()+80,tx.hash.data(),32);
+    memcpy(data.data()+112,tx.signature.data(),64);
+    return data;
+}
+Transaction UnserializeTx(const array<uint8_t,176>& data) {
     Transaction tx{};
-    int offset=0;
-    memcpy(tx.sender.data(),txBytes.data()+offset,32);
-    offset += 32;
-    memcpy(tx.receiver.data(),txBytes.data()+offset,32);
-    offset += 32;
-    memcpy(&tx.amount,txBytes.data()+offset,8);
-    offset += 8;
-    memcpy(&tx.nonce,txBytes.data()+offset,8);
-    offset += 8;
-    memcpy(tx.hash.data(),txBytes.data()+offset,32);
-    offset += 32;
-    memcpy(tx.signature.data(),txBytes.data()+offset,64);
-    offset+= 64;
+    memcpy(tx.sender.data(),data.data(),32);
+    memcpy(tx.receiver.data(),data.data()+32,32);
+    tx.amount=ReadU64(data.data()+64);
+    tx.nonce=ReadU64(data.data()+72);
+    memcpy(tx.hash.data(),data.data()+80,32);
+    memcpy(tx.signature.data(),data.data()+112,64);
     return tx;
 }
-
-// -----------------------------------------------------------------------交易生成/验证-------------------------------------------------------------------------------------------------
-array<uint8_t,176> GenerateTx(array<uint8_t,32> sender,array<uint8_t,32> receiver,uint64_t amount,uint64_t nonce, Wallet mywallet) {
-    Transaction tx{.sender=sender,.receiver = receiver,.amount = amount,.nonce = nonce};
-    array<uint8_t,80> partByte = SerializeTxForHash(tx);
-    crypto_generichash(tx.hash.data(),tx.hash.size(),partByte.data(),partByte.size(),nullptr,0);
-    crypto_sign_detached(tx.signature.data(),nullptr,tx.hash.data(),tx.hash.size(),mywallet.private_key.data());
-    return SerializeTxALL(tx,partByte);
-}
-
-bool VerifyTransaction(array<uint8_t,176> txbyte) {
-    array<uint8_t,32> sender;
-    memcpy(sender.data(),txbyte.data(),32);
-    if (crypto_sign_verify_detached(txbyte.data()+80+32,txbyte.data()+80,32,sender.data())!=0) {
-        spdlog::info("Tx Verification Failed");
-
-        return false;
-    }
-    return true;
-}
-
-
-// -----------------------------------------------------------------------工具函数-------------------------------------------------------------------------------------------------
-array<uint8_t,32> GetTransactionHash(const array<uint8_t,176>& txByte) {
+array<uint8_t,32> GetTransactionHash(const array<uint8_t,176>& data) {
     array<uint8_t,32> hash;
-    memcpy(hash.data(),txByte.data()+80,32);
+    memcpy(hash.data(),data.data()+80,32);
     return hash;
 }
-// -----------------------------------------------------------------------消息函数--------------------------------------------------------------------------------------------------
-
-
-// -------------------------------------------------------------------交易处理入口---------------------------------------------------------------------------------------------------
-// 网络中收到交易后通过该入口函数处理，成功后放入交易池
-void ProcessTx(array<uint8_t,176> txbyte) {
-    rmt_ScopedCPUSample(ProcessTx, RMTSF_Aggregate);
-    // 交易验证失败就不进行处理。
-    if (!VerifyTransaction(txbyte)) {
-        return;
-    }
-    lock_guard<mutex> lock(txpoolMutex);
-    txpool[GetTransactionHash(txbyte)] = txbyte;
+// ------------------------------------------------生成和验证------------------------------------------------
+array<uint8_t,176> GenerateTx(const array<uint8_t,32>& sender,const array<uint8_t,32>& receiver,uint64_t amount,uint64_t nonce,const Wallet& wallet) {
+    if (sender!=wallet.public_key) throw invalid_argument("Sender does not match wallet");
+    Transaction tx{.sender=sender,.receiver=receiver,.amount=amount,.nonce=nonce,.hash={},.signature={}};
+    auto partByte=SerializeTxForHash(tx);
+    crypto_generichash(tx.hash.data(),32,partByte.data(),partByte.size(),nullptr,0);
+    if (crypto_sign_detached(tx.signature.data(),nullptr,tx.hash.data(),32,wallet.private_key.data())!=0) throw runtime_error("Sign failed");
+    return SerializeTxALL(tx,partByte);
 }
-// 出块后的交易处理函数：把交易存储到本地的 RockDB 而不是交易池，见出块函数逻辑，此处不再单独编写一个函数。
-
-// 处理交易包函数
-void ProcessTxPackage(vector<uint8_t> data) {
-    int offset = 0;
-    int l = data.size()/176;
+bool VerifyTransaction(const array<uint8_t,176>& data) {
     array<uint8_t,32> hash;
-    lock_guard lock(txpoolMutex);
-    for (int i=0;i<=l-1;i++) {
-        memcpy(hash.data(),data.data()+offset+80,32);
+    crypto_generichash(hash.data(),32,data.data(),80,nullptr,0);
+    if (sodium_memcmp(hash.data(),data.data()+80,32)!=0) return false;
+    return crypto_sign_verify_detached(data.data()+112,hash.data(),32,data.data())==0;
+}
+
+// ------------------------------------------------交易处理入口------------------------------------------------
+// 锁外批量验签，锁内只做去重和插入。
+size_t ProcessTxPackage(span<const uint8_t> data) {
+    if (data.empty()||data.size()%176!=0||data.size()/176>6000) return 0;
+    uint64_t expected=0;
+    firstTxTime.compare_exchange_strong(expected,GetSteadyTime());
+    receivedTx+=data.size()/176;
+    vector<pair<array<uint8_t,32>,array<uint8_t,176>>> checked;
+    checked.reserve(data.size()/176);
+    auto start=GetSteadyTime();
+    for (size_t offset=0;offset<data.size();offset+=176) {
         array<uint8_t,176> tx;
         memcpy(tx.data(),data.data()+offset,176);
-        if (txpool.count(hash)==0) {
-            txpool[hash]=tx;
+        if (!VerifyTransaction(tx)) { invalidTx++; continue; }
+        checked.emplace_back(GetTransactionHash(tx),tx);
+    }
+    verifyNs+=GetSteadyTime()-start;
+    start=GetSteadyTime();
+    size_t added=0;
+    // 查询可并发；提交拿独占锁，防止确认与重新入池之间出现竞态。
+    shared_lock commitLock(dbCommitMutex);
+    auto readStart=GetSteadyTime();
+    txCommitWaitNs+=readStart-start;
+    vector<pair<array<uint8_t,32>,array<uint8_t,176>>> fresh;
+    fresh.reserve(checked.size());
+    for (auto& item:checked) {
+        if (DBHasTx(item.first)) duplicateTx++;
+        else fresh.push_back(std::move(item));
+    }
+    auto poolStart=GetSteadyTime();
+    txReadNs+=poolStart-readStart;
+    {
+        lock_guard lock(txpoolMutex);
+        txPoolWaitNs+=GetSteadyTime()-poolStart;
+        for (auto& [hash,tx]:fresh) {
+            if (txpool.count(hash)!=0) { duplicateTx++; continue; }
+            if (txpool.size()>=maxPoolTx) { rejectedTx++; continue; }
+            txpool.emplace(hash,std::move(tx));
+            added++;
         }
     }
+    validTx+=added;
+    poolNs+=GetSteadyTime()-start;
+    if (added) WakeMainLoop();
+    return added;
 }
-
-#endif //CHAIN_TRANSACTION_H
+void ProcessTx(const array<uint8_t,176>& tx) { ProcessTxPackage(span<const uint8_t>(tx)); }
+#endif

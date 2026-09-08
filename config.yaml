@@ -1,4 +1,11 @@
 node:
   port: 8089
+  bind: 127.0.0.1
   id: 1
   name: Watson
+  data: test
+  io_threads: 4
+  verify_threads: 8
+  block_ms: 50
+  sync: true
+  produce: true

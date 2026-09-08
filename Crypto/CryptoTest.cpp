@@ -23,6 +23,7 @@ int CrrectnessTest() {
 
 
 int main() {
+    if (sodium_init()<0) return 1;
     InitVRFWallet();
 
     vector<uint8_t> m{1, 203, 3, 4, 5, 6, 7, 8, 99};

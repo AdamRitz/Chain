@@ -1,0 +1,8 @@
+#!/bin/sh
+# Project convention: YYYY-MM-DD followed by a meaningful description.
+subject=$(head -n 1 "$1")
+if ! printf '%s\n' "$subject" | grep -Eq '^[0-9]{4}-[0-9]{2}-[0-9]{2} [^[:space:]].*'; then
+    echo '[Chain] Commit subject must use: YYYY-MM-DD description' >&2
+    echo '[Chain] Example: 2026-09-08 fix transaction validation' >&2
+    exit 1
+fi

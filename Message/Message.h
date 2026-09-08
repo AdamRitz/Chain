@@ -1,93 +1,51 @@
-//
-// Created by 61485 on 2026/5/9.
-//
-
 #ifndef CHAIN_MESSAGE_H
 #define CHAIN_MESSAGE_H
-#include <cstdint>
-#include <iostream>
-#include <vector>
+#include <span>
 #include "../DB/DB.h"
 #include "../Time/Time.h"
 using namespace std;
 
-vector<uint8_t> GenerateNewBlockMessage(const vector<uint8_t>& blockByte) {
-    uint8_t type = 2;
-    uint32_t size = blockByte.size()+5;
-    int offset = 0;
-    vector<uint8_t> block;
-    block.resize(size);
-    memcpy(block.data(), &type, 1);
-    offset += 1;
-    memcpy(block.data()+offset, &size, 4);
-    offset += 4;
-    memcpy(block.data()+offset, blockByte.data(), blockByte.size());
-    return block;
-}
-vector<uint8_t> GenerateHeightMessage() {
-    uint8_t type = 12;
-    uint32_t size = 8;
-    auto height = DBReadBlockHeight();
-    vector<uint8_t> message;
-    message.resize(size);
-    int offset = 0;
-    memcpy(message.data(), &type, 1);
-    offset += 1;
-    memcpy(message.data()+offset, &size, 4);
-    offset += 4;
-    memcpy(message.data()+offset, &height, 8);
-}
-vector<uint8_t> GenerateBlockMessage(const uint64_t& blockNum) {
-    auto block = DBReadBlockByHeight(to_string(blockNum));
-    vector<uint8_t> byte{};
-    uint32_t length = block.size()+1+4+8;
-    byte.resize(length);
-    // 填充 type
-    uint8_t messageType = 7;
-    int offset = 0;
-    memcpy(byte.data()+offset, &messageType, 1);
-    offset += 1;
-    // 填充 length
-    memcpy(byte.data()+offset,&length,4);
-    offset += 4;
-    // 填充 blockNum
-    memcpy(byte.data()+offset,&blockNum,8);
-    offset += 8;
-    // 填充 blockByte
-    memcpy(byte.data()+offset, block.data() , block.size());
-    return byte;
-}
-
-vector<uint8_t> GenerateRequestDiscoveryMessage() {
-    vector<uint8_t> message;
-    message.resize(5);
-    // 填充 type
-    uint8_t type = 8;
-    int offset = 0;
-    memcpy(message.data()+offset,&type,1);
-    offset += 1;
-    // 填充 length
-    uint32_t length = 0;
-    memcpy(message.data()+offset,&length,4);
-    return message;
-};
-
-vector<uint8_t> GenerateTxTimeACKMessage(vector<uint8_t> T2) {
-    vector<uint8_t> message;
-    message.resize(5+8+8);
-    // 填充 type
-    uint8_t type = 11;
-    int offset = 0;
-    memcpy(message.data()+offset,&type,1);
-    offset += 1;
-    // 填充 length
-    uint32_t length=64;
-    memcpy(message.data()+offset,&length,4);
-    // 填充消息体
-    auto T3 = GetTime();
-    memcpy(message.data()+offset,&T2,8);
-    offset += 8;
-    memcpy(message.data()+offset,&T3,8);
+constexpr size_t maxMessageSize=112+6000*176;
+vector<uint8_t> GenerateMessage(uint8_t type,span<const uint8_t> payload) {
+    if (payload.size()>maxMessageSize) throw invalid_argument("Message too large");
+    vector<uint8_t> message(5+payload.size());
+    message[0]=type;
+    WriteU32(message.data()+1,uint32_t(payload.size()));
+    if (!payload.empty()) memcpy(message.data()+5,payload.data(),payload.size());
     return message;
 }
-#endif //CHAIN_MESSAGE_H
+bool VerifyMessageSize(uint8_t type,uint32_t size) {
+    if (size>maxMessageSize) return false;
+    switch (type) {
+        case 1:return size==176;
+        case 2:case 7:return size>=112&&(size-112)%176==0;
+        case 4:case 8:case 13:return size==0;
+        case 5:case 6:case 12:return size==8;
+        case 9:return size%6==0&&size<=64*6;
+        case 10:return size>0&&size%176==0&&size<=6000*176;
+        case 11:return size==16;
+        case 14:return size<=16384;
+        default:return false;
+    }
+}
+vector<uint8_t> GenerateNewBlockMessage(const vector<uint8_t>& block) { return GenerateMessage(2,block); }
+vector<uint8_t> GenerateHeightMessage(uint8_t type=12) {
+    array<uint8_t,8> data;
+    WriteU64(data.data(),DBReadBlockHeight());
+    return GenerateMessage(type,data);
+}
+vector<uint8_t> GenerateBlockMessage(uint64_t height) {
+    auto block=DBReadBlockByHeight(to_string(height));
+    if (block.empty()) return {};
+    return GenerateMessage(7,block);
+}
+vector<uint8_t> GenerateRequestDiscoveryMessage() { return GenerateMessage(8,{}); }
+vector<uint8_t> GenerateTxTimeACKMessage(const vector<uint8_t>& T2) {
+    if (T2.size()!=8) throw invalid_argument("Invalid timestamp");
+    array<uint8_t,16> data;
+    auto T3=GetTime();
+    memcpy(data.data(),T2.data(),8);
+    memcpy(data.data()+8,T3.data(),8);
+    return GenerateMessage(11,data);
+}
+#endif

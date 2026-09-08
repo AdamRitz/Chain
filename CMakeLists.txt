@@ -1,34 +1,49 @@
-cmake_minimum_required(VERSION 4.0)
-project(Chain)
-
+cmake_minimum_required(VERSION 3.22)
+project(Chain LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 20)
-set(CMAKE_PREFIX_PATH "D:/Software/Code/Language/MinGW64/ucrt64")
-add_executable(boost main.cpp)
-# 添加头文件搜索目录
-target_include_directories(boost PRIVATE D:/Project/Includes/boost_1_91_0)
-add_library(remotery STATIC
-        D:/Software/Remotery/Remotery-main/Remotery-main/lib/Remotery.c
-)
-
-target_include_directories(remotery PUBLIC
-        D:/Software/Remotery/Remotery-main/Remotery-main/lib/
-)
-find_package(yaml-cpp CONFIG REQUIRED)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CHAIN_BOOST_DIR "D:/Project/Includes/boost_1_91_0" CACHE PATH "Boost include directory")
+if(WIN32)
+    list(APPEND CMAKE_PREFIX_PATH "D:/Software/Code/Language/MinGW64/ucrt64")
+endif()
 find_package(RocksDB CONFIG REQUIRED)
-find_package(spdlog REQUIRED)
+find_package(spdlog CONFIG REQUIRED)
+find_package(yaml-cpp CONFIG REQUIRED)
+find_path(SODIUM_INCLUDE_DIR sodium.h REQUIRED)
+find_library(SODIUM_LIBRARY NAMES sodium REQUIRED)
 
-# 链接头文件
-target_link_libraries(boost PRIVATE  remotery ws2_32  mswsock RocksDB::rocksdb sodium spdlog::spdlog yaml-cpp  winmm )
+add_library(chain_deps INTERFACE)
+target_include_directories(chain_deps SYSTEM INTERFACE "${CHAIN_BOOST_DIR}" "${SODIUM_INCLUDE_DIR}")
+target_link_libraries(chain_deps INTERFACE RocksDB::rocksdb spdlog::spdlog "${SODIUM_LIBRARY}" yaml-cpp::yaml-cpp)
+if(WIN32)
+    target_compile_definitions(chain_deps INTERFACE _WIN32_WINNT=0x0A00 NOMINMAX WIN32_LEAN_AND_MEAN)
+    target_link_libraries(chain_deps INTERFACE ws2_32 mswsock psapi)
+endif()
+if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+    target_compile_options(chain_deps INTERFACE -Wall -Wextra -Werror=return-type)
+endif()
 
-
-add_executable(test Test.cpp)
-target_include_directories(test PRIVATE D:/Project/Includes/boost_1_91_0)
-target_link_libraries(test PRIVATE ws2_32 mswsock yaml-cpp)
-
-
+add_executable(boost main.cpp)
 add_executable(sender Sender/Sender.cpp)
 add_executable(crypto Crypto/CryptoTest.cpp)
-
-target_include_directories(sender PRIVATE D:/Project/Includes/boost_1_91_0)
-target_link_libraries(sender PRIVATE remotery ws2_32  mswsock RocksDB::rocksdb sodium spdlog::spdlog  winmm )
-target_link_libraries(crypto PRIVATE ws2_32  mswsock RocksDB::rocksdb sodium spdlog::spdlog )
+add_executable(chain_test Test/ChainTest.cpp)
+add_executable(bench Test/Bench.cpp)
+foreach(target boost sender crypto chain_test bench)
+    target_link_libraries(${target} PRIVATE chain_deps)
+endforeach()
+enable_testing()
+add_test(NAME ChainCorrectness COMMAND chain_test "${CMAKE_CURRENT_BINARY_DIR}/test-data")
+set_tests_properties(ChainCorrectness PROPERTIES TIMEOUT 60)
+get_filename_component(CHAIN_COMPILER_BIN "${CMAKE_CXX_COMPILER}" DIRECTORY)
+if(WIN32)
+    set_tests_properties(ChainCorrectness PROPERTIES ENVIRONMENT_MODIFICATION "PATH=path_list_prepend:${CHAIN_COMPILER_BIN}")
+endif()
+find_package(Python3 COMPONENTS Interpreter QUIET)
+if(Python3_Interpreter_FOUND)
+    add_test(NAME ChainNetwork COMMAND "${Python3_EXECUTABLE}" "${CMAKE_CURRENT_SOURCE_DIR}/Test/NetworkTest.py"
+        --bin "$<TARGET_FILE_DIR:boost>" --work "${CMAKE_CURRENT_BINARY_DIR}/network-test-data")
+    set_tests_properties(ChainNetwork PROPERTIES TIMEOUT 120)
+    if(WIN32)
+        set_tests_properties(ChainNetwork PROPERTIES ENVIRONMENT_MODIFICATION "PATH=path_list_prepend:${CHAIN_COMPILER_BIN}")
+    endif()
+endif()

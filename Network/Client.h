@@ -1,398 +1,302 @@
-//
-// Created by 61485 on 2026/4/30.
-//
-
 #ifndef CHAIN_CLIENT_H
 #define CHAIN_CLIENT_H
-#include <deque>
 #include <utility>
-#include <iostream>
 #include <boost/asio.hpp>
+#include <deque>
+#include <thread>
 #include <nlohmann/json.hpp>
-#include <optional>
-#include <spdlog/spdlog.h>
 #include "../Transaction/Block.h"
 #include "../Message/Message.h"
-
-using namespace boost::asio;
 using namespace std;
 using namespace std::chrono;
-using namespace nlohmann;
-using tcp = ip::tcp;
+using namespace boost::asio;
+using tcp=ip::tcp;
 
-// -----------------------------------------------------------节点结构体/节点池/节点锁初始化---------------------------------------------------------------------------------------------
-// 节点结构体
-// socket: socket 连接
-// strand: asio 用于顺序执行的对象
-// messageQueue: 消息队列，为支持并发写入 socket 需要用消息队列，否则需要给 socket 上锁。
-// writing: 写入状态符
-struct Peer:enable_shared_from_this<Peer>{
+io_context* nodeIO=nullptr;
+unique_ptr<thread_pool> verifyThreads;
+atomic<size_t> pendingVerify{0},peakPendingVerify{0},connectionCount{0};
+atomic<uint64_t> queueWaitNs{0},networkBytes{0};
+size_t maxPendingVerify=32768;
+size_t maxConnections=128;
+size_t maxSendBytes=8*1024*1024;
+unsigned short listenPort=8089;
+string listenAddress="127.0.0.1";
+int blockInterval=50;
+bool produceBlocks=true;
+
+// ------------------------------------------------节点和发送队列------------------------------------------------
+struct Peer:enable_shared_from_this<Peer> {
     tcp::socket socket;
-    strand<any_io_executor> strand;
-    deque<vector<uint8_t>> messageQueue;
-    system_clock::time_point T1;
-    milliseconds lag;
-    bool writing = false;
-    Peer(tcp::socket sock) : socket(std::move(sock)), strand(make_strand(socket.get_executor())) {}
+    boost::asio::strand<any_io_executor> strand;
+    steady_timer deadline;
+    deque<shared_ptr<const vector<uint8_t>>> messageQueue;
+    size_t queuedBytes=0;
+    uint64_t key=0,remoteHeight=0;
+    uint16_t port=0;
+    array<uint8_t,4> address{};
+    bool writing=false,closed=false,syncing=false;
+    milliseconds lag{0};
+    system_clock::time_point T1{};
+    Peer(tcp::socket sock):socket(std::move(sock)),strand(make_strand(socket.get_executor())),deadline(strand) { connectionCount++; }
+    ~Peer() { connectionCount--; }
 };
-
 unordered_map<uint64_t,shared_ptr<Peer>> peerPool;
 mutex peerMutex;
-auto  endTime = steady_clock::now() + milliseconds(500);
-// -----------------------------------------------------------连接管理函数-----------------------------------------------------------------------------------------------------------
-pair<uint64_t,shared_ptr<Peer>> AddPeer(tcp::socket socket) {
-    auto ip = socket.remote_endpoint().address().to_v4().to_bytes();
-    uint16_t port = socket.remote_endpoint().port();
-    uint64_t key =0;
-    memcpy(&key, &ip, 4);
-    memcpy(&key+4, &port, 2);
-    lock_guard lock(peerMutex);
-    if (peerPool.count(key)!=0 )return make_pair(key,nullptr);
-    auto peer = make_shared<Peer>(std::move(socket));
-    peerPool.emplace(key,peer);
-    return make_pair(key,peer);
-}
+awaitable<void> session(uint64_t key,shared_ptr<Peer> peer);
+awaitable<void> SyncBlock(shared_ptr<Peer> peer);
 
-void RemovePeer(const uint64_t key) {
+uint64_t GetPeerKey(const array<uint8_t,4>& ipByte,uint16_t port) {
+    return uint64_t(ipByte[0])|(uint64_t(ipByte[1])<<8)|(uint64_t(ipByte[2])<<16)|(uint64_t(ipByte[3])<<24)|(uint64_t(port)<<32);
+}
+pair<uint64_t,shared_ptr<Peer>> AddPeer(tcp::socket socket,uint16_t port=0) {
+    auto endpoint=socket.remote_endpoint();
+    auto key=GetPeerKey(endpoint.address().to_v4().to_bytes(),endpoint.port());
+    lock_guard lock(peerMutex);
+    if (peerPool.size()>=64||peerPool.count(key)) return {key,nullptr};
+    auto peer=make_shared<Peer>(std::move(socket));
+    peer->key=key;
+    peer->port=port;
+    peer->address=endpoint.address().to_v4().to_bytes();
+    peerPool.emplace(key,peer);
+    return {key,peer};
+}
+void RemovePeer(uint64_t key) {
     lock_guard lock(peerMutex);
     peerPool.erase(key);
 }
-
-// -----------------------------------------------------------发送消息函数---------------------------------------------------------------------------------------------
-
+void ClosePeer(const shared_ptr<Peer>& peer) {
+    if (peer->closed) return;
+    peer->closed=true;
+    boost::system::error_code ignored;
+    peer->deadline.cancel();
+    peer->socket.close(ignored);
+    peer->messageQueue.clear();
+    peer->queuedBytes=0;
+    if (peer->key) RemovePeer(peer->key);
+}
+void PeerError(const shared_ptr<Peer>& peer,exception_ptr error) {
+    if (error) {
+        try { rethrow_exception(error); }
+        catch (const exception& e) { spdlog::warn("Peer error: {}",e.what()); }
+    }
+    ClosePeer(peer);
+}
 awaitable<void> WriteLoop(shared_ptr<Peer> peer) {
-    while (!peer->messageQueue.empty()) {
+    while (!peer->closed&&!peer->messageQueue.empty()) {
+        auto data=peer->messageQueue.front();
         boost::system::error_code ec;
-        co_await async_write(peer->socket, buffer(peer->messageQueue.front()), redirect_error(use_awaitable, ec));
-        if (ec) {
-            spdlog::info("Send failed: {}", ec.message());
-            boost::system::error_code ignored;
-            peer->socket.close(ignored);
-            peer->messageQueue.clear();
-            peer->writing = false;
-            co_return;
-        }
+        co_await async_write(peer->socket,buffer(*data),redirect_error(use_awaitable,ec));
+        if (ec||peer->closed) { ClosePeer(peer); co_return; }
+        peer->queuedBytes-=data->size();
         peer->messageQueue.pop_front();
     }
-    peer->writing = false;
+    peer->writing=false;
 }
-
-awaitable<void> QueueSend(shared_ptr<Peer> peer, std::vector<uint8_t> data) {
-    peer->messageQueue.push_back(std::move(data));
-    if (!peer->writing) {
-        peer->writing = true;
-        co_spawn(peer->strand, WriteLoop(peer), detached);
-    }
-    co_return;
+void SendData(const shared_ptr<Peer>& peer,shared_ptr<const vector<uint8_t>> data) {
+    if (!peer||!data||data->empty()) return;
+    post(peer->strand,[peer,data=std::move(data)] {
+        if (peer->closed) return;
+        if (data->size()>maxSendBytes||peer->queuedBytes>maxSendBytes-data->size()) { ClosePeer(peer); return; }
+        peer->queuedBytes+=data->size();
+        peer->messageQueue.push_back(data);
+        if (!peer->writing) {
+            peer->writing=true;
+            co_spawn(peer->strand,WriteLoop(peer),[peer](exception_ptr error){if (error) PeerError(peer,error);});
+        }
+    });
 }
-
-void SendData(std::shared_ptr<Peer> peer, std::vector<uint8_t> data) {
-    co_spawn(peer->strand, QueueSend(peer, data), detached);
+void SendData(const shared_ptr<Peer>& peer,vector<uint8_t> data) {
+    SendData(peer,make_shared<const vector<uint8_t>>(std::move(data)));
 }
-
-awaitable<void> BroadcastData(vector<uint8_t> byte) {
-    unordered_map<uint64_t,shared_ptr<Peer>> peers;
+// 普通函数只负责投递，调用它就会安排广播；大缓冲区在节点间共享。
+void BroadcastData(vector<uint8_t> data) {
+    auto shared=make_shared<const vector<uint8_t>>(std::move(data));
+    vector<shared_ptr<Peer>> peers;
     {
         lock_guard lock(peerMutex);
-        peers = peerPool;
+        for (const auto& [key,peer]:peerPool) peers.push_back(peer);
     }
-    for (auto& peer : peers) {
-        SendData(peer.second, byte);
-    }
-    co_return;
+    for (const auto& peer:peers) SendData(peer,shared);
 }
-// -----------------------------------------------------------客户端入口函数---------------------------------------------------------------------------------------------
-awaitable<void> Connect(array<uint8_t, 4> ipByte,uint16_t port) {
-    // 初始化 ec
-    boost::system::error_code ec;
-    // 创造地址
-    ip::address_v4 addr(ipByte);
-    tcp::endpoint endpoint(addr,port);
-    if (ec) {spdlog::info(ec.message());co_return;}
-    // 检查重连逻辑
-    auto ip = endpoint.address().to_v4().to_bytes();
-    uint64_t key =0;
-    memcpy(&key, &ip, 4);
-    memcpy(&key+4, &port, 2);
-    lock_guard lock(peerMutex);
-    if (peerPool.count(key)!=0)co_return;
-    // 初始化 executor 和 ec
-    auto executor = co_await this_coro::executor;
-
-    tcp::socket socket(executor);
-    co_await socket.async_connect(endpoint,redirect_error(use_awaitable, ec));
-    if (ec) {spdlog::info(ec.message());co_return;}
-    array<uint8_t, 1> data;
-    data[0] = 1;
-    co_await async_write(socket,buffer(data),redirect_error(use_awaitable,ec));
-    AddPeer(move(socket));
-    co_return;
-}
-awaitable<void> ConnectSeed() {
-    co_await Connect(ip::make_address("127.0.0.1").to_v4().to_bytes(),8089);
-    // 以下为测试代码
-    auto executor = co_await this_coro::executor;
-    steady_timer timer(executor);
-    for (;;) {
-        vector<uint8_t> byte={1,2,3};
-        co_await BroadcastData(byte);
-        timer.expires_after(std::chrono::seconds(1));
-        co_await timer.async_wait(use_awaitable);
-    }
-    cout<<"Message Send";
-    co_return;
-}
-// -----------------------------------------------------------客户端定时函数---------------------------------------------------------------------------------------------
-
-awaitable<void> QueryHeight(shared_ptr<Peer>& peer) {
-    vector<uint8_t> messageByte={4};
-    SendData(peer,messageByte);
-}
-awaitable<void> QueryBlock( shared_ptr<Peer>& peer,uint64_t blockNum) {
-    vector<uint8_t> messageByte;
-    messageByte.resize(9);
-    uint8_t type = 6;
-    memcpy(messageByte.data(),&type,1);
-    memcpy(messageByte.data(),&blockNum,8);
-    SendData(peer,messageByte);
+void QueryHeight(const shared_ptr<Peer>& peer) { SendData(peer,GenerateMessage(4,{})); }
+void QueryBlock(const shared_ptr<Peer>& peer,uint64_t height) {
+    array<uint8_t,8> data;
+    WriteU64(data.data(),height);
+    SendData(peer,GenerateMessage(6,data));
 }
 
-awaitable<void> SyncBlock() {
-    co_await QueryHeight(peerPool[0]);
-    auto maxHeight = DBReadBlockMaxHeight();
-    auto currentHeight = DBReadBlockHeight();
-    if (maxHeight>currentHeight) {
-        while (currentHeight<maxHeight) {
-            QueryBlock(peerPool[0],currentHeight+1);
-            currentHeight +=1;
+// ------------------------------------------------连接、发现和同步------------------------------------------------
+awaitable<void> Connect(array<uint8_t,4> ipByte,uint16_t port) {
+    auto executor=co_await this_coro::executor;
+    if (!port||connectionCount>=maxConnections) co_return;
+    {
+        lock_guard lock(peerMutex);
+        for (const auto& [key,peer]:peerPool) {
+            if (peer->port==port&&peer->address==ipByte) co_return;
         }
     }
+    auto peer=make_shared<Peer>(tcp::socket(executor));
+    boost::system::error_code ec;
+    peer->deadline.expires_after(seconds(5));
+    peer->deadline.async_wait([peer](boost::system::error_code error){if (!error) ClosePeer(peer);});
+    co_await peer->socket.async_connect(tcp::endpoint(ip::address_v4(ipByte),port),redirect_error(use_awaitable,ec));
+    peer->deadline.cancel();
+    if (ec) co_return;
+    peer->socket.set_option(tcp::no_delay(true),ec);
+    array<uint8_t,3> hello{1,uint8_t(listenPort),uint8_t(listenPort>>8)};
+    co_await async_write(peer->socket,buffer(hello),redirect_error(use_awaitable,ec));
+    if (ec) co_return;
+    auto endpoint=peer->socket.remote_endpoint();
+    peer->key=GetPeerKey(ipByte,endpoint.port());
+    peer->port=port;
+    peer->address=ipByte;
+    {
+        lock_guard lock(peerMutex);
+        if (peerPool.size()>=64||peerPool.count(peer->key)) co_return;
+        peerPool.emplace(peer->key,peer);
+    }
+    co_spawn(peer->strand,session(peer->key,peer),[peer](exception_ptr error){PeerError(peer,error);});
+    QueryHeight(peer);
 }
-
-// -----------------------------------------------------------消息函数---------------------------------------------------------------------------------------------
-// 节点发现消息生成函数：当一个节点向本节点请求节点信息时候，返回此数据。
-// 主要作用为打包节点池的数据，序列化为 vector。
+awaitable<void> ConnectSeed(const string& host="127.0.0.1",uint16_t port=8089) {
+    co_await Connect(ip::make_address_v4(host).to_bytes(),port);
+}
 vector<uint8_t> GenerateDiscoverMessage() {
-    // 消息头填充
-    vector<uint8_t> message;
+    vector<uint8_t> data;
     lock_guard lock(peerMutex);
-    uint32_t size = peerPool.size()*6;
-    message.resize(size);
-
-    int offset = 0;
-    uint8_t type = 9;
-    memcpy(message.data(),&type,1);
-    offset += 1;
-    memcpy(message.data(),&size,4);
-    offset += 4;
-
-    // 消息体填充
-    for (auto i : peerPool) {
-        memcpy(message.data()+offset,i.second->socket.remote_endpoint().address().to_v4().to_bytes().data(),4);
-        offset += 4;
-        uint16_t port  = i.second->socket.remote_endpoint().port();
-        memcpy(message.data()+offset,&port,2);
-        offset += 2;
+    data.reserve(peerPool.size()*6);
+    for (const auto& [key,peer]:peerPool) {
+        if (!peer->port) continue;
+        auto addr=peer->address;
+        data.insert(data.end(),addr.begin(),addr.end());
+        data.push_back(uint8_t(peer->port));
+        data.push_back(uint8_t(peer->port>>8));
     }
-    return message;
+    return GenerateMessage(9,data);
 }
-awaitable<void> ProcessDiscoverMessage(vector<uint8_t> message) {
-    auto executor = co_await this_coro::executor;
-    auto len = message.size();
-    if (len%6!=0) {
-        co_return;
+awaitable<void> ProcessDiscoverMessage(vector<uint8_t> data) {
+    if (data.size()%6!=0||data.size()>64*6) co_return;
+    auto executor=co_await this_coro::executor;
+    for (size_t offset=0;offset<data.size();offset+=6) {
+        array<uint8_t,4> addr;
+        memcpy(addr.data(),data.data()+offset,4);
+        auto port=uint16_t(data[offset+4])|(uint16_t(data[offset+5])<<8);
+        if (ip::address_v4(addr).is_loopback()&&port==listenPort) continue;
+        co_spawn(executor,Connect(addr,port),[](exception_ptr error) {
+            if (error) { try { rethrow_exception(error); } catch (const exception& e) { spdlog::warn("Connect: {}",e.what()); } }
+        });
     }
-    int offset = 0;
-    for (int i=0;i<=len/6-1;i++) {
-        array<uint8_t,4> ipByte;
-        uint16_t port;
-        memcpy(ipByte.data(),message.data()+offset,4);
-        memcpy(&port,message.data()+offset+4,2);
-        offset+=6;
-        co_spawn(executor,Connect(ipByte,port));
+}
+awaitable<void> SyncBlock(shared_ptr<Peer> peer) {
+    steady_timer timer(co_await this_coro::executor);
+    while (!peer->closed&&DBReadBlockHeight()<peer->remoteHeight) {
+        auto height=DBReadBlockHeight()+1;
+        QueryBlock(peer,height);
+        auto end=steady_clock::now()+seconds(5);
+        while (!peer->closed&&DBReadBlockHeight()<height&&steady_clock::now()<end) {
+            timer.expires_after(milliseconds(10));
+            co_await timer.async_wait(use_awaitable);
+        }
+        if (DBReadBlockHeight()<height) break;
+    }
+    peer->syncing=false;
+}
+awaitable<void> OpenDiscoveryMode() {
+    steady_timer timer(co_await this_coro::executor);
+    while (nodeRunning) {
+        vector<shared_ptr<Peer>> peers;
+        {
+            lock_guard lock(peerMutex);
+            for (const auto& [key,peer]:peerPool) peers.push_back(peer);
+        }
+        for (const auto& peer:peers) QueryHeight(peer);
+        timer.expires_after(seconds(1));
+        co_await timer.async_wait(use_awaitable);
     }
 }
 vector<uint8_t> GenerateTxsMessage() {
-    // 复制交易池
-    unordered_map<array<uint8_t, 32>, array<uint8_t, 176>, GetMapHash> txPoolCopy;
-    vector<uint8_t> message;
+    vector<uint8_t> data;
+    lock_guard lock(txpoolMutex);
+    data.reserve(min(size_t(256),txpool.size())*176);
+    for (const auto& [hash,tx]:txpool) {
+        if (data.size()==256*176) break;
+        data.insert(data.end(),tx.begin(),tx.end());
+    }
+    return GenerateMessage(10,data);
+}
+void ProcessTxTimeACKMessage(const vector<uint8_t>& data,system_clock::time_point T4,const shared_ptr<Peer>& peer) {
+    if (data.size()!=16||peer->T1==system_clock::time_point{}) return;
+    auto T2=system_clock::time_point(milliseconds(ReadU64(data.data())));
+    auto T3=system_clock::time_point(milliseconds(ReadU64(data.data()+8)));
+    // lag 只保存 RTT/2；时钟偏移不用于调整出块时间。
+    peer->lag=duration_cast<milliseconds>((T4-peer->T1)-(T3-T2))/2;
+}
+
+// ------------------------------------------------出块循环------------------------------------------------
+void MainLoop() {
+    try {
+        while (true) {
+            {
+                unique_lock lock(txpoolMutex);
+                txpoolCondition.wait(lock,[]{return !nodeRunning||blockReady||(produceBlocks&&!txpool.empty());});
+                if (!nodeRunning&&!blockReady&&(!produceBlocks||txpool.empty())) break;
+                if (produceBlocks&&!blockReady&&nodeRunning&&txpool.size()<maxBlockTx) {
+                    txpoolCondition.wait_for(lock,milliseconds(blockInterval),[]{return !nodeRunning||blockReady||txpool.size()>=maxBlockTx;});
+                }
+            }
+            if (produceBlocks&&!blockReady) {
+                auto data=GenerateBlock();
+                if (!data.empty()) ProcessBlock(std::move(data));
+            }
+            pair<Block,vector<uint8_t>> selected;
+            {
+                lock_guard lock(blockBufferLock);
+                selected=std::move(BlockBuffer[0]);
+                BlockBuffer[0]={};
+                blockReady=false;
+            }
+            if (selected.second.empty()) continue;
+            if (!CommitBlock(selected.first,selected.second)) {
+                spdlog::warn("Rejected candidate at height {}",selected.first.height);
+                continue;
+            }
+            BroadcastData(GenerateNewBlockMessage(selected.second));
+            spdlog::debug("Local block committed. Height:{}, TxNum:{}",selected.first.height,selected.first.txNum);
+        }
+    } catch (const exception& e) {
+        spdlog::error("MainLoop stopped: {}",e.what());
+        nodeFailed=true;
+        nodeRunning=false;
+        if (nodeIO) nodeIO->stop();
+    }
+}
+nlohmann::json GetNodeStats() {
+    size_t poolSize;
+    size_t peers;
     {
         lock_guard lock(txpoolMutex);
-        txPoolCopy = txpool;
+        poolSize=txpool.size();
     }
-    int num = txPoolCopy.size();
-    message.resize(5+num*176);
-    // 填充 type
-    uint8_t type = 10;
-    int offset = 0;
-    memcpy(message.data()+offset,&type,1);
-    offset += 1;
-    // 填充 length
-    uint32_t length=64;
-    memcpy(message.data()+offset,&length,4);
-    // 填充消息体
-    for (auto pair: txPoolCopy) {
-        memcpy(message.data()+offset,pair.second.data(),pair.second.size());
-        offset += pair.second.size();
-    }
-    return message;
-}
-// 计算节点延迟
-void ProcessTxTimeACKMessage(vector<uint8_t> message,system_clock::time_point T4,shared_ptr<Peer> peer) {
-    long long T2Data,T3Data;
-    memcpy(&T2Data,message.data(),8);
-    memcpy(&T3Data,message.data()+8,8);
-    system_clock::time_point T2{milliseconds(T2Data)};
-    system_clock::time_point T3{milliseconds(T3Data)};
-    auto duration = milliseconds((T2-peer->T1+T3-T4).count()/2);
-    peer->lag=duration;
-}
-
-// -----------------------------------------------------------循环函数---------------------------------------------------------------------------------------------
-// 需要实现的有：过时的区块不再接收 - 过时的定义为 如当前高度为 L，则小于等于 L 的区块都不接收 逻辑已经实现在 ProcessBlock
-//
-void OpenShareTxMode() {
-    while (true) {
-        unordered_map<uint64_t,shared_ptr<Peer>> peers;
-        {
-            lock_guard lock(peerMutex);
-            peers = peerPool;
-        }
-        for (auto i : peers) {
-            SendData(i.second,GenerateTxsMessage());
-            i.second->T1=system_clock::now();
-        }
-        sleep(2);
-    }
-}
-milliseconds ComputeResonanceLag(vector<pair<uint64_t, milliseconds>> ResonanceCopy ) {
-    unordered_map<uint64_t, int> count;
-    unordered_map<uint64_t, milliseconds> sum;
     {
-        for (auto& [height, bias] : ResonanceCopy) {
-            count[height]++;
-            sum[height] += bias;
-        }
-
-        if (count.empty()) {
-            return milliseconds{0};
-        }
-
-        uint64_t highest = 0;
-        int bestCount = 0;
-
-        for (auto& [height, c] : count) {
-            if (c > bestCount) {
-                highest = height;
-                bestCount = c;
-            }
-        }
-
-        return sum[highest] / bestCount;
+        lock_guard lock(peerMutex);
+        peers=peerPool.size();
     }
+    auto first=firstTxTime.load();
+    auto last=lastCommitTime.load();
+    double elapsed=last>first&&first?double(last-first)/1e9:0;
+    lock_guard lock(dbCommitMutex);
+    return {{"received",receivedTx.load()},{"valid",validTx.load()},{"invalid",invalidTx.load()},
+        {"duplicate",duplicateTx.load()},{"rejected",rejectedTx.load()},{"committed",committedTx.load()},
+        {"pool",poolSize},{"pending",pendingVerify.load()},{"peak_pending",peakPendingVerify.load()},
+        {"blocks",blockCount.load()},{"height",DBReadBlockHeight()},{"head",U32ToHex(DBReadCurrentBlock())},
+        {"elapsed_seconds",elapsed},{"local_commit_tps",elapsed>0?committedTx.load()/elapsed:0},
+        {"verify_worker_ms",verifyNs.load()/1e6},{"pool_worker_ms",poolNs.load()/1e6},
+        {"tx_commit_wait_ms",txCommitWaitNs.load()/1e6},{"tx_read_ms",txReadNs.load()/1e6},
+        {"tx_pool_wait_ms",txPoolWaitNs.load()/1e6},{"block_commit_ms",blockCommitNs.load()/1e6},
+        {"queue_wait_ms",queueWaitNs.load()/1e6},{"block_build_ms",blockBuildNs.load()/1e6},
+        {"block_verify_ms",blockVerifyNs.load()/1e6},{"db_write_ms",dbWriteNs.load()/1e6},
+        {"db_writes",dbWriteCount.load()},{"network_bytes",networkBytes.load()},{"sync",dbSync},
+        {"bloom_useful",options.statistics->getTickerCount(rocksdb::BLOOM_FILTER_USEFUL)},
+        {"peers",peers},{"failed",nodeFailed.load()}};
 }
-void MainLoop() {
-
-    auto bias = steady_clock::now()-steady_clock::now();
-    while (true) {
-        // 等待 200 ms
-        auto waitTime = steady_clock::now() + milliseconds(100);
-        while (steady_clock::now()+bias < waitTime) {
-            this_thread::sleep_for(milliseconds(10));
-        }
-
-        // 调整周期时长
-        vector<pair<uint64_t, milliseconds>> ResonanceCopy;
-        {
-            lock_guard lock(ResonanceMutex);
-            ResonanceCopy  = ResonanceLag;
-            ResonanceLag.clear();
-        }
-        auto lag = ComputeResonanceLag(ResonanceCopy);
-        // 500 ms 处理区块
-        endTime = steady_clock::now() + milliseconds(500) + lag;
-        // 生成区块
-
-        auto data=GenerateBlock();
-        if (data.size()==0) {
-            this_thread::sleep_for(std::chrono::milliseconds(500));
-            continue;
-        }
-        // 放入区块池
-        ProcessBlock(data);
-        // 广播区块
-        BroadcastData(GenerateNewBlockMessage(data));
-        //  确认区块
-        pair<Block,vector<uint8_t>> block;
-        // 更新当前区块 Hash 和 高度
-        {
-            lock_guard lock(blockBufferLock);
-            block = BlockBuffer[0];
-            BlockBuffer[0]=BlockBuffer[1];
-            BlockBuffer[1]=BlockBuffer[2];
-            epoch=epoch+1;
-        }
-        // 验证 previousHash
-        array<uint8_t, 32> previousHash=DBReadCurrentBlock();
-        if (block.first.previousHash==previousHash) {
-            DBWriteBlockHeight(block.first.height);
-            auto height  =block.first.height;
-            DBWriteCurrentBlock(block.first.hash);
-            // 写入区块
-            DBWriteBlockALL(block.first.hash,block.second);
-            int num = 0;
-            // 写入交易
-            for (auto tx : block.first.txs) {
-                num++;
-                array<uint8_t,32> txHash;
-                memcpy(txHash.data(),tx.data()+80,32);
-                DBWriteTx(txHash,tx);
-            }
-            spdlog::info("New Block Confirmed! Height:{},TxNum:{},Hash:{}",block.first.height,num,U32ToHex(block.first.hash));
-            while (steady_clock::now() < endTime) {
-                // 等待时间流逝
-            }
-        }
-
-
-        if (steady_clock::now() > endTime) {
-            bias = bias + (steady_clock::now()-endTime);
-        }
-
-        while (steady_clock::now() < endTime) {
-            this_thread::sleep_for(milliseconds(10));
-        }
-        // 发起共振
-        BroadcastData(GenerateHeightMessage());
-
-    }
-}
-
-void OpenDiscoveryMode() {
-    while (true) {
-        bool enough = true;
-        {
-            lock_guard lock(peerMutex);
-            if (!peerPool.size()<10) {
-                enough = false;
-            }
-        }
-        if (enough == false) {
-            unordered_map<uint64_t,shared_ptr<Peer>> peers;
-            {
-                lock_guard lock(peerMutex);
-                peers = peerPool;
-            }
-            for (auto i : peers) {
-                SendData(i.second,GenerateRequestDiscoveryMessage());
-            }
-            {
-                lock_guard lock(peerMutex);
-                if (!peerPool.size()>20) break;
-            }
-        }
-        sleep(60);
-    }
-}
-
-#endif //CHAIN_CLIENT_H
+#endif

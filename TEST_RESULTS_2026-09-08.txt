@@ -1,0 +1,50 @@
+Chain verification - 2026-09-08
+Source SHA256 values and all benchmark samples: PERFORMANCE_RESULTS_2026-09-08.json
+
+Release build: boost, sender, crypto, chain_test, bench all passed.
+Core regression: PASS 2237 assertions.
+CTest after fixing Windows runtime DLL search order:
+Test project C:/Users/61485/Documents/Codex/2026-09-08/yue-d/work/chain-fix-build
+    Start 1: ChainCorrectness
+1/2 Test #1: ChainCorrectness .................   Passed    0.24 sec
+    Start 2: ChainNetwork
+2/2 Test #2: ChainNetwork .....................   Passed    4.29 sec
+
+100% tests passed, 0 tests failed out of 2
+
+Total Test time (real) =   4.53 sec
+
+Network scenarios:
+{
+  "passed": 9,
+  "checks": [
+    "slow handshake does not block accept loop",
+    "bad type, oversized and malformed length rejected before payload allocation",
+    "invalid signatures rejected in transaction and sync block paths",
+    "fragmented frame and complete batch handled; replay does not commit twice",
+    "4096 unique network transactions committed without loss",
+    "late follower verifies history and reaches same height/head",
+    "live block broadcast and bidirectional peer connection remain active",
+    "process termination/restart restores committed head and rejects replay",
+    "timed graceful shutdown with an active peer exits cleanly and writes metrics"
+  ],
+  "work": "C:\\Users\\61485\\Documents\\Codex\\2026-09-08\\yue-d\\work\\chain-fix-build\\network-test-data\\1788843019768556800"
+}
+
+Git date/sync isolated integration: invalid commit title rejected; date prefix added; local commit and bare remote verified; ordinary post-commit push passed.
+Final SSD/HDD: 36 x 500000 locally committed transactions; no invalid/rejected/pending/pool remainder.
+Two-node replication: 3 x 100000 transactions; both durable stores reached the same head.
+Earlier CTest launch failures were traced to Strawberry/Poppler DLLs being selected from PATH. CMake test environment now prepends the compiler runtime directory.
+Not run: ThreadSanitizer, physical power-loss, physical multi-host consensus, account/UTXO state execution benchmark.
+
+Final verification directly from D:\Project\Chain source:
+Fresh Release build: 5 targets built successfully.
+Test project C:/Users/61485/Documents/Codex/2026-09-08/yue-d/work/chain-project-check
+    Start 1: ChainCorrectness
+1/2 Test #1: ChainCorrectness .................   Passed    0.33 sec
+    Start 2: ChainNetwork
+2/2 Test #2: ChainNetwork .....................   Passed    4.64 sec
+
+100% tests passed, 0 tests failed out of 2
+
+Total Test time (real) =   4.98 sec

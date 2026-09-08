@@ -31,6 +31,10 @@ try {
     if ($diffExit -gt 1) { throw 'Cannot inspect staged changes.' }
     if ($diffExit -eq 1) {
         if ([string]::IsNullOrWhiteSpace($Message)) { throw 'Provide -Message to commit staged changes.' }
+        $Message = $Message.Trim()
+        if ($Message -notmatch '^\d{4}-\d{2}-\d{2} \S') {
+            $Message = (Get-Date -Format 'yyyy-MM-dd') + ' ' + $Message
+        }
         & git diff --cached --stat
         $oldSkip = [Environment]::GetEnvironmentVariable('CHAIN_SKIP_AUTO_PUSH', 'Process')
         try {

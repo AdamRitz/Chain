@@ -22,17 +22,19 @@ push.default = current
 
 ## 使用
 
+提交标题使用 `YYYY-MM-DD 描述`。`commit-msg` 钩子检查格式；同步脚本在只提供描述时自动加上本机当天日期。完整日期标题也可以原样传入。
+
 在项目根目录，提交明确的文件：
 
 ```powershell
 git add -- Transaction/Transaction.h
-powershell -NoProfile -ExecutionPolicy RemoteSigned -File scripts/Sync-Repo.ps1 -Message "fix: validate transaction payload hash"
+powershell -NoProfile -ExecutionPolicy RemoteSigned -File scripts/Sync-Repo.ps1 -Message "2026-09-08 修复交易内容校验"
 ```
 
 该脚本提交当前暂存区的全部内容，所以运行前应查看 `git diff --cached`。如果确认当前所有未忽略修改都要提交，可以运行：
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy RemoteSigned -File scripts/Sync-Repo.ps1 -All -Message "chore: save project updates"
+powershell -NoProfile -ExecutionPolicy RemoteSigned -File scripts/Sync-Repo.ps1 -All -Message "保存项目更新"
 ```
 
 脚本在提交时暂时避免重复调用推送钩子，然后显式推送并比较本地/远端 Hash。没有新提交时也能用于补推送：

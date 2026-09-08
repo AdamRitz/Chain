@@ -1,189 +1,203 @@
-//
-// Created by DonQuixote on 2026/5/5.
-//
-
 #ifndef CHAIN_BLOCK_H
 #define CHAIN_BLOCK_H
-#include <array>
-#include <cstdint>
 #include "Transaction.h"
-#include "../Key/Key.h"
-#include "../DB/DB.h"
 #include "../Crypto/MerkleTree.h"
-#include "Remotery.h"
-// -----------------------------------------------------------------------区块定义-------------------------------------------------------------------------------------------------
+using namespace std;
+
 struct Block {
-    // 区块头 80 字节
-    array<uint8_t,32> previousHash;
-    array<uint8_t,32> merkleRoot;
-    uint64_t height;
-    uint64_t txNum;
-    array<uint8_t,32> hash;
-    // 交易数据
+    array<uint8_t,32> previousHash{};
+    array<uint8_t,32> merkleRoot{};
+    uint64_t height=0;
+    uint64_t txNum=0;
+    array<uint8_t,32> hash{};
     vector<array<uint8_t,176>> txs;
 };
-uint64_t epoch = 2;
+uint64_t epoch=2;
 pair<Block,vector<uint8_t>> BlockBuffer[3];
 mutex blockBufferLock;
-unordered_map<uint64_t,Block> blockPool;
-mutex blockMutex;
+atomic<uint64_t> blockBuildNs{0},blockVerifyNs{0},blockCount{0};
+atomic<uint64_t> blockCommitNs{0};
+atomic<bool> blockReady{false};
 
-// -----------------------------------------------------------------------区块序列化/反序列化-------------------------------------------------------------------------------------------------
+// ------------------------------------------------序列化和反序列化------------------------------------------------
 array<uint8_t,80> SerializeBlockHeader(const Block& block) {
     array<uint8_t,80> header{};
-    int offset = 0;
-    memcpy(header.data()+offset,block.previousHash.data(),32);
-    offset += 32;
-    memcpy(header.data()+offset,block.merkleRoot.data(),32);
-    offset += 32;
-    memcpy(header.data()+offset,&block.height,8);
-    offset += 8;
-    memcpy(header.data()+offset,&block.txNum,8);
-    offset += 8;
+    memcpy(header.data(),block.previousHash.data(),32);
+    memcpy(header.data()+32,block.merkleRoot.data(),32);
+    WriteU64(header.data()+64,block.height);
+    WriteU64(header.data()+72,block.txNum);
     return header;
 }
-
-Block UnSerializeBlock(const vector<uint8_t>& blockByte) {
-    Block block{};
-    int offset = 0;
-    memcpy(block.previousHash.data(),blockByte.data(),32);
-    offset += 32;
-    memcpy(block.merkleRoot.data(),blockByte.data()+offset,32);
-    offset += 32;
-    memcpy(&block.height,blockByte.data()+offset,8);
-    offset += 8;
-    memcpy(&block.txNum,blockByte.data()+offset,8);
-    offset += 8;
-    memcpy(block.hash.data(),blockByte.data()+offset,32);
-    offset += 32;
-    block.txs.resize(block.txNum);
-    memcpy(block.txs.data(),blockByte.data()+offset,block.txNum*176);
-    return block;
-}
-// -----------------------------------------------------------------------区块生成/验证-------------------------------------------------------------------------------------------------
-vector<uint8_t> GenerateBlock() {
-    Block block;
-    block.previousHash=DBReadCurrentBlock();
-    vector<array<uint8_t,32>> txhashs;
-    // 此处加锁是因为一个线程在添加交易到交易池，另一个线程产生区块。
-    if (txpool.size()==0) {
-        vector<uint8_t> txbyte{};
-        return txbyte;
-    }
-    {
-        lock_guard<mutex> lock(txpoolMutex);
-        int num = 0;
-        for (auto kv =txpool.begin(); kv != txpool.end(); ) {
-            if (num==6000)break;
-            block.txs.emplace_back(kv->second);
-            txhashs.push_back(kv->first);
-            kv = txpool.erase(kv);
-            num++;
-        }
-    }
-    block.merkleRoot=MerkleCompute(txhashs);
-    block.height=epoch;
-    block.txNum=block.txs.size();
-    array<uint8_t,80> blockHeaderByte= SerializeBlockHeader(block);
-    crypto_generichash(block.hash.data(),32,blockHeaderByte.data(),80,nullptr,0);
-    vector<uint8_t> blockData;
-    blockData.resize(80+block.txNum*176+32);
-    memcpy(blockData.data(),blockHeaderByte.data(),80);
-    memcpy(blockData.data()+80,block.hash.data(),32);
-    int offset = 80+32;
-    for (auto tx : block.txs) {
-        memcpy(blockData.data()+offset,tx.data(),176);
-        offset += 176;
-    }
-
-    return blockData;
-}
-
-// 验证是否是新区块、合法区块；不是则丢弃；
-bool VerifyBlock(vector<uint8_t> blockByte) {
-    // 反序列化
-    Block block=UnSerializeBlock(blockByte);
-
-    // 验证 Hash
-    auto blockHeader = SerializeBlockHeader(block);
-    array<uint8_t,32> hash;
-    crypto_generichash(hash.data(),32,blockHeader.data(),80,nullptr,0);
-    if (block.hash!=hash) {
-        return false;
-    }
-    // 验证 交易正确性 和 MerkleRoot
-    vector<array<uint8_t,32>> txHashs;
-    for (auto tx : block.txs) {
-        if (VerifyTransaction(tx)==false) {
-            spdlog::info("Block's Tx Verification Failed");
-        };
-        array<uint8_t,32> txHash;
-        memcpy(txHash.data(),tx.data()+80,32);
-        txHashs.emplace_back(txHash);
-    }
-    if (MerkleCompute(txHashs)!=block.merkleRoot) {
-        return false;
-    }
+bool UnSerializeBlock(const vector<uint8_t>& data,Block& block) {
+    if (data.size()<112) return false;
+    auto num=ReadU64(data.data()+72);
+    if (num>6000||num>(data.size()-112)/176||data.size()!=112+num*176) return false;
+    memcpy(block.previousHash.data(),data.data(),32);
+    memcpy(block.merkleRoot.data(),data.data()+32,32);
+    block.height=ReadU64(data.data()+64);
+    block.txNum=num;
+    memcpy(block.hash.data(),data.data()+80,32);
+    block.txs.resize(num);
+    if (num) memcpy(block.txs.data(),data.data()+112,num*176);
     return true;
 }
-
-// 创世块生成
-void GenerateGenesisBlock() {
+Block UnSerializeBlock(const vector<uint8_t>& data) {
     Block block;
-    block.previousHash={};
-    block.merkleRoot={};
-    block.height=1;
-    block.txNum=0;
-    array<uint8_t,80> blockHeaderByte= SerializeBlockHeader(block);
-    crypto_generichash(block.hash.data(),32,blockHeaderByte.data(),80,nullptr,0);
-    vector<array<uint8_t,32>> txhashs;
-    DBWriteCurrentBlock(block.hash);
-    DBWriteBlockHeight(block.height);
-    vector<uint8_t> blockData;
-    blockData.resize(80+32);
-    memcpy(blockData.data(),blockHeaderByte.data(),80);
-    memcpy(blockData.data()+80,block.hash.data(),32);
-    DBWriteBlockALL(block.hash,blockData);
-    spdlog::info("Genesis Block Generated. Current Block Height: 1 ");
+    if (!UnSerializeBlock(data,block)) throw invalid_argument("Invalid block length");
+    return block;
 }
-// -----------------------------------------------------------------------核心入口函数：区块处理/定时打包区块-------------------------------------------------------
+vector<uint8_t> SerializeBlockALL(Block& block) {
+    block.txNum=block.txs.size();
+    auto header=SerializeBlockHeader(block);
+    crypto_generichash(block.hash.data(),32,header.data(),header.size(),nullptr,0);
+    vector<uint8_t> data(112+block.txNum*176);
+    memcpy(data.data(),header.data(),80);
+    memcpy(data.data()+80,block.hash.data(),32);
+    if (block.txNum) memcpy(data.data()+112,block.txs.data(),block.txNum*176);
+    return data;
+}
 
-
-
-
-// -----------------------------------------------------------------------核心入口函数：区块处理/定时打包区块-------------------------------------------------------
-// 网络中收到区块时交给该入口函数处理，此处只把区块放入 blockBuffer，不写入区块链。由主定时函数定时读取 blockBuffer 写入区块链。
-void ProcessBlock(vector<uint8_t> blockByte) {
-    rmt_ScopedCPUSample(ProcessBlock, RMTSF_Aggregate);
-    // 1.验证区块
-    if (VerifyBlock(blockByte)== false) {
-        spdlog::info("Block Verification Failed");
-        return;
+// ------------------------------------------------区块生成和验证------------------------------------------------
+vector<uint8_t> GenerateBlock() {
+    auto start=GetSteadyTime();
+    Block block;
+    {
+        lock_guard lock(dbCommitMutex);
+        auto height=DBReadBlockHeight();
+        if (height==UINT64_MAX) throw runtime_error("Block height overflow");
+        block.height=height+1;
+        block.previousHash=DBReadCurrentBlock();
     }
-    // 2.反序列化
-    Block block=UnSerializeBlock(blockByte);
-    if (blockPool.count(block.height)!=0) {
-
-    }
-    // 3.判断是否放入缓存 0 < block.height - height < 3
-    //  （1）交易多被选中 （2）交易相等，则 Hash 小的被选中
-    if (block.height - epoch >=0 && block.height - epoch <=2) {
-        if ((block.txNum > BlockBuffer[block.height - epoch].first.txNum) || block.txNum == BlockBuffer[block.height - epoch].first.txNum&&block.hash < BlockBuffer[block.height].first.hash) {
-            BlockBuffer[block.height - epoch].first = block;
-            BlockBuffer[block.height - epoch].second = blockByte;
+    vector<pair<array<uint8_t,32>,array<uint8_t,176>>> selected;
+    {
+        lock_guard lock(txpoolMutex);
+        selected.reserve(min(maxBlockTx,txpool.size()));
+        for (const auto& tx:txpool) {
+            if (selected.size()==maxBlockTx) break;
+            selected.push_back(tx);
         }
     }
-
-
+    if (selected.empty()) return {};
+    sort(selected.begin(),selected.end(),[](const auto& a,const auto& b){return a.first<b.first;});
+    vector<array<uint8_t,32>> hashes;
+    hashes.reserve(selected.size());
+    block.txs.reserve(selected.size());
+    for (const auto& [hash,tx]:selected) { hashes.push_back(hash); block.txs.push_back(tx); }
+    // 提议时不删除交易；写库成功后再移除。
+    block.merkleRoot=MerkleCompute(hashes);
+    auto data=SerializeBlockALL(block);
+    blockBuildNs+=GetSteadyTime()-start;
+    return data;
 }
-
-
-void PeriodTxMonitor() {
-    sleep(1);
+bool VerifyBlock(const vector<uint8_t>& data,Block* result=nullptr) {
+    auto start=GetSteadyTime();
+    Block block;
+    if (!UnSerializeBlock(data,block)) return false;
+    auto header=SerializeBlockHeader(block);
+    array<uint8_t,32> hash;
+    crypto_generichash(hash.data(),32,header.data(),header.size(),nullptr,0);
+    if (hash!=block.hash) return false;
+    vector<array<uint8_t,32>> hashes;
+    hashes.reserve(block.txNum);
+    unordered_set<array<uint8_t,32>,GetMapHash> unique;
+    unique.reserve(block.txNum);
+    vector<bool> verified(block.txNum,false);
     {
-        lock_guard<mutex> lock(txpoolMutex);
-        spdlog::info("TX num in pool: {}",txpool.size());
+        lock_guard lock(txpoolMutex);
+        for (size_t i=0;i<block.txNum;i++) {
+            const auto& tx=block.txs[i];
+            auto txHash=GetTransactionHash(tx);
+            auto found=txpool.find(txHash);
+            // 只复用字节完全一致的已验证交易。
+            verified[i]=found!=txpool.end()&&found->second==tx;
+        }
     }
+    for (size_t i=0;i<block.txNum;i++) {
+        const auto& tx=block.txs[i];
+        if (!verified[i]&&!VerifyTransaction(tx)) return false;
+        auto txHash=GetTransactionHash(tx);
+        if (!unique.insert(txHash).second) return false;
+        hashes.push_back(txHash);
+    }
+    if (MerkleCompute(hashes)!=block.merkleRoot) return false;
+    if (block.height==0||(block.txNum==0&&block.height!=1)) return false;
+    if (result) *result=std::move(block);
+    blockVerifyNs+=GetSteadyTime()-start;
+    return true;
 }
-
-#endif //CHAIN_BLOCK_H
+void GenerateGenesisBlock() {
+    lock_guard commitLock(dbCommitMutex);
+    auto height=DBReadBlockHeight();
+    if (height!=0) {
+        auto hash=DBReadCurrentBlock();
+        auto data=DBReadBlockByHash(hash);
+        Block current;
+        if (!UnSerializeBlock(data,current)||!VerifyBlock(data)||current.hash!=hash||current.height!=height||DBReadBlockByHeight(to_string(height))!=data) throw runtime_error("Invalid existing chain head");
+        lock_guard lock(blockBufferLock);
+        if (height==UINT64_MAX) throw runtime_error("Block height overflow");
+        epoch=height+1;
+        spdlog::info("Existing chain restored. Height:{}",height);
+        return;
+    }
+    if (DBReadCurrentBlock()!=array<uint8_t,32>{}) throw runtime_error("Incomplete chain metadata");
+    Block block;
+    block.height=1;
+    auto data=SerializeBlockALL(block);
+    rocksdb::WriteBatch batch;
+    DBAddBlock(batch,block.hash,data);
+    batch.Put("CurrentBlock",rocksdb::Slice(reinterpret_cast<const char*>(block.hash.data()),32));
+    batch.Put("BlockHeight","1");
+    batch.Put("SchemaVersion","2");
+    DBWriteBatch(batch);
+    dbLegacyKeys=false;
+    {
+        lock_guard lock(blockBufferLock);
+        epoch=2;
+    }
+    spdlog::info("Genesis Block Generated. Height:1");
+}
+// 这里只维护有限候选窗口，候选比较不是 BFT 共识。
+bool ProcessBlock(vector<uint8_t> data) {
+    if (data.size()<112) return false;
+    auto height=ReadU64(data.data()+64);
+    {
+        lock_guard lock(blockBufferLock);
+        if (height<epoch||height-epoch>=3) return false;
+    }
+    Block block;
+    if (!VerifyBlock(data,&block)) return false;
+    {
+        lock_guard lock(blockBufferLock);
+        if (height<epoch||height-epoch>=3) return false;
+        auto& slot=BlockBuffer[height-epoch];
+        if (!slot.second.empty()&&(block.txNum<slot.first.txNum||(block.txNum==slot.first.txNum&&block.hash>=slot.first.hash))) return false;
+        slot={std::move(block),std::move(data)};
+        blockReady=!BlockBuffer[0].second.empty();
+    }
+    WakeMainLoop();
+    return true;
+}
+bool CommitBlock(const Block& block,const vector<uint8_t>& data) {
+    auto start=GetSteadyTime();
+    if (!DBCommitBlock(block.hash,data)) return false;
+    blockCommitNs+=GetSteadyTime()-start;
+    {
+        lock_guard lock(txpoolMutex);
+        for (const auto& tx:block.txs) txpool.erase(GetTransactionHash(tx));
+    }
+    {
+        lock_guard lock(blockBufferLock);
+        if (epoch==block.height) {
+            BlockBuffer[0]=std::move(BlockBuffer[1]);
+            BlockBuffer[1]=std::move(BlockBuffer[2]);
+            BlockBuffer[2]={};
+            epoch=block.height+1;
+        }
+        blockReady=!BlockBuffer[0].second.empty();
+    }
+    committedTx+=block.txNum;
+    blockCount++;
+    lastCommitTime=GetSteadyTime();
+    return true;
+}
+#endif
