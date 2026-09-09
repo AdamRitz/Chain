@@ -59,5 +59,9 @@ config.local.yaml
 /bench-results/
 /test-data/
 /network-test-data/
+/user-test-data/
+/account-network-test-data/
+*.wallet.json
+*.bin
 __pycache__/
 *.pyc

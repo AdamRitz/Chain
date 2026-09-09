@@ -61,24 +61,42 @@ vector<uint8_t> SerializeBlockALL(Block& block) {
 vector<uint8_t> GenerateBlock() {
     auto start=GetSteadyTime();
     Block block;
+    vector<pair<array<uint8_t,32>,array<uint8_t,176>>> selected;
     {
-        lock_guard lock(dbCommitMutex);
+        shared_lock commitLock(dbCommitMutex);
         auto height=DBReadBlockHeight();
         if (height==UINT64_MAX) throw runtime_error("Block height overflow");
         block.height=height+1;
         block.previousHash=DBReadCurrentBlock();
-    }
-    vector<pair<array<uint8_t,32>,array<uint8_t,176>>> selected;
-    {
         lock_guard lock(txpoolMutex);
         selected.reserve(min(maxBlockTx,txpool.size()));
-        for (const auto& tx:txpool) {
+        vector<pair<array<uint8_t,32>,uint64_t>> dropped;
+        for (const auto& [key,entry]:txUserPool) {
             if (selected.size()==maxBlockTx) break;
-            selected.push_back(tx);
+            const auto& pending=entry.txs;
+            auto available=GetUser(users,key);
+            for (auto it=pending.upper_bound(available.nonce);it!=pending.end()&&selected.size()<maxBlockTx;++it) {
+                const auto& tx=txpool.at(it->second);
+                auto amount=ReadU64(tx.data()+64),nonce=ReadU64(tx.data()+72);
+                if (!CheckUserTx(available,amount,nonce)) {
+                    if (available.nonce<UINT64_MAX&&nonce==available.nonce+1) dropped.emplace_back(key,nonce);
+                    break;
+                }
+                available.nonce=nonce;
+                available.balance-=baseFee;
+                if (memcmp(tx.data(),tx.data()+32,32)!=0) available.balance-=amount;
+                selected.emplace_back(it->second,tx);
+            }
         }
+        for (const auto& [key,nonce]:dropped) DropUserPoolFrom(key,nonce);
     }
     if (selected.empty()) return {};
-    sort(selected.begin(),selected.end(),[](const auto& a,const auto& b){return a.first<b.first;});
+    // 先按序号、再按发送者排序，保证每个账户的交易严格依次执行。
+    sort(selected.begin(),selected.end(),[](const auto& a,const auto& b){
+        auto left=ReadU64(a.second.data()+72),right=ReadU64(b.second.data()+72);
+        if (left!=right) return left<right;
+        return lexicographical_compare(a.second.begin(),a.second.begin()+32,b.second.begin(),b.second.begin()+32);
+    });
     vector<array<uint8_t,32>> hashes;
     hashes.reserve(selected.size());
     block.txs.reserve(selected.size());
@@ -119,8 +137,10 @@ bool VerifyBlock(const vector<uint8_t>& data,Block* result=nullptr) {
         if (!unique.insert(txHash).second) return false;
         hashes.push_back(txHash);
     }
-    if (MerkleCompute(hashes)!=block.merkleRoot) return false;
     if (block.height==0||(block.txNum==0&&block.height!=1)) return false;
+    if (block.height==1) {
+        if (block.txNum||block.previousHash!=array<uint8_t,32>{}||block.merkleRoot!=genesisRoot) return false;
+    } else if (MerkleCompute(hashes)!=block.merkleRoot) return false;
     if (result) *result=std::move(block);
     blockVerifyNs+=GetSteadyTime()-start;
     return true;
@@ -129,6 +149,8 @@ void GenerateGenesisBlock() {
     lock_guard commitLock(dbCommitMutex);
     auto height=DBReadBlockHeight();
     if (height!=0) {
+        Block genesis;
+        if (!UnSerializeBlock(DBReadBlockByHeight("1"),genesis)||genesis.height!=1||genesis.merkleRoot!=genesisRoot||!VerifyBlock(DBReadBlockByHeight("1"))) throw runtime_error("Genesis state does not match database");
         auto hash=DBReadCurrentBlock();
         auto data=DBReadBlockByHash(hash);
         Block current;
@@ -142,13 +164,20 @@ void GenerateGenesisBlock() {
     if (DBReadCurrentBlock()!=array<uint8_t,32>{}) throw runtime_error("Incomplete chain metadata");
     Block block;
     block.height=1;
+    block.merkleRoot=genesisRoot;
     auto data=SerializeBlockALL(block);
     rocksdb::WriteBatch batch;
     DBAddBlock(batch,block.hash,data);
     batch.Put("CurrentBlock",rocksdb::Slice(reinterpret_cast<const char*>(block.hash.data()),32));
     batch.Put("BlockHeight","1");
-    batch.Put("SchemaVersion","2");
+    batch.Put("SchemaVersion","3");
+    batch.Put("GenesisConfig",GetGenesisConfig().dump());
+    batch.Put("UserBurned","0");
+    for (const auto& [key,user]:genesisUsers) DBAddUser(batch,key,user);
     DBWriteBatch(batch);
+    users.clear();
+    users.reserve(genesisUsers.size());
+    for (const auto& [key,user]:genesisUsers) users.emplace(key,user);
     dbLegacyKeys=false;
     {
         lock_guard lock(blockBufferLock);
@@ -156,7 +185,7 @@ void GenerateGenesisBlock() {
     }
     spdlog::info("Genesis Block Generated. Height:1");
 }
-// 这里只维护有限候选窗口，候选比较不是 BFT 共识。
+// 维护三个高度的候选窗口，按交易数量和哈希比较。
 bool ProcessBlock(vector<uint8_t> data) {
     if (data.size()<112) return false;
     auto height=ReadU64(data.data()+64);
@@ -166,6 +195,7 @@ bool ProcessBlock(vector<uint8_t> data) {
     }
     Block block;
     if (!VerifyBlock(data,&block)) return false;
+    if (!DBCheckBlockUsers(data)) { invalidUserBlocks++; return false; }
     {
         lock_guard lock(blockBufferLock);
         if (height<epoch||height-epoch>=3) return false;
@@ -182,8 +212,13 @@ bool CommitBlock(const Block& block,const vector<uint8_t>& data) {
     if (!DBCommitBlock(block.hash,data)) return false;
     blockCommitNs+=GetSteadyTime()-start;
     {
+        shared_lock commitLock(dbCommitMutex);
         lock_guard lock(txpoolMutex);
-        for (const auto& tx:block.txs) txpool.erase(GetTransactionHash(tx));
+        for (const auto& tx:block.txs) {
+            array<uint8_t,32> key;
+            memcpy(key.data(),tx.data(),32);
+            PruneUserPool(key,GetUser(users,key).nonce);
+        }
     }
     {
         lock_guard lock(blockBufferLock);

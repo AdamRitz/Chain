@@ -1,10 +1,14 @@
 # Chain
 
-C++20 区块链原型。主要组件为 Boost.Asio 协程/TCP、libsodium Ed25519 与 BLAKE2b、Merkle 树和 RocksDB。沿用现有函数和目录结构：`ProcessTxPackage → txpool → GenerateBlock → VerifyBlock → CommitBlock`。
+C++20 区块链原型，使用 Boost.Asio、libsodium、默克尔树和 RocksDB。当前实现账户余额、连续交易序号、可配置基础费、并发验签、按账户组织的交易池、原子区块与账户落库，以及单生产者到跟随节点的同步。
 
-目前完成交易签名验证、批量接收、并发验签、有限交易池、原子区块落库、单生产者广播和跟随节点历史同步。**尚未执行余额和 nonce 规则，也没有 BFT 共识、分叉回滚或最终性证明。** TPS 指验证通过并完成本地数据库提交的交易数。
+修改前阅读 [MODULE_GUIDE.md](MODULE_GUIDE.md)，了解模块职责、锁顺序、数据格式和后续问题。最新变更和性能见 [ACCOUNT_MODEL_REPORT_2026-09-09.md](ACCOUNT_MODEL_REPORT_2026-09-09.md)。
 
-## 构建与测试（本机 Windows）
+候选规则保留“交易数量更多优先，同数量比较哈希”。多生产者最终确认和分叉收敛属于后续研究任务。每秒交易数（Transactions Per Second，TPS）统计本地完成账户执行与数据库提交的交易。
+
+## 构建与测试
+
+本机 Windows 环境：
 
 ```powershell
 $env:PATH = 'D:\Software\Code\Language\MinGW64\ucrt64\bin;' + $env:PATH
@@ -12,82 +16,119 @@ cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release `
   '-DCMAKE_CXX_COMPILER=D:/Software/Code/Language/MinGW64/ucrt64/bin/g++.exe' `
   '-DCHAIN_BOOST_DIR=D:/Project/Includes/boost_1_91_0' `
   '-DPython3_EXECUTABLE=D:/Software/Code/Tool/Anaconda/python.exe'
-cmake --build build -j 6
+cmake --build build -j 4
 ctest --test-dir build --output-on-failure
 ```
 
-CMake 最低 3.22。依赖由本机 MinGW prefix 中的 RocksDB、libsodium、spdlog、yaml-cpp 和 JSON 头文件提供。CTest 会将编译器目录置于测试 PATH 前面，避免误加载其他工具的同名 DLL。网络测试需要 Python 3；未找到解释器时只注册 C++ 核心测试。手工执行网络测试：
+四项测试覆盖核心交易与并发、账户状态约束、网络复制、钱包与账户接口。全部使用新数据库。Python 功能测试使用标准库，性能采样另需 `psutil`。
 
-```powershell
-& 'D:/Software/Code/Tool/Anaconda/python.exe' Test/NetworkTest.py --bin build --work network-test-data
-```
+## 建立测试链
 
-测试为每次运行建立新目录，不使用现有链数据库。`Test.cpp`、`Test/TestHash.cpp` 是早期独立练习，不是节点回归测试。`crypto` 是实验 VRF 的独立小程序；VRF 尚未接入出块选主。
-
-## 运行
-
-单生产者（显式选择新数据库路径）：
-
-```powershell
-build/boost.exe --data data/leader --bind 127.0.0.1 --port 8089 `
-  --io-threads 4 --verify-threads 8 --block-ms 50 --sync 1
-```
-
-跟随节点：
-
-```powershell
-build/boost.exe --data data/follower --port 8090 --produce 0 --seed 127.0.0.1:8089
-```
-
-默认仅监听回环地址。局域网实验可通过 `--bind` 设置网卡地址；协议尚无节点身份鉴别。只运行一个生产者；多个生产者的竞争规则不构成一致性协议。
-
-常用参数：
-
-| 参数 | 默认 | 作用 |
-|---|---:|---|
-| `--data` | `test` | 数据库目录；生产运行应显式指定 |
-| `--io-threads` | 4 | 网络线程数 |
-| `--verify-threads` | 8 | CPU 验签线程数 |
-| `--block-ms` | 50 | 小批量最大等待目标；满块可提前触发 |
-| `--max-block-txs` | 6000 | 单块交易上限 |
-| `--max-pending` | 32768 | 验证队列交易数上限；满时暂停读取 |
-| `--max-pool` | 200000 | 交易池上限；超出会记录拒绝计数 |
-| `--sync` | 1 | 同步 WAL 写盘；0 只用于对照测试 |
-| `--produce` | 1 | 生产者或跟随节点 |
-| `--run-seconds` | 不限 | 有限时间运行并退出 |
-| `--metrics` | 不输出文件 | 退出时写入 JSON 和 RocksDB 统计 |
-
-`config.yaml` 中的 node 配置先加载，命令行再覆盖。信号或定时停止时先停网络、完成已投递验证、再提交生产者剩余池交易。跟随节点不会自行确认池内交易。没有完整收到或尚未入验证队列的网络数据不承诺在退出时处理。
-
-## 压测与统计
-
-先生成已签名数据，再发包；生成签名不计入节点 TPS：
+生成已签名交易，同时生成创世资金配置：
 
 ```powershell
 New-Item -ItemType Directory -Path bench-results -Force
 build/sender.exe --prepare bench-results/transactions.bin --count 500000
+```
+
+输出 `transactions.bin` 与 `transactions.bin.genesis.json`。配置只记录公钥和初始余额，每个测试账户默认分配 1,000,000,000 个最小单位。`--balance` 和 `--base-fee` 可设定分配与基础费，基础费默认零。
+
+启动生产者：
+
+```powershell
+build/boost.exe --data data/accounts-leader --genesis bench-results/transactions.bin.genesis.json `
+  --bind 127.0.0.1 --port 8089 --io-threads 4 --verify-threads 8 --block-ms 50 --sync 1
+```
+
+另一个终端发包：
+
+```powershell
 build/sender.exe --file bench-results/transactions.bin --count 500000 --port 8089 --batch 128 --connections 8
 build/sender.exe --stats --port 8089
 ```
 
-`sender` 输出的是发包速率。节点 `local_commit_tps` 使用首批接收至最后提交的时间；须确认 `committed` 达到发送总量、`pool=0`、`pending=0`、`invalid=0`、`rejected=0` 后读取最终值。
-
-完整可复现测试需要 Python 的 `psutil`，输出目录必须不存在：
+跟随节点使用相同创世配置：
 
 ```powershell
-& 'D:/Software/Code/Tool/Anaconda/python.exe' Test/RunBench.py --bin build --work bench-results/run-2026-09-08 --count 500000 --repeats 3
+build/boost.exe --data data/accounts-follower --genesis bench-results/transactions.bin.genesis.json `
+  --port 8090 --produce 0 --seed 127.0.0.1:8089
 ```
 
-包含纯验签扩展性、hash 对照、逐笔与批量数据库写入、同步/异步 WAL、1/4/8/16/24 验签线程、单笔/128 笔报文及低负载延迟。写盘实验请将 `--work` 放在需要测量的磁盘。每组都启动隔离节点并验证提交总数。测量结束后脚本终止自己启动的进程；`NetworkTest.py` 另外验证定时正常退出与重启恢复。
+重启已有账户数据库时，程序读取库中保存的创世配置。显式提供 `--genesis` 时检查与数据库一致。全新数据库省略创世配置时，初始资金总量为零。
 
-使用 `--suite replica --count 100000` 可单独测同机两个节点都提交到相同链头的吞吐。它包含跟随者重验签与同步等待，仍不是 BFT 最终性指标。
+## 钱包、转账和查询
 
-`results.json` 保留原始数值；CPU 是节点进程 CPU 时间除以墙钟时间，`average_cpu_cores=1` 表示平均占用一个逻辑处理器。各 worker 计时会重叠，不能相加当成总延迟。低负载延迟包含 TCP 发包和轮询确认开销，不是共识最终性延迟。
+```powershell
+New-Item -ItemType Directory -Path secrets -Force
+build/sender.exe --create-wallet secrets/alice.wallet.json
+build/sender.exe --create-wallet secrets/bob.wallet.json
+```
 
-## 兼容性与当前任务
+复制输出的公钥，创建 `genesis.local.json`：
 
-交易仍是 176 字节，区块仍是 112 字节头部加交易；整数明确使用小端。节点握手新增两字节监听端口，需要一起升级连接的节点。消息长度统一为正文长度，旧的错误帧实现不兼容。
+```json
+{
+  "base_fee": 1,
+  "accounts": [
+    {"public_key": "替换为 Alice 的公钥：64 个十六进制字符", "balance": 1000000}
+  ]
+}
+```
 
-新数据库使用 `tx/`、`block/`、`height/` 前缀与 `SchemaVersion=2`；旧数据库保留无前缀读取回退。启动时检查现有链头，不再覆盖创世块；如果旧链头本身非法，会明确报错，不自动修复历史数据。本次测试未修改旧数据库。
+用该配置和新的数据目录启动节点，再查询或转账：
 
-最新修复、性能数据和账户/UTXO 选择见 `OPTIMIZATION_REPORT_2026-09-08.md`；后续任务见 `NEXT_STEPS_2026-09-08.md`。Git 自动推送和日期命名规则见 `GIT_SYNC.md`。
+```powershell
+build/sender.exe --account <Alice公钥> --port 8089
+build/sender.exe --wallet secrets/alice.wallet.json --receiver <Bob公钥> --amount 100 --nonce 1 --port 8089
+```
+
+`--nonce` 是账户上一笔已确认序号加一；`--amount` 使用正整数最小单位。钱包模式默认发送一笔，`--count` 可生成连续序号的多笔交易。交易池允许最多领先已确认序号 4096 的未来交易，批量发送需结合确认进度控制数量。钱包文件保存明文种子，存放于 `secrets/`；该目录及 `*.wallet.json` 已加入忽略规则。
+
+基础费在确认时扣除并销毁，自转和互转遵循相同收费规则。资金分配和基础费由创世块绑定，新公钥账户余额从零开始。
+
+## 常用节点参数
+
+| 参数 | 默认 | 作用 |
+|---|---:|---|
+| `--data` | `data/accounts-v3` | 账户数据库目录 |
+| `--genesis` | 已有库读取保存的配置；新库空分配 | 初始资金和基础费 |
+| `--io-threads` | 4 | 网络输入输出（Input/Output，I/O）线程 |
+| `--verify-threads` | 8 | 签名验证线程 |
+| `--block-ms` | 50 | 凑交易等待目标，可执行交易满块时提前触发 |
+| `--max-block-txs` | 6000 | 每块交易上限 |
+| `--max-pending` | 32768 | 待验证任务上限，满时暂停连接读取 |
+| `--max-pool` | 200000 | 交易池容量 |
+| `--sync` | 1 | 同步写入预写日志（Write-Ahead Log，WAL） |
+| `--produce` | 1 | 是否由本机生成区块 |
+| `--seed` | 空 | 同步节点的地址与端口 |
+| `--run-seconds` | 持续运行 | 到时退出 |
+| `--metrics` | 空 | 保存退出统计 |
+
+先加载 `config.yaml`，再由命令行覆盖。默认监听本机回环地址。
+
+## 性能测试
+
+```powershell
+python Test/RunBench.py --bin build --work bench-results/account-run `
+  --count 500000 --repeats 3 --suite node --threads 8 24
+```
+
+使用外部数据集时，同时提供匹配的 `--genesis`，或保留数据文件旁的 `.genesis.json`。脚本在计时结束后核对所有账户余额、序号和供应总量。`--suite replica --count 100000` 测试同机两节点都保存完成的速度。
+
+新旧版本交替对比：
+
+```powershell
+python Test/CompareAccounts.py --before-bin <旧版本构建目录> --after-bin build `
+  --dataset <同一份交易文件> --genesis <匹配的创世配置> `
+  --work bench-results/compare --count 500000 --repeats 3 --threads 8 24
+```
+
+两版使用同一个新发送端和相同交易字节。`local_commit_tps` 从首批交易接收到最后一次本地提交计时；发包速率、包含客户端启动的速率、低负载延迟分别记录。
+
+## 数据格式与升级
+
+账户版使用 `SchemaVersion=3`。交易保持 176 字节，区块保持 112 字节头部加交易。账户以 `user/公钥` 为键，保存 16 字节余额与序号。
+
+运行账户版时使用新的数据目录和创世配置。旧账本缺少账户执行历史，程序会保留原格式并提示创建新库。历史性能资料按原日期保留。
+
+后续重点：交易签名绑定链标识、确认与分叉收敛、候选接收公平性、长期负载与多机测试。Git 提交和同步流程见 [GIT_SYNC.md](GIT_SYNC.md)。

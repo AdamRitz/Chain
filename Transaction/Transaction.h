@@ -21,14 +21,13 @@ struct Transaction {
     array<uint8_t,32> hash;
     array<uint8_t,64> signature;
 };
-struct GetMapHash {
-    size_t operator()(const array<uint8_t,32>& data) const noexcept {
-        size_t hash=0;
-        memcpy(&hash,data.data(),sizeof(hash));
-        return hash;
-    }
-};
 unordered_map<array<uint8_t,32>,array<uint8_t,176>,GetMapHash> txpool;
+struct PendingUser {
+    map<uint64_t,array<uint8_t,32>> txs;
+    uint64_t readyNonce=0;
+};
+unordered_map<array<uint8_t,32>,PendingUser,GetMapHash> txUserPool;
+size_t readyPoolTx=0;
 mutex txpoolMutex;
 condition_variable txpoolCondition;
 void WakeMainLoop() {
@@ -38,9 +37,39 @@ void WakeMainLoop() {
 size_t maxPoolTx=200000;
 size_t maxBlockTx=6000;
 atomic<uint64_t> receivedTx{0},validTx{0},invalidTx{0},duplicateTx{0},rejectedTx{0};
+atomic<uint64_t> invalidUserTx{0},conflictTx{0};
 atomic<uint64_t> txCommitWaitNs{0},txReadNs{0},txPoolWaitNs{0};
 atomic<uint64_t> verifyNs{0},poolNs{0},committedTx{0},firstTxTime{0},lastCommitTime{0};
 atomic<bool> nodeRunning{true},nodeFailed{false};
+
+// 调用方持有交易池锁。提交某个序号后，一起清理该账户已过期的候选交易。
+void PruneUserPool(const array<uint8_t,32>& key,uint64_t nonce) {
+    auto found=txUserPool.find(key);
+    if (found==txUserPool.end()) return;
+    auto& item=found->second;
+    auto& pending=item.txs;
+    while (!pending.empty()&&pending.begin()->first<=nonce) {
+        if (pending.begin()->first<=item.readyNonce) readyPoolTx--;
+        txpool.erase(pending.begin()->second);
+        pending.erase(pending.begin());
+    }
+    if (pending.empty()) { txUserPool.erase(found); return; }
+    item.readyNonce=max(item.readyNonce,nonce);
+    while (item.readyNonce<UINT64_MAX&&pending.count(item.readyNonce+1)) { item.readyNonce++; readyPoolTx++; }
+}
+void DropUserPoolFrom(const array<uint8_t,32>& key,uint64_t nonce) {
+    auto found=txUserPool.find(key);
+    if (found==txUserPool.end()) return;
+    auto& item=found->second;
+    for (auto it=item.txs.lower_bound(nonce);it!=item.txs.end();) {
+        if (it->first<=item.readyNonce) readyPoolTx--;
+        txpool.erase(it->second);
+        it=item.txs.erase(it);
+        invalidUserTx++;
+    }
+    item.readyNonce=min(item.readyNonce,nonce-1);
+    if (item.txs.empty()) txUserPool.erase(found);
+}
 
 // ------------------------------------------------序列化------------------------------------------------
 array<uint8_t,80> SerializeTxForHash(const Transaction& tx) {
@@ -90,7 +119,7 @@ bool VerifyTransaction(const array<uint8_t,176>& data) {
 }
 
 // ------------------------------------------------交易处理入口------------------------------------------------
-// 锁外批量验签，锁内只做去重和插入。
+// 锁外批量验签，锁内检查账户状态并更新交易池。
 size_t ProcessTxPackage(span<const uint8_t> data) {
     if (data.empty()||data.size()%176!=0||data.size()/176>6000) return 0;
     uint64_t expected=0;
@@ -115,7 +144,13 @@ size_t ProcessTxPackage(span<const uint8_t> data) {
     vector<pair<array<uint8_t,32>,array<uint8_t,176>>> fresh;
     fresh.reserve(checked.size());
     for (auto& item:checked) {
-        if (DBHasTx(item.first)) duplicateTx++;
+        array<uint8_t,32> key;
+        memcpy(key.data(),item.second.data(),32);
+        auto user=GetUser(users,key);
+        auto amount=ReadU64(item.second.data()+64),nonce=ReadU64(item.second.data()+72);
+        // 正常新交易用内存账户序号判断；只有过期序号需要查历史哈希。
+        if (nonce<=user.nonce&&DBHasTx(item.first)) duplicateTx++;
+        else if (!CheckUserTx(user,amount,nonce,true)) { invalidUserTx++; invalidTx++; }
         else fresh.push_back(std::move(item));
     }
     auto poolStart=GetSteadyTime();
@@ -126,6 +161,16 @@ size_t ProcessTxPackage(span<const uint8_t> data) {
         for (auto& [hash,tx]:fresh) {
             if (txpool.count(hash)!=0) { duplicateTx++; continue; }
             if (txpool.size()>=maxPoolTx) { rejectedTx++; continue; }
+            array<uint8_t,32> key;
+            memcpy(key.data(),tx.data(),32);
+            auto nonce=ReadU64(tx.data()+72);
+            auto confirmed=GetUser(users,key).nonce;
+            PruneUserPool(key,confirmed);
+            auto& pending=txUserPool[key];
+            if (pending.txs.count(nonce)) { conflictTx++; continue; }
+            pending.txs.emplace(nonce,hash);
+            pending.readyNonce=max(pending.readyNonce,confirmed);
+            while (pending.readyNonce<UINT64_MAX&&pending.txs.count(pending.readyNonce+1)) { pending.readyNonce++; readyPoolTx++; }
             txpool.emplace(hash,std::move(tx));
             added++;
         }

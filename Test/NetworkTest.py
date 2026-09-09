@@ -38,6 +38,40 @@ def GetStats(port):
             raise ValueError('Invalid stats frame')
         return json.loads(ReadAll(connection, size))
 
+def GetAccount(port, public_key):
+    with socket.create_connection(('127.0.0.1', port), timeout=3) as connection:
+        connection.sendall(b'\x02' + Frame(15, bytes.fromhex(public_key)))
+        kind, size = struct.unpack('<BI', ReadAll(connection, 5))
+        if kind != 16 or size != 17:
+            raise ValueError('Invalid account response')
+        exists, balance, nonce = struct.unpack('<BQQ', ReadAll(connection, size))
+        return {'exists': bool(exists), 'balance': balance, 'nonce': nonce}
+
+def VerifyAccounts(port, dataset, count, genesis):
+    config = json.loads(Path(genesis).read_text(encoding='utf-8'))
+    fee = config.get('base_fee', 0)
+    expected = {a['public_key'].lower(): {'balance': a['balance'], 'nonce': 0} for a in config['accounts']}
+    with Path(dataset).open('rb') as source:
+        for _ in range(count):
+            tx = source.read(176)
+            if len(tx) != 176:
+                raise ValueError('Dataset too short for account verification')
+            sender, receiver = tx[:32].hex(), tx[32:64].hex()
+            amount, nonce = struct.unpack('<QQ', tx[64:80])
+            before = expected.setdefault(sender, {'balance': 0, 'nonce': 0})
+            after = expected.setdefault(receiver, {'balance': 0, 'nonce': 0})
+            assert amount > 0 and before['balance'] >= amount + fee and nonce == before['nonce'] + 1
+            before['balance'] -= amount + fee
+            before['nonce'] = nonce
+            after['balance'] += amount
+    for key, value in expected.items():
+        actual = GetAccount(port, key)
+        assert actual['exists'] and actual['balance'] == value['balance'] and actual['nonce'] == value['nonce'], (key, actual, value)
+    stats = GetStats(port)
+    assert stats['user_burned'] == count * fee
+    assert stats['user_supply'] == sum(a['balance'] for a in expected.values())
+    return {'verified_users': len(expected), 'burned': count * fee, 'supply': stats['user_supply']}
+
 def WaitStats(port, predicate, timeout=30):
     end = time.monotonic()+timeout
     latest = None
@@ -69,6 +103,9 @@ def StartNode(binary, work, name, **settings):
                'io-threads': 2, 'verify-threads': 4, 'block-ms': 10,
                'max-block-txs': 512, 'sync': 1, 'run-seconds': 90,
                'metrics': directory/'final.json'}
+    default_genesis = work/'transactions.bin.genesis.json'
+    if default_genesis.exists():
+        options['genesis'] = default_genesis
     options.update(settings)
     command = [str(binary/'boost.exe')]
     for key, value in options.items():
@@ -104,7 +141,7 @@ def StopNode(node):
 def TestNetwork(binary, work):
     work.mkdir(parents=True, exist_ok=False)
     dataset = work/'transactions.bin'
-    Run([binary/'sender.exe', '--prepare', dataset, '--count', 4096])
+    Run([binary/'sender.exe', '--prepare', dataset, '--count', 4112])
     raw = dataset.read_bytes()
     nodes = []
     checks = []
@@ -150,12 +187,14 @@ def TestNetwork(binary, work):
         assert synced['height'] == expected['height']
         checks.append('late follower verifies history and reaches same height/head')
         # A new transaction must also be broadcast over the existing live peer connection.
-        fresh = work/'fresh.bin'
-        Run([binary/'sender.exe', '--prepare', fresh, '--count', 16])
-        Run([binary/'sender.exe', '--file', fresh, '--count', 16, '--port', port])
+        Run([binary/'sender.exe', '--file', dataset, '--offset', 4096, '--count', 16, '--port', port])
         expected = WaitStats(port, lambda x: x['committed'] == 4112)
         WaitStats(follower['port'], lambda x: x['head'] == expected['head'])
         checks.append('live block broadcast and bidirectional peer connection remain active')
+        genesis = work/'transactions.bin.genesis.json'
+        VerifyAccounts(port, dataset, 4112, genesis)
+        VerifyAccounts(follower['port'], dataset, 4112, genesis)
+        checks.append('producer and follower balances and nonces match independent execution')
         StopNode(follower)
         nodes.remove(follower)
         StopNode(leader)
@@ -164,6 +203,7 @@ def TestNetwork(binary, work):
         nodes.append(restarted)
         recovered = GetStats(restarted['port'])
         assert recovered['head'] == expected['head'] and recovered['height'] == expected['height']
+        VerifyAccounts(restarted['port'], dataset, 4112, genesis)
         SendFrame(restarted['port'], 1, raw[:176])
         replay = WaitStats(restarted['port'], lambda x: x['duplicate'] == 1)
         assert replay['committed'] == 0 and replay['pool'] == 0

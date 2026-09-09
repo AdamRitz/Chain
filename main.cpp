@@ -20,7 +20,7 @@ uint64_t ParseNumber(const string& text,uint64_t minimum,uint64_t maximum) {
 }
 int main(int argc,char* argv[]) {
     try {
-        string configPath,dataPath="test",metricsPath,seedHost;
+        string configPath,dataPath="data/accounts-v3",metricsPath,seedHost,genesisPath;
         int ioNum=4,verifyNum=8,runSeconds=0;
         uint16_t seedPort=0;
         bool sync=true;
@@ -34,6 +34,7 @@ int main(int argc,char* argv[]) {
             if (node["port"]) listenPort=node["port"].as<uint16_t>();
             if (node["bind"]) listenAddress=node["bind"].as<string>();
             if (node["data"]) dataPath=node["data"].as<string>();
+            if (node["genesis"]) genesisPath=node["genesis"].as<string>();
             if (node["io_threads"]) ioNum=node["io_threads"].as<int>();
             if (node["verify_threads"]) verifyNum=node["verify_threads"].as<int>();
             if (node["block_ms"]) blockInterval=node["block_ms"].as<int>();
@@ -46,6 +47,7 @@ int main(int argc,char* argv[]) {
             string value=argv[++i];
             if (name=="--config") continue;
             if (name=="--data") dataPath=value;
+            else if (name=="--genesis") genesisPath=value;
             else if (name=="--bind") listenAddress=value;
             else if (name=="--port") listenPort=uint16_t(ParseNumber(value,1,65535));
             else if (name=="--io-threads") ioNum=int(ParseNumber(value,1,64));
@@ -67,6 +69,7 @@ int main(int argc,char* argv[]) {
         }
         if (ioNum<1||ioNum>64||verifyNum<1||verifyNum>64||blockInterval<1||blockInterval>5000||listenPort==0) throw invalid_argument("Invalid node configuration");
         InitSodium();
+        if (!genesisPath.empty()) LoadGenesisUsers(genesisPath);
         InitDB(dataPath,sync);
         InitWallet();
         GenerateGenesisBlock();

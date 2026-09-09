@@ -85,6 +85,20 @@ awaitable<void> session(uint64_t key,shared_ptr<Peer> peer) {
         } else if (type==13) {
             auto stats=GetNodeStats().dump();
             SendData(peer,GenerateMessage(14,span<const uint8_t>(reinterpret_cast<const uint8_t*>(stats.data()),stats.size())));
+        } else if (type==15) {
+            array<uint8_t,32> key;
+            memcpy(key.data(),data.data(),32);
+            array<uint8_t,17> reply{};
+            {
+                shared_lock lock(dbCommitMutex);
+                auto found=users.find(key);
+                if (found!=users.end()) {
+                    reply[0]=1;
+                    WriteU64(reply.data()+1,found->second.balance);
+                    WriteU64(reply.data()+9,found->second.nonce);
+                }
+            }
+            SendData(peer,GenerateMessage(16,reply));
         }
     }
 }

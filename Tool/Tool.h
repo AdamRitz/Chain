@@ -10,6 +10,26 @@
 #include <string>
 using namespace std;
 
+struct GetMapHash {
+    size_t operator()(const array<uint8_t,32>& data) const noexcept {
+        size_t hash=0;
+        memcpy(&hash,data.data(),sizeof(hash));
+        return hash;
+    }
+};
+array<uint8_t,32> HexToU32(const string& text) {
+    if (text.size()!=64) throw invalid_argument("Public key must contain 64 hexadecimal characters");
+    array<uint8_t,32> result{};
+    auto digit=[](char c) -> uint8_t {
+        if (c>='0'&&c<='9') return uint8_t(c-'0');
+        if (c>='a'&&c<='f') return uint8_t(c-'a'+10);
+        if (c>='A'&&c<='F') return uint8_t(c-'A'+10);
+        throw invalid_argument("Invalid hexadecimal public key");
+    };
+    for (size_t i=0;i<32;i++) result[i]=uint8_t((digit(text[i*2])<<4)|digit(text[i*2+1]));
+    return result;
+}
+
 // 网络和数据库统一使用小端整数。
 void WriteU64(uint8_t* data,uint64_t value) {
     for (int i=0;i<8;i++) data[i]=uint8_t(value>>(i*8));

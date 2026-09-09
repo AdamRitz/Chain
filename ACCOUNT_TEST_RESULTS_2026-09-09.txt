@@ -1,0 +1,37 @@
+Account model verification - 2026-09-09
+
+Prepared source
+
+Internal ctest changing into directory: C:/Users/61485/Documents/Codex/2026-09-08/yue-d/work/chain-account-build
+Test project C:/Users/61485/Documents/Codex/2026-09-08/yue-d/work/chain-account-build
+    Start 1: ChainCorrectness
+1/4 Test #1: ChainCorrectness .................   Passed    0.26 sec
+    Start 2: AccountCorrectness
+2/4 Test #2: AccountCorrectness ...............   Passed    0.15 sec
+    Start 3: ChainNetwork
+3/4 Test #3: ChainNetwork .....................   Passed   23.40 sec
+    Start 4: AccountNetwork
+4/4 Test #4: AccountNetwork ...................   Passed    2.00 sec
+
+100% tests passed, 0 tests failed out of 4
+
+Total Test time (real) =  25.82 sec
+
+Final clean Release build from D:/Project/Chain
+
+Internal ctest changing into directory: C:/Users/61485/Documents/Codex/2026-09-08/yue-d/work/chain-account-project-check
+Test project C:/Users/61485/Documents/Codex/2026-09-08/yue-d/work/chain-account-project-check
+    Start 1: ChainCorrectness
+1/4 Test #1: ChainCorrectness .................   Passed    0.38 sec
+    Start 2: AccountCorrectness
+2/4 Test #2: AccountCorrectness ...............   Passed    0.31 sec
+    Start 3: ChainNetwork
+3/4 Test #3: ChainNetwork .....................   Passed   26.16 sec
+    Start 4: AccountNetwork
+4/4 Test #4: AccountNetwork ...................   Passed    2.02 sec
+
+100% tests passed, 0 tests failed out of 4
+
+Total Test time (real) =  28.87 sec
+
+Checks: ChainCorrectness 2239 assertions; AccountCorrectness 53 checks; ChainNetwork 10 scenarios; AccountNetwork 7 scenarios.

@@ -3,7 +3,7 @@ node:
   bind: 127.0.0.1
   id: 1
   name: Watson
-  data: test
+  data: data/accounts-v3
   io_threads: 4
   verify_threads: 8
   block_ms: 50

@@ -240,12 +240,13 @@ void MainLoop() {
                 unique_lock lock(txpoolMutex);
                 txpoolCondition.wait(lock,[]{return !nodeRunning||blockReady||(produceBlocks&&!txpool.empty());});
                 if (!nodeRunning&&!blockReady&&(!produceBlocks||txpool.empty())) break;
-                if (produceBlocks&&!blockReady&&nodeRunning&&txpool.size()<maxBlockTx) {
-                    txpoolCondition.wait_for(lock,milliseconds(blockInterval),[]{return !nodeRunning||blockReady||txpool.size()>=maxBlockTx;});
+                if (produceBlocks&&!blockReady&&nodeRunning&&readyPoolTx<maxBlockTx) {
+                    txpoolCondition.wait_for(lock,milliseconds(blockInterval),[]{return !nodeRunning||blockReady||readyPoolTx>=maxBlockTx;});
                 }
             }
             if (produceBlocks&&!blockReady) {
                 auto data=GenerateBlock();
+                if (data.empty()&&!nodeRunning) break;
                 if (!data.empty()) ProcessBlock(std::move(data));
             }
             pair<Block,vector<uint8_t>> selected;
@@ -272,10 +273,12 @@ void MainLoop() {
 }
 nlohmann::json GetNodeStats() {
     size_t poolSize;
+    size_t readySize;
     size_t peers;
     {
         lock_guard lock(txpoolMutex);
         poolSize=txpool.size();
+        readySize=readyPoolTx;
     }
     {
         lock_guard lock(peerMutex);
@@ -287,7 +290,7 @@ nlohmann::json GetNodeStats() {
     lock_guard lock(dbCommitMutex);
     return {{"received",receivedTx.load()},{"valid",validTx.load()},{"invalid",invalidTx.load()},
         {"duplicate",duplicateTx.load()},{"rejected",rejectedTx.load()},{"committed",committedTx.load()},
-        {"pool",poolSize},{"pending",pendingVerify.load()},{"peak_pending",peakPendingVerify.load()},
+        {"pool",poolSize},{"ready_pool",readySize},{"pending",pendingVerify.load()},{"peak_pending",peakPendingVerify.load()},
         {"blocks",blockCount.load()},{"height",DBReadBlockHeight()},{"head",U32ToHex(DBReadCurrentBlock())},
         {"elapsed_seconds",elapsed},{"local_commit_tps",elapsed>0?committedTx.load()/elapsed:0},
         {"verify_worker_ms",verifyNs.load()/1e6},{"pool_worker_ms",poolNs.load()/1e6},
@@ -297,6 +300,10 @@ nlohmann::json GetNodeStats() {
         {"block_verify_ms",blockVerifyNs.load()/1e6},{"db_write_ms",dbWriteNs.load()/1e6},
         {"db_writes",dbWriteCount.load()},{"network_bytes",networkBytes.load()},{"sync",dbSync},
         {"bloom_useful",options.statistics->getTickerCount(rocksdb::BLOOM_FILTER_USEFUL)},
+        {"users",users.size()},{"base_fee",baseFee},{"user_burned",userBurned},
+        {"user_supply",genesisSupply-userBurned},{"invalid_user_tx",invalidUserTx.load()},
+        {"conflict_tx",conflictTx.load()},{"invalid_user_blocks",invalidUserBlocks.load()},
+        {"user_check_ms",userCheckNs.load()/1e6},{"user_writes",userWriteCount.load()},
         {"peers",peers},{"failed",nodeFailed.load()}};
 }
 #endif

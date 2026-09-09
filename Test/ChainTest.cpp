@@ -31,6 +31,11 @@ int main(int argc,char* argv[]) {
         string root=argc>1?argv[1]:"test-data";
         auto path=(filesystem::path(root)/to_string(GetSteadyTime())).string();
         filesystem::create_directories(path);
+        auto wallet=GenerateWallet();
+        auto receiver=GenerateWallet();
+        SetGenesisUsers({{"base_fee",1},{"accounts",nlohmann::json::array({
+            {{"public_key",U32ToHex(wallet.public_key)},{"balance",1000000}}
+        })}});
         InitDB(path,true);
         Require(DBReadBlockHeight()==0,"new database height");
         Require(DBReadCurrentBlock()==array<uint8_t,32>{},"missing head");
@@ -40,8 +45,6 @@ int main(int argc,char* argv[]) {
         GenerateGenesisBlock();
         Require(DBReadCurrentBlock()==genesis&&DBReadBlockHeight()==1,"idempotent genesis");
         Require(!dbLegacyKeys,"new database uses prefixed keys");
-        auto wallet=GenerateWallet();
-        auto receiver=GenerateWallet();
         auto tx=GenerateTx(wallet.public_key,receiver.public_key,100,1,wallet);
         auto tx2=GenerateTx(wallet.public_key,receiver.public_key,200,2,wallet);
         Require(VerifyTransaction(tx),"valid transaction");
@@ -160,7 +163,7 @@ int main(int argc,char* argv[]) {
 
         // 并发验证与打包同时运行，最后检查每笔交易都恰好落库。
         vector<array<uint8_t,176>> many;
-        for (size_t i=0;i<2048;i++) many.push_back(GenerateTx(wallet.public_key,receiver.public_key,1,1000+i,wallet));
+        for (size_t i=0;i<2048;i++) many.push_back(GenerateTx(wallet.public_key,receiver.public_key,1,4+i,wallet));
         auto before=committedTx.load();
         maxBlockTx=512;
         blockInterval=1;
@@ -178,13 +181,14 @@ int main(int argc,char* argv[]) {
         producer.join();
         Require(!nodeFailed&&txpool.empty()&&committedTx-before==many.size(),"concurrent validation and commit no loss");
         for (const auto& item:many) Require(DBHasTx(GetTransactionHash(item)),"concurrent tx persisted");
-        // 旧键格式兼容读取；未知版本必须显式失败。
-        auto legacyTx=GenerateTx(wallet.public_key,receiver.public_key,1,99999,wallet);
-        CheckDBStatus(db->Put(rocksdb::WriteOptions(),DBHashKey("",GetTransactionHash(legacyTx)),rocksdb::Slice(reinterpret_cast<const char*>(legacyTx.data()),176)));
-        CheckDBStatus(db->Delete(rocksdb::WriteOptions(),"SchemaVersion"));
+        Require(GetUser(users,wallet.public_key).nonce==2051,"account nonce survives concurrent processing");
+        Require(userBurned==2051,"one fixed fee per committed transaction");
+        auto savedUsers=users;
         db.reset();
+        genesisConfigured=false;
         InitDB(path,true);
-        Require(dbLegacyKeys&&DBHasTx(GetTransactionHash(legacyTx)),"legacy transaction keys remain readable");
+        GenerateGenesisBlock();
+        Require(users==savedUsers&&userBurned==2051,"account state restored from database");
         CheckDBStatus(db->Put(rocksdb::WriteOptions(),"SchemaVersion","999"));
         db.reset();
         RequireThrow([&]{InitDB(path,true);},"unknown schema rejected");
