@@ -1,10 +1,10 @@
 # Chain
 
-C++20 区块链原型，使用 Boost.Asio、libsodium、默克尔树和 RocksDB。当前实现账户余额、连续交易序号、可配置基础费、并发验签、按账户组织的交易池、原子区块与账户落库，以及单生产者到跟随节点的同步。
+C++20 区块链原型，使用 Boost.Asio、libsodium、默克尔树、RocksDB 和 evmone。支持账户转账、并发验签、原子状态落库、分叉恢复与以太坊虚拟机（Ethereum Virtual Machine，EVM）合约部署和执行。
 
-修改前阅读 [MODULE_GUIDE.md](MODULE_GUIDE.md)，了解模块职责、锁顺序、数据格式和后续问题。最新变更和性能见 [ACCOUNT_MODEL_REPORT_2026-09-09.md](ACCOUNT_MODEL_REPORT_2026-09-09.md)。
+修改前阅读 [MODULE_GUIDE.md](MODULE_GUIDE.md)。合约操作与分叉规则见 [EVM_GUIDE.md](EVM_GUIDE.md)，本次测试见 [分叉与 EVM 报告](reports/2026-09-16-fork-evm/REPORT.md)。
 
-候选规则保留“交易数量更多优先，同数量比较哈希”。多生产者最终确认和分叉收敛属于后续研究任务。每秒交易数（Transactions Per Second，TPS）统计本地完成账户执行与数据库提交的交易。
+同父块候选按交易数、哈希排序。分支按累计有效交易数、高度和链头哈希比较，在 256 块窗口内通过原子回滚与重放收敛。每秒交易数（Transactions Per Second，TPS）统计完成执行与同步落盘的交易。
 
 ## 构建与测试
 
@@ -14,13 +14,14 @@ C++20 区块链原型，使用 Boost.Asio、libsodium、默克尔树和 RocksDB�
 $env:PATH = 'D:\Software\Code\Language\MinGW64\ucrt64\bin;' + $env:PATH
 cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release `
   '-DCMAKE_CXX_COMPILER=D:/Software/Code/Language/MinGW64/ucrt64/bin/g++.exe' `
+  '-DCMAKE_C_COMPILER=D:/Software/Code/Language/MinGW64/ucrt64/bin/gcc.exe' `
   '-DCHAIN_BOOST_DIR=D:/Project/Includes/boost_1_91_0' `
   '-DPython3_EXECUTABLE=D:/Software/Code/Tool/Anaconda/python.exe'
 cmake --build build -j 4
 ctest --test-dir build --output-on-failure
 ```
 
-四项测试覆盖核心交易与并发、账户状态约束、网络复制、钱包与账户接口。全部使用新数据库。Python 功能测试使用标准库，性能采样另需 `psutil`。
+七项测试覆盖原生交易、账户状态、网络复制、钱包、分叉恢复和 EVM 合约。全部使用新数据库。Python 功能测试使用标准库，性能采样需 `psutil`，图表需 `matplotlib`。再次运行网络测试时，使用新的测试目录；其工作目录由 CMake 的构建目录决定。
 
 ## 建立测试链
 
@@ -90,7 +91,7 @@ build/sender.exe --wallet secrets/alice.wallet.json --receiver <Bob公钥> --amo
 
 | 参数 | 默认 | 作用 |
 |---|---:|---|
-| `--data` | `data/accounts-v3` | 账户数据库目录 |
+| `--data` | `data/accounts-v4` | 账户和合约数据库目录 |
 | `--genesis` | 已有库读取保存的配置；新库空分配 | 初始资金和基础费 |
 | `--io-threads` | 4 | 网络输入输出（Input/Output，I/O）线程 |
 | `--verify-threads` | 8 | 签名验证线程 |
@@ -127,8 +128,8 @@ python Test/CompareAccounts.py --before-bin <旧版本构建目录> --after-bin 
 
 ## 数据格式与升级
 
-账户版使用 `SchemaVersion=3`。交易保持 176 字节，区块保持 112 字节头部加交易。账户以 `user/公钥` 为键，保存 16 字节余额与序号。
+当前使用 `SchemaVersion=4`。普通交易保持 176 字节。EVM 输入附加在区块交易区之后并参与交易哈希与签名，单块最多 2 MiB。原生账户、合约账户、回执和区块回滚记录共同保存。
 
-运行账户版时使用新的数据目录和创世配置。旧账本缺少账户执行历史，程序会保留原格式并提示创建新库。历史性能资料按原日期保留。
+本版本使用新的数据目录和创世配置，保留版本 2、3 的已有账本。历史性能资料按原日期保留。
 
-后续重点：交易签名绑定链标识、确认与分叉收敛、候选接收公平性、长期负载与多机测试。Git 提交和同步流程见 [GIT_SYNC.md](GIT_SYNC.md)。
+后续重点：萤火虫同步与共同轮次、最终确认条件、原生交易的链标识签名、候选公平性、合约执行优化和多机测试。Git 提交和同步流程见 [GIT_SYNC.md](GIT_SYNC.md)。

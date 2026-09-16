@@ -11,6 +11,7 @@ struct Block {
     uint64_t txNum=0;
     array<uint8_t,32> hash{};
     vector<array<uint8_t,176>> txs;
+    EvmPayloads evm;
 };
 uint64_t epoch=2;
 pair<Block,vector<uint8_t>> BlockBuffer[3];
@@ -31,7 +32,7 @@ array<uint8_t,80> SerializeBlockHeader(const Block& block) {
 bool UnSerializeBlock(const vector<uint8_t>& data,Block& block) {
     if (data.size()<112) return false;
     auto num=ReadU64(data.data()+72);
-    if (num>6000||num>(data.size()-112)/176||data.size()!=112+num*176) return false;
+    if (!ReadEvmPayloads(data,block.evm)) return false;
     memcpy(block.previousHash.data(),data.data(),32);
     memcpy(block.merkleRoot.data(),data.data()+32,32);
     block.height=ReadU64(data.data()+64);
@@ -54,6 +55,7 @@ vector<uint8_t> SerializeBlockALL(Block& block) {
     memcpy(data.data(),header.data(),80);
     memcpy(data.data()+80,block.hash.data(),32);
     if (block.txNum) memcpy(data.data()+112,block.txs.data(),block.txNum*176);
+    AppendEvmPayloads(data,block.evm);
     return data;
 }
 
@@ -62,6 +64,9 @@ vector<uint8_t> GenerateBlock() {
     auto start=GetSteadyTime();
     Block block;
     vector<pair<array<uint8_t,32>,array<uint8_t,176>>> selected;
+    unordered_map<array<uint8_t,32>,vector<uint8_t>,GetMapHash> payloads;
+    size_t blockBytes=120;
+    uint64_t gasBudget=0;
     {
         shared_lock commitLock(dbCommitMutex);
         auto height=DBReadBlockHeight();
@@ -78,13 +83,20 @@ vector<uint8_t> GenerateBlock() {
             for (auto it=pending.upper_bound(available.nonce);it!=pending.end()&&selected.size()<maxBlockTx;++it) {
                 const auto& tx=txpool.at(it->second);
                 auto amount=ReadU64(tx.data()+64),nonce=ReadU64(tx.data()+72);
-                if (!CheckUserTx(available,amount,nonce)) {
+                auto evm=evmPool.find(it->second);
+                bool contract=evm!=evmPool.end();
+                auto extra=contract?evm->second.size()+8:0;
+                auto gas=contract?ReadU64(evm->second.data()+5):0;
+                if (blockBytes+176+extra>maxBlockBytes||gas>maxBlockGas-gasBudget) break;
+                if (!(contract?CheckEvmUserTx(available,tx,evm->second):CheckUserTx(available,amount,nonce))) {
                     if (available.nonce<UINT64_MAX&&nonce==available.nonce+1) dropped.emplace_back(key,nonce);
                     break;
                 }
                 available.nonce=nonce;
                 available.balance-=baseFee;
-                if (memcmp(tx.data(),tx.data()+32,32)!=0) available.balance-=amount;
+                if (contract||memcmp(tx.data(),tx.data()+32,32)!=0) available.balance-=amount;
+                if (contract) { available.balance-=gas; payloads.emplace(it->second,evm->second); }
+                gasBudget+=gas; blockBytes+=176+extra;
                 selected.emplace_back(it->second,tx);
             }
         }
@@ -100,7 +112,10 @@ vector<uint8_t> GenerateBlock() {
     vector<array<uint8_t,32>> hashes;
     hashes.reserve(selected.size());
     block.txs.reserve(selected.size());
-    for (const auto& [hash,tx]:selected) { hashes.push_back(hash); block.txs.push_back(tx); }
+    for (const auto& [hash,tx]:selected) {
+        if (auto found=payloads.find(hash);found!=payloads.end()) block.evm.emplace(block.txs.size(),std::move(found->second));
+        hashes.push_back(hash); block.txs.push_back(tx);
+    }
     // 提议时不删除交易；写库成功后再移除。
     block.merkleRoot=MerkleCompute(hashes);
     auto data=SerializeBlockALL(block);
@@ -128,11 +143,14 @@ bool VerifyBlock(const vector<uint8_t>& data,Block* result=nullptr) {
             auto found=txpool.find(txHash);
             // 只复用字节完全一致的已验证交易。
             verified[i]=found!=txpool.end()&&found->second==tx;
+            if (block.evm.count(i)) verified[i]=verified[i]&&evmPool.count(txHash)&&evmPool.at(txHash)==block.evm.at(i);
+            else verified[i]=verified[i]&&!evmPool.count(txHash);
         }
     }
     for (size_t i=0;i<block.txNum;i++) {
         const auto& tx=block.txs[i];
-        if (!verified[i]&&!VerifyTransaction(tx)) return false;
+        auto payload=block.evm.find(i);
+        if (!verified[i]&&!VerifyTransaction(tx,payload==block.evm.end()?span<const uint8_t>{}:span<const uint8_t>{payload->second})) return false;
         auto txHash=GetTransactionHash(tx);
         if (!unique.insert(txHash).second) return false;
         hashes.push_back(txHash);
@@ -170,7 +188,9 @@ void GenerateGenesisBlock() {
     DBAddBlock(batch,block.hash,data);
     batch.Put("CurrentBlock",rocksdb::Slice(reinterpret_cast<const char*>(block.hash.data()),32));
     batch.Put("BlockHeight","1");
-    batch.Put("SchemaVersion","3");
+    batch.Put("SchemaVersion","4");
+    batch.Put("ChainTx","0");
+    batch.Put(DBHashKey("score/",block.hash),"0");
     batch.Put("GenesisConfig",GetGenesisConfig().dump());
     batch.Put("UserBurned","0");
     for (const auto& [key,user]:genesisUsers) DBAddUser(batch,key,user);
@@ -186,15 +206,24 @@ void GenerateGenesisBlock() {
     spdlog::info("Genesis Block Generated. Height:1");
 }
 // 维护三个高度的候选窗口，按交易数量和哈希比较。
+bool QueueForkBlock(Block block,vector<uint8_t> data);
 bool ProcessBlock(vector<uint8_t> data) {
     if (data.size()<112) return false;
     auto height=ReadU64(data.data()+64);
+    uint64_t current;
+    array<uint8_t,32> head;
     {
-        lock_guard lock(blockBufferLock);
-        if (height<epoch||height-epoch>=3) return false;
+        shared_lock lock(dbCommitMutex);
+        current=DBReadBlockHeight(); head=DBReadCurrentBlock();
     }
+    if (height<2||height>current+256||current>height+256) return false;
     Block block;
     if (!VerifyBlock(data,&block)) return false;
+    if (height!=current+1||block.previousHash!=head) {
+        auto canonical=DBReadBlockByHeight(to_string(height));
+        if (canonical==data) return false;
+        return QueueForkBlock(std::move(block),std::move(data));
+    }
     if (!DBCheckBlockUsers(data)) { invalidUserBlocks++; return false; }
     {
         lock_guard lock(blockBufferLock);
@@ -235,4 +264,5 @@ bool CommitBlock(const Block& block,const vector<uint8_t>& data) {
     lastCommitTime=GetSteadyTime();
     return true;
 }
+#include "Fork.h"
 #endif

@@ -15,6 +15,7 @@ using tcp=ip::tcp;
 io_context* nodeIO=nullptr;
 unique_ptr<thread_pool> verifyThreads;
 atomic<size_t> pendingVerify{0},peakPendingVerify{0},connectionCount{0};
+atomic<size_t> pendingVerifyBytes{0};
 atomic<uint64_t> queueWaitNs{0},networkBytes{0};
 size_t maxPendingVerify=32768;
 size_t maxConnections=128;
@@ -118,7 +119,7 @@ void BroadcastData(vector<uint8_t> data) {
     }
     for (const auto& peer:peers) SendData(peer,shared);
 }
-void QueryHeight(const shared_ptr<Peer>& peer) { SendData(peer,GenerateMessage(4,{})); }
+void QueryHeight(const shared_ptr<Peer>& peer) { SendData(peer,GenerateMessage(19,{})); }
 void QueryBlock(const shared_ptr<Peer>& peer,uint64_t height) {
     array<uint8_t,8> data;
     WriteU64(data.data(),height);
@@ -236,13 +237,16 @@ void ProcessTxTimeACKMessage(const vector<uint8_t>& data,system_clock::time_poin
 void MainLoop() {
     try {
         while (true) {
+            if (ProcessForks()) BroadcastData(GenerateNewBlockMessage(DBReadBlockByHash(DBReadCurrentBlock())));
             {
                 unique_lock lock(txpoolMutex);
-                txpoolCondition.wait(lock,[]{return !nodeRunning||blockReady||(produceBlocks&&!txpool.empty());});
+                txpoolCondition.wait(lock,[]{return !nodeRunning||forkReady||blockReady||(produceBlocks&&readyPoolTx>0);});
+                if (forkReady) continue;
                 if (!nodeRunning&&!blockReady&&(!produceBlocks||txpool.empty())) break;
                 if (produceBlocks&&!blockReady&&nodeRunning&&readyPoolTx<maxBlockTx) {
-                    txpoolCondition.wait_for(lock,milliseconds(blockInterval),[]{return !nodeRunning||blockReady||readyPoolTx>=maxBlockTx;});
+                    txpoolCondition.wait_for(lock,milliseconds(blockInterval),[]{return !nodeRunning||forkReady||blockReady||readyPoolTx>=maxBlockTx;});
                 }
+                if (forkReady) continue;
             }
             if (produceBlocks&&!blockReady) {
                 auto data=GenerateBlock();
@@ -262,6 +266,7 @@ void MainLoop() {
                 continue;
             }
             BroadcastData(GenerateNewBlockMessage(selected.second));
+            forkReady=true;
             spdlog::debug("Local block committed. Height:{}, TxNum:{}",selected.first.height,selected.first.txNum);
         }
     } catch (const exception& e) {
@@ -287,7 +292,7 @@ nlohmann::json GetNodeStats() {
     auto first=firstTxTime.load();
     auto last=lastCommitTime.load();
     double elapsed=last>first&&first?double(last-first)/1e9:0;
-    lock_guard lock(dbCommitMutex);
+    shared_lock lock(dbCommitMutex);
     return {{"received",receivedTx.load()},{"valid",validTx.load()},{"invalid",invalidTx.load()},
         {"duplicate",duplicateTx.load()},{"rejected",rejectedTx.load()},{"committed",committedTx.load()},
         {"pool",poolSize},{"ready_pool",readySize},{"pending",pendingVerify.load()},{"peak_pending",peakPendingVerify.load()},
@@ -304,6 +309,7 @@ nlohmann::json GetNodeStats() {
         {"user_supply",genesisSupply-userBurned},{"invalid_user_tx",invalidUserTx.load()},
         {"conflict_tx",conflictTx.load()},{"invalid_user_blocks",invalidUserBlocks.load()},
         {"user_check_ms",userCheckNs.load()/1e6},{"user_writes",userWriteCount.load()},
-        {"peers",peers},{"failed",nodeFailed.load()}};
+        {"chain_transactions",DBReadNumber("ChainTx")},{"reorganizations",reorgCount.load()},
+        {"evm_accounts",evmState.get_accounts().size()}, {"peers",peers},{"failed",nodeFailed.load()}};
 }
 #endif

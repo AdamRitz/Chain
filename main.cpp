@@ -20,7 +20,7 @@ uint64_t ParseNumber(const string& text,uint64_t minimum,uint64_t maximum) {
 }
 int main(int argc,char* argv[]) {
     try {
-        string configPath,dataPath="data/accounts-v3",metricsPath,seedHost,genesisPath;
+        string configPath,dataPath="data/accounts-v4",metricsPath,seedHost,genesisPath;
         int ioNum=4,verifyNum=8,runSeconds=0;
         uint16_t seedPort=0;
         bool sync=true;

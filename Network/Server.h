@@ -25,24 +25,59 @@ bool ReserveVerify(size_t num) {
     return true;
 }
 awaitable<void> ProcessMessage(const shared_ptr<Peer>& peer,uint8_t type,vector<uint8_t> data) {
-    auto num=(type==1||type==10)?data.size()/176:max(size_t(1),(data.size()-112)/176);
+    auto num=(type==1||type==10)?data.size()/176:(type==17||type==18)?1:max(size_t(1),min(size_t(6000),(data.size()-112)/176));
+    if (type==18) {
+        num=0; size_t offset=0;
+        while (offset<data.size()) {
+            if (data.size()-offset<4) { ClosePeer(peer); co_return; }
+            auto length=ReadU32(data.data()+offset); offset+=4;
+            if (length<221||length>221+maxEvmInput||length>data.size()-offset||++num>6000) { ClosePeer(peer); co_return; }
+            offset+=length;
+        }
+    }
     steady_timer timer(co_await this_coro::executor);
     auto queuedAt=GetSteadyTime();
     uint64_t expected=0;
     if (type==1||type==10) firstTxTime.compare_exchange_strong(expected,queuedAt);
     // 队列满时暂停该连接读取，利用 TCP 背压，不无限堆积异步任务。
-    while (!ReserveVerify(num)) {
+    bool reserved=false;
+    while (!reserved) {
+        auto bytes=pendingVerifyBytes.load();
+        if (bytes<=64*1024*1024-data.size()&&pendingVerifyBytes.compare_exchange_weak(bytes,bytes+data.size())) {
+            reserved=ReserveVerify(num);
+            if (!reserved) pendingVerifyBytes-=data.size();
+        }
+        if (reserved) break;
         if (peer->closed||!nodeRunning) co_return;
         timer.expires_after(milliseconds(1));
         co_await timer.async_wait(use_awaitable);
     }
-    post(*verifyThreads,[type,num,queuedAt,data=std::move(data)]() mutable {
+    auto messageBytes=data.size();
+    post(*verifyThreads,[peer,type,num,messageBytes,queuedAt,data=std::move(data)]() mutable {
         queueWaitNs+=GetSteadyTime()-queuedAt;
         try {
             if (type==1||type==10) {
                 auto added=ProcessTxPackage(data);
                 if (added&&!produceBlocks) BroadcastData(GenerateMessage(10,data));
-            } else ProcessBlock(std::move(data));
+            } else if (type==17) {
+                if (ProcessEvmTx(data)&&!produceBlocks) BroadcastData(GenerateMessage(17,data));
+            } else if (type==18) {
+                size_t offset=0;
+                while (data.size()-offset>=4) {
+                    auto size=ReadU32(data.data()+offset); offset+=4;
+                    if (size<221||size>176+45+maxEvmInput||size>data.size()-offset) break;
+                    auto tx=span<const uint8_t>(data).subspan(offset,size);
+                    if (ProcessEvmTx(tx)&&!produceBlocks) BroadcastData(GenerateMessage(17,tx));
+                    offset+=size;
+                }
+            } else {
+                array<uint8_t,32> hash; memcpy(hash.data(),data.data()+80,32);
+                auto accepted=ProcessBlock(std::move(data));
+                if (peer->port&&(accepted||!FindForkBlock(hash).empty())) {
+                    auto missing=FindMissingParent(hash);
+                    if (missing!=array<uint8_t,32>{}) SendData(peer,GenerateMessage(21,missing));
+                }
+            }
         } catch (const exception& e) {
             spdlog::error("Verification worker: {}",e.what());
             nodeFailed=true;
@@ -50,6 +85,7 @@ awaitable<void> ProcessMessage(const shared_ptr<Peer>& peer,uint8_t type,vector<
             if (nodeIO) nodeIO->stop();
         }
         pendingVerify-=num;
+        pendingVerifyBytes-=messageBytes;
         WakeMainLoop();
     });
 }
@@ -64,7 +100,7 @@ awaitable<void> session(uint64_t key,shared_ptr<Peer> peer) {
         vector<uint8_t> data(size);
         if (size&&!co_await ReadData(peer,buffer(data))) co_return;
         networkBytes+=size+5;
-        if (type==1||type==10||type==2||type==7) {
+        if (type==1||type==10||type==2||type==7||type==17||type==18||type==22) {
             co_await ProcessMessage(peer,type,std::move(data));
         } else if (type==4) {
             SendData(peer,GenerateHeightMessage(5));
@@ -99,6 +135,46 @@ awaitable<void> session(uint64_t key,shared_ptr<Peer> peer) {
                 }
             }
             SendData(peer,GenerateMessage(16,reply));
+        } else if (type==19) {
+            array<uint8_t,80> reply;
+            { shared_lock lock(dbCommitMutex);
+              auto head=DBReadCurrentBlock(); memcpy(reply.data(),genesisRoot.data(),32); memcpy(reply.data()+32,head.data(),32);
+              WriteU64(reply.data()+64,DBReadBlockHeight()); WriteU64(reply.data()+72,DBReadNumber("ChainTx")); }
+            SendData(peer,GenerateMessage(20,reply));
+        } else if (type==20&&peer->port) {
+            if (memcmp(data.data(),genesisRoot.data(),32)) { ClosePeer(peer); co_return; }
+            array<uint8_t,32> remote; memcpy(remote.data(),data.data()+32,32);
+            peer->remoteHeight=ReadU64(data.data()+64);
+            uint64_t height; array<uint8_t,32> local;
+            { shared_lock lock(dbCommitMutex); height=DBReadBlockHeight(); local=DBReadCurrentBlock(); }
+            if (local!=remote&&peer->remoteHeight<=height+256) SendData(peer,GenerateMessage(21,remote));
+            if (!peer->syncing&&peer->remoteHeight>height) {
+                peer->syncing=true;
+                co_spawn(peer->strand,SyncBlock(peer),[peer](exception_ptr error){if (error) PeerError(peer,error);});
+            }
+        } else if (type==21&&peer->port) {
+            array<uint8_t,32> hash; memcpy(hash.data(),data.data(),32);
+            auto block=FindForkBlock(hash);
+            if (!block.empty()) SendData(peer,GenerateMessage(22,block));
+        } else if (type==23) {
+            array<uint8_t,32> hash; memcpy(hash.data(),data.data(),32);
+            string receipt;
+            { shared_lock lock(dbCommitMutex); if (!DBGet(DBHashKey("receipt/",hash),receipt)) receipt="null"; }
+            SendData(peer,GenerateMessage(24,span<const uint8_t>(reinterpret_cast<const uint8_t*>(receipt.data()),receipt.size())));
+        } else if (type==25) {
+            evmc::address address; memcpy(address.bytes,data.data(),20);
+            nlohmann::json reply=nullptr;
+            { shared_lock lock(dbCommitMutex);
+              auto found=evmState.get_accounts().find(address);
+              if (found!=evmState.get_accounts().end()) {
+                if (data.size()==20) reply=nlohmann::json::parse(SerializeEvmAccount(found->second));
+                else { evmc::bytes32 key; memcpy(key.bytes,data.data()+20,32);
+                       auto slot=found->second.storage.find(key);
+                       auto word=slot==found->second.storage.end()?evmc::bytes32{}:slot->second.current;
+                       reply=EvmHex(word.bytes); }
+              } }
+            auto text=reply.dump();
+            SendData(peer,GenerateMessage(26,span<const uint8_t>(reinterpret_cast<const uint8_t*>(text.data()),text.size())));
         }
     }
 }

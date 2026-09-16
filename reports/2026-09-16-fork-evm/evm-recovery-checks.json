@@ -1,0 +1,128 @@
+[
+  {
+    "case": "evm-1c-r1",
+    "verified_users": 65,
+    "native_balance_total": 638238644193,
+    "burned": 2761355807,
+    "genesis_supply": 641000000000
+  },
+  {
+    "case": "evm-2c-r1",
+    "verified_users": 65,
+    "native_balance_total": 638238644193,
+    "burned": 2761355807,
+    "genesis_supply": 641000000000
+  },
+  {
+    "case": "evm-4c-r1",
+    "verified_users": 65,
+    "native_balance_total": 638238644193,
+    "burned": 2761355807,
+    "genesis_supply": 641000000000
+  },
+  {
+    "case": "evm-8c-r1",
+    "verified_users": 65,
+    "native_balance_total": 638238644193,
+    "burned": 2761355807,
+    "genesis_supply": 641000000000
+  },
+  {
+    "case": "evm-12c-r1",
+    "verified_users": 65,
+    "native_balance_total": 638238644193,
+    "burned": 2761355807,
+    "genesis_supply": 641000000000
+  },
+  {
+    "case": "evm-15c-r1",
+    "verified_users": 65,
+    "native_balance_total": 638238644193,
+    "burned": 2761355807,
+    "genesis_supply": 641000000000
+  },
+  {
+    "case": "evm-15c-r2",
+    "verified_users": 65,
+    "native_balance_total": 638238644193,
+    "burned": 2761355807,
+    "genesis_supply": 641000000000
+  },
+  {
+    "case": "evm-12c-r2",
+    "verified_users": 65,
+    "native_balance_total": 638238644193,
+    "burned": 2761355807,
+    "genesis_supply": 641000000000
+  },
+  {
+    "case": "evm-8c-r2",
+    "verified_users": 65,
+    "native_balance_total": 638238644193,
+    "burned": 2761355807,
+    "genesis_supply": 641000000000
+  },
+  {
+    "case": "evm-4c-r2",
+    "verified_users": 65,
+    "native_balance_total": 638238644193,
+    "burned": 2761355807,
+    "genesis_supply": 641000000000
+  },
+  {
+    "case": "evm-2c-r2",
+    "verified_users": 65,
+    "native_balance_total": 638238644193,
+    "burned": 2761355807,
+    "genesis_supply": 641000000000
+  },
+  {
+    "case": "evm-1c-r2",
+    "verified_users": 65,
+    "native_balance_total": 638238644193,
+    "burned": 2761355807,
+    "genesis_supply": 641000000000
+  },
+  {
+    "case": "evm-1c-r3",
+    "verified_users": 65,
+    "native_balance_total": 638238644193,
+    "burned": 2761355807,
+    "genesis_supply": 641000000000
+  },
+  {
+    "case": "evm-2c-r3",
+    "verified_users": 65,
+    "native_balance_total": 638238644193,
+    "burned": 2761355807,
+    "genesis_supply": 641000000000
+  },
+  {
+    "case": "evm-4c-r3",
+    "verified_users": 65,
+    "native_balance_total": 638238644193,
+    "burned": 2761355807,
+    "genesis_supply": 641000000000
+  },
+  {
+    "case": "evm-8c-r3",
+    "verified_users": 65,
+    "native_balance_total": 638238644193,
+    "burned": 2761355807,
+    "genesis_supply": 641000000000
+  },
+  {
+    "case": "evm-12c-r3",
+    "verified_users": 65,
+    "native_balance_total": 638238644193,
+    "burned": 2761355807,
+    "genesis_supply": 641000000000
+  },
+  {
+    "case": "evm-15c-r3",
+    "verified_users": 65,
+    "native_balance_total": 638238644193,
+    "burned": 2761355807,
+    "genesis_supply": 641000000000
+  }
+]

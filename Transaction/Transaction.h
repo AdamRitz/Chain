@@ -22,6 +22,12 @@ struct Transaction {
     array<uint8_t,64> signature;
 };
 unordered_map<array<uint8_t,32>,array<uint8_t,176>,GetMapHash> txpool;
+unordered_map<array<uint8_t,32>,vector<uint8_t>,GetMapHash> evmPool;
+size_t evmPoolBytes=0;
+void EraseEvmPool(const array<uint8_t,32>& hash) {
+    auto found=evmPool.find(hash);
+    if (found!=evmPool.end()) { evmPoolBytes-=found->second.size(); evmPool.erase(found); }
+}
 struct PendingUser {
     map<uint64_t,array<uint8_t,32>> txs;
     uint64_t readyNonce=0;
@@ -51,6 +57,7 @@ void PruneUserPool(const array<uint8_t,32>& key,uint64_t nonce) {
     while (!pending.empty()&&pending.begin()->first<=nonce) {
         if (pending.begin()->first<=item.readyNonce) readyPoolTx--;
         txpool.erase(pending.begin()->second);
+        EraseEvmPool(pending.begin()->second);
         pending.erase(pending.begin());
     }
     if (pending.empty()) { txUserPool.erase(found); return; }
@@ -64,6 +71,7 @@ void DropUserPoolFrom(const array<uint8_t,32>& key,uint64_t nonce) {
     for (auto it=item.txs.lower_bound(nonce);it!=item.txs.end();) {
         if (it->first<=item.readyNonce) readyPoolTx--;
         txpool.erase(it->second);
+        EraseEvmPool(it->second);
         it=item.txs.erase(it);
         invalidUserTx++;
     }
@@ -111,9 +119,13 @@ array<uint8_t,176> GenerateTx(const array<uint8_t,32>& sender,const array<uint8_
     if (crypto_sign_detached(tx.signature.data(),nullptr,tx.hash.data(),32,wallet.private_key.data())!=0) throw runtime_error("Sign failed");
     return SerializeTxALL(tx,partByte);
 }
-bool VerifyTransaction(const array<uint8_t,176>& data) {
+bool VerifyTransaction(const array<uint8_t,176>& data,span<const uint8_t> payload={}) {
     array<uint8_t,32> hash;
-    crypto_generichash(hash.data(),32,data.data(),80,nullptr,0);
+    if (payload.empty()) crypto_generichash(hash.data(),32,data.data(),80,nullptr,0);
+    else {
+        if (!ValidEvmPayload(payload)||memcmp(payload.data()+13,genesisRoot.data(),32)) return false;
+        hash=EvmTransactionHash(data,payload);
+    }
     if (sodium_memcmp(hash.data(),data.data()+80,32)!=0) return false;
     return crypto_sign_verify_detached(data.data()+112,hash.data(),32,data.data())==0;
 }
@@ -181,4 +193,33 @@ size_t ProcessTxPackage(span<const uint8_t> data) {
     return added;
 }
 void ProcessTx(const array<uint8_t,176>& tx) { ProcessTxPackage(span<const uint8_t>(tx)); }
+bool ProcessEvmTx(span<const uint8_t> data) {
+    if (data.size()<221||data.size()>176+45+maxEvmInput) return false;
+    uint64_t expected=0; firstTxTime.compare_exchange_strong(expected,GetSteadyTime()); receivedTx++;
+    array<uint8_t,176> tx; memcpy(tx.data(),data.data(),176);
+    auto payload=data.subspan(176);
+    auto start=GetSteadyTime();
+    if (!VerifyTransaction(tx,payload)) { invalidTx++; return false; }
+    verifyNs+=GetSteadyTime()-start;
+    auto hash=GetTransactionHash(tx);
+    array<uint8_t,32> key; memcpy(key.data(),tx.data(),32);
+    shared_lock commitLock(dbCommitMutex);
+    auto user=GetUser(users,key);
+    if (!CheckEvmUserTx(user,tx,payload,true)) { invalidUserTx++; invalidTx++; return false; }
+    {
+        lock_guard lock(txpoolMutex);
+        if (txpool.count(hash)) { duplicateTx++; return false; }
+        if (txpool.size()>=maxPoolTx||evmPoolBytes+payload.size()>64*1024*1024) { rejectedTx++; return false; }
+        auto nonce=ReadU64(tx.data()+72);
+        PruneUserPool(key,user.nonce);
+        auto& pending=txUserPool[key];
+        if (pending.txs.count(nonce)) { conflictTx++; return false; }
+        pending.txs.emplace(nonce,hash);
+        pending.readyNonce=max(pending.readyNonce,user.nonce);
+        while (pending.readyNonce<UINT64_MAX&&pending.txs.count(pending.readyNonce+1)) { pending.readyNonce++; readyPoolTx++; }
+        txpool.emplace(hash,tx);
+        evmPool.emplace(hash,vector<uint8_t>(payload.begin(),payload.end())); evmPoolBytes+=payload.size();
+    }
+    validTx++; WakeMainLoop(); return true;
+}
 #endif

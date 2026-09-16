@@ -5,7 +5,7 @@
 #include "../Time/Time.h"
 using namespace std;
 
-constexpr size_t maxMessageSize=112+6000*176;
+constexpr size_t maxMessageSize=maxBlockBytes;
 vector<uint8_t> GenerateMessage(uint8_t type,span<const uint8_t> payload) {
     if (payload.size()>maxMessageSize) throw invalid_argument("Message too large");
     vector<uint8_t> message(5+payload.size());
@@ -18,7 +18,7 @@ bool VerifyMessageSize(uint8_t type,uint32_t size) {
     if (size>maxMessageSize) return false;
     switch (type) {
         case 1:return size==176;
-        case 2:case 7:return size>=112&&(size-112)%176==0;
+        case 2:case 7:case 22:return size>=112;
         case 4:case 8:case 13:return size==0;
         case 5:case 6:case 12:return size==8;
         case 9:return size%6==0&&size<=64*6;
@@ -27,6 +27,13 @@ bool VerifyMessageSize(uint8_t type,uint32_t size) {
         case 14:return size<=16384;
         case 15:return size==32;
         case 16:return size==17;
+        case 17:return size>=221&&size<=176+45+maxEvmInput;
+        case 18:return size>=225;
+        case 19:return size==0;
+        case 20:return size==80;
+        case 21:case 23:return size==32;
+        case 24:case 26:return size<=maxBlockBytes;
+        case 25:return size==20||size==52;
         default:return false;
     }
 }

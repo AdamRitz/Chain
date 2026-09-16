@@ -1,0 +1,133 @@
+{
+  "compiler": "0.8.28+commit.7893614a.Emscripten.clang",
+  "settings": {
+    "optimizer": {
+      "enabled": true,
+      "runs": 200
+    },
+    "evmVersion": "shanghai",
+    "outputSelection": {
+      "*": {
+        "*": [
+          "abi",
+          "evm.bytecode.object",
+          "evm.deployedBytecode.object",
+          "evm.methodIdentifiers"
+        ]
+      }
+    }
+  },
+  "contracts": {
+    "Caller": {
+      "abi": [
+        {
+          "inputs": [
+            {
+              "internalType": "contract Counter",
+              "name": "target",
+              "type": "address"
+            }
+          ],
+          "name": "Forward",
+          "outputs": [
+            {
+              "internalType": "uint256",
+              "name": "",
+              "type": "uint256"
+            }
+          ],
+          "stateMutability": "nonpayable",
+          "type": "function"
+        }
+      ],
+      "evm": {
+        "bytecode": {
+          "object": "6080604052348015600e575f5ffd5b506101278061001c5f395ff3fe6080604052348015600e575f5ffd5b50600436106026575f3560e01c806383d70b5e14602a575b5f5ffd5b6039603536600460b0565b604b565b60405190815260200160405180910390f35b5f816001600160a01b031663648b7ce86040518163ffffffff1660e01b81526004016020604051808303815f875af11580156088573d5f5f3e3d5ffd5b505050506040513d601f19601f8201168201806040525081019060aa919060db565b92915050565b5f6020828403121560bf575f5ffd5b81356001600160a01b038116811460d4575f5ffd5b9392505050565b5f6020828403121560ea575f5ffd5b505191905056fea2646970667358221220f37b96b093d1cbd6b0337e7ae359996bb0d32686cfbccb2618ba5f7c7f0f609e64736f6c634300081c0033"
+        },
+        "deployedBytecode": {
+          "object": "6080604052348015600e575f5ffd5b50600436106026575f3560e01c806383d70b5e14602a575b5f5ffd5b6039603536600460b0565b604b565b60405190815260200160405180910390f35b5f816001600160a01b031663648b7ce86040518163ffffffff1660e01b81526004016020604051808303815f875af11580156088573d5f5f3e3d5ffd5b505050506040513d601f19601f8201168201806040525081019060aa919060db565b92915050565b5f6020828403121560bf575f5ffd5b81356001600160a01b038116811460d4575f5ffd5b9392505050565b5f6020828403121560ea575f5ffd5b505191905056fea2646970667358221220f37b96b093d1cbd6b0337e7ae359996bb0d32686cfbccb2618ba5f7c7f0f609e64736f6c634300081c0033"
+        },
+        "methodIdentifiers": {
+          "Forward(address)": "83d70b5e"
+        }
+      }
+    },
+    "Counter": {
+      "abi": [
+        {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": false,
+              "internalType": "uint256",
+              "name": "value",
+              "type": "uint256"
+            }
+          ],
+          "name": "Changed",
+          "type": "event"
+        },
+        {
+          "inputs": [],
+          "name": "Increment",
+          "outputs": [
+            {
+              "internalType": "uint256",
+              "name": "",
+              "type": "uint256"
+            }
+          ],
+          "stateMutability": "nonpayable",
+          "type": "function"
+        },
+        {
+          "inputs": [],
+          "name": "Rollback",
+          "outputs": [],
+          "stateMutability": "nonpayable",
+          "type": "function"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "uint256",
+              "name": "next",
+              "type": "uint256"
+            }
+          ],
+          "name": "Set",
+          "outputs": [],
+          "stateMutability": "nonpayable",
+          "type": "function"
+        },
+        {
+          "inputs": [],
+          "name": "value",
+          "outputs": [
+            {
+              "internalType": "uint256",
+              "name": "",
+              "type": "uint256"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function"
+        }
+      ],
+      "evm": {
+        "bytecode": {
+          "object": "6080604052348015600e575f5ffd5b5061018b8061001c5f395ff3fe608060405234801561000f575f5ffd5b506004361061004a575f3560e01c80633fa4f2451461004e578063648b7ce814610068578063df7a95ae14610070578063e7058e1514610084575b5f5ffd5b6100565f5481565b60405190815260200160405180910390f35b61005661008c565b61008261007e366004610119565b5f55565b005b6100826100de565b5f60015f5f82825461009e9190610130565b90915550505f546040519081527f938d2ee5be9cfb0f7270ee2eff90507e94b37625d9d2b3a61c97d30a4560b8299060200160405180910390a1505f5490565b60635f5560405162461bcd60e51b8152602060048201526008602482015267726f6c6c6261636b60c01b604482015260640160405180910390fd5b5f60208284031215610129575f5ffd5b5035919050565b8082018082111561014f57634e487b7160e01b5f52601160045260245ffd5b9291505056fea2646970667358221220c9db2d1e2dc19f1475ccf621b4259c6a66a78d30dc698bd939df74f7f4e9872c64736f6c634300081c0033"
+        },
+        "deployedBytecode": {
+          "object": "608060405234801561000f575f5ffd5b506004361061004a575f3560e01c80633fa4f2451461004e578063648b7ce814610068578063df7a95ae14610070578063e7058e1514610084575b5f5ffd5b6100565f5481565b60405190815260200160405180910390f35b61005661008c565b61008261007e366004610119565b5f55565b005b6100826100de565b5f60015f5f82825461009e9190610130565b90915550505f546040519081527f938d2ee5be9cfb0f7270ee2eff90507e94b37625d9d2b3a61c97d30a4560b8299060200160405180910390a1505f5490565b60635f5560405162461bcd60e51b8152602060048201526008602482015267726f6c6c6261636b60c01b604482015260640160405180910390fd5b5f60208284031215610129575f5ffd5b5035919050565b8082018082111561014f57634e487b7160e01b5f52601160045260245ffd5b9291505056fea2646970667358221220c9db2d1e2dc19f1475ccf621b4259c6a66a78d30dc698bd939df74f7f4e9872c64736f6c634300081c0033"
+        },
+        "methodIdentifiers": {
+          "Increment()": "648b7ce8",
+          "Rollback()": "e7058e15",
+          "Set(uint256)": "df7a95ae",
+          "value()": "3fa4f245"
+        }
+      }
+    }
+  }
+}

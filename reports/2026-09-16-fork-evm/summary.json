@@ -1,0 +1,146 @@
+[
+  {
+    "workload": "previous",
+    "cores": 1,
+    "median_tps": 24700.359526908167,
+    "min_tps": 24620.21472274066,
+    "max_tps": 24748.468323483143,
+    "median_cpu_percent": 96.61442710785434
+  },
+  {
+    "workload": "previous",
+    "cores": 2,
+    "median_tps": 47250.34641591436,
+    "min_tps": 46957.313235260706,
+    "max_tps": 47380.25040493318,
+    "median_cpu_percent": 90.19521626564102
+  },
+  {
+    "workload": "previous",
+    "cores": 4,
+    "median_tps": 83805.43027341663,
+    "min_tps": 82898.8489522381,
+    "max_tps": 84600.93976412002,
+    "median_cpu_percent": 79.00407749733547
+  },
+  {
+    "workload": "previous",
+    "cores": 8,
+    "median_tps": 128398.44468396097,
+    "min_tps": 115068.19554963498,
+    "max_tps": 130012.98656379686,
+    "median_cpu_percent": 64.6679177960552
+  },
+  {
+    "workload": "previous",
+    "cores": 12,
+    "median_tps": 128522.63403539784,
+    "min_tps": 125543.03115034277,
+    "max_tps": 137763.95688946464,
+    "median_cpu_percent": 55.08854361675197
+  },
+  {
+    "workload": "previous",
+    "cores": 15,
+    "median_tps": 144326.05218026988,
+    "min_tps": 131876.2067497487,
+    "max_tps": 145865.19576198867,
+    "median_cpu_percent": 58.03110014748351
+  },
+  {
+    "workload": "native",
+    "cores": 1,
+    "median_tps": 24653.43475186476,
+    "min_tps": 24462.493578901427,
+    "max_tps": 24720.88860124033,
+    "median_cpu_percent": 97.0728993354675
+  },
+  {
+    "workload": "native",
+    "cores": 2,
+    "median_tps": 46395.64813769319,
+    "min_tps": 46238.566589638336,
+    "max_tps": 46984.14490274145,
+    "median_cpu_percent": 90.73732226929059
+  },
+  {
+    "workload": "native",
+    "cores": 4,
+    "median_tps": 82928.32292200478,
+    "min_tps": 82010.18779757402,
+    "max_tps": 83494.29642112793,
+    "median_cpu_percent": 78.82509861075975
+  },
+  {
+    "workload": "native",
+    "cores": 8,
+    "median_tps": 129086.88541350437,
+    "min_tps": 124485.33095986035,
+    "max_tps": 129520.21223350523,
+    "median_cpu_percent": 66.69953637806161
+  },
+  {
+    "workload": "native",
+    "cores": 12,
+    "median_tps": 132801.0019924174,
+    "min_tps": 125172.92639778751,
+    "max_tps": 136827.9745340899,
+    "median_cpu_percent": 60.90227885934019
+  },
+  {
+    "workload": "native",
+    "cores": 15,
+    "median_tps": 140159.04126727238,
+    "min_tps": 139308.3165625024,
+    "max_tps": 142535.18302823798,
+    "median_cpu_percent": 57.855426722225765
+  },
+  {
+    "workload": "evm",
+    "cores": 1,
+    "median_tps": 14835.599599744284,
+    "min_tps": 14372.618322401746,
+    "max_tps": 14872.782088934231,
+    "median_cpu_percent": 88.70600370857328
+  },
+  {
+    "workload": "evm",
+    "cores": 2,
+    "median_tps": 22586.049347172528,
+    "min_tps": 22490.320840626897,
+    "max_tps": 23044.150749300905,
+    "median_cpu_percent": 68.52519631128507
+  },
+  {
+    "workload": "evm",
+    "cores": 4,
+    "median_tps": 29774.51285027387,
+    "min_tps": 29577.69382838358,
+    "max_tps": 30446.1734488043,
+    "median_cpu_percent": 42.63347274481852
+  },
+  {
+    "workload": "evm",
+    "cores": 8,
+    "median_tps": 32443.49057699542,
+    "min_tps": 32238.338812572416,
+    "max_tps": 32648.008112372845,
+    "median_cpu_percent": 29.782110490601266
+  },
+  {
+    "workload": "evm",
+    "cores": 12,
+    "median_tps": 28558.02669747587,
+    "min_tps": 25762.860188620165,
+    "max_tps": 31441.321423402547,
+    "median_cpu_percent": 20.060143740618305
+  },
+  {
+    "workload": "evm",
+    "cores": 15,
+    "median_tps": 29985.100103900775,
+    "min_tps": 29974.422525506514,
+    "max_tps": 30656.467791220584,
+    "median_cpu_percent": 21.3956183033042
+  }
+]

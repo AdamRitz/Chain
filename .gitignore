@@ -61,6 +61,9 @@ config.local.yaml
 /network-test-data/
 /user-test-data/
 /account-network-test-data/
+/fork-network-test-data/
+/evm-network-test-data/
+/fork-state-data/
 *.wallet.json
 *.bin
 __pycache__/

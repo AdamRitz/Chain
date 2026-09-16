@@ -1,0 +1,145 @@
+{
+  "processor": "13th Gen Intel(R) Core(TM) i7-13700",
+  "physical_cores": [
+    {
+      "logical_cpus": [
+        0,
+        1
+      ],
+      "efficiency_class": 1
+    },
+    {
+      "logical_cpus": [
+        2,
+        3
+      ],
+      "efficiency_class": 1
+    },
+    {
+      "logical_cpus": [
+        4,
+        5
+      ],
+      "efficiency_class": 1
+    },
+    {
+      "logical_cpus": [
+        6,
+        7
+      ],
+      "efficiency_class": 1
+    },
+    {
+      "logical_cpus": [
+        8,
+        9
+      ],
+      "efficiency_class": 1
+    },
+    {
+      "logical_cpus": [
+        10,
+        11
+      ],
+      "efficiency_class": 1
+    },
+    {
+      "logical_cpus": [
+        12,
+        13
+      ],
+      "efficiency_class": 1
+    },
+    {
+      "logical_cpus": [
+        14,
+        15
+      ],
+      "efficiency_class": 1
+    },
+    {
+      "logical_cpus": [
+        16
+      ],
+      "efficiency_class": 0
+    },
+    {
+      "logical_cpus": [
+        17
+      ],
+      "efficiency_class": 0
+    },
+    {
+      "logical_cpus": [
+        18
+      ],
+      "efficiency_class": 0
+    },
+    {
+      "logical_cpus": [
+        19
+      ],
+      "efficiency_class": 0
+    },
+    {
+      "logical_cpus": [
+        20
+      ],
+      "efficiency_class": 0
+    },
+    {
+      "logical_cpus": [
+        21
+      ],
+      "efficiency_class": 0
+    },
+    {
+      "logical_cpus": [
+        22
+      ],
+      "efficiency_class": 0
+    },
+    {
+      "logical_cpus": [
+        23
+      ],
+      "efficiency_class": 0
+    }
+  ],
+  "node_cpus": [
+    2,
+    4,
+    6,
+    8,
+    10,
+    12,
+    14,
+    16,
+    17,
+    18,
+    19,
+    20,
+    21,
+    22,
+    23
+  ],
+  "load_cpus": [
+    0,
+    1
+  ],
+  "points": [
+    1,
+    2,
+    4,
+    8,
+    12,
+    15
+  ],
+  "repeats": 3,
+  "sync": 1,
+  "timing": "sender launch through all transactions persisted locally",
+  "native_count": 300000,
+  "evm_count": 100000,
+  "node_binary_sha256": "18881eb6097f5266549933f2af291f320f25d7228432caacc9b98be7dcbf1b80",
+  "baseline_binary_sha256": "b5909d62a7e2cfa28feb0dd5f9035feb749e19489eaa4207219ee9e036460821"
+}
