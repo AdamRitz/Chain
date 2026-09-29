@@ -15,7 +15,7 @@ def MakeBlock(parent, height, transactions):
 def TestFork(binary, work):
     work.mkdir(parents=True, exist_ok=False)
     dataset = work/'transactions.bin'
-    Run([binary/'sender.exe', '--prepare', dataset, '--count', 16])
+    Run([binary/ExeName('sender'), '--prepare', dataset, '--count', 16])
     raw = dataset.read_bytes()
     txs = [raw[i:i+176] for i in range(0, len(raw), 176)]
     nodes, checks = [], []

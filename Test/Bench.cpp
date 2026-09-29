@@ -6,19 +6,11 @@
 #include <thread>
 #include <nlohmann/json.hpp>
 #include "../Transaction/Transaction.h"
+#include "../Tool/Resource.h"
 using namespace std;
 
 double GetCPUTime() {
-#ifdef _WIN32
-    FILETIME created,exited,kernel,user;
-    if (GetProcessTimes(GetCurrentProcess(),&created,&exited,&kernel,&user)) {
-        ULARGE_INTEGER k,u;
-        k.LowPart=kernel.dwLowDateTime; k.HighPart=kernel.dwHighDateTime;
-        u.LowPart=user.dwLowDateTime; u.HighPart=user.dwHighDateTime;
-        return (k.QuadPart+u.QuadPart)/1e7;
-    }
-#endif
-    return 0;
+    return GetProcessResources().value("process_cpu_seconds",0.0);
 }
 int main(int argc,char* argv[]) {
     try {

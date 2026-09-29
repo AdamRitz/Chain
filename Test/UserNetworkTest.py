@@ -3,21 +3,21 @@ import argparse
 import json
 from pathlib import Path
 import time
-from NetworkTest import Run, StartNode, StopNode, SendFrame, GetStats, GetAccount, WaitStats
+from NetworkTest import ExeName, Run, StartNode, StopNode, SendFrame, GetStats, GetAccount, WaitStats
 
 
 def TestAccounts(binary, work):
     work.mkdir(parents=True, exist_ok=False)
     alice_file, bob_file = work/'alice.wallet.json', work/'bob.wallet.json'
-    alice = Run([binary/'sender.exe', '--create-wallet', alice_file])['public_key']
-    bob = Run([binary/'sender.exe', '--create-wallet', bob_file])['public_key']
+    alice = Run([binary/ExeName('sender'), '--create-wallet', alice_file])['public_key']
+    bob = Run([binary/ExeName('sender'), '--create-wallet', bob_file])['public_key']
     genesis = work/'genesis.json'
     genesis.write_text(json.dumps({'base_fee': 1, 'accounts': [{'public_key': alice, 'balance': 10000}]}), encoding='utf-8')
     nodes = []
     checks = []
     def Transaction(wallet, receiver, amount, nonce, name):
         output = work/(name+'.bin')
-        Run([binary/'sender.exe', '--wallet', wallet, '--receiver', receiver,
+        Run([binary/ExeName('sender'), '--wallet', wallet, '--receiver', receiver,
              '--amount', amount, '--nonce', nonce, '--prepare', output])
         result = output.read_bytes()
         assert len(result) == 176
@@ -39,7 +39,7 @@ def TestAccounts(binary, work):
         assert GetAccount(port, bob) == {'exists': True, 'balance': 20, 'nonce': 0}
         assert GetStats(port)['user_burned'] == 2
         checks.append('out-of-order transfers execute in nonce order with exact balances and fees')
-        queried = Run([binary/'sender.exe', '--account', alice, '--port', port])
+        queried = Run([binary/ExeName('sender'), '--account', alice, '--port', port])
         assert queried['balance'] == 9978 and queried['nonce'] == 2
         checks.append('account query CLI returns committed state')
         self_tx = Transaction(alice_file, alice, 5, 3, 'self')

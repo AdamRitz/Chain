@@ -7,6 +7,7 @@
 #include <nlohmann/json.hpp>
 #include "../Transaction/Block.h"
 #include "../Message/Message.h"
+#include "../Tool/Resource.h"
 using namespace std;
 using namespace std::chrono;
 using namespace boost::asio;
@@ -19,6 +20,10 @@ atomic<size_t> pendingVerifyBytes{0};
 atomic<uint64_t> queueWaitNs{0},networkBytes{0};
 size_t maxPendingVerify=32768;
 size_t maxConnections=128;
+size_t maxPeers=64;
+vector<pair<string,uint16_t>> configuredPeers;
+bool relayTransactions=false;
+atomic<uint64_t> networkSentBytes{0},localProposals{0};
 size_t maxSendBytes=8*1024*1024;
 unsigned short listenPort=8089;
 string listenAddress="127.0.0.1";
@@ -36,6 +41,8 @@ struct Peer:enable_shared_from_this<Peer> {
     uint16_t port=0;
     array<uint8_t,4> address{};
     bool writing=false,closed=false,syncing=false;
+    uint64_t clockToken=0,clockSentSteady=0;
+    int64_t clockSentLogical=0;
     milliseconds lag{0};
     system_clock::time_point T1{};
     Peer(tcp::socket sock):socket(std::move(sock)),strand(make_strand(socket.get_executor())),deadline(strand) { connectionCount++; }
@@ -53,7 +60,7 @@ pair<uint64_t,shared_ptr<Peer>> AddPeer(tcp::socket socket,uint16_t port=0) {
     auto endpoint=socket.remote_endpoint();
     auto key=GetPeerKey(endpoint.address().to_v4().to_bytes(),endpoint.port());
     lock_guard lock(peerMutex);
-    if (peerPool.size()>=64||peerPool.count(key)) return {key,nullptr};
+    if (peerPool.size()>=maxPeers||peerPool.count(key)) return {key,nullptr};
     auto peer=make_shared<Peer>(std::move(socket));
     peer->key=key;
     peer->port=port;
@@ -88,6 +95,7 @@ awaitable<void> WriteLoop(shared_ptr<Peer> peer) {
         boost::system::error_code ec;
         co_await async_write(peer->socket,buffer(*data),redirect_error(use_awaitable,ec));
         if (ec||peer->closed) { ClosePeer(peer); co_return; }
+        networkSentBytes+=data->size();
         peer->queuedBytes-=data->size();
         peer->messageQueue.pop_front();
     }
@@ -153,7 +161,7 @@ awaitable<void> Connect(array<uint8_t,4> ipByte,uint16_t port) {
     peer->address=ipByte;
     {
         lock_guard lock(peerMutex);
-        if (peerPool.size()>=64||peerPool.count(peer->key)) co_return;
+        if (peerPool.size()>=maxPeers||peerPool.count(peer->key)) co_return;
         peerPool.emplace(peer->key,peer);
     }
     co_spawn(peer->strand,session(peer->key,peer),[peer](exception_ptr error){PeerError(peer,error);});
@@ -176,7 +184,7 @@ vector<uint8_t> GenerateDiscoverMessage() {
     return GenerateMessage(9,data);
 }
 awaitable<void> ProcessDiscoverMessage(vector<uint8_t> data) {
-    if (data.size()%6!=0||data.size()>64*6) co_return;
+    if (data.size()%6!=0||data.size()>1024*6) co_return;
     auto executor=co_await this_coro::executor;
     for (size_t offset=0;offset<data.size();offset+=6) {
         array<uint8_t,4> addr;
@@ -211,6 +219,7 @@ awaitable<void> OpenDiscoveryMode() {
             for (const auto& [key,peer]:peerPool) peers.push_back(peer);
         }
         for (const auto& peer:peers) QueryHeight(peer);
+        for (const auto& [host,port]:configuredPeers) co_await Connect(ip::make_address_v4(host).to_bytes(),port);
         timer.expires_after(seconds(1));
         co_await timer.async_wait(use_awaitable);
     }
@@ -225,6 +234,32 @@ vector<uint8_t> GenerateTxsMessage() {
     }
     return GenerateMessage(10,data);
 }
+awaitable<void> SynchronizeClock() {
+    steady_timer timer(co_await this_coro::executor);
+    while (nodeRunning) {
+        vector<shared_ptr<Peer>> peers;
+        { lock_guard lock(peerMutex); for (const auto& [key,peer]:peerPool) peers.push_back(peer); }
+        for (const auto& peer:peers) post(peer->strand,[peer] {
+            if (peer->closed) return;
+            auto now=GetSteadyTime();
+            if (peer->clockToken&&now-peer->clockSentSteady<1000000000) return;
+            peer->clockSentSteady=now; peer->clockSentLogical=GetLogicalTimeUs(); peer->clockToken=now;
+            array<uint8_t,8> request; WriteU64(request.data(),now);
+            SendData(peer,GenerateMessage(27,request));
+        });
+        timer.expires_after(milliseconds(nodeClock.periodMs));
+        co_await timer.async_wait(use_awaitable);
+        AdjustClock();
+    }
+}
+void WaitLogicalTime(int64_t target) {
+    while (nodeRunning) {
+        auto remaining=target-GetLogicalTimeUs();
+        if (remaining<=0) break;
+        unique_lock lock(txpoolMutex);
+        txpoolCondition.wait_for(lock,microseconds(min(int64_t(5000),remaining)));
+    }
+}
 void ProcessTxTimeACKMessage(const vector<uint8_t>& data,system_clock::time_point T4,const shared_ptr<Peer>& peer) {
     if (data.size()!=16||peer->T1==system_clock::time_point{}) return;
     auto T2=system_clock::time_point(milliseconds(ReadU64(data.data())));
@@ -236,6 +271,7 @@ void ProcessTxTimeACKMessage(const vector<uint8_t>& data,system_clock::time_poin
 // ------------------------------------------------出块循环------------------------------------------------
 void MainLoop() {
     try {
+        int64_t lastRound=-1;
         while (true) {
             if (ProcessForks()) BroadcastData(GenerateNewBlockMessage(DBReadBlockByHash(DBReadCurrentBlock())));
             {
@@ -243,15 +279,25 @@ void MainLoop() {
                 txpoolCondition.wait(lock,[]{return !nodeRunning||forkReady||blockReady||(produceBlocks&&readyPoolTx>0);});
                 if (forkReady) continue;
                 if (!nodeRunning&&!blockReady&&(!produceBlocks||txpool.empty())) break;
-                if (produceBlocks&&!blockReady&&nodeRunning&&readyPoolTx<maxBlockTx) {
+                if (!nodeClock.roundMs&&produceBlocks&&!blockReady&&nodeRunning&&readyPoolTx<maxBlockTx) {
                     txpoolCondition.wait_for(lock,milliseconds(blockInterval),[]{return !nodeRunning||forkReady||blockReady||readyPoolTx>=maxBlockTx;});
                 }
                 if (forkReady) continue;
             }
-            if (produceBlocks&&!blockReady) {
+            if (nodeClock.roundMs&&nodeRunning) {
+                auto period=int64_t(nodeClock.roundMs)*1000;
+                auto round=max(lastRound+1,GetLogicalTimeUs()/period+1);
+                WaitLogicalTime(round*period);
+                lastRound=round;
+                if (produceBlocks) {
+                    auto data=GenerateBlock();
+                    if (!data.empty()&&ProcessBlock(data)) { localProposals++; BroadcastData(GenerateNewBlockMessage(data)); }
+                }
+                WaitLogicalTime(round*period+int64_t(nodeClock.candidateMs)*1000);
+            } else if (produceBlocks&&!blockReady) {
                 auto data=GenerateBlock();
                 if (data.empty()&&!nodeRunning) break;
-                if (!data.empty()) ProcessBlock(std::move(data));
+                if (!data.empty()) { localProposals++; ProcessBlock(std::move(data)); }
             }
             pair<Block,vector<uint8_t>> selected;
             {
@@ -293,7 +339,7 @@ nlohmann::json GetNodeStats() {
     auto last=lastCommitTime.load();
     double elapsed=last>first&&first?double(last-first)/1e9:0;
     shared_lock lock(dbCommitMutex);
-    return {{"received",receivedTx.load()},{"valid",validTx.load()},{"invalid",invalidTx.load()},
+    nlohmann::json stats={{"received",receivedTx.load()},{"valid",validTx.load()},{"invalid",invalidTx.load()},
         {"duplicate",duplicateTx.load()},{"rejected",rejectedTx.load()},{"committed",committedTx.load()},
         {"pool",poolSize},{"ready_pool",readySize},{"pending",pendingVerify.load()},{"peak_pending",peakPendingVerify.load()},
         {"blocks",blockCount.load()},{"height",DBReadBlockHeight()},{"head",U32ToHex(DBReadCurrentBlock())},
@@ -309,7 +355,12 @@ nlohmann::json GetNodeStats() {
         {"user_supply",genesisSupply-userBurned},{"invalid_user_tx",invalidUserTx.load()},
         {"conflict_tx",conflictTx.load()},{"invalid_user_blocks",invalidUserBlocks.load()},
         {"user_check_ms",userCheckNs.load()/1e6},{"user_writes",userWriteCount.load()},
-        {"chain_transactions",DBReadNumber("ChainTx")},{"reorganizations",reorgCount.load()},
-        {"evm_accounts",evmState.get_accounts().size()}, {"peers",peers},{"failed",nodeFailed.load()}};
+        {"chain_transactions",DBReadNumber("ChainTx")},{"reorganizations",reorgCount.load()},{"max_reorg_depth",maxReorgDepth.load()},
+        {"evm_accounts",evmState.get_accounts().size()}, {"peers",peers},{"failed",nodeFailed.load()},
+        {"network_sent_bytes",networkSentBytes.load()},{"local_proposals",localProposals.load()},
+        {"clock",GetClockStats()},{"experiment_index",experimentIndex}};
+    lock.unlock();
+    stats.update(GetProcessResources());
+    return stats;
 }
 #endif

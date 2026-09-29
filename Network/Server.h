@@ -58,16 +58,16 @@ awaitable<void> ProcessMessage(const shared_ptr<Peer>& peer,uint8_t type,vector<
         try {
             if (type==1||type==10) {
                 auto added=ProcessTxPackage(data);
-                if (added&&!produceBlocks) BroadcastData(GenerateMessage(10,data));
+                if (added&&(!produceBlocks||relayTransactions)) BroadcastData(GenerateMessage(10,data));
             } else if (type==17) {
-                if (ProcessEvmTx(data)&&!produceBlocks) BroadcastData(GenerateMessage(17,data));
+                if (ProcessEvmTx(data)&&(!produceBlocks||relayTransactions)) BroadcastData(GenerateMessage(17,data));
             } else if (type==18) {
                 size_t offset=0;
                 while (data.size()-offset>=4) {
                     auto size=ReadU32(data.data()+offset); offset+=4;
                     if (size<221||size>176+45+maxEvmInput||size>data.size()-offset) break;
                     auto tx=span<const uint8_t>(data).subspan(offset,size);
-                    if (ProcessEvmTx(tx)&&!produceBlocks) BroadcastData(GenerateMessage(17,tx));
+                    if (ProcessEvmTx(tx)&&(!produceBlocks||relayTransactions)) BroadcastData(GenerateMessage(17,tx));
                     offset+=size;
                 }
             } else {
@@ -102,6 +102,75 @@ awaitable<void> session(uint64_t key,shared_ptr<Peer> peer) {
         networkBytes+=size+5;
         if (type==1||type==10||type==2||type==7||type==17||type==18||type==22) {
             co_await ProcessMessage(peer,type,std::move(data));
+        } else if (type==27) {
+            auto received=GetLogicalTimeUs();
+            array<uint8_t,24> response;
+            memcpy(response.data(),data.data(),8);
+            WriteU64(response.data()+8,uint64_t(received));
+            WriteU64(response.data()+16,uint64_t(GetLogicalTimeUs()));
+            SendData(peer,GenerateMessage(28,response));
+        } else if (type==28&&peer->port&&peer->clockToken&&ReadU64(data.data())==peer->clockToken) {
+            RecordClockSample(peer->key,peer->clockSentLogical,int64_t(ReadU64(data.data()+8)),
+                int64_t(ReadU64(data.data()+16)),GetLogicalTimeUs(),int64_t((GetSteadyTime()-peer->clockSentSteady)/1000));
+            peer->clockToken=0;
+        } else if (type==29||type==31||type==33||type==35||type==37) {
+            nlohmann::json reply;
+            if (type==33) reply=GetClockStats();
+            else {
+                shared_lock lock(dbCommitMutex);
+                if (type==29) {
+                    auto height=ReadU64(data.data()); if (!height) height=DBReadBlockHeight();
+                    string hash;
+                    if (DBGet("height/"+to_string(height),hash)&&hash.size()==32) {
+                        array<uint8_t,32> key; memcpy(key.data(),hash.data(),32);
+                        reply={{"height",height},{"hash",U32ToHex(key)},{"transactions",DBReadNumber(DBHashKey("score/",key))}};
+                    }
+                } else if (type==35) {
+                    crypto_generichash_state digest;
+                    crypto_generichash_init(&digest,nullptr,0,32);
+                    vector<array<uint8_t,32>> keys;
+                    for (const auto& [key,user]:users) keys.push_back(key);
+                    sort(keys.begin(),keys.end());
+                    for (const auto& key:keys) {
+                        const auto& user=users.at(key);
+                        array<uint8_t,16> bytes; WriteU64(bytes.data(),user.balance); WriteU64(bytes.data()+8,user.nonce);
+                        crypto_generichash_update(&digest,key.data(),key.size());
+                        crypto_generichash_update(&digest,bytes.data(),bytes.size());
+                    }
+                    vector<evmc::address> addresses;
+                    for (const auto& [address,account]:evmState.get_accounts()) addresses.push_back(address);
+                    sort(addresses.begin(),addresses.end());
+                    for (const auto& address:addresses) {
+                        auto encoded=SerializeEvmAccount(evmState.get_accounts().at(address));
+                        crypto_generichash_update(&digest,address.bytes,20);
+                        crypto_generichash_update(&digest,reinterpret_cast<const uint8_t*>(encoded.data()),encoded.size());
+                    }
+                    array<uint8_t,32> hash; crypto_generichash_final(&digest,hash.data(),hash.size());
+                    reply={{"state_hash",U32ToHex(hash)},{"head",U32ToHex(DBReadCurrentBlock())},
+                        {"transactions",DBReadNumber("ChainTx")},{"supply",genesisSupply-userBurned},{"burned",userBurned}};
+                } else if (type==37) {
+                    reply=nlohmann::json::array();
+                    for (size_t offset=0;offset<data.size();offset+=32) {
+                        array<uint8_t,32> key; memcpy(key.data(),data.data()+offset,32);
+                        auto found=users.find(key);
+                        if (found==users.end()) reply.push_back(nullptr);
+                        else reply.push_back({{"balance",found->second.balance},{"nonce",found->second.nonce}});
+                    }
+                } else {
+                    reply=nlohmann::json::array();
+                    for (size_t offset=0;offset<data.size();offset+=32) {
+                        array<uint8_t,32> key; memcpy(key.data(),data.data()+offset,32);
+                        auto height=DBReadNumber(DBHashKey("txheight/",key));
+                        string hash;
+                        if (height&&DBGet("height/"+to_string(height),hash)&&hash.size()==32) {
+                            array<uint8_t,32> block; memcpy(block.data(),hash.data(),32);
+                            reply.push_back({{"height",height},{"block",U32ToHex(block)}});
+                        } else reply.push_back(nullptr);
+                    }
+                }
+            }
+            auto text=reply.dump();
+            SendData(peer,GenerateMessage(type+1,span<const uint8_t>(reinterpret_cast<const uint8_t*>(text.data()),text.size())));
         } else if (type==4) {
             SendData(peer,GenerateHeightMessage(5));
         } else if (type==5||type==12) {
@@ -192,7 +261,7 @@ awaitable<void> AcceptPeer(shared_ptr<Peer> peer) {
         peer->address=endpoint.address().to_v4().to_bytes();
         {
             lock_guard lock(peerMutex);
-            if (peerPool.size()>=64||peerPool.count(peer->key)) { peer->key=0; co_return; }
+            if (peerPool.size()>=maxPeers||peerPool.count(peer->key)) { peer->key=0; co_return; }
             peerPool.emplace(peer->key,peer);
         }
         QueryHeight(peer);

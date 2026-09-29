@@ -1,0 +1,25 @@
+{
+  "defaults": {
+    "transport": "ssh",
+    "port": 8089,
+    "binary": "/opt/chain/build/boost",
+    "worker": "/opt/chain/Test/ClusterWorker.py",
+    "python": "/opt/chain/.venv/bin/python",
+    "root": "/var/tmp/chain-experiments",
+    "interface": "eth0",
+    "allow_netem": false,
+    "sudo_netem": true
+  },
+  "nodes": [
+    {"id": "node01", "host": "10.0.0.11", "ssh": "ubuntu@10.0.0.11"},
+    {"id": "node02", "host": "10.0.0.12", "ssh": "ubuntu@10.0.0.12"},
+    {"id": "node03", "host": "10.0.0.13", "ssh": "ubuntu@10.0.0.13"},
+    {"id": "node04", "host": "10.0.0.14", "ssh": "ubuntu@10.0.0.14"},
+    {"id": "node05", "host": "10.0.0.15", "ssh": "ubuntu@10.0.0.15"},
+    {"id": "node06", "host": "10.0.0.16", "ssh": "ubuntu@10.0.0.16"},
+    {"id": "node07", "host": "10.0.0.17", "ssh": "ubuntu@10.0.0.17"},
+    {"id": "node08", "host": "10.0.0.18", "ssh": "ubuntu@10.0.0.18"},
+    {"id": "node09", "host": "10.0.0.19", "ssh": "ubuntu@10.0.0.19"},
+    {"id": "node10", "host": "10.0.0.20", "ssh": "ubuntu@10.0.0.20"}
+  ]
+}

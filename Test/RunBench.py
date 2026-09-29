@@ -11,7 +11,7 @@ import statistics
 import subprocess
 import time
 import psutil
-from NetworkTest import FLAGS, Run, GetStats, StartNode, StopNode, SendFrame, VerifyAccounts
+from NetworkTest import FLAGS, Run, GetStats, StartNode, StopNode, SendFrame, VerifyAccounts, ExeName
 
 
 def RunNode(binary, work, dataset, count, threads, sync, batch, repeat, block_ms=50, genesis=None, sender_binary=None):
@@ -26,7 +26,7 @@ def RunNode(binary, work, dataset, count, threads, sync, batch, repeat, block_ms
     started = time.perf_counter()
     sender = None
     try:
-        sender = subprocess.Popen([str((sender_binary or binary)/'sender.exe'), '--file', str(dataset),
+        sender = subprocess.Popen([str((sender_binary or binary)/ExeName('sender')), '--file', str(dataset),
             '--count', str(count), '--batch', str(batch), '--connections', '8',
             '--port', str(node['port'])], stdout=subprocess.PIPE, stderr=subprocess.PIPE,
             text=True, creationflags=FLAGS)
@@ -109,7 +109,7 @@ def RunReplica(binary, work, dataset, count, repeat, genesis=None):
         processes = [psutil.Process(x['process'].pid) for x in nodes]
         cpu_start = [sum(p.cpu_times()[:2]) for p in processes]
         started = time.perf_counter()
-        sent = Run([binary/'sender.exe', '--file', dataset, '--count', count,
+        sent = Run([binary/ExeName('sender'), '--file', dataset, '--count', count,
                     '--batch', 128, '--connections', 8, '--port', leader['port']])
         while time.perf_counter()-started < 80:
             first, second = GetStats(leader['port']), GetStats(follower['port'])
@@ -145,7 +145,7 @@ def Main():
     work.mkdir(parents=True, exist_ok=False)
     dataset = args.dataset.resolve() if args.dataset else work/'transactions.bin'
     if not args.dataset:
-        Run([binary/'sender.exe', '--prepare', dataset, '--count', args.count], timeout=120)
+        Run([binary/ExeName('sender'), '--prepare', dataset, '--count', args.count], timeout=120)
     if args.count < 1000 or dataset.stat().st_size < args.count*176:
         raise ValueError('At least 1000 valid transactions are required')
     genesis = args.genesis.resolve() if args.genesis else Path(str(dataset)+'.genesis.json')
@@ -168,18 +168,18 @@ def Main():
     if args.suite == 'all':
         for repeat in range(args.repeats):
             for threads in args.threads:
-                result = Run([binary/'bench.exe', '--file', dataset, '--count', args.count,
+                result = Run([binary/ExeName('bench'), '--file', dataset, '--count', args.count,
                               '--mode', 'verify', '--threads', threads], timeout=120)
                 result['repeat'] = repeat
                 Save('micro', result)
-        Save('micro', Run([binary/'bench.exe', '--file', dataset, '--count', args.count, '--mode', 'hash']))
+        Save('micro', Run([binary/ExeName('bench'), '--file', dataset, '--count', args.count, '--mode', 'hash']))
     if args.suite in ('all', 'disk'):
         for sync in (0, 1):
             for mode in ('db-put', 'db-batch'):
                 for repeat in range(args.repeats):
                     # Bound fsync-per-transaction test duration even on HDD.
                     count = min(args.count, 2000 if sync else 50000)
-                    result = Run([binary/'bench.exe', '--file', dataset, '--count', count,
+                    result = Run([binary/ExeName('bench'), '--file', dataset, '--count', count,
                         '--mode', mode, '--sync', sync, '--batch', 1000,
                         '--data', work/f'{mode}-s{sync}-r{repeat}'], timeout=180)
                     result['repeat'] = repeat

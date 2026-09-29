@@ -7,12 +7,20 @@ import argparse
 import ctypes
 import csv
 import statistics
-import winreg
+import platform
 import psutil
 from EvmNetworkTest import Contract, WaitReceipt
 from NetworkTest import *
 
 def PhysicalCores():
+    if os.name != 'nt':
+        allowed=set(psutil.Process().cpu_affinity())
+        cores={}
+        for cpu in sorted(allowed):
+            topology=Path(f'/sys/devices/system/cpu/cpu{cpu}/topology')
+            key=(int((topology/'physical_package_id').read_text()),int((topology/'core_id').read_text()))
+            cores.setdefault(key,[]).append(cpu)
+        return [{'logical_cpus':ids,'efficiency_class':0} for ids in cores.values()]
     function=ctypes.windll.kernel32.GetLogicalProcessorInformationEx
     function.argtypes=[ctypes.c_int,ctypes.c_void_p,ctypes.POINTER(ctypes.c_ulong)]
     length=ctypes.c_ulong()
@@ -60,13 +68,13 @@ def RunCase(binary,baseline,work,dataset,genesis,count,cores,repeat,workload,loa
     sender=None
     try:
         if deploy:
-            command=[baseline/'evm_sender.exe','--wallet',deploy['wallet'],'--genesis',genesis,
+            command=[baseline/ExeName('evm_sender'),'--wallet',deploy['wallet'],'--genesis',genesis,
                 '--deploy',deploy['code'],'--gas',1000000,'--nonce',1,'--port',node['port']]
             sent=Run(command); receipt=WaitReceipt(node['port'],sent['transaction_hash'])
             assert receipt['status']==0 and receipt['contract']==deploy['address']
         before=GetStats(node['port']); startCpu=sum(process.cpu_times()[:2]); startIo=process.io_counters()
         peakRss=process.memory_info().rss
-        command=[str(baseline/('evm_sender.exe' if workload=='evm' else 'sender.exe')),'--file',str(dataset),
+        command=[str(baseline/(ExeName('evm_sender') if workload=='evm' else ExeName('sender'))),'--file',str(dataset),
             '--count',str(count),'--batch','64' if workload=='evm' else '128','--connections','8','--port',str(node['port'])]
         started=time.perf_counter()
         sender=subprocess.Popen(command,stdout=subprocess.PIPE,stderr=subprocess.PIPE,text=True,creationflags=FLAGS)
@@ -109,21 +117,27 @@ def Main(args):
     points=sorted(set([n for n in [1,2,4,8,12,len(available)] if n<=len(available)]))
     if args.cores: points=[int(n) for n in args.cores.split(',')]
     if any(n<1 or n>len(available) for n in points): raise ValueError('Requested more physical cores than available')
-    with winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE,r'HARDWARE\DESCRIPTION\System\CentralProcessor\0') as key: cpuName=winreg.QueryValueEx(key,'ProcessorNameString')[0].strip()
+    cpuName=platform.processor()
+    if os.name=='nt':
+        import winreg
+        with winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE,r'HARDWARE\DESCRIPTION\System\CentralProcessor\0') as key: cpuName=winreg.QueryValueEx(key,'ProcessorNameString')[0].strip()
+    else:
+        for line in Path('/proc/cpuinfo').read_text().splitlines():
+            if line.startswith('model name'): cpuName=line.split(':',1)[1].strip(); break
     config={'processor':cpuName,'physical_cores':cores,'node_cpus':available,'load_cpus':reserved,'points':points,'repeats':args.repeats,'sync':1,'timing':'sender launch through all transactions persisted locally','native_count':args.native_count,'evm_count':args.evm_count}
-    config['node_binary_sha256']=hashlib.sha256((binary/'boost.exe').read_bytes()).hexdigest()
-    if args.baseline: config['baseline_binary_sha256']=hashlib.sha256((args.baseline.resolve()/'boost.exe').read_bytes()).hexdigest()
+    config['node_binary_sha256']=hashlib.sha256((binary/ExeName('boost')).read_bytes()).hexdigest()
+    if args.baseline: config['baseline_binary_sha256']=hashlib.sha256((args.baseline.resolve()/ExeName('boost')).read_bytes()).hexdigest()
     print(json.dumps(config),flush=True)
     (work/'config.json').write_text(json.dumps(config,indent=2))
     native=work/'transactions.bin'
-    Run([binary/'sender.exe','--prepare',native,'--count',args.native_count,'--wallets',1024])
+    Run([binary/ExeName('sender'),'--prepare',native,'--count',args.native_count,'--wallets',1024])
     owner=work/'deployer.wallet.json'
-    public=Run([binary/'sender.exe','--create-wallet',owner])['public_key']
+    public=Run([binary/ExeName('sender'),'--create-wallet',owner])['public_key']
     base=work/'evm-base.json'; base.write_text(json.dumps({'base_fee':0,'accounts':[{'public_key':public,'balance':1000000000}]}))
-    address=Run([binary/'evm_sender.exe','--wallet',owner,'--address'])['create_address']
+    address=Run([binary/ExeName('evm_sender'),'--wallet',owner,'--address'])['create_address']
     compiled=json.loads((Path(__file__).resolve().parents[1]/'Contracts/Counter.compiled.json').read_text())['contracts']['Counter']['evm']
     evm=work/'evm-transactions.bin'
-    Run([binary/'evm_sender.exe','--prepare',evm,'--genesis',base,'--call',address,'--input',compiled['methodIdentifiers']['Increment()'],
+    Run([binary/ExeName('evm_sender'),'--prepare',evm,'--genesis',base,'--call',address,'--input',compiled['methodIdentifiers']['Increment()'],
         '--count',args.evm_count,'--wallets',64,'--gas',100000])
     deploy={'wallet':owner,'public_key':public,'address':address,'code':compiled['bytecode']['object'],'runtime':compiled['deployedBytecode']['object']}
     results=[]

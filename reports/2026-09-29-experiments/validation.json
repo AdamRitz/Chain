@@ -1,0 +1,283 @@
+{
+  "date": "2026-09-29",
+  "ctest_passed": 8,
+  "ctest_failed": 0,
+  "purpose": "functional smoke validation",
+  "smoke": {
+    "run": "experiments-smoke-20260929c",
+    "cases": [
+      {
+        "case": {
+          "suite": "latency",
+          "mode": "throughput",
+          "rate": 100,
+          "pattern": "burst",
+          "repeat": 1,
+          "nodes": 3
+        },
+        "status": "complete",
+        "checks": {
+          "sent_unique": 500,
+          "drained": true,
+          "unresolved_samples": 0
+        }
+      },
+      {
+        "case": {
+          "suite": "sync",
+          "sync": false,
+          "repeat": 1,
+          "nodes": 3
+        },
+        "status": "complete",
+        "checks": {
+          "final_spread_ms": 100.292,
+          "convergence_seconds": null,
+          "max_probe_uncertainty_ms": 8.0
+        }
+      },
+      {
+        "case": {
+          "suite": "scale",
+          "mode": "throughput",
+          "rate": 100,
+          "repeat": 1,
+          "nodes": 3
+        },
+        "status": "complete",
+        "checks": {
+          "sent_unique": 500,
+          "drained": true,
+          "unresolved_samples": 0
+        }
+      },
+      {
+        "case": {
+          "suite": "latency",
+          "mode": "latency",
+          "rate": 100,
+          "pattern": "steady",
+          "repeat": 1,
+          "nodes": 3
+        },
+        "status": "complete",
+        "checks": {
+          "sent_unique": 500,
+          "drained": true,
+          "unresolved_samples": 0
+        }
+      },
+      {
+        "case": {
+          "suite": "fault",
+          "mode": "latency",
+          "rate": 100,
+          "repeat": 1,
+          "nodes": 3,
+          "fault": {
+            "kind": "offline",
+            "start": 0.5,
+            "duration": 0.8
+          }
+        },
+        "status": "complete",
+        "checks": {
+          "sent_unique": 500,
+          "drained": true,
+          "unresolved_samples": 0
+        }
+      },
+      {
+        "case": {
+          "suite": "latency",
+          "mode": "latency",
+          "rate": 100,
+          "pattern": "burst",
+          "repeat": 1,
+          "nodes": 3
+        },
+        "status": "complete",
+        "checks": {
+          "sent_unique": 500,
+          "drained": true,
+          "unresolved_samples": 0
+        }
+      },
+      {
+        "case": {
+          "suite": "sync",
+          "sync": true,
+          "repeat": 1,
+          "nodes": 3
+        },
+        "status": "complete",
+        "checks": {
+          "final_spread_ms": 0.1105,
+          "convergence_seconds": 0.40699999989010394,
+          "max_probe_uncertainty_ms": 8.0
+        }
+      },
+      {
+        "case": {
+          "suite": "throughput",
+          "mode": "throughput",
+          "rate": 300,
+          "pattern": "steady",
+          "repeat": 1,
+          "nodes": 3
+        },
+        "status": "complete",
+        "checks": {
+          "sent_unique": 1500,
+          "drained": true,
+          "unresolved_samples": 0
+        }
+      },
+      {
+        "case": {
+          "suite": "latency",
+          "mode": "throughput",
+          "rate": 100,
+          "pattern": "steady",
+          "repeat": 1,
+          "nodes": 3
+        },
+        "status": "complete",
+        "checks": {
+          "sent_unique": 500,
+          "drained": true,
+          "unresolved_samples": 0
+        }
+      },
+      {
+        "case": {
+          "suite": "scale",
+          "mode": "throughput",
+          "rate": 100,
+          "repeat": 1,
+          "nodes": 2
+        },
+        "status": "complete",
+        "checks": {
+          "sent_unique": 500,
+          "drained": true,
+          "unresolved_samples": 0
+        }
+      },
+      {
+        "case": {
+          "suite": "throughput",
+          "mode": "latency",
+          "rate": 300,
+          "pattern": "steady",
+          "repeat": 1,
+          "nodes": 3
+        },
+        "status": "complete",
+        "checks": {
+          "sent_unique": 1500,
+          "drained": true,
+          "unresolved_samples": 0
+        }
+      }
+    ],
+    "environment": {
+      "controller": "Windows-11-10.0.26100-SP0",
+      "python": "3.12.7",
+      "sender_sha256": "45998bcb2541f026b9d39f99aa010c78797ced2f365ba194de4aec54ea1dd9b2",
+      "dataset_bytes": 264000,
+      "timing": "controller monotonic clock; common canonical prefix; synchronous persistence"
+    },
+    "node_binary_sha256": "706d41e12f67d51b56a38a1ad8dcc1f47b20a6cc10c5a369287a2e3fcf3d12f7"
+  },
+  "ten_local": {
+    "run": "experiments-ten-local-20260929",
+    "cases": [
+      {
+        "case": {
+          "suite": "throughput",
+          "mode": "latency",
+          "rate": 300,
+          "pattern": "steady",
+          "repeat": 1,
+          "nodes": 10
+        },
+        "status": "complete",
+        "checks": {
+          "sent_unique": 1500,
+          "drained": true,
+          "unresolved_samples": 0
+        }
+      },
+      {
+        "case": {
+          "suite": "throughput",
+          "mode": "throughput",
+          "rate": 300,
+          "pattern": "steady",
+          "repeat": 1,
+          "nodes": 10
+        },
+        "status": "complete",
+        "checks": {
+          "sent_unique": 1500,
+          "drained": true,
+          "unresolved_samples": 0
+        }
+      }
+    ],
+    "environment": {
+      "controller": "Windows-11-10.0.26100-SP0",
+      "python": "3.12.7",
+      "sender_sha256": "45998bcb2541f026b9d39f99aa010c78797ced2f365ba194de4aec54ea1dd9b2",
+      "dataset_bytes": 264000,
+      "timing": "controller monotonic clock; common canonical prefix; synchronous persistence"
+    },
+    "node_binary_sha256": "706d41e12f67d51b56a38a1ad8dcc1f47b20a6cc10c5a369287a2e3fcf3d12f7"
+  },
+  "recovery": {
+    "run": "experiments-recovery-20260929d",
+    "cases": [
+      {
+        "case": {
+          "suite": "fault",
+          "mode": "latency",
+          "rate": 100,
+          "repeat": 1,
+          "nodes": 3,
+          "fault": {
+            "kind": "offline",
+            "start": 0.5,
+            "duration": 0.8
+          }
+        },
+        "status": "complete",
+        "checks": {
+          "sent_unique": 500,
+          "drained": true,
+          "unresolved_samples": 0,
+          "recovery_seconds": 0.6720000000204891,
+          "events": [
+            {
+              "event": "fault_applied",
+              "seconds": 1.577999999979511
+            },
+            {
+              "event": "fault_removed",
+              "seconds": 2.952999999979511,
+              "recovery_started_seconds": 2.3910000000614673
+            }
+          ]
+        }
+      }
+    ],
+    "environment": {
+      "controller": "Windows-11-10.0.26100-SP0",
+      "python": "3.12.7",
+      "sender_sha256": "45998bcb2541f026b9d39f99aa010c78797ced2f365ba194de4aec54ea1dd9b2",
+      "dataset_bytes": 88000,
+      "timing": "controller monotonic clock; common canonical prefix; synchronous persistence"
+    },
+    "node_binary_sha256": "706d41e12f67d51b56a38a1ad8dcc1f47b20a6cc10c5a369287a2e3fcf3d12f7"
+  }
+}

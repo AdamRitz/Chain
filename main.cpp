@@ -18,12 +18,23 @@ uint64_t ParseNumber(const string& text,uint64_t minimum,uint64_t maximum) {
     if (result.ec!=errc()||result.ptr!=text.data()+text.size()||value<minimum||value>maximum) throw invalid_argument("Invalid argument: "+text);
     return value;
 }
+double ParseReal(const string& text,double minimum,double maximum) {
+    size_t used=0; auto value=stod(text,&used);
+    if (used!=text.size()||!isfinite(value)||value<minimum||value>maximum) throw invalid_argument("Invalid argument: "+text);
+    return value;
+}
+void AddConfiguredPeer(const string& value) {
+    auto colon=value.find(':');
+    if (colon==string::npos) throw invalid_argument("Use IPv4:port for --seed");
+    auto host=value.substr(0,colon);
+    ip::make_address_v4(host);
+    configuredPeers.emplace_back(host,uint16_t(ParseNumber(value.substr(colon+1),1,65535)));
+}
 int main(int argc,char* argv[]) {
     try {
-        string configPath,dataPath="data/accounts-v4",metricsPath,seedHost,genesisPath;
+        string configPath,dataPath="data/accounts-v4",metricsPath,genesisPath;
         int ioNum=4,verifyNum=8,runSeconds=0;
-        uint16_t seedPort=0;
-        bool sync=true;
+        bool sync=true,observeClock=false;
         for (int i=1;i<argc;i++) {
             if (string(argv[i])=="--config"&&i+1<argc) configPath=argv[++i];
         }
@@ -40,6 +51,7 @@ int main(int argc,char* argv[]) {
             if (node["block_ms"]) blockInterval=node["block_ms"].as<int>();
             if (node["sync"]) sync=node["sync"].as<bool>();
             if (node["produce"]) produceBlocks=node["produce"].as<bool>();
+            if (node["peers"]) for (const auto& peer:node["peers"]) AddConfiguredPeer(peer.as<string>());
         }
         for (int i=1;i<argc;i++) {
             string name=argv[i];
@@ -60,14 +72,25 @@ int main(int argc,char* argv[]) {
             else if (name=="--produce") produceBlocks=ParseNumber(value,0,1)!=0;
             else if (name=="--run-seconds") runSeconds=int(ParseNumber(value,1,86400));
             else if (name=="--metrics") metricsPath=value;
-            else if (name=="--seed") {
-                auto colon=value.find(':');
-                if (colon==string::npos) throw invalid_argument("Use IPv4:port for --seed");
-                seedHost=value.substr(0,colon);
-                seedPort=uint16_t(ParseNumber(value.substr(colon+1),1,65535));
-            } else throw invalid_argument("Unknown argument: "+name);
+            else if (name=="--seed") AddConfiguredPeer(value);
+            else if (name=="--max-peers") maxPeers=ParseNumber(value,1,1024);
+            else if (name=="--max-connections") maxConnections=ParseNumber(value,2,4096);
+            else if (name=="--relay-transactions") relayTransactions=ParseNumber(value,0,1)!=0;
+            else if (name=="--experiment-index") experimentIndex=ParseNumber(value,0,1)!=0;
+            else if (name=="--clock-observe") observeClock=ParseNumber(value,0,1)!=0;
+            else if (name=="--clock-sync") { nodeClock.enabled=ParseNumber(value,0,1)!=0; observeClock=true; }
+            else if (name=="--clock-offset-ms") nodeClock.offsetUs=int64_t(ParseReal(value,-10000,10000)*1000);
+            else if (name=="--clock-drift-ppm") nodeClock.driftPpm=ParseReal(value,-5000,5000);
+            else if (name=="--sync-period-ms") nodeClock.periodMs=int(ParseNumber(value,10,10000));
+            else if (name=="--sync-gain") nodeClock.gain=ParseReal(value,0.001,1);
+            else if (name=="--round-ms") nodeClock.roundMs=int(ParseNumber(value,0,5000));
+            else if (name=="--candidate-ms") nodeClock.candidateMs=int(ParseNumber(value,0,5000));
+            else throw invalid_argument("Unknown argument: "+name);
         }
         if (ioNum<1||ioNum>64||verifyNum<1||verifyNum>64||blockInterval<1||blockInterval>5000||listenPort==0) throw invalid_argument("Invalid node configuration");
+        if (nodeClock.roundMs&&!nodeClock.candidateMs) nodeClock.candidateMs=max(1,nodeClock.roundMs/4);
+        if (nodeClock.candidateMs>=nodeClock.roundMs&&nodeClock.candidateMs) throw invalid_argument("Candidate window must be shorter than round");
+        InitTime();
         InitSodium();
         if (!genesisPath.empty()) LoadGenesisUsers(genesisPath);
         InitDB(dataPath,sync);
@@ -93,8 +116,8 @@ int main(int argc,char* argv[]) {
             io.stop();
         };
         co_spawn(io,Listen(listenPort),onError);
-        co_spawn(io,OpenDiscoveryMode(),onError);
-        if (!seedHost.empty()) co_spawn(make_strand(io),ConnectSeed(seedHost,seedPort),onError);
+        co_spawn(make_strand(io),OpenDiscoveryMode(),onError);
+        if (observeClock) co_spawn(make_strand(io),SynchronizeClock(),onError);
         spdlog::info("Node ready. IO:{}, Verify:{}, BlockMs:{}, Produce:{}",ioNum,verifyNum,blockInterval,produceBlocks);
         thread blockThread(MainLoop);
         vector<thread> threads;

@@ -8,6 +8,7 @@ import statistics
 import time
 import psutil
 from RunBench import RunNode, RunLatency
+from NetworkTest import ExeName
 
 
 def Digest(path):
@@ -37,8 +38,8 @@ def Main():
               'logical_cpus': psutil.cpu_count(), 'physical_cpus': psutil.cpu_count(logical=False),
               'memory_bytes': psutil.virtual_memory().total, 'platform': platform.platform(),
               'dataset_sha256': Digest(dataset), 'genesis_sha256': Digest(genesis),
-              'sender_sha256': Digest(binary['after']/'sender.exe'),
-              'binary_sha256': {phase: Digest(path/'boost.exe') for phase,path in binary.items()},
+              'sender_sha256': Digest(binary['after']/ExeName('sender')),
+              'binary_sha256': {phase: Digest(path/ExeName('boost')) for phase,path in binary.items()},
               'settings': {'io_threads': 4, 'connections': 8, 'batch': 128, 'max_block_txs': 6000,
                            'block_ms': 50, 'sync': 1, 'base_fee': json.loads(genesis.read_text())['base_fee']},
               'before': {'node': [], 'latency': []}, 'after': {'node': [], 'latency': []}}

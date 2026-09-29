@@ -117,7 +117,11 @@ int AdoptFork(const ForkEntry& candidate,vector<vector<uint8_t>>& detached) {
     if (!valid) {
         users=std::move(savedUsers); evmState=std::move(savedEvm); userBurned=savedBurned; detached.clear(); return -1;
     }
-    if (oldHeight>common) reorgCount++;
+    if (oldHeight>common) {
+        reorgCount++;
+        auto depth=oldHeight-common,previous=maxReorgDepth.load();
+        while (previous<depth&&!maxReorgDepth.compare_exchange_weak(previous,depth)) {}
+    }
     committedTx+=score-oldScore; lastCommitTime=GetSteadyTime();
     return 1;
 }

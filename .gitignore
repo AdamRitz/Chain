@@ -68,3 +68,6 @@ config.local.yaml
 *.bin
 __pycache__/
 *.pyc
+/.venv/
+/experiment-results/
+Experiments/cluster.local.json

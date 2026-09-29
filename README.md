@@ -21,7 +21,24 @@ cmake --build build -j 4
 ctest --test-dir build --output-on-failure
 ```
 
-七项测试覆盖原生交易、账户状态、网络复制、钱包、分叉恢复和 EVM 合约。全部使用新数据库。Python 功能测试使用标准库，性能采样需 `psutil`，图表需 `matplotlib`。再次运行网络测试时，使用新的测试目录；其工作目录由 CMake 的构建目录决定。
+八项测试覆盖原生交易、账户状态、网络复制、钱包、分叉恢复、EVM 合约及实验测量接口。全部使用新数据库。运行前安装 `Experiments/requirements.txt`，其中进程采样使用 `psutil`，图表使用 `matplotlib`。再次运行网络测试时，通过 `CHAIN_TEST_DATA_ROOT` 设置新的测试目录。
+
+Ubuntu 24.04 构建与回归入口：
+
+```bash
+bash scripts/Build-Linux.sh --install
+```
+
+## 五组多节点实验
+
+时间同步、实时性、吞吐量、节点规模、故障恢复使用统一入口，详细配置和测量定义见 [EXPERIMENTS.md](EXPERIMENTS.md)。节点清单参考 `Experiments/cluster.example.json`，后续扩容只需增加清单条目和测试规模。
+
+```bash
+python Test/Experiments.py --local 3 --bin build --plan Experiments/smoke.json --work experiment-results/smoke-001
+python Test/PlotExperiments.py --work experiment-results/smoke-001
+```
+
+本机快速配置覆盖 11 个用例并输出 PNG/SVG 图。正式计划适用于十台独立服务器，使用 `--inventory Experiments/cluster.local.json` 替换 `--local 3`。Linux 网络延迟、丢包和隔离实验在配置的网卡上运行。
 
 ## 建立测试链
 

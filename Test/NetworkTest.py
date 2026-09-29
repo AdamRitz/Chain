@@ -11,6 +11,9 @@ import time
 
 FLAGS = subprocess.CREATE_NO_WINDOW if os.name == 'nt' else 0
 
+def ExeName(name):
+    return name + ('.exe' if os.name == 'nt' else '')
+
 def Run(args, timeout=90):
     result = subprocess.run([str(a) for a in args], capture_output=True, text=True,
                             encoding='utf-8', errors='replace', timeout=timeout, creationflags=FLAGS)
@@ -107,7 +110,7 @@ def StartNode(binary, work, name, **settings):
     if default_genesis.exists():
         options['genesis'] = default_genesis
     options.update(settings)
-    command = [str(binary/'boost.exe')]
+    command = [str(binary/ExeName('boost'))]
     for key, value in options.items():
         command.extend(['--'+key, str(value)])
     log = open(directory/'node.log', 'w', encoding='utf-8')
@@ -141,7 +144,7 @@ def StopNode(node):
 def TestNetwork(binary, work):
     work.mkdir(parents=True, exist_ok=False)
     dataset = work/'transactions.bin'
-    Run([binary/'sender.exe', '--prepare', dataset, '--count', 4112])
+    Run([binary/ExeName('sender'), '--prepare', dataset, '--count', 4112])
     raw = dataset.read_bytes()
     nodes = []
     checks = []
@@ -176,7 +179,7 @@ def TestNetwork(binary, work):
         WaitStats(port, lambda x: x['duplicate'] >= 1)
         assert GetStats(port)['committed'] == 3
         checks.append('fragmented frame and complete batch handled; replay does not commit twice')
-        Run([binary/'sender.exe', '--file', dataset, '--offset', 3, '--count', 4093,
+        Run([binary/ExeName('sender'), '--file', dataset, '--offset', 3, '--count', 4093,
              '--port', port, '--connections', 4, '--batch', 128])
         expected = WaitStats(port, lambda x: x['committed'] == 4096 and x['pending'] == 0)
         assert expected['pool'] == 0 and expected['rejected'] == 0
@@ -187,7 +190,7 @@ def TestNetwork(binary, work):
         assert synced['height'] == expected['height']
         checks.append('late follower verifies history and reaches same height/head')
         # A new transaction must also be broadcast over the existing live peer connection.
-        Run([binary/'sender.exe', '--file', dataset, '--offset', 4096, '--count', 16, '--port', port])
+        Run([binary/ExeName('sender'), '--file', dataset, '--offset', 4096, '--count', 16, '--port', port])
         expected = WaitStats(port, lambda x: x['committed'] == 4112)
         WaitStats(follower['port'], lambda x: x['head'] == expected['head'])
         checks.append('live block broadcast and bidirectional peer connection remain active')

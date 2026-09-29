@@ -67,7 +67,7 @@ int main(int argc,char* argv[]) {
             else if (name=="--nonce") nonce=ReadUserNumber(nlohmann::json::parse(value));
             else throw invalid_argument("Unknown argument: "+name);
         }
-        if (!count||count>2000000||!batch||batch>6000||!connections||connections>64||!walletNum||walletNum>100000) throw invalid_argument("Invalid sender limits");
+        if (!count||count>(prepare.empty()?2000000:size_t(100000000))||!batch||batch>6000||!connections||connections>64||!walletNum||walletNum>100000) throw invalid_argument("Invalid sender limits");
         if (!createWallet.empty()) {
             if (filesystem::exists(createWallet)) throw invalid_argument("Wallet file already exists");
             auto wallet=GenerateWallet();
@@ -144,11 +144,17 @@ int main(int argc,char* argv[]) {
             if (!genesis) throw runtime_error("Cannot write genesis configuration");
             genesis<<GetGenesisConfig().dump(2)<<endl;
             if (!genesis) throw runtime_error("Genesis write failed");
-            txs.reserve(count);
+            ofstream dataset(prepare,ios::binary);
+            if (!dataset) throw runtime_error("Cannot write dataset");
             for (size_t i=0;i<count;i++) {
                 const auto& wallet=wallets[i%walletNum];
-                txs.push_back(GenerateTx(wallet.public_key,wallets[(i+1)%walletNum].public_key,1,i/walletNum+1,wallet));
+                auto tx=GenerateTx(wallet.public_key,wallets[(i+1)%walletNum].public_key,1,i/walletNum+1,wallet);
+                dataset.write(reinterpret_cast<const char*>(tx.data()),tx.size());
             }
+            dataset.close();
+            if (!dataset) throw runtime_error("Dataset write failed");
+            cout<<nlohmann::json({{"prepared",count},{"wallets",walletNum},{"genesis",genesisPath}}).dump()<<endl;
+            return 0;
         }
         if (!prepare.empty()) {
             ofstream output(prepare,ios::binary);

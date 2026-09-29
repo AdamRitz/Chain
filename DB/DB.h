@@ -25,6 +25,7 @@ rocksdb::Options options;
 shared_mutex dbCommitMutex;
 bool dbSync=true;
 bool dbLegacyKeys=false;
+bool experimentIndex=false;
 atomic<uint64_t> dbWriteNs{0},dbWriteCount{0};
 UserMap users;
 uint64_t userBurned=0;
@@ -32,6 +33,7 @@ atomic<uint64_t> userCheckNs{0},userWriteCount{0},invalidUserBlocks{0};
 // 分支切换使用临时批次；所有读取看到同一批次中的回滚和重放结果。
 thread_local rocksdb::WriteBatchWithIndex* branchBatch=nullptr;
 atomic<uint64_t> reorgCount{0};
+atomic<uint64_t> maxReorgDepth{0};
 
 void CheckDBStatus(const rocksdb::Status& status) {
     if (!status.ok()) throw runtime_error("RocksDB: "+status.ToString());
@@ -259,6 +261,7 @@ bool DBCommitBlockLocked(const array<uint8_t,32>& hash,const vector<uint8_t>& da
         memcpy(txHash.data(),tx+80,32);
         // 连续账户序号已排除历史重放和块内重复，直接写交易索引。
         batch.Put(DBHashKey("tx/",txHash),rocksdb::Slice(reinterpret_cast<const char*>(tx),176));
+        if (experimentIndex) batch.Put(DBHashKey("txheight/",txHash),to_string(height));
         if (auto found=payloads.find(i);found!=payloads.end()) batch.Put(DBHashKey("input/",txHash),rocksdb::Slice(reinterpret_cast<const char*>(found->second.data()),found->second.size()));
     }
     for (const auto& [key,user]:changed) DBAddUser(batch,key,user);
@@ -286,7 +289,7 @@ bool DBCommitBlockLocked(const array<uint8_t,32>& hash,const vector<uint8_t>& da
         rocksdb::WriteBatch saved;
         void Save(const rocksdb::Slice& key) {
             // 已连续执行的账户序号保证这些索引是新键；直接记录删除即可。
-            if (key.starts_with("tx/")||key.starts_with("input/")||key.starts_with("receipt/")||key.starts_with("height/")) { saved.Delete(key); return; }
+            if (key.starts_with("tx/")||key.starts_with("txheight/")||key.starts_with("input/")||key.starts_with("receipt/")||key.starts_with("height/")) { saved.Delete(key); return; }
             if (key.starts_with("user/")&&key.size()==37) {
                 array<uint8_t,32> address; memcpy(address.data(),key.data()+5,32);
                 auto found=users.find(address);

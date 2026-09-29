@@ -32,12 +32,12 @@ def WaitReceipt(port,tx):
 def TestEvm(binary,work):
     work.mkdir(parents=True,exist_ok=False)
     wallet=work/'owner.wallet.json'
-    key=Run([binary/'sender.exe','--create-wallet',wallet])['public_key']
+    key=Run([binary/ExeName('sender'),'--create-wallet',wallet])['public_key']
     genesis=work/'genesis.json'
     genesis.write_text(json.dumps({'base_fee':2,'accounts':[{'public_key':key,'balance':1000000000}]}))
     nodes,checks=[],[]
     def Submit(node,nonce,**options):
-        args=[binary/'evm_sender.exe','--wallet',wallet,'--genesis',genesis,'--nonce',nonce,'--port',node['port']]
+        args=[binary/ExeName('evm_sender'),'--wallet',wallet,'--genesis',genesis,'--nonce',nonce,'--port',node['port']]
         for name,value in options.items(): args += ['--'+name,str(value)]
         sent=Run(args)
         return sent['transaction_hash'],WaitReceipt(node['port'],sent['transaction_hash'])
@@ -65,7 +65,7 @@ def TestEvm(binary,work):
         assert sha['status']==0 and sha['output']==hashlib.sha256(b'abc').hexdigest()
         checks.append('SHA256 precompile returns the expected digest')
         prepared=work/'tamper.bin'
-        Run([binary/'evm_sender.exe','--wallet',wallet,'--genesis',genesis,'--nonce',7,'--call',address,'--input','00','--prepare',prepared])
+        Run([binary/ExeName('evm_sender'),'--wallet',wallet,'--genesis',genesis,'--nonce',7,'--call',address,'--input','00','--prepare',prepared])
         tx=bytearray(prepared.read_bytes()[4:]); tx[-1]^=1
         before=GetStats(a['port'])['invalid']
         SendFrame(a['port'],17,tx)
