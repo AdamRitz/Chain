@@ -103,7 +103,9 @@ int main(int argc,char* argv[]) {
         before=users;
         auto burned=userBurned;
         db.reset();
-        CheckDBStatus(rocksdb::DB::OpenForReadOnly(options,path,&db));
+        rocksdb::DB* readOnly=nullptr;
+        CheckDBStatus(rocksdb::DB::OpenForReadOnly(options,path,&readOnly));
+        db.reset(readOnly);
         RequireThrow([&]{CommitBlock(UnSerializeBlock(fifthBlock),fifthBlock);},"read-only database rejects write");
         Require(users==before&&userBurned==burned,"failed write preserves account cache and fees");
         db.reset();

@@ -58,7 +58,9 @@ void InitDB(const string& path="test",bool sync=true) {
     rocksdb::BlockBasedTableOptions tableOptions;
     tableOptions.filter_policy.reset(rocksdb::NewBloomFilterPolicy(10,false));
     options.table_factory.reset(rocksdb::NewBlockBasedTableFactory(tableOptions));
-    CheckDBStatus(rocksdb::DB::Open(options,path,&db));
+    rocksdb::DB* openedDB=nullptr;
+    CheckDBStatus(rocksdb::DB::Open(options,path,&openedDB));
+    db.reset(openedDB);
     string version;
     if (DBGet("SchemaVersion",version)) {
         if (version!="4") throw runtime_error("EVM and fork recovery require schema 4. Use a NEW --data directory with --genesis.");

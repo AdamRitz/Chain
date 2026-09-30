@@ -108,7 +108,9 @@ int main(int argc,char* argv[]) {
         auto data3=GenerateBlock();
         auto block3=UnSerializeBlock(data3);
         db.reset();
-        CheckDBStatus(rocksdb::DB::OpenForReadOnly(options,path,&db));
+        rocksdb::DB* readOnly=nullptr;
+        CheckDBStatus(rocksdb::DB::OpenForReadOnly(options,path,&readOnly));
+        db.reset(readOnly);
         RequireThrow([&]{CommitBlock(block3,data3);},"write failure reported");
         Require(DBReadBlockHeight()==2&&txpool.size()==1&&epoch==3,"failed commit preserves metadata and pool");
         db.reset();

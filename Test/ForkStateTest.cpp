@@ -44,7 +44,10 @@ int main(int argc,char** argv) {
         auto invalid=Candidate(genesis,right,{jump}); vector<vector<uint8_t>> detached;
         Require(AdoptFork(invalid,detached)==-1,"invalid fork rejected");
         Require(DBReadCurrentBlock()==first.first.hash&&users==beforeUsers&&userBurned==beforeBurned&&SerializeEvmAccount(evmState.get(address))==before,"invalid fork is atomic");
-        db.reset(); CheckDBStatus(rocksdb::DB::OpenForReadOnly(options,root.string(),&db));
+        db.reset();
+        rocksdb::DB* readOnly=nullptr;
+        CheckDBStatus(rocksdb::DB::OpenForReadOnly(options,root.string(),&readOnly));
+        db.reset(readOnly);
         bool failed=false; try { AdoptFork(better,detached); } catch (const exception&) { failed=true; }
         Require(failed,"write failure surfaced");
         Require(DBReadCurrentBlock()==first.first.hash&&users==beforeUsers&&userBurned==beforeBurned&&SerializeEvmAccount(evmState.get(address))==before,"failed switch restores native and EVM caches");
