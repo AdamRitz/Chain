@@ -1,0 +1,18 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>local.benchmark</groupId>
+  <artifactId>fisco-ten-node-bench</artifactId>
+  <version>1.0</version>
+  <dependencies>
+    <dependency>
+      <groupId>org.fisco-bcos.java-sdk</groupId>
+      <artifactId>fisco-bcos-java-sdk</artifactId>
+      <version>3.7.0</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.logging.log4j</groupId>
+      <artifactId>log4j-slf4j-impl</artifactId>
+      <version>2.22.1</version>
+    </dependency>
+  </dependencies>
+</project>

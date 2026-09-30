@@ -1,0 +1,9 @@
+{
+  "full_archive_remote_path": "/home/ubuntu/fisco-bench/20260930/fisco-results-20260930.tar.gz",
+  "full_archive_bytes": 70709793,
+  "full_archive_sha256": "05a36f3b83ff94552cdc103041787e0190cee8533b59090ac3a185550b3350bb",
+  "local_archive_contents": "All metrics, checks, resource counters and sources; verbose driver logs remain in the full remote archive.",
+  "local_metrics_archive": "fisco-metrics-20260930.tar.gz",
+  "local_metrics_sha256": "295c372ba049ba6a02d7968a07f60245f3d7f4f47bd0b03dd0b8acf44fd955d9",
+  "local_metrics_bytes": 14939039
+}

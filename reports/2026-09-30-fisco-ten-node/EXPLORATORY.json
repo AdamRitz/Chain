@@ -1,0 +1,5004 @@
+[
+  {
+    "name": "classic-native-10000",
+    "configuration": "classic-v0",
+    "complete": true,
+    "workload": "native",
+    "target_tps": 10000,
+    "warmup_s": 5,
+    "measure_s": 20,
+    "users": 16384,
+    "requested": 250000,
+    "submitted": 250000,
+    "success": 250000,
+    "failures": 0,
+    "unresolved": 0,
+    "actual_send_tps": 9999.9,
+    "receipt_tps": 10036.9,
+    "overall_tps": 9963.66776845051,
+    "p50_ms": 105.937106,
+    "p95_ms": 155.801098,
+    "p99_ms": 167.499953,
+    "scheduled_p99_ms": 167.567021,
+    "send_s": 25.000574546,
+    "drain_s": 0.090587244,
+    "balance_mismatches": 0,
+    "balances_checked": 16384,
+    "presigned": true,
+    "start_epoch_ms": 1790759648212,
+    "queried_receipts": 0,
+    "recovered_callback_failures": 0,
+    "funding_delayed_receipts": 0,
+    "distributed": null,
+    "driver_count": null,
+    "start_skew_ms": null,
+    "max_driver_scheduled_p99_ms": null,
+    "phase": null,
+    "common_chain_samples": 20,
+    "common_chain_tps": 9997.405191936175,
+    "common_chain_window_s": 19.00403118133545,
+    "pending_slope_per_node": -26.06089903876031,
+    "pending_net_growth_per_node": 2.3258223257079518,
+    "pending_series": [
+      {
+        "elapsed_s": 0.1349468231201172,
+        "pending": 667.5
+      },
+      {
+        "elapsed_s": 1.1401698589324951,
+        "pending": 715.8
+      },
+      {
+        "elapsed_s": 2.1386353969573975,
+        "pending": 1446.7
+      },
+      {
+        "elapsed_s": 3.13503360748291,
+        "pending": 1465
+      },
+      {
+        "elapsed_s": 4.133179664611816,
+        "pending": 1290.5
+      },
+      {
+        "elapsed_s": 5.137667179107666,
+        "pending": 1358.6
+      },
+      {
+        "elapsed_s": 6.132380962371826,
+        "pending": 1425.2
+      },
+      {
+        "elapsed_s": 7.135574817657471,
+        "pending": 1471.7
+      },
+      {
+        "elapsed_s": 8.131557941436768,
+        "pending": 1467.4
+      },
+      {
+        "elapsed_s": 9.136948108673096,
+        "pending": 667.6
+      },
+      {
+        "elapsed_s": 10.139572858810425,
+        "pending": 822.7
+      },
+      {
+        "elapsed_s": 11.139509201049805,
+        "pending": 1256.2
+      },
+      {
+        "elapsed_s": 12.138171434402466,
+        "pending": 1352.7
+      },
+      {
+        "elapsed_s": 13.13521695137024,
+        "pending": 1340.4
+      },
+      {
+        "elapsed_s": 14.135021448135376,
+        "pending": 1057.6
+      },
+      {
+        "elapsed_s": 15.138339757919312,
+        "pending": 503
+      },
+      {
+        "elapsed_s": 16.147743701934814,
+        "pending": 636.8
+      },
+      {
+        "elapsed_s": 17.13262367248535,
+        "pending": 645.2
+      },
+      {
+        "elapsed_s": 18.138936519622803,
+        "pending": 735.6
+      },
+      {
+        "elapsed_s": 19.138978004455566,
+        "pending": 711.7
+      }
+    ],
+    "pending_mean_per_node": 1051.895,
+    "pending_max_per_node": 1471.7,
+    "state_valid": true,
+    "count_valid": true,
+    "block_height_delta": 239,
+    "committed_count_delta": 266384,
+    "expected_count_delta": 266384,
+    "final_pending_max": 0,
+    "failed_count_delta": 0,
+    "resources": {
+      "10.206.0.11": {
+        "node": {
+          "busy_cores": 7.3608684596381195,
+          "max_rss_mib": 1551.2421875,
+          "write_MBps": 26.618879065714665
+        },
+        "host_idle_pct": 7.524415022612572,
+        "host_iowait_pct": 0.013108736973192633,
+        "rx_bytes_per_s": 8175673.135244179,
+        "tx_bytes_per_s": 7654331.949723645,
+        "rx_packets_per_s": 10741.5243269599,
+        "tx_packets_per_s": 9851.217759578298,
+        "disks": {}
+      },
+      "10.206.0.8": {
+        "node": {
+          "busy_cores": 7.31671722125541,
+          "max_rss_mib": 1632.14453125,
+          "write_MBps": 24.226130521523874
+        },
+        "host_idle_pct": 8.029768899334117,
+        "host_iowait_pct": 0.03264133698916308,
+        "rx_bytes_per_s": 8186459.72291283,
+        "tx_bytes_per_s": 7783112.168694911,
+        "rx_packets_per_s": 10754.597913033405,
+        "tx_packets_per_s": 9887.437260300458,
+        "disks": {}
+      },
+      "10.206.0.16": {
+        "node": {
+          "busy_cores": 7.285159468113303,
+          "max_rss_mib": 1697.7578125,
+          "write_MBps": 12.610297543322396
+        },
+        "host_idle_pct": 8.48374275102626,
+        "host_iowait_pct": 0.006515931452401121,
+        "rx_bytes_per_s": 9219314.76531583,
+        "tx_bytes_per_s": 7977245.575522677,
+        "rx_packets_per_s": 11771.690122827516,
+        "tx_packets_per_s": 10458.70259857006,
+        "disks": {}
+      },
+      "10.206.0.15": {
+        "node": {
+          "busy_cores": 7.331336654669724,
+          "max_rss_mib": 1558.65234375,
+          "write_MBps": 24.76942997632291
+        },
+        "host_idle_pct": 7.890594254230618,
+        "host_iowait_pct": 0.013118194936376755,
+        "rx_bytes_per_s": 8176177.192272056,
+        "tx_bytes_per_s": 7716243.850206247,
+        "rx_packets_per_s": 10678.57530888969,
+        "tx_packets_per_s": 9818.40573690474,
+        "disks": {}
+      },
+      "10.206.0.2": {
+        "node": {
+          "busy_cores": 6.775862499248038,
+          "max_rss_mib": 2141.66015625,
+          "write_MBps": 12.919963869409253
+        },
+        "driver": {
+          "busy_cores": 0.49939003633073686,
+          "max_rss_mib": 926.03125,
+          "write_MBps": 0.0
+        },
+        "host_idle_pct": 8.10032086962216,
+        "host_iowait_pct": 0.013096719271822408,
+        "rx_bytes_per_s": 13103526.847271906,
+        "tx_bytes_per_s": 17436284.374282457,
+        "rx_packets_per_s": 20198.59589067086,
+        "tx_packets_per_s": 19614.225617065353,
+        "disks": {}
+      },
+      "10.206.0.17": {
+        "node": {
+          "busy_cores": 7.318943673480384,
+          "max_rss_mib": 1512.296875,
+          "write_MBps": 23.63569371005709
+        },
+        "host_idle_pct": 8.003138485680658,
+        "host_iowait_pct": 0.026154047338825683,
+        "rx_bytes_per_s": 8174678.525671916,
+        "tx_bytes_per_s": 7683488.798877711,
+        "rx_packets_per_s": 10683.516094330069,
+        "tx_packets_per_s": 9799.972668151902,
+        "disks": {}
+      },
+      "10.206.0.4": {
+        "node": {
+          "busy_cores": 7.332391310192063,
+          "max_rss_mib": 1898.03125,
+          "write_MBps": 22.743347635040642
+        },
+        "host_idle_pct": 7.836112558624284,
+        "host_iowait_pct": 0.026055237102657634,
+        "rx_bytes_per_s": 8171838.25004667,
+        "tx_bytes_per_s": 7717174.449940148,
+        "rx_packets_per_s": 10721.260051687404,
+        "tx_packets_per_s": 9816.522335255846,
+        "disks": {}
+      },
+      "10.206.0.12": {
+        "node": {
+          "busy_cores": 7.309676905122644,
+          "max_rss_mib": 1565.4609375,
+          "write_MBps": 21.91216785141538
+        },
+        "host_idle_pct": 8.094774423888348,
+        "host_iowait_pct": 0.012982797792924375,
+        "rx_bytes_per_s": 8180528.208965118,
+        "tx_bytes_per_s": 7776663.835230566,
+        "rx_packets_per_s": 10709.275131364624,
+        "tx_packets_per_s": 9867.538852301594,
+        "disks": {}
+      },
+      "10.206.0.6": {
+        "node": {
+          "busy_cores": 7.330003296728409,
+          "max_rss_mib": 1916.32421875,
+          "write_MBps": 23.67472726548861
+        },
+        "host_idle_pct": 7.886681862585477,
+        "host_iowait_pct": 0.013025073266037121,
+        "rx_bytes_per_s": 8178911.114509813,
+        "tx_bytes_per_s": 7722078.842517579,
+        "rx_packets_per_s": 10699.054224762087,
+        "tx_packets_per_s": 9821.123079404148,
+        "disks": {}
+      },
+      "10.206.0.14": {
+        "node": {
+          "busy_cores": 7.324639496336059,
+          "max_rss_mib": 1507.0703125,
+          "write_MBps": 20.900154264230235
+        },
+        "host_idle_pct": 7.933099049850319,
+        "host_iowait_pct": 0.02603149811271639,
+        "rx_bytes_per_s": 8176687.345483573,
+        "tx_bytes_per_s": 7663453.782326418,
+        "rx_packets_per_s": 10728.334486023026,
+        "tx_packets_per_s": 9817.08508329697,
+        "disks": {}
+      }
+    },
+    "criterion_version": "net-backlog-v2",
+    "slope_acceptance_passed": false,
+    "sustainable": false
+  },
+  {
+    "name": "classic-native-18000",
+    "configuration": "classic-v0",
+    "complete": true,
+    "workload": "native",
+    "target_tps": 18000,
+    "warmup_s": 5,
+    "measure_s": 30,
+    "users": 16384,
+    "requested": 630000,
+    "submitted": 630000,
+    "success": 630000,
+    "failures": 0,
+    "unresolved": 0,
+    "actual_send_tps": 18000.0,
+    "receipt_tps": 18129.033333333333,
+    "overall_tps": 17915.310077194223,
+    "p50_ms": 193.239827,
+    "p95_ms": 436.40226,
+    "p99_ms": 642.300905,
+    "scheduled_p99_ms": 642.356898,
+    "send_s": 35.000412241,
+    "drain_s": 0.165041066,
+    "balance_mismatches": 0,
+    "balances_checked": 16384,
+    "presigned": true,
+    "start_epoch_ms": 1790760155048,
+    "queried_receipts": 0,
+    "recovered_callback_failures": 0,
+    "funding_delayed_receipts": 0,
+    "distributed": null,
+    "driver_count": null,
+    "start_skew_ms": null,
+    "max_driver_scheduled_p99_ms": null,
+    "phase": null,
+    "common_chain_samples": 30,
+    "common_chain_tps": 18221.832116241585,
+    "common_chain_window_s": 29.00707221031189,
+    "pending_slope_per_node": -19.95742753268962,
+    "pending_net_growth_per_node": -219.0879504806,
+    "pending_series": [
+      {
+        "elapsed_s": 0.6659648418426514,
+        "pending": 9334.9
+      },
+      {
+        "elapsed_s": 1.6667993068695068,
+        "pending": 3811.3
+      },
+      {
+        "elapsed_s": 2.670621395111084,
+        "pending": 2397.9
+      },
+      {
+        "elapsed_s": 3.672407627105713,
+        "pending": 3528.6
+      },
+      {
+        "elapsed_s": 4.66568398475647,
+        "pending": 2485.9
+      },
+      {
+        "elapsed_s": 5.668938398361206,
+        "pending": 2748.3
+      },
+      {
+        "elapsed_s": 6.671445608139038,
+        "pending": 3358.6
+      },
+      {
+        "elapsed_s": 7.670360326766968,
+        "pending": 2256.7
+      },
+      {
+        "elapsed_s": 8.664873361587524,
+        "pending": 3278.2
+      },
+      {
+        "elapsed_s": 9.668328762054443,
+        "pending": 2506.9
+      },
+      {
+        "elapsed_s": 10.667781114578247,
+        "pending": 2162.5
+      },
+      {
+        "elapsed_s": 11.669957160949707,
+        "pending": 2359.7
+      },
+      {
+        "elapsed_s": 12.668112993240356,
+        "pending": 3701
+      },
+      {
+        "elapsed_s": 13.666465520858765,
+        "pending": 3692.2
+      },
+      {
+        "elapsed_s": 14.66486668586731,
+        "pending": 2141.5
+      },
+      {
+        "elapsed_s": 15.667289018630981,
+        "pending": 3514.6
+      },
+      {
+        "elapsed_s": 16.669740438461304,
+        "pending": 2951.3
+      },
+      {
+        "elapsed_s": 17.66844940185547,
+        "pending": 3092.4
+      },
+      {
+        "elapsed_s": 18.668010473251343,
+        "pending": 3089.5
+      },
+      {
+        "elapsed_s": 19.668754816055298,
+        "pending": 2407.7
+      },
+      {
+        "elapsed_s": 20.674469232559204,
+        "pending": 3363
+      },
+      {
+        "elapsed_s": 21.670729637145996,
+        "pending": 3303.3
+      },
+      {
+        "elapsed_s": 22.670334339141846,
+        "pending": 4021.5
+      },
+      {
+        "elapsed_s": 23.664301872253418,
+        "pending": 5949.5
+      },
+      {
+        "elapsed_s": 24.67244601249695,
+        "pending": 5061.2
+      },
+      {
+        "elapsed_s": 25.668334007263184,
+        "pending": 2779.6
+      },
+      {
+        "elapsed_s": 26.670467853546143,
+        "pending": 2581.6
+      },
+      {
+        "elapsed_s": 27.671866416931152,
+        "pending": 2876.4
+      },
+      {
+        "elapsed_s": 28.6685631275177,
+        "pending": 2723.9
+      },
+      {
+        "elapsed_s": 29.67303705215454,
+        "pending": 2979.8
+      }
+    ],
+    "pending_mean_per_node": 3348.65,
+    "pending_max_per_node": 9334.9,
+    "state_valid": true,
+    "count_valid": true,
+    "block_height_delta": 271,
+    "committed_count_delta": 646384,
+    "expected_count_delta": 646384,
+    "final_pending_max": 0,
+    "failed_count_delta": 0,
+    "resources": {
+      "10.206.0.11": {
+        "node": {
+          "busy_cores": 7.636267781724797,
+          "max_rss_mib": 1939.43359375,
+          "write_MBps": 41.53373054501796
+        },
+        "host_idle_pct": 4.104765993988837,
+        "host_iowait_pct": 0.025762129669386003,
+        "rx_bytes_per_s": 14443673.69736591,
+        "tx_bytes_per_s": 13417227.950079093,
+        "rx_packets_per_s": 18222.05989801728,
+        "tx_packets_per_s": 16567.059528464288,
+        "disks": {}
+      },
+      "10.206.0.8": {
+        "node": {
+          "busy_cores": 7.5866798770710915,
+          "max_rss_mib": 1920.70703125,
+          "write_MBps": 41.0063482872304
+        },
+        "host_idle_pct": 4.711435314310234,
+        "host_iowait_pct": 0.034327397554172925,
+        "rx_bytes_per_s": 14317649.048525672,
+        "tx_bytes_per_s": 15490341.872656818,
+        "rx_packets_per_s": 18148.984837879674,
+        "tx_packets_per_s": 16603.5869850361,
+        "disks": {}
+      },
+      "10.206.0.16": {
+        "node": {
+          "busy_cores": 7.545929749800742,
+          "max_rss_mib": 2088.359375,
+          "write_MBps": 41.01838082672067
+        },
+        "host_idle_pct": 5.201097676014064,
+        "host_iowait_pct": 0.02143898464968699,
+        "rx_bytes_per_s": 20336668.51236121,
+        "tx_bytes_per_s": 14029442.695280364,
+        "rx_packets_per_s": 22139.289510747014,
+        "tx_packets_per_s": 16631.41074131332,
+        "disks": {}
+      },
+      "10.206.0.15": {
+        "node": {
+          "busy_cores": 7.607465094404888,
+          "max_rss_mib": 1897.375,
+          "write_MBps": 41.01735573898752
+        },
+        "host_idle_pct": 4.468650827686766,
+        "host_iowait_pct": 0.030019727249335278,
+        "rx_bytes_per_s": 14425717.318626542,
+        "tx_bytes_per_s": 13835760.033796536,
+        "rx_packets_per_s": 18050.89002393484,
+        "tx_packets_per_s": 16492.674868462567,
+        "disks": {}
+      },
+      "10.206.0.2": {
+        "node": {
+          "busy_cores": 6.610641766664809,
+          "max_rss_mib": 2583.79296875,
+          "write_MBps": 35.56352266298244
+        },
+        "driver": {
+          "busy_cores": 0.9986559068593562,
+          "max_rss_mib": 1853.55859375,
+          "write_MBps": 0.0005628475534222117
+        },
+        "host_idle_pct": 3.9698924731182794,
+        "host_iowait_pct": 0.008602150537634409,
+        "rx_bytes_per_s": 23387694.690655522,
+        "tx_bytes_per_s": 30649651.766704235,
+        "rx_packets_per_s": 34906.88871217591,
+        "tx_packets_per_s": 33388.15534491257,
+        "disks": {}
+      },
+      "10.206.0.17": {
+        "node": {
+          "busy_cores": 7.627600990621812,
+          "max_rss_mib": 1971.015625,
+          "write_MBps": 40.87362207545792
+        },
+        "host_idle_pct": 4.225775943599003,
+        "host_iowait_pct": 0.017195426016679564,
+        "rx_bytes_per_s": 14401380.904914608,
+        "tx_bytes_per_s": 13694439.151130773,
+        "rx_packets_per_s": 18064.60883605741,
+        "tx_packets_per_s": 16458.211721830157,
+        "disks": {}
+      },
+      "10.206.0.4": {
+        "node": {
+          "busy_cores": 7.581607649999342,
+          "max_rss_mib": 2184.84375,
+          "write_MBps": 41.375493954485094
+        },
+        "host_idle_pct": 4.796019046801939,
+        "host_iowait_pct": 0.021449101282656258,
+        "rx_bytes_per_s": 14450201.400751555,
+        "tx_bytes_per_s": 14243778.900348123,
+        "rx_packets_per_s": 18233.207536264686,
+        "tx_packets_per_s": 16526.15071015733,
+        "disks": {}
+      },
+      "10.206.0.12": {
+        "node": {
+          "busy_cores": 7.5789671327564045,
+          "max_rss_mib": 1894.40625,
+          "write_MBps": 41.00448467463166
+        },
+        "host_idle_pct": 4.837185325199759,
+        "host_iowait_pct": 0.021479508548844402,
+        "rx_bytes_per_s": 14428081.553404877,
+        "tx_bytes_per_s": 14337822.338273885,
+        "rx_packets_per_s": 18079.294728178913,
+        "tx_packets_per_s": 16664.373065481035,
+        "disks": {}
+      },
+      "10.206.0.6": {
+        "node": {
+          "busy_cores": 7.620943713028569,
+          "max_rss_mib": 2234.828125,
+          "write_MBps": 41.46782462215492
+        },
+        "host_idle_pct": 4.31552731020268,
+        "host_iowait_pct": 0.021470285125386464,
+        "rx_bytes_per_s": 14404787.885607786,
+        "tx_bytes_per_s": 14036877.809349133,
+        "rx_packets_per_s": 18035.95834226065,
+        "tx_packets_per_s": 16424.45595817946,
+        "disks": {}
+      },
+      "10.206.0.14": {
+        "node": {
+          "busy_cores": 7.625323315170555,
+          "max_rss_mib": 1856.25390625,
+          "write_MBps": 40.8705246922329
+        },
+        "host_idle_pct": 4.260166795632362,
+        "host_iowait_pct": 0.021494282520849454,
+        "rx_bytes_per_s": 14473116.683351614,
+        "tx_bytes_per_s": 14085729.109965399,
+        "rx_packets_per_s": 18399.33362133798,
+        "tx_packets_per_s": 16709.41011473515,
+        "disks": {}
+      }
+    },
+    "criterion_version": "net-backlog-v2",
+    "slope_acceptance_passed": false,
+    "sustainable": false
+  },
+  {
+    "name": "classic-native-20000-r1",
+    "configuration": "classic-v0",
+    "complete": true,
+    "workload": "native",
+    "target_tps": 20000,
+    "warmup_s": 10,
+    "measure_s": 60,
+    "users": 16384,
+    "requested": 1400000,
+    "submitted": 1400000,
+    "success": 1400000,
+    "failures": 0,
+    "unresolved": 0,
+    "actual_send_tps": 19953.95,
+    "receipt_tps": 19043.233333333334,
+    "overall_tps": 15775.188844411841,
+    "p50_ms": 3600.183717,
+    "p95_ms": 11581.899099,
+    "p99_ms": 19390.057618,
+    "scheduled_p99_ms": 20488.465159,
+    "send_s": 70.317506598,
+    "drain_s": 18.429450019,
+    "balance_mismatches": 0,
+    "balances_checked": 16384,
+    "presigned": true,
+    "start_epoch_ms": 1790760315200,
+    "queried_receipts": 8991,
+    "recovered_callback_failures": 1742,
+    "funding_delayed_receipts": 0,
+    "distributed": null,
+    "driver_count": null,
+    "start_skew_ms": null,
+    "max_driver_scheduled_p99_ms": null,
+    "phase": null,
+    "common_chain_samples": 60,
+    "common_chain_tps": 19147.71350559761,
+    "common_chain_window_s": 59.01487922668457,
+    "pending_slope_per_node": 361.53334139230924,
+    "pending_net_growth_per_node": 770.9310024213017,
+    "pending_series": [
+      {
+        "elapsed_s": 0.631829023361206,
+        "pending": 45842.5
+      },
+      {
+        "elapsed_s": 1.6292715072631836,
+        "pending": 36938.1
+      },
+      {
+        "elapsed_s": 2.6302895545959473,
+        "pending": 29078.8
+      },
+      {
+        "elapsed_s": 3.6318743228912354,
+        "pending": 47854.6
+      },
+      {
+        "elapsed_s": 4.631335258483887,
+        "pending": 68648.8
+      },
+      {
+        "elapsed_s": 5.631713628768921,
+        "pending": 88729.3
+      },
+      {
+        "elapsed_s": 6.635955572128296,
+        "pending": 88111.4
+      },
+      {
+        "elapsed_s": 7.633625745773315,
+        "pending": 74780.4
+      },
+      {
+        "elapsed_s": 8.632226467132568,
+        "pending": 67995.3
+      },
+      {
+        "elapsed_s": 9.648470401763916,
+        "pending": 87810.1
+      },
+      {
+        "elapsed_s": 10.620493173599243,
+        "pending": 99265.2
+      },
+      {
+        "elapsed_s": 11.63270115852356,
+        "pending": 97867.4
+      },
+      {
+        "elapsed_s": 12.631567239761353,
+        "pending": 83979.4
+      },
+      {
+        "elapsed_s": 13.6321382522583,
+        "pending": 91946.6
+      },
+      {
+        "elapsed_s": 14.642439126968384,
+        "pending": 84176.3
+      },
+      {
+        "elapsed_s": 15.633165836334229,
+        "pending": 95953.4
+      },
+      {
+        "elapsed_s": 16.638423442840576,
+        "pending": 97877.6
+      },
+      {
+        "elapsed_s": 17.624321460723877,
+        "pending": 98363.8
+      },
+      {
+        "elapsed_s": 18.63756561279297,
+        "pending": 93001.1
+      },
+      {
+        "elapsed_s": 19.64255952835083,
+        "pending": 88023.7
+      },
+      {
+        "elapsed_s": 20.662486791610718,
+        "pending": 83604.9
+      },
+      {
+        "elapsed_s": 21.631855249404907,
+        "pending": 96296.2
+      },
+      {
+        "elapsed_s": 22.63047170639038,
+        "pending": 92115.7
+      },
+      {
+        "elapsed_s": 23.63762903213501,
+        "pending": 87444
+      },
+      {
+        "elapsed_s": 24.635583639144897,
+        "pending": 89989.3
+      },
+      {
+        "elapsed_s": 25.63520574569702,
+        "pending": 95578.3
+      },
+      {
+        "elapsed_s": 26.63573431968689,
+        "pending": 92887.6
+      },
+      {
+        "elapsed_s": 27.64059090614319,
+        "pending": 82299.4
+      },
+      {
+        "elapsed_s": 28.63513970375061,
+        "pending": 95551.8
+      },
+      {
+        "elapsed_s": 29.64206552505493,
+        "pending": 93223.1
+      },
+      {
+        "elapsed_s": 30.622727870941162,
+        "pending": 97207.2
+      },
+      {
+        "elapsed_s": 31.62293577194214,
+        "pending": 97207.2
+      },
+      {
+        "elapsed_s": 32.632508993148804,
+        "pending": 97207.2
+      },
+      {
+        "elapsed_s": 33.63265323638916,
+        "pending": 97056.1
+      },
+      {
+        "elapsed_s": 34.63592529296875,
+        "pending": 89737.6
+      },
+      {
+        "elapsed_s": 35.645251989364624,
+        "pending": 92187.2
+      },
+      {
+        "elapsed_s": 36.6400842666626,
+        "pending": 94233.4
+      },
+      {
+        "elapsed_s": 37.64794921875,
+        "pending": 87243.8
+      },
+      {
+        "elapsed_s": 38.64051914215088,
+        "pending": 94895.2
+      },
+      {
+        "elapsed_s": 39.63211154937744,
+        "pending": 95840.5
+      },
+      {
+        "elapsed_s": 40.639673709869385,
+        "pending": 92593.3
+      },
+      {
+        "elapsed_s": 41.64577770233154,
+        "pending": 89516.4
+      },
+      {
+        "elapsed_s": 42.643927574157715,
+        "pending": 90326.5
+      },
+      {
+        "elapsed_s": 43.64068627357483,
+        "pending": 94464.9
+      },
+      {
+        "elapsed_s": 44.64537978172302,
+        "pending": 90956.9
+      },
+      {
+        "elapsed_s": 45.645954608917236,
+        "pending": 96103
+      },
+      {
+        "elapsed_s": 46.653616428375244,
+        "pending": 90741.8
+      },
+      {
+        "elapsed_s": 47.64183568954468,
+        "pending": 85075.3
+      },
+      {
+        "elapsed_s": 48.64369344711304,
+        "pending": 93474.2
+      },
+      {
+        "elapsed_s": 49.64233088493347,
+        "pending": 94082.5
+      },
+      {
+        "elapsed_s": 50.65112662315369,
+        "pending": 86946.9
+      },
+      {
+        "elapsed_s": 51.65031170845032,
+        "pending": 78976.1
+      },
+      {
+        "elapsed_s": 52.64586067199707,
+        "pending": 78369.5
+      },
+      {
+        "elapsed_s": 53.648913621902466,
+        "pending": 76493.9
+      },
+      {
+        "elapsed_s": 54.6505560874939,
+        "pending": 94085
+      },
+      {
+        "elapsed_s": 55.63599371910095,
+        "pending": 96723.9
+      },
+      {
+        "elapsed_s": 56.640910148620605,
+        "pending": 92727.3
+      },
+      {
+        "elapsed_s": 57.64581298828125,
+        "pending": 87882.8
+      },
+      {
+        "elapsed_s": 58.645500898361206,
+        "pending": 91047.9
+      },
+      {
+        "elapsed_s": 59.646708250045776,
+        "pending": 91338.9
+      }
+    ],
+    "pending_mean_per_node": 86832.94166666667,
+    "pending_max_per_node": 99265.2,
+    "state_valid": true,
+    "count_valid": true,
+    "block_height_delta": 173,
+    "committed_count_delta": 1416384,
+    "expected_count_delta": 1416384,
+    "final_pending_max": 0,
+    "failed_count_delta": 0,
+    "resources": {
+      "10.206.0.11": {
+        "node": {
+          "busy_cores": 6.509055451822239,
+          "max_rss_mib": 2222.2265625,
+          "write_MBps": 56.985150663427085
+        },
+        "host_idle_pct": 18.143305664272503,
+        "host_iowait_pct": 0.040858457700744054,
+        "rx_bytes_per_s": 15741143.413211485,
+        "tx_bytes_per_s": 15283920.895625008,
+        "rx_packets_per_s": 17921.920311837683,
+        "tx_packets_per_s": 15647.07807905303,
+        "disks": {}
+      },
+      "10.206.0.8": {
+        "node": {
+          "busy_cores": 6.491962089940047,
+          "max_rss_mib": 2254.06640625,
+          "write_MBps": 56.85336432456275
+        },
+        "host_idle_pct": 18.367260659099077,
+        "host_iowait_pct": 0.04650474559790306,
+        "rx_bytes_per_s": 15716706.696587026,
+        "tx_bytes_per_s": 15558063.011494666,
+        "rx_packets_per_s": 17757.813503008954,
+        "tx_packets_per_s": 15443.892005087031,
+        "disks": {}
+      },
+      "10.206.0.16": {
+        "node": {
+          "busy_cores": 6.554687804175951,
+          "max_rss_mib": 2427.14453125,
+          "write_MBps": 55.1203896413716
+        },
+        "host_idle_pct": 17.585179865233098,
+        "host_iowait_pct": 0.035909676601677196,
+        "rx_bytes_per_s": 22764696.772396028,
+        "tx_bytes_per_s": 16740412.320601847,
+        "rx_packets_per_s": 22542.330763740512,
+        "tx_packets_per_s": 15495.551108218348,
+        "disks": {}
+      },
+      "10.206.0.15": {
+        "node": {
+          "busy_cores": 6.476546590641246,
+          "max_rss_mib": 2179.046875,
+          "write_MBps": 55.22814383741071
+        },
+        "host_idle_pct": 18.58890252677022,
+        "host_iowait_pct": 0.044440682270284,
+        "rx_bytes_per_s": 15727121.300713096,
+        "tx_bytes_per_s": 15205498.331248304,
+        "rx_packets_per_s": 17647.101686447444,
+        "tx_packets_per_s": 15303.487189507194,
+        "disks": {}
+      },
+      "10.206.0.2": {
+        "node": {
+          "busy_cores": 6.19665307065393,
+          "max_rss_mib": 3066.45703125,
+          "write_MBps": 54.26353363459831
+        },
+        "driver": {
+          "busy_cores": 0.9876934823197884,
+          "max_rss_mib": 2390.6015625,
+          "write_MBps": 0.028580733903169783
+        },
+        "host_idle_pct": 9.294159950927511,
+        "host_iowait_pct": 0.019036740909956214,
+        "rx_bytes_per_s": 27093140.65272778,
+        "tx_bytes_per_s": 33523820.733194347,
+        "rx_packets_per_s": 36620.50140556761,
+        "tx_packets_per_s": 31872.121906551285,
+        "disks": {}
+      },
+      "10.206.0.17": {
+        "node": {
+          "busy_cores": 6.454933544496715,
+          "max_rss_mib": 2297.91796875,
+          "write_MBps": 54.751823380826785
+        },
+        "host_idle_pct": 18.85650176753244,
+        "host_iowait_pct": 0.04656971698312906,
+        "rx_bytes_per_s": 15740896.765971271,
+        "tx_bytes_per_s": 15439607.446933342,
+        "rx_packets_per_s": 17716.198332367596,
+        "tx_packets_per_s": 15349.15268008366,
+        "disks": {}
+      },
+      "10.206.0.4": {
+        "node": {
+          "busy_cores": 6.500532999738053,
+          "max_rss_mib": 2473.953125,
+          "write_MBps": 55.356466996724166
+        },
+        "host_idle_pct": 18.258830488423186,
+        "host_iowait_pct": 0.03591346966368092,
+        "rx_bytes_per_s": 15804496.1764588,
+        "tx_bytes_per_s": 15646823.65484872,
+        "rx_packets_per_s": 18001.43698741598,
+        "tx_packets_per_s": 15674.681311780927,
+        "disks": {}
+      },
+      "10.206.0.12": {
+        "node": {
+          "busy_cores": 6.435471340042096,
+          "max_rss_mib": 2252.69140625,
+          "write_MBps": 54.7061735651911
+        },
+        "host_idle_pct": 19.066435635195674,
+        "host_iowait_pct": 0.04014876172766461,
+        "rx_bytes_per_s": 15735713.464970132,
+        "tx_bytes_per_s": 15788571.647607546,
+        "rx_packets_per_s": 17656.20343375087,
+        "tx_packets_per_s": 15401.294882308692,
+        "disks": {}
+      },
+      "10.206.0.6": {
+        "node": {
+          "busy_cores": 6.512467364825486,
+          "max_rss_mib": 2542.57421875,
+          "write_MBps": 55.01144716943566
+        },
+        "host_idle_pct": 18.13799082316622,
+        "host_iowait_pct": 0.027488211786099424,
+        "rx_bytes_per_s": 15764040.75353766,
+        "tx_bytes_per_s": 15426807.939735431,
+        "rx_packets_per_s": 17682.67681469624,
+        "tx_packets_per_s": 15383.863573940498,
+        "disks": {}
+      },
+      "10.206.0.14": {
+        "node": {
+          "busy_cores": 6.467281930969649,
+          "max_rss_mib": 2224.24609375,
+          "write_MBps": 55.640951470400466
+        },
+        "host_idle_pct": 18.67845883672217,
+        "host_iowait_pct": 0.040200579734676174,
+        "rx_bytes_per_s": 15864045.630217025,
+        "tx_bytes_per_s": 15235082.514205951,
+        "rx_packets_per_s": 18276.698322714426,
+        "tx_packets_per_s": 15736.646972097396,
+        "disks": {}
+      }
+    },
+    "criterion_version": "net-backlog-v2",
+    "slope_acceptance_passed": false,
+    "sustainable": false
+  },
+  {
+    "name": "classic-native-20000-r2",
+    "configuration": "classic-v0",
+    "complete": false
+  },
+  {
+    "name": "classic-native-30000",
+    "configuration": "classic-v0",
+    "complete": true,
+    "workload": "native",
+    "target_tps": 30000,
+    "warmup_s": 5,
+    "measure_s": 20,
+    "users": 16384,
+    "requested": 750000,
+    "submitted": 750000,
+    "success": 750000,
+    "failures": 0,
+    "unresolved": 0,
+    "actual_send_tps": 17598.25,
+    "receipt_tps": 17550.65,
+    "overall_tps": 12174.928153923942,
+    "p50_ms": 5231.589176,
+    "p95_ms": 14649.368614,
+    "p99_ms": 35402.17562,
+    "scheduled_p99_ms": 42649.692118,
+    "send_s": 42.1661489,
+    "drain_s": 19.435857331,
+    "balance_mismatches": 0,
+    "balances_checked": 16384,
+    "presigned": true,
+    "start_epoch_ms": 1790759689883,
+    "queried_receipts": 9040,
+    "recovered_callback_failures": 952,
+    "funding_delayed_receipts": 0,
+    "distributed": null,
+    "driver_count": null,
+    "start_skew_ms": null,
+    "max_driver_scheduled_p99_ms": null,
+    "phase": null,
+    "common_chain_samples": 20,
+    "common_chain_tps": 14727.192119321237,
+    "common_chain_window_s": 19.012449741363525,
+    "pending_slope_per_node": -261.8286786308853,
+    "pending_net_growth_per_node": 161.63619322102207,
+    "pending_series": [
+      {
+        "elapsed_s": 0.526231050491333,
+        "pending": 93315.5
+      },
+      {
+        "elapsed_s": 1.5234112739562988,
+        "pending": 97495.7
+      },
+      {
+        "elapsed_s": 2.5256102085113525,
+        "pending": 98795.1
+      },
+      {
+        "elapsed_s": 3.5226573944091797,
+        "pending": 96297
+      },
+      {
+        "elapsed_s": 4.534884691238403,
+        "pending": 91383.4
+      },
+      {
+        "elapsed_s": 5.53147292137146,
+        "pending": 93375.1
+      },
+      {
+        "elapsed_s": 6.521247863769531,
+        "pending": 91820.9
+      },
+      {
+        "elapsed_s": 7.5123021602630615,
+        "pending": 100037.7
+      },
+      {
+        "elapsed_s": 8.511685848236084,
+        "pending": 100037.7
+      },
+      {
+        "elapsed_s": 9.512067317962646,
+        "pending": 100037.7
+      },
+      {
+        "elapsed_s": 10.53175139427185,
+        "pending": 92440.4
+      },
+      {
+        "elapsed_s": 11.539880514144897,
+        "pending": 92102.9
+      },
+      {
+        "elapsed_s": 12.530695915222168,
+        "pending": 89878.6
+      },
+      {
+        "elapsed_s": 13.512229442596436,
+        "pending": 99178.1
+      },
+      {
+        "elapsed_s": 14.512860774993896,
+        "pending": 99178.1
+      },
+      {
+        "elapsed_s": 15.561811208724976,
+        "pending": 92784.3
+      },
+      {
+        "elapsed_s": 16.537636756896973,
+        "pending": 84256.2
+      },
+      {
+        "elapsed_s": 17.544636011123657,
+        "pending": 87450.3
+      },
+      {
+        "elapsed_s": 18.53254532814026,
+        "pending": 90677
+      },
+      {
+        "elapsed_s": 19.53868079185486,
+        "pending": 96388.6
+      }
+    ],
+    "pending_mean_per_node": 94346.515,
+    "pending_max_per_node": 100037.7,
+    "state_valid": true,
+    "count_valid": true,
+    "block_height_delta": 90,
+    "committed_count_delta": 766384,
+    "expected_count_delta": 766384,
+    "final_pending_max": 0,
+    "failed_count_delta": 0,
+    "resources": {
+      "10.206.0.11": {
+        "node": {
+          "busy_cores": 5.497501134333762,
+          "max_rss_mib": 1811.984375,
+          "write_MBps": 54.29616143973435
+        },
+        "host_idle_pct": 30.880821822725064,
+        "host_iowait_pct": 0.041646421878253626,
+        "rx_bytes_per_s": 14012643.756450906,
+        "tx_bytes_per_s": 14132119.456337424,
+        "rx_packets_per_s": 15251.091066417473,
+        "tx_packets_per_s": 13120.026671455194,
+        "disks": {}
+      },
+      "10.206.0.8": {
+        "node": {
+          "busy_cores": 5.378052934361848,
+          "max_rss_mib": 1808.390625,
+          "write_MBps": 52.69464380363622
+        },
+        "host_idle_pct": 32.35062376887721,
+        "host_iowait_pct": 0.03939592908732764,
+        "rx_bytes_per_s": 13776097.860498304,
+        "tx_bytes_per_s": 13775964.761170093,
+        "rx_packets_per_s": 14895.311209741125,
+        "tx_packets_per_s": 12713.6898344051,
+        "disks": {}
+      },
+      "10.206.0.16": {
+        "node": {
+          "busy_cores": 5.443038254943072,
+          "max_rss_mib": 2019.7734375,
+          "write_MBps": 50.605944995904714
+        },
+        "host_idle_pct": 31.576179834363085,
+        "host_iowait_pct": 0.03286446693834626,
+        "rx_bytes_per_s": 18631969.744188495,
+        "tx_bytes_per_s": 13859965.647409447,
+        "rx_packets_per_s": 18100.005449704044,
+        "tx_packets_per_s": 12530.643764246912,
+        "disks": {}
+      },
+      "10.206.0.15": {
+        "node": {
+          "busy_cores": 5.273231664082058,
+          "max_rss_mib": 1727.06640625,
+          "write_MBps": 51.69153065407461
+        },
+        "host_idle_pct": 33.71229545902609,
+        "host_iowait_pct": 0.019714792666097127,
+        "rx_bytes_per_s": 13685433.805689683,
+        "tx_bytes_per_s": 13094825.506653877,
+        "rx_packets_per_s": 14707.349718780351,
+        "tx_packets_per_s": 12470.058857239204,
+        "disks": {}
+      },
+      "10.206.0.2": {
+        "node": {
+          "busy_cores": 4.9388500471881045,
+          "max_rss_mib": 2530.34765625,
+          "write_MBps": 51.4244404284077
+        },
+        "driver": {
+          "busy_cores": 0.8578582627379749,
+          "max_rss_mib": 2825.96484375,
+          "write_MBps": 0.03546024026231396
+        },
+        "host_idle_pct": 26.708644890463074,
+        "host_iowait_pct": 0.006559097468188378,
+        "rx_bytes_per_s": 27146778.80973597,
+        "tx_bytes_per_s": 30571424.54907516,
+        "rx_packets_per_s": 33688.85476945177,
+        "tx_packets_per_s": 26786.060218744075,
+        "disks": {}
+      },
+      "10.206.0.17": {
+        "node": {
+          "busy_cores": 5.2192714604221875,
+          "max_rss_mib": 1785.47265625,
+          "write_MBps": 50.42659211368776
+        },
+        "host_idle_pct": 34.3431688243412,
+        "host_iowait_pct": 0.026286390221462837,
+        "rx_bytes_per_s": 13358494.478832468,
+        "tx_bytes_per_s": 13895096.388951305,
+        "rx_packets_per_s": 14385.446312564834,
+        "tx_packets_per_s": 12206.531747241503,
+        "disks": {}
+      },
+      "10.206.0.4": {
+        "node": {
+          "busy_cores": 5.342144750852878,
+          "max_rss_mib": 2086.48046875,
+          "write_MBps": 51.94107536111754
+        },
+        "host_idle_pct": 32.784735427185105,
+        "host_iowait_pct": 0.013113894170874042,
+        "rx_bytes_per_s": 13775557.41757356,
+        "tx_bytes_per_s": 13537635.425551848,
+        "rx_packets_per_s": 15118.542631870236,
+        "tx_packets_per_s": 12902.151031671166,
+        "disks": {}
+      },
+      "10.206.0.12": {
+        "node": {
+          "busy_cores": 5.253159781641456,
+          "max_rss_mib": 1777.55859375,
+          "write_MBps": 51.43787881985611
+        },
+        "host_idle_pct": 33.92904073587385,
+        "host_iowait_pct": 0.026281208935611037,
+        "rx_bytes_per_s": 13684622.088938283,
+        "tx_bytes_per_s": 13796817.370351406,
+        "rx_packets_per_s": 14673.04232192529,
+        "tx_packets_per_s": 12541.695853253512,
+        "disks": {}
+      },
+      "10.206.0.6": {
+        "node": {
+          "busy_cores": 5.330663090809003,
+          "max_rss_mib": 2111.359375,
+          "write_MBps": 52.11440695107238
+        },
+        "host_idle_pct": 32.96753844131949,
+        "host_iowait_pct": 0.0328558286239979,
+        "rx_bytes_per_s": 13755973.603907743,
+        "tx_bytes_per_s": 13862944.378188454,
+        "rx_packets_per_s": 14680.375261586227,
+        "tx_packets_per_s": 12438.756359533307,
+        "disks": {}
+      },
+      "10.206.0.14": {
+        "node": {
+          "busy_cores": 5.229018965351818,
+          "max_rss_mib": 1697.91015625,
+          "write_MBps": 50.55200158920982
+        },
+        "host_idle_pct": 34.231097681140376,
+        "host_iowait_pct": 0.03941404453787033,
+        "rx_bytes_per_s": 13797122.4913718,
+        "tx_bytes_per_s": 13127731.833530283,
+        "rx_packets_per_s": 15246.055296567964,
+        "tx_packets_per_s": 12798.128918079416,
+        "disks": {}
+      }
+    },
+    "criterion_version": "net-backlog-v2",
+    "slope_acceptance_passed": false,
+    "sustainable": false
+  },
+  {
+    "name": "classic-solidity-15000",
+    "configuration": "classic-v0",
+    "complete": true,
+    "workload": "solidity",
+    "target_tps": 15000,
+    "warmup_s": 5,
+    "measure_s": 20,
+    "users": 16384,
+    "requested": 375000,
+    "submitted": 375000,
+    "success": 375000,
+    "failures": 0,
+    "unresolved": 0,
+    "actual_send_tps": 14999.95,
+    "receipt_tps": 14980.8,
+    "overall_tps": 14937.503181200218,
+    "p50_ms": 128.352427,
+    "p95_ms": 180.17734,
+    "p99_ms": 196.553967,
+    "scheduled_p99_ms": 196.626377,
+    "send_s": 25.001050869,
+    "drain_s": 0.103546295,
+    "balance_mismatches": 0,
+    "balances_checked": 16384,
+    "presigned": true,
+    "start_epoch_ms": 1790759540917,
+    "queried_receipts": 0,
+    "recovered_callback_failures": 0,
+    "funding_delayed_receipts": 0,
+    "distributed": null,
+    "driver_count": null,
+    "start_skew_ms": null,
+    "max_driver_scheduled_p99_ms": null,
+    "phase": null,
+    "common_chain_samples": 20,
+    "common_chain_tps": 15031.75304497853,
+    "common_chain_window_s": 19.00649905204773,
+    "pending_slope_per_node": 21.077369673900495,
+    "pending_net_growth_per_node": 45.779077862645984,
+    "pending_series": [
+      {
+        "elapsed_s": 0.2969701290130615,
+        "pending": 1218.3
+      },
+      {
+        "elapsed_s": 1.2960915565490723,
+        "pending": 2477.5
+      },
+      {
+        "elapsed_s": 2.296269655227661,
+        "pending": 1557.9
+      },
+      {
+        "elapsed_s": 3.304189682006836,
+        "pending": 1243.4
+      },
+      {
+        "elapsed_s": 4.30175518989563,
+        "pending": 1460.3
+      },
+      {
+        "elapsed_s": 5.299618244171143,
+        "pending": 2205.8
+      },
+      {
+        "elapsed_s": 6.297398090362549,
+        "pending": 1851.2
+      },
+      {
+        "elapsed_s": 7.298541784286499,
+        "pending": 1568.5
+      },
+      {
+        "elapsed_s": 8.297943115234375,
+        "pending": 1199.1
+      },
+      {
+        "elapsed_s": 9.30683970451355,
+        "pending": 1387.8
+      },
+      {
+        "elapsed_s": 10.299337387084961,
+        "pending": 2385.9
+      },
+      {
+        "elapsed_s": 11.29949164390564,
+        "pending": 2046.1
+      },
+      {
+        "elapsed_s": 12.303169012069702,
+        "pending": 1805.1
+      },
+      {
+        "elapsed_s": 13.303388357162476,
+        "pending": 2415.8
+      },
+      {
+        "elapsed_s": 14.302149534225464,
+        "pending": 2148.7
+      },
+      {
+        "elapsed_s": 15.304534673690796,
+        "pending": 1849.5
+      },
+      {
+        "elapsed_s": 16.293407678604126,
+        "pending": 1536.4
+      },
+      {
+        "elapsed_s": 17.29943537712097,
+        "pending": 1272.5
+      },
+      {
+        "elapsed_s": 18.29795479774475,
+        "pending": 2450.4
+      },
+      {
+        "elapsed_s": 19.30346918106079,
+        "pending": 2088.4
+      }
+    ],
+    "pending_mean_per_node": 1808.43,
+    "pending_max_per_node": 2477.5,
+    "state_valid": true,
+    "count_valid": true,
+    "block_height_delta": 233,
+    "committed_count_delta": 391385,
+    "expected_count_delta": 391385,
+    "final_pending_max": 0,
+    "failed_count_delta": 0,
+    "resources": {
+      "10.206.0.11": {
+        "node": {
+          "busy_cores": 7.4862232473096535,
+          "max_rss_mib": 770.23046875,
+          "write_MBps": 30.543186240976482
+        },
+        "host_idle_pct": 5.936043075710815,
+        "host_iowait_pct": 0.02626567732615405,
+        "rx_bytes_per_s": 12122224.233285015,
+        "tx_bytes_per_s": 11293921.233357228,
+        "rx_packets_per_s": 15594.741426218787,
+        "tx_packets_per_s": 14216.633952663986,
+        "disks": {}
+      },
+      "10.206.0.8": {
+        "node": {
+          "busy_cores": 7.4540652748258625,
+          "max_rss_mib": 778.0390625,
+          "write_MBps": 30.52905619619551
+        },
+        "host_idle_pct": 6.344430636405258,
+        "host_iowait_pct": 0.03270325070311989,
+        "rx_bytes_per_s": 12099910.669920022,
+        "tx_bytes_per_s": 11321677.436342033,
+        "rx_packets_per_s": 15495.269423587833,
+        "tx_packets_per_s": 14135.164978019255,
+        "disks": {}
+      },
+      "10.206.0.16": {
+        "node": {
+          "busy_cores": 7.439752979354432,
+          "max_rss_mib": 887.046875,
+          "write_MBps": 30.539656616239007
+        },
+        "host_idle_pct": 6.528151012649931,
+        "host_iowait_pct": 0.01966310545978895,
+        "rx_bytes_per_s": 12829757.178016668,
+        "tx_bytes_per_s": 11547794.578745939,
+        "rx_packets_per_s": 16190.214608821161,
+        "tx_packets_per_s": 14470.437636161501,
+        "disks": {}
+      },
+      "10.206.0.15": {
+        "node": {
+          "busy_cores": 7.468383951541011,
+          "max_rss_mib": 778.70703125,
+          "write_MBps": 30.5509430569488
+        },
+        "host_idle_pct": 6.177201936919252,
+        "host_iowait_pct": 0.01963093835885355,
+        "rx_bytes_per_s": 12109446.585045483,
+        "tx_bytes_per_s": 11409281.574328324,
+        "rx_packets_per_s": 15485.4676418508,
+        "tx_packets_per_s": 14237.640246644278,
+        "disks": {}
+      },
+      "10.206.0.2": {
+        "node": {
+          "busy_cores": 6.716901034267276,
+          "max_rss_mib": 831.1796875,
+          "write_MBps": 30.527472375730152
+        },
+        "driver": {
+          "busy_cores": 0.7646788247022476,
+          "max_rss_mib": 1247.23828125,
+          "write_MBps": 0.00021482335157615954
+        },
+        "host_idle_pct": 5.51119256447179,
+        "host_iowait_pct": 0.019636078020683335,
+        "rx_bytes_per_s": 18682580.70291221,
+        "tx_bytes_per_s": 25746728.37044701,
+        "rx_packets_per_s": 29313.947010828466,
+        "tx_packets_per_s": 28413.95464924475,
+        "disks": {}
+      },
+      "10.206.0.17": {
+        "node": {
+          "busy_cores": 7.478411946311522,
+          "max_rss_mib": 752.22265625,
+          "write_MBps": 30.52150889535937
+        },
+        "host_idle_pct": 6.050078657577346,
+        "host_iowait_pct": 0.026219192448872573,
+        "rx_bytes_per_s": 12104901.554908125,
+        "tx_bytes_per_s": 11298582.684772445,
+        "rx_packets_per_s": 15500.765652827777,
+        "tx_packets_per_s": 14165.26372015992,
+        "disks": {}
+      },
+      "10.206.0.4": {
+        "node": {
+          "busy_cores": 7.459367817737554,
+          "max_rss_mib": 811.515625,
+          "write_MBps": 30.526265652427305
+        },
+        "host_idle_pct": 6.299830087570252,
+        "host_iowait_pct": 0.019605280355509083,
+        "rx_bytes_per_s": 12111015.469042348,
+        "tx_bytes_per_s": 11330855.038433883,
+        "rx_packets_per_s": 15537.383929753165,
+        "tx_packets_per_s": 14164.137987541852,
+        "disks": {}
+      },
+      "10.206.0.12": {
+        "node": {
+          "busy_cores": 7.473782110177253,
+          "max_rss_mib": 803.8515625,
+          "write_MBps": 30.53047907770452
+        },
+        "host_idle_pct": 6.150520730988406,
+        "host_iowait_pct": 0.019650225977598742,
+        "rx_bytes_per_s": 12086007.848678093,
+        "tx_bytes_per_s": 11276650.630303826,
+        "rx_packets_per_s": 15395.319251958748,
+        "tx_packets_per_s": 14134.256311834444,
+        "disks": {}
+      },
+      "10.206.0.6": {
+        "node": {
+          "busy_cores": 7.45864839180134,
+          "max_rss_mib": 816.08984375,
+          "write_MBps": 30.49730534198381
+        },
+        "host_idle_pct": 6.26993944918289,
+        "host_iowait_pct": 0.02604336219805977,
+        "rx_bytes_per_s": 12113660.190735573,
+        "tx_bytes_per_s": 11199399.85640525,
+        "rx_packets_per_s": 15473.204912508858,
+        "tx_packets_per_s": 14141.985767449985,
+        "disks": {}
+      },
+      "10.206.0.14": {
+        "node": {
+          "busy_cores": 7.469852473898746,
+          "max_rss_mib": 739.5546875,
+          "write_MBps": 30.57780818604605
+        },
+        "host_idle_pct": 6.157973954584124,
+        "host_iowait_pct": 0.03272037170342255,
+        "rx_bytes_per_s": 12132282.085688818,
+        "tx_bytes_per_s": 11290124.649594072,
+        "rx_packets_per_s": 15657.501650837885,
+        "tx_packets_per_s": 14223.58816097865,
+        "disks": {}
+      }
+    },
+    "criterion_version": "net-backlog-v2",
+    "slope_acceptance_passed": false,
+    "sustainable": false
+  },
+  {
+    "name": "classic-solidity-20000",
+    "configuration": "classic-v0",
+    "complete": false
+  },
+  {
+    "name": "classic-solidity-20000-v2",
+    "configuration": "classic-v0",
+    "complete": true,
+    "workload": "solidity",
+    "target_tps": 20000,
+    "warmup_s": 5,
+    "measure_s": 20,
+    "users": 16384,
+    "requested": 500000,
+    "submitted": 500000,
+    "success": 499938,
+    "failures": 62,
+    "unresolved": 0,
+    "actual_send_tps": 20000.0,
+    "receipt_tps": 19360.15,
+    "overall_tps": 13850.39939028947,
+    "p50_ms": 265.373949,
+    "p95_ms": 1149.366066,
+    "p99_ms": 2403.145441,
+    "scheduled_p99_ms": 2403.195795,
+    "send_s": 25.000448927,
+    "drain_s": 11.095116689,
+    "balance_mismatches": 120,
+    "balances_checked": 16384,
+    "presigned": true,
+    "start_epoch_ms": 1790759387705,
+    "queried_receipts": 1289,
+    "recovered_callback_failures": null,
+    "funding_delayed_receipts": 0,
+    "distributed": null,
+    "driver_count": null,
+    "start_skew_ms": null,
+    "max_driver_scheduled_p99_ms": null,
+    "phase": null,
+    "common_chain_samples": 20,
+    "common_chain_tps": 19387.41388684959,
+    "common_chain_window_s": 19.003411293029785,
+    "pending_slope_per_node": 473.33750780642976,
+    "pending_net_growth_per_node": 129.52411343656024,
+    "pending_series": [
+      {
+        "elapsed_s": 0.14797091484069824,
+        "pending": 4677.8
+      },
+      {
+        "elapsed_s": 1.1536281108856201,
+        "pending": 2199.3
+      },
+      {
+        "elapsed_s": 2.149090051651001,
+        "pending": 3077.5
+      },
+      {
+        "elapsed_s": 3.146214008331299,
+        "pending": 3416.4
+      },
+      {
+        "elapsed_s": 4.1480231285095215,
+        "pending": 6647.5
+      },
+      {
+        "elapsed_s": 5.1530303955078125,
+        "pending": 2575
+      },
+      {
+        "elapsed_s": 6.148020267486572,
+        "pending": 2733.2
+      },
+      {
+        "elapsed_s": 7.14476203918457,
+        "pending": 3419.7
+      },
+      {
+        "elapsed_s": 8.152070045471191,
+        "pending": 4172.9
+      },
+      {
+        "elapsed_s": 9.154300212860107,
+        "pending": 2660.2
+      },
+      {
+        "elapsed_s": 10.153128147125244,
+        "pending": 3221.8
+      },
+      {
+        "elapsed_s": 11.1485276222229,
+        "pending": 12087.5
+      },
+      {
+        "elapsed_s": 12.146919965744019,
+        "pending": 5215.6
+      },
+      {
+        "elapsed_s": 13.14660930633545,
+        "pending": 7276.1
+      },
+      {
+        "elapsed_s": 14.150546789169312,
+        "pending": 5792
+      },
+      {
+        "elapsed_s": 15.148197174072266,
+        "pending": 8752.2
+      },
+      {
+        "elapsed_s": 16.147867918014526,
+        "pending": 18534.4
+      },
+      {
+        "elapsed_s": 17.15041732788086,
+        "pending": 8303.5
+      },
+      {
+        "elapsed_s": 18.154805421829224,
+        "pending": 13422.2
+      },
+      {
+        "elapsed_s": 19.151382207870483,
+        "pending": 7139.2
+      }
+    ],
+    "pending_mean_per_node": 6266.2,
+    "pending_max_per_node": 18534.4,
+    "state_valid": true,
+    "count_valid": false,
+    "block_height_delta": 173,
+    "committed_count_delta": 516385,
+    "expected_count_delta": 516323,
+    "final_pending_max": 0,
+    "failed_count_delta": 0,
+    "resources": {
+      "10.206.0.11": {
+        "node": {
+          "busy_cores": 7.609993406272286,
+          "max_rss_mib": 725.5390625,
+          "write_MBps": 29.377351285166434
+        },
+        "host_idle_pct": 4.385159937073938,
+        "host_iowait_pct": 0.026219192448872573,
+        "rx_bytes_per_s": 15986193.532203525,
+        "tx_bytes_per_s": 14648236.182760533,
+        "rx_packets_per_s": 20182.517101320613,
+        "tx_packets_per_s": 18261.41234474169,
+        "disks": {}
+      },
+      "10.206.0.8": {
+        "node": {
+          "busy_cores": 7.538761018844137,
+          "max_rss_mib": 755.13671875,
+          "write_MBps": 28.285430502788316
+        },
+        "host_idle_pct": 5.314547837483618,
+        "host_iowait_pct": 0.00655307994757536,
+        "rx_bytes_per_s": 15701579.477949483,
+        "tx_bytes_per_s": 17582059.71180577,
+        "rx_packets_per_s": 19917.951506566347,
+        "tx_packets_per_s": 18328.517580457003,
+        "disks": {}
+      },
+      "10.206.0.16": {
+        "node": {
+          "busy_cores": 7.52962643199338,
+          "max_rss_mib": 809.44140625,
+          "write_MBps": 28.34996218861829
+        },
+        "host_idle_pct": 5.384716042920702,
+        "host_iowait_pct": 0.01308557969118032,
+        "rx_bytes_per_s": 19608524.817239154,
+        "tx_bytes_per_s": 14674820.94973701,
+        "rx_packets_per_s": 22428.52371041207,
+        "tx_packets_per_s": 18157.97364762377,
+        "disks": {}
+      },
+      "10.206.0.15": {
+        "node": {
+          "busy_cores": 7.565147707753918,
+          "max_rss_mib": 729.34765625,
+          "write_MBps": 28.634562104688893
+        },
+        "host_idle_pct": 4.970568999345978,
+        "host_iowait_pct": 0.01962066710268149,
+        "rx_bytes_per_s": 16013518.747618819,
+        "tx_bytes_per_s": 14889141.400420012,
+        "rx_packets_per_s": 19941.56980408701,
+        "tx_packets_per_s": 18198.184821372553,
+        "disks": {}
+      },
+      "10.206.0.2": {
+        "node": {
+          "busy_cores": 6.569717214206914,
+          "max_rss_mib": 746.96484375,
+          "write_MBps": 27.827738549583465
+        },
+        "driver": {
+          "busy_cores": 1.0419050287037386,
+          "max_rss_mib": 2211.453125,
+          "write_MBps": 0.00021477820823203385
+        },
+        "host_idle_pct": 3.9224734656206737,
+        "host_iowait_pct": 0.006592392379194409,
+        "rx_bytes_per_s": 24700223.752128758,
+        "tx_bytes_per_s": 34428597.60769839,
+        "rx_packets_per_s": 38316.7784267624,
+        "tx_packets_per_s": 37053.750423421334,
+        "disks": {}
+      },
+      "10.206.0.17": {
+        "node": {
+          "busy_cores": 7.572247313106426,
+          "max_rss_mib": 697.8125,
+          "write_MBps": 29.047656286073234
+        },
+        "host_idle_pct": 4.865749836280288,
+        "host_iowait_pct": 0.019646365422396856,
+        "rx_bytes_per_s": 15988888.530514074,
+        "tx_bytes_per_s": 14409209.153672026,
+        "rx_packets_per_s": 20006.309861151356,
+        "tx_packets_per_s": 18163.736679362195,
+        "disks": {}
+      },
+      "10.206.0.4": {
+        "node": {
+          "busy_cores": 7.528202809379836,
+          "max_rss_mib": 730.3046875,
+          "write_MBps": 28.436483963764008
+        },
+        "host_idle_pct": 5.416884474647151,
+        "host_iowait_pct": 0.013068478829064296,
+        "rx_bytes_per_s": 16007293.00484025,
+        "tx_bytes_per_s": 15037485.439023854,
+        "rx_packets_per_s": 20098.984078674257,
+        "tx_packets_per_s": 18255.43255195978,
+        "disks": {}
+      },
+      "10.206.0.12": {
+        "node": {
+          "busy_cores": 7.534219716384136,
+          "max_rss_mib": 755.5078125,
+          "write_MBps": 28.66243873263337
+        },
+        "host_idle_pct": 5.337078651685394,
+        "host_iowait_pct": 0.026130128037627383,
+        "rx_bytes_per_s": 15964923.404241784,
+        "tx_bytes_per_s": 15415460.186951384,
+        "rx_packets_per_s": 19858.27172490991,
+        "tx_packets_per_s": 18188.61935557789,
+        "disks": {}
+      },
+      "10.206.0.6": {
+        "node": {
+          "busy_cores": 7.532267584303057,
+          "max_rss_mib": 752.41015625,
+          "write_MBps": 28.473765105628775
+        },
+        "host_idle_pct": 5.355626673633336,
+        "host_iowait_pct": 0.019593756123048787,
+        "rx_bytes_per_s": 15975363.657425774,
+        "tx_bytes_per_s": 15115532.220441397,
+        "rx_packets_per_s": 19958.25235713969,
+        "tx_packets_per_s": 18139.371381183788,
+        "disks": {}
+      },
+      "10.206.0.14": {
+        "node": {
+          "busy_cores": 7.556640936998821,
+          "max_rss_mib": 682.3203125,
+          "write_MBps": 28.49849946807628
+        },
+        "host_idle_pct": 5.045210326300616,
+        "host_iowait_pct": 0.03276110601493906,
+        "rx_bytes_per_s": 16007518.901828581,
+        "tx_bytes_per_s": 14884169.328318812,
+        "rx_packets_per_s": 20247.99787226367,
+        "tx_packets_per_s": 18282.42098844965,
+        "disks": {}
+      }
+    },
+    "criterion_version": "net-backlog-v2",
+    "slope_acceptance_passed": false,
+    "sustainable": false
+  },
+  {
+    "name": "classic-solidity-30000",
+    "configuration": "classic-v0",
+    "complete": true,
+    "workload": "solidity",
+    "target_tps": 30000,
+    "warmup_s": 5,
+    "measure_s": 20,
+    "users": 16384,
+    "requested": 750000,
+    "submitted": 750000,
+    "success": 750000,
+    "failures": 0,
+    "unresolved": 0,
+    "actual_send_tps": 17022.05,
+    "receipt_tps": 17022.4,
+    "overall_tps": 13955.125246752103,
+    "p50_ms": 5103.317481,
+    "p95_ms": 15819.661862,
+    "p99_ms": 33125.172481,
+    "scheduled_p99_ms": 39342.558817,
+    "send_s": 39.495767434,
+    "drain_s": 14.247927928,
+    "balance_mismatches": 0,
+    "balances_checked": 16384,
+    "presigned": true,
+    "start_epoch_ms": 1790759582980,
+    "queried_receipts": 4507,
+    "recovered_callback_failures": 730,
+    "funding_delayed_receipts": 0,
+    "distributed": null,
+    "driver_count": null,
+    "start_skew_ms": null,
+    "max_driver_scheduled_p99_ms": null,
+    "phase": null,
+    "common_chain_samples": 20,
+    "common_chain_tps": 17361.51951768774,
+    "common_chain_window_s": 19.00755286216736,
+    "pending_slope_per_node": 181.37818331685094,
+    "pending_net_growth_per_node": 387.0461417809854,
+    "pending_series": [
+      {
+        "elapsed_s": 0.30884528160095215,
+        "pending": 84803.8
+      },
+      {
+        "elapsed_s": 1.3074281215667725,
+        "pending": 91739.1
+      },
+      {
+        "elapsed_s": 2.3039073944091797,
+        "pending": 94777.8
+      },
+      {
+        "elapsed_s": 3.3188364505767822,
+        "pending": 90871.7
+      },
+      {
+        "elapsed_s": 4.303495407104492,
+        "pending": 90855.5
+      },
+      {
+        "elapsed_s": 5.289393901824951,
+        "pending": 99955
+      },
+      {
+        "elapsed_s": 6.2890379428863525,
+        "pending": 99955
+      },
+      {
+        "elapsed_s": 7.290802478790283,
+        "pending": 99955
+      },
+      {
+        "elapsed_s": 8.299809217453003,
+        "pending": 98486.9
+      },
+      {
+        "elapsed_s": 9.3124840259552,
+        "pending": 85094.8
+      },
+      {
+        "elapsed_s": 10.302988529205322,
+        "pending": 86999.6
+      },
+      {
+        "elapsed_s": 11.289930582046509,
+        "pending": 99234.7
+      },
+      {
+        "elapsed_s": 12.290237665176392,
+        "pending": 99234.7
+      },
+      {
+        "elapsed_s": 13.313191890716553,
+        "pending": 94808.3
+      },
+      {
+        "elapsed_s": 14.310374736785889,
+        "pending": 96318.5
+      },
+      {
+        "elapsed_s": 15.310281991958618,
+        "pending": 96649
+      },
+      {
+        "elapsed_s": 16.306631088256836,
+        "pending": 85518.3
+      },
+      {
+        "elapsed_s": 17.304609775543213,
+        "pending": 97942.4
+      },
+      {
+        "elapsed_s": 18.30181646347046,
+        "pending": 99348.6
+      },
+      {
+        "elapsed_s": 19.31639814376831,
+        "pending": 92160.6
+      }
+    ],
+    "pending_mean_per_node": 94235.465,
+    "pending_max_per_node": 99955,
+    "state_valid": true,
+    "count_valid": true,
+    "block_height_delta": 91,
+    "committed_count_delta": 766385,
+    "expected_count_delta": 766385,
+    "final_pending_max": 0,
+    "failed_count_delta": 0,
+    "resources": {
+      "10.206.0.11": {
+        "node": {
+          "busy_cores": 4.949978946993192,
+          "max_rss_mib": 1379.10546875,
+          "write_MBps": 38.920950441693996
+        },
+        "host_idle_pct": 37.76697115068673,
+        "host_iowait_pct": 0.026286390221462837,
+        "rx_bytes_per_s": 13306413.29127772,
+        "tx_bytes_per_s": 12220373.631017206,
+        "rx_packets_per_s": 14369.9531999534,
+        "tx_packets_per_s": 12135.034293055593,
+        "disks": {}
+      },
+      "10.206.0.8": {
+        "node": {
+          "busy_cores": 4.9260700215193305,
+          "max_rss_mib": 1499.078125,
+          "write_MBps": 37.52457056843355
+        },
+        "host_idle_pct": 37.98373343827889,
+        "host_iowait_pct": 0.032795487340941884,
+        "rx_bytes_per_s": 13254088.252848867,
+        "tx_bytes_per_s": 14087959.860663844,
+        "rx_packets_per_s": 14431.883504528763,
+        "tx_packets_per_s": 12245.342681930693,
+        "disks": {}
+      },
+      "10.206.0.16": {
+        "node": {
+          "busy_cores": 4.974846369298158,
+          "max_rss_mib": 1470.94921875,
+          "write_MBps": 37.98525416271975
+        },
+        "host_idle_pct": 37.4696023660861,
+        "host_iowait_pct": 0.03943476832073611,
+        "rx_bytes_per_s": 18590825.56795611,
+        "tx_bytes_per_s": 13514415.62295598,
+        "rx_packets_per_s": 17904.511461835224,
+        "tx_packets_per_s": 12027.367099329796,
+        "disks": {}
+      },
+      "10.206.0.15": {
+        "node": {
+          "busy_cores": 4.865267003024187,
+          "max_rss_mib": 1422.51171875,
+          "write_MBps": 38.36687208405819
+        },
+        "host_idle_pct": 38.74589625738674,
+        "host_iowait_pct": 0.03282994090610637,
+        "rx_bytes_per_s": 13274488.362826314,
+        "tx_bytes_per_s": 12387277.655521367,
+        "rx_packets_per_s": 14156.367699314134,
+        "tx_packets_per_s": 11758.542356030219,
+        "disks": {}
+      },
+      "10.206.0.2": {
+        "node": {
+          "busy_cores": 4.818029448052316,
+          "max_rss_mib": 2006.39453125,
+          "write_MBps": 38.58852409488571
+        },
+        "driver": {
+          "busy_cores": 0.7367145877875683,
+          "max_rss_mib": 2531.5703125,
+          "write_MBps": 0.00042985512130739006
+        },
+        "host_idle_pct": 29.724758588977206,
+        "host_iowait_pct": 0.026276029691913554,
+        "rx_bytes_per_s": 23589848.771389145,
+        "tx_bytes_per_s": 27725097.698548567,
+        "rx_packets_per_s": 30654.830426468066,
+        "tx_packets_per_s": 24768.09257318289,
+        "disks": {}
+      },
+      "10.206.0.17": {
+        "node": {
+          "busy_cores": 4.840265795916852,
+          "max_rss_mib": 1360.26171875,
+          "write_MBps": 38.969739643569476
+        },
+        "host_idle_pct": 39.156745379201475,
+        "host_iowait_pct": 0.03946589488916661,
+        "rx_bytes_per_s": 13059766.648712823,
+        "tx_bytes_per_s": 12427493.580194201,
+        "rx_packets_per_s": 13969.251751715132,
+        "tx_packets_per_s": 11661.055578747428,
+        "disks": {}
+      },
+      "10.206.0.4": {
+        "node": {
+          "busy_cores": 4.918561036125578,
+          "max_rss_mib": 1775.96484375,
+          "write_MBps": 38.32918307000705
+        },
+        "host_idle_pct": 38.07962222076474,
+        "host_iowait_pct": 0.03279333639404473,
+        "rx_bytes_per_s": 13324722.685763368,
+        "tx_bytes_per_s": 12891359.809198512,
+        "rx_packets_per_s": 14463.993062944075,
+        "tx_packets_per_s": 12222.679309704145,
+        "disks": {}
+      },
+      "10.206.0.12": {
+        "node": {
+          "busy_cores": 4.844023239355191,
+          "max_rss_mib": 1427.5,
+          "write_MBps": 38.13189556052668
+        },
+        "host_idle_pct": 39.065887144452475,
+        "host_iowait_pct": 0.03941404453787033,
+        "rx_bytes_per_s": 13176473.5948233,
+        "tx_bytes_per_s": 13318233.940173436,
+        "rx_packets_per_s": 14083.422649126813,
+        "tx_packets_per_s": 11842.12995411712,
+        "disks": {}
+      },
+      "10.206.0.6": {
+        "node": {
+          "busy_cores": 5.003338476566028,
+          "max_rss_mib": 1859.4375,
+          "write_MBps": 38.1614581883753
+        },
+        "host_idle_pct": 37.077913546183154,
+        "host_iowait_pct": 0.02627775587964788,
+        "rx_bytes_per_s": 13251309.352108594,
+        "tx_bytes_per_s": 13658467.229587369,
+        "rx_packets_per_s": 14163.490460168703,
+        "tx_packets_per_s": 11906.528049160339,
+        "disks": {}
+      },
+      "10.206.0.14": {
+        "node": {
+          "busy_cores": 4.839526008743248,
+          "max_rss_mib": 1353.69140625,
+          "write_MBps": 38.064613196111615
+        },
+        "host_idle_pct": 39.11671924290221,
+        "host_iowait_pct": 0.04600420609884332,
+        "rx_bytes_per_s": 13150580.89320767,
+        "tx_bytes_per_s": 12846546.518097315,
+        "rx_packets_per_s": 14563.886237832527,
+        "tx_packets_per_s": 12126.06294980927,
+        "disks": {}
+      }
+    },
+    "criterion_version": "net-backlog-v2",
+    "slope_acceptance_passed": false,
+    "sustainable": false
+  },
+  {
+    "name": "parallel-solidity-20000",
+    "configuration": "parallel-v1",
+    "complete": true,
+    "workload": "solidity",
+    "target_tps": 20000,
+    "warmup_s": 5,
+    "measure_s": 20,
+    "users": 1024,
+    "requested": 500000,
+    "submitted": 500000,
+    "success": 499882,
+    "failures": 118,
+    "unresolved": 0,
+    "actual_send_tps": 19999.9,
+    "receipt_tps": 15395.8,
+    "overall_tps": 3696.4330937206432,
+    "p50_ms": 1055.043054,
+    "p95_ms": 7467.375205,
+    "p99_ms": 10910.188191,
+    "scheduled_p99_ms": 10910.230635,
+    "send_s": 25.000750763,
+    "drain_s": 110.232861567,
+    "balance_mismatches": 204,
+    "balances_checked": 1024,
+    "presigned": true,
+    "start_epoch_ms": 1790758545456,
+    "queried_receipts": null,
+    "recovered_callback_failures": null,
+    "funding_delayed_receipts": null,
+    "distributed": null,
+    "driver_count": null,
+    "start_skew_ms": null,
+    "max_driver_scheduled_p99_ms": null,
+    "phase": null,
+    "common_chain_samples": 20,
+    "common_chain_tps": 10288.92805251682,
+    "common_chain_window_s": 18.995176076889038,
+    "pending_slope_per_node": 5048.382694450367,
+    "pending_net_growth_per_node": 4728.653192601027,
+    "pending_series": [
+      {
+        "elapsed_s": 0.4957916736602783,
+        "pending": 4986.1
+      },
+      {
+        "elapsed_s": 1.4927589893341064,
+        "pending": 3173.7
+      },
+      {
+        "elapsed_s": 2.49953556060791,
+        "pending": 3724.1
+      },
+      {
+        "elapsed_s": 3.4909939765930176,
+        "pending": 6402.2
+      },
+      {
+        "elapsed_s": 4.4909889698028564,
+        "pending": 4259.9
+      },
+      {
+        "elapsed_s": 5.4966816902160645,
+        "pending": 9885
+      },
+      {
+        "elapsed_s": 6.49420952796936,
+        "pending": 11122.4
+      },
+      {
+        "elapsed_s": 7.504427433013916,
+        "pending": 11362.3
+      },
+      {
+        "elapsed_s": 8.494223356246948,
+        "pending": 16569.2
+      },
+      {
+        "elapsed_s": 9.500277519226074,
+        "pending": 16079.8
+      },
+      {
+        "elapsed_s": 10.493980407714844,
+        "pending": 17726.7
+      },
+      {
+        "elapsed_s": 11.490352869033813,
+        "pending": 15644.8
+      },
+      {
+        "elapsed_s": 12.4918851852417,
+        "pending": 35762.1
+      },
+      {
+        "elapsed_s": 13.490198612213135,
+        "pending": 55767.9
+      },
+      {
+        "elapsed_s": 14.491694211959839,
+        "pending": 74922.4
+      },
+      {
+        "elapsed_s": 15.489087343215942,
+        "pending": 75643.2
+      },
+      {
+        "elapsed_s": 16.49271512031555,
+        "pending": 78743.4
+      },
+      {
+        "elapsed_s": 17.50582194328308,
+        "pending": 73357
+      },
+      {
+        "elapsed_s": 18.49451231956482,
+        "pending": 74860.5
+      },
+      {
+        "elapsed_s": 19.490967750549316,
+        "pending": 94807.7
+      }
+    ],
+    "pending_mean_per_node": 34240.02,
+    "pending_max_per_node": 94807.7,
+    "state_valid": true,
+    "count_valid": false,
+    "block_height_delta": 113,
+    "committed_count_delta": 501025,
+    "expected_count_delta": 500907,
+    "final_pending_max": 0,
+    "failed_count_delta": 0,
+    "resources": {
+      "10.206.0.11": {
+        "node": {
+          "busy_cores": 7.552925510938439,
+          "max_rss_mib": 3040.58203125,
+          "write_MBps": 49.859384700482224
+        },
+        "host_idle_pct": 5.095146166574738,
+        "host_iowait_pct": 0.013789299503585218,
+        "rx_bytes_per_s": 15371390.002345858,
+        "tx_bytes_per_s": 13150205.338615943,
+        "rx_packets_per_s": 19008.88828994231,
+        "tx_packets_per_s": 16923.04003094424,
+        "disks": {}
+      },
+      "10.206.0.8": {
+        "node": {
+          "busy_cores": 7.520555728335488,
+          "max_rss_mib": 2994.62890625,
+          "write_MBps": 47.52828631855878
+        },
+        "host_idle_pct": 5.531190678798193,
+        "host_iowait_pct": 0.026183151142239968,
+        "rx_bytes_per_s": 15397736.282792576,
+        "tx_bytes_per_s": 15258661.009791592,
+        "rx_packets_per_s": 19561.3706608064,
+        "tx_packets_per_s": 18476.80028800771,
+        "disks": {}
+      },
+      "10.206.0.16": {
+        "node": {
+          "busy_cores": 7.505219662221243,
+          "max_rss_mib": 2961.109375,
+          "write_MBps": 47.33046090841604
+        },
+        "host_idle_pct": 5.672736800733657,
+        "host_iowait_pct": 0.039303026333027645,
+        "rx_bytes_per_s": 15425748.927983977,
+        "tx_bytes_per_s": 16229665.591074686,
+        "rx_packets_per_s": 19679.041771345077,
+        "tx_packets_per_s": 18735.33951299907,
+        "disks": {}
+      },
+      "10.206.0.15": {
+        "node": {
+          "busy_cores": 7.514097052794867,
+          "max_rss_mib": 3036.68359375,
+          "write_MBps": 47.331553141303516
+        },
+        "host_idle_pct": 5.618492567611813,
+        "host_iowait_pct": 0.026193438543644816,
+        "rx_bytes_per_s": 15425567.02773103,
+        "tx_bytes_per_s": 14726653.658528147,
+        "rx_packets_per_s": 19475.771198890998,
+        "tx_packets_per_s": 18312.993939656033,
+        "disks": {}
+      },
+      "10.206.0.2": {
+        "node": {
+          "busy_cores": 6.556726138528268,
+          "max_rss_mib": 2815.5390625,
+          "write_MBps": 45.01686598353415
+        },
+        "driver": {
+          "busy_cores": 0.9659339055915432,
+          "max_rss_mib": 2074.0859375,
+          "write_MBps": 0.00045346306903185795
+        },
+        "host_idle_pct": 5.066018068102849,
+        "host_iowait_pct": 0.01389854065323141,
+        "rx_bytes_per_s": 23651930.126550417,
+        "tx_bytes_per_s": 26132073.038068593,
+        "rx_packets_per_s": 34643.814583610045,
+        "tx_packets_per_s": 30924.00034545808,
+        "disks": {}
+      },
+      "10.206.0.17": {
+        "node": {
+          "busy_cores": 7.52357113421132,
+          "max_rss_mib": 3126.20703125,
+          "write_MBps": 47.22029698923814
+        },
+        "host_idle_pct": 5.462624150548876,
+        "host_iowait_pct": 0.026136957658128592,
+        "rx_bytes_per_s": 15301942.783326007,
+        "tx_bytes_per_s": 15071341.444522643,
+        "rx_packets_per_s": 19283.506893610564,
+        "tx_packets_per_s": 17938.437640193737,
+        "disks": {}
+      },
+      "10.206.0.4": {
+        "node": {
+          "busy_cores": 7.531585858555016,
+          "max_rss_mib": 2931.20703125,
+          "write_MBps": 47.604011510889976
+        },
+        "host_idle_pct": 5.3309785452642595,
+        "host_iowait_pct": 0.013082155939298797,
+        "rx_bytes_per_s": 15374432.493174452,
+        "tx_bytes_per_s": 15450183.429571567,
+        "rx_packets_per_s": 19628.68059970097,
+        "tx_packets_per_s": 18468.105682156125,
+        "disks": {}
+      },
+      "10.206.0.12": {
+        "node": {
+          "busy_cores": 7.504258951883411,
+          "max_rss_mib": 2893.953125,
+          "write_MBps": 47.410003913959855
+        },
+        "host_idle_pct": 5.724519700423315,
+        "host_iowait_pct": 0.013025073266037121,
+        "rx_bytes_per_s": 15392010.466429092,
+        "tx_bytes_per_s": 15502896.625559378,
+        "rx_packets_per_s": 19487.402686092148,
+        "tx_packets_per_s": 18462.901813657092,
+        "disks": {}
+      },
+      "10.206.0.6": {
+        "node": {
+          "busy_cores": 7.516651261683998,
+          "max_rss_mib": 3038.58984375,
+          "write_MBps": 47.41946574511856
+        },
+        "host_idle_pct": 5.56608087802966,
+        "host_iowait_pct": 0.01959887633109035,
+        "rx_bytes_per_s": 15489833.858596293,
+        "tx_bytes_per_s": 14873763.253561169,
+        "rx_packets_per_s": 19623.067822465808,
+        "tx_packets_per_s": 18567.83957035424,
+        "disks": {}
+      },
+      "10.206.0.14": {
+        "node": {
+          "busy_cores": 7.503584837454638,
+          "max_rss_mib": 2974.0546875,
+          "write_MBps": 47.45128988604491
+        },
+        "host_idle_pct": 5.727908039971262,
+        "host_iowait_pct": 0.019593756123048787,
+        "rx_bytes_per_s": 15521000.058732364,
+        "tx_bytes_per_s": 14595470.659890497,
+        "rx_packets_per_s": 19975.985188390794,
+        "tx_packets_per_s": 18578.19582209075,
+        "disks": {}
+      }
+    },
+    "criterion_version": "net-backlog-v2",
+    "slope_acceptance_passed": false,
+    "sustainable": false
+  },
+  {
+    "name": "parallel-solidity-40000",
+    "configuration": "parallel-v1",
+    "complete": true,
+    "workload": "solidity",
+    "target_tps": 40000,
+    "warmup_s": 5,
+    "measure_s": 20,
+    "users": 1024,
+    "requested": 1000000,
+    "submitted": 1000000,
+    "success": 1000000,
+    "failures": 0,
+    "unresolved": 0,
+    "actual_send_tps": 22579.8,
+    "receipt_tps": 22579.95,
+    "overall_tps": 21822.586687307226,
+    "p50_ms": 3141.456564,
+    "p95_ms": 11779.485744,
+    "p99_ms": 17801.390689,
+    "scheduled_p99_ms": 24400.265677,
+    "send_s": 43.323941129,
+    "drain_s": 2.500140788,
+    "balance_mismatches": 0,
+    "balances_checked": 1024,
+    "presigned": true,
+    "start_epoch_ms": 1790758694336,
+    "queried_receipts": null,
+    "recovered_callback_failures": null,
+    "funding_delayed_receipts": null,
+    "distributed": null,
+    "driver_count": null,
+    "start_skew_ms": null,
+    "max_driver_scheduled_p99_ms": null,
+    "phase": null,
+    "common_chain_samples": 0,
+    "common_chain_tps": null,
+    "state_valid": true,
+    "count_valid": true,
+    "block_height_delta": 104,
+    "committed_count_delta": 1001025,
+    "expected_count_delta": 1001025,
+    "final_pending_max": 0,
+    "failed_count_delta": 0,
+    "resources": {
+      "10.206.0.11": {
+        "node": {
+          "busy_cores": 7.249536305824316,
+          "max_rss_mib": 5371.60546875,
+          "write_MBps": 58.47223939617675
+        },
+        "host_idle_pct": 8.766511138857856,
+        "host_iowait_pct": 0.039429585332194254,
+        "rx_bytes_per_s": 17176560.694126733,
+        "tx_bytes_per_s": 12721051.599566398,
+        "rx_packets_per_s": 17196.036505218428,
+        "tx_packets_per_s": 12806.027862947622,
+        "disks": {}
+      },
+      "10.206.0.8": {
+        "node": {
+          "busy_cores": 7.1749802251701125,
+          "max_rss_mib": 5338.34375,
+          "write_MBps": 62.97020564863328
+        },
+        "host_idle_pct": 9.727779599868809,
+        "host_iowait_pct": 0.05247622171203673,
+        "rx_bytes_per_s": 17782330.996848784,
+        "tx_bytes_per_s": 17233253.732807554,
+        "rx_packets_per_s": 18843.60085648817,
+        "tx_packets_per_s": 16120.215831815549,
+        "disks": {}
+      },
+      "10.206.0.16": {
+        "node": {
+          "busy_cores": 7.172928276306501,
+          "max_rss_mib": 5195.57421875,
+          "write_MBps": 61.45145938333405
+        },
+        "host_idle_pct": 9.744566288003153,
+        "host_iowait_pct": 0.04596493532076958,
+        "rx_bytes_per_s": 17962643.73600104,
+        "tx_bytes_per_s": 19630746.621811945,
+        "rx_packets_per_s": 19531.32531215038,
+        "tx_packets_per_s": 17440.58570430889,
+        "disks": {}
+      },
+      "10.206.0.15": {
+        "node": {
+          "busy_cores": 7.186251903883905,
+          "max_rss_mib": 5317.41015625,
+          "write_MBps": 61.26076903872026
+        },
+        "host_idle_pct": 9.580681147056893,
+        "host_iowait_pct": 0.039372662248179015,
+        "rx_bytes_per_s": 17745132.54185634,
+        "tx_bytes_per_s": 17872884.649750955,
+        "rx_packets_per_s": 18867.79514077798,
+        "tx_packets_per_s": 16328.621310380671,
+        "disks": {}
+      },
+      "10.206.0.2": {
+        "node": {
+          "busy_cores": 6.630739069724827,
+          "max_rss_mib": 5753.26171875,
+          "write_MBps": 59.42629942492784
+        },
+        "driver": {
+          "busy_cores": 1.021203050842765,
+          "max_rss_mib": 2068.76953125,
+          "write_MBps": 0.0008593421050337884
+        },
+        "host_idle_pct": 3.3965968586387434,
+        "host_iowait_pct": 0.032722513089005235,
+        "rx_bytes_per_s": 29459395.440351795,
+        "tx_bytes_per_s": 28244601.295963287,
+        "rx_packets_per_s": 37719.737032810925,
+        "tx_packets_per_s": 28357.18801444231,
+        "disks": {}
+      },
+      "10.206.0.17": {
+        "node": {
+          "busy_cores": 7.234003432100592,
+          "max_rss_mib": 5504.28125,
+          "write_MBps": 59.44280148709175
+        },
+        "host_idle_pct": 8.981092436974789,
+        "host_iowait_pct": 0.026260504201680673,
+        "rx_bytes_per_s": 17377120.648231383,
+        "tx_bytes_per_s": 15853083.632806,
+        "rx_packets_per_s": 17956.911355893433,
+        "tx_packets_per_s": 14726.457839196439,
+        "disks": {}
+      },
+      "10.206.0.4": {
+        "node": {
+          "busy_cores": 7.165313657296002,
+          "max_rss_mib": 5272.75,
+          "write_MBps": 59.78991997156771
+        },
+        "host_idle_pct": 9.88440824904768,
+        "host_iowait_pct": 0.04597399185603573,
+        "rx_bytes_per_s": 18136250.73323692,
+        "tx_bytes_per_s": 21610829.785320785,
+        "rx_packets_per_s": 20115.57363240013,
+        "tx_packets_per_s": 18482.75127759147,
+        "disks": {}
+      },
+      "10.206.0.12": {
+        "node": {
+          "busy_cores": 7.14039467735513,
+          "max_rss_mib": 5211.734375,
+          "write_MBps": 62.28657685446877
+        },
+        "host_idle_pct": 10.19672131147541,
+        "host_iowait_pct": 0.03278688524590164,
+        "rx_bytes_per_s": 17588022.014516566,
+        "tx_bytes_per_s": 16886944.176695663,
+        "rx_packets_per_s": 18462.458115842506,
+        "tx_packets_per_s": 15694.118228398323,
+        "disks": {}
+      },
+      "10.206.0.6": {
+        "node": {
+          "busy_cores": 7.1712825059390095,
+          "max_rss_mib": 5378.25,
+          "write_MBps": 59.9125868215909
+        },
+        "host_idle_pct": 9.794659843862757,
+        "host_iowait_pct": 0.0196811651249754,
+        "rx_bytes_per_s": 17658380.029119123,
+        "tx_bytes_per_s": 17763735.055160265,
+        "rx_packets_per_s": 18763.272536306864,
+        "tx_packets_per_s": 16321.792795062196,
+        "disks": {}
+      },
+      "10.206.0.14": {
+        "node": {
+          "busy_cores": 7.225081811691139,
+          "max_rss_mib": 5300.34375,
+          "write_MBps": 61.22614791347311
+        },
+        "host_idle_pct": 9.089118014053984,
+        "host_iowait_pct": 0.03283640901031063,
+        "rx_bytes_per_s": 17872140.910318233,
+        "tx_bytes_per_s": 18816941.614925664,
+        "rx_packets_per_s": 19842.183348062823,
+        "tx_packets_per_s": 17356.360546489766,
+        "disks": {}
+      }
+    },
+    "criterion_version": "net-backlog-v2",
+    "slope_acceptance_passed": false,
+    "sustainable": false
+  },
+  {
+    "name": "scan-native-10000",
+    "configuration": "serial-v1",
+    "complete": true,
+    "workload": "native",
+    "target_tps": 10000,
+    "warmup_s": 5,
+    "measure_s": 20,
+    "users": 1024,
+    "requested": 250000,
+    "submitted": 250000,
+    "success": 249996,
+    "failures": 4,
+    "unresolved": 0,
+    "actual_send_tps": 5405.75,
+    "receipt_tps": 2464.0,
+    "overall_tps": 1679.0616590426548,
+    "p50_ms": 32108.937546,
+    "p95_ms": 37282.580609,
+    "p99_ms": 37704.997258,
+    "scheduled_p99_ms": null,
+    "send_s": 58.674514023,
+    "drain_s": 90.215789471,
+    "balance_mismatches": 8,
+    "balances_checked": 1024,
+    "presigned": true,
+    "start_epoch_ms": 1790758281262,
+    "queried_receipts": null,
+    "recovered_callback_failures": null,
+    "funding_delayed_receipts": null,
+    "distributed": null,
+    "driver_count": null,
+    "start_skew_ms": null,
+    "max_driver_scheduled_p99_ms": null,
+    "phase": null,
+    "common_chain_samples": 20,
+    "common_chain_tps": 2461.292648028903,
+    "common_chain_window_s": 18.9953031539917,
+    "pending_slope_per_node": 2305.7874785564227,
+    "pending_net_growth_per_node": 2798.1232817982554,
+    "pending_series": [
+      {
+        "elapsed_s": 0.8013315200805664,
+        "pending": 47300.1
+      },
+      {
+        "elapsed_s": 1.8021533489227295,
+        "pending": 55929.2
+      },
+      {
+        "elapsed_s": 2.799616575241089,
+        "pending": 63746
+      },
+      {
+        "elapsed_s": 3.8013505935668945,
+        "pending": 71466.1
+      },
+      {
+        "elapsed_s": 4.800442218780518,
+        "pending": 79206.6
+      },
+      {
+        "elapsed_s": 5.804030179977417,
+        "pending": 87127.1
+      },
+      {
+        "elapsed_s": 6.801560640335083,
+        "pending": 94837.3
+      },
+      {
+        "elapsed_s": 7.805983781814575,
+        "pending": 100477.2
+      },
+      {
+        "elapsed_s": 8.796221494674683,
+        "pending": 100372.6
+      },
+      {
+        "elapsed_s": 9.79478931427002,
+        "pending": 100263.6
+      },
+      {
+        "elapsed_s": 10.822733879089355,
+        "pending": 100214
+      },
+      {
+        "elapsed_s": 11.79504132270813,
+        "pending": 100506.6
+      },
+      {
+        "elapsed_s": 12.794570446014404,
+        "pending": 100342.7
+      },
+      {
+        "elapsed_s": 13.799597024917603,
+        "pending": 99667.3
+      },
+      {
+        "elapsed_s": 14.794960975646973,
+        "pending": 100548.8
+      },
+      {
+        "elapsed_s": 15.794352054595947,
+        "pending": 100232.9
+      },
+      {
+        "elapsed_s": 16.80977702140808,
+        "pending": 100383.1
+      },
+      {
+        "elapsed_s": 17.79947304725647,
+        "pending": 100223.4
+      },
+      {
+        "elapsed_s": 18.800353288650513,
+        "pending": 99896.3
+      },
+      {
+        "elapsed_s": 19.796634674072266,
+        "pending": 100451.3
+      }
+    ],
+    "pending_mean_per_node": 90159.61,
+    "pending_max_per_node": 100548.8,
+    "state_valid": true,
+    "count_valid": false,
+    "block_height_delta": 146,
+    "committed_count_delta": 251024,
+    "expected_count_delta": 251020,
+    "final_pending_max": 0,
+    "failed_count_delta": 0,
+    "resources": {
+      "10.206.0.11": {
+        "node": {
+          "busy_cores": 4.196248144392374,
+          "max_rss_mib": 2714.93359375,
+          "write_MBps": 10.719762704166705
+        },
+        "host_idle_pct": 46.88606267208601,
+        "host_iowait_pct": 0.07211223285695555,
+        "rx_bytes_per_s": 3831492.437508142,
+        "tx_bytes_per_s": 1641128.4997141676,
+        "rx_packets_per_s": 3943.9377655365115,
+        "tx_packets_per_s": 2018.9555221931423,
+        "disks": {}
+      },
+      "10.206.0.8": {
+        "node": {
+          "busy_cores": 4.200767806110657,
+          "max_rss_mib": 2724.84375,
+          "write_MBps": 5.572438569246139
+        },
+        "host_idle_pct": 46.74764890282132,
+        "host_iowait_pct": 0.019592476489028215,
+        "rx_bytes_per_s": 4509697.5523773255,
+        "tx_bytes_per_s": 4701110.3861180125,
+        "rx_packets_per_s": 6102.217710698878,
+        "tx_packets_per_s": 5972.430208927781,
+        "disks": {}
+      },
+      "10.206.0.16": {
+        "node": {
+          "busy_cores": 4.213571216037843,
+          "max_rss_mib": 2756.95703125,
+          "write_MBps": 5.3505683306002565
+        },
+        "host_idle_pct": 46.661434830946305,
+        "host_iowait_pct": 0.013079589300895951,
+        "rx_bytes_per_s": 4427822.752900433,
+        "tx_bytes_per_s": 5046451.937646985,
+        "rx_packets_per_s": 5983.334141298402,
+        "tx_packets_per_s": 5892.383177362989,
+        "disks": {}
+      },
+      "10.206.0.15": {
+        "node": {
+          "busy_cores": 4.2184013948137,
+          "max_rss_mib": 2719.33203125,
+          "write_MBps": 5.32831247328184
+        },
+        "host_idle_pct": 46.492201266070616,
+        "host_iowait_pct": 0.013052274358807021,
+        "rx_bytes_per_s": 4405686.760219788,
+        "tx_bytes_per_s": 4872741.242248982,
+        "rx_packets_per_s": 5885.3367829286,
+        "tx_packets_per_s": 5713.901874364164,
+        "disks": {}
+      },
+      "10.206.0.2": {
+        "node": {
+          "busy_cores": 4.088997767657627,
+          "max_rss_mib": 2905.3515625,
+          "write_MBps": 5.424246288706551
+        },
+        "driver": {
+          "busy_cores": 0.2141606019517733,
+          "max_rss_mib": 832.84765625,
+          "write_MBps": 0.0
+        },
+        "host_idle_pct": 45.05645108660184,
+        "host_iowait_pct": 0.013052274358807021,
+        "rx_bytes_per_s": 5792437.704384648,
+        "tx_bytes_per_s": 6681315.377032286,
+        "rx_packets_per_s": 8231.325724428749,
+        "tx_packets_per_s": 7457.093156098196,
+        "disks": {}
+      },
+      "10.206.0.17": {
+        "node": {
+          "busy_cores": 4.293330398075778,
+          "max_rss_mib": 2720.7265625,
+          "write_MBps": 15.283690843764344
+        },
+        "host_idle_pct": 45.74614627746802,
+        "host_iowait_pct": 0.07215480485405051,
+        "rx_bytes_per_s": 3933102.861060983,
+        "tx_bytes_per_s": 800097.0617308273,
+        "rx_packets_per_s": 3985.388820667017,
+        "tx_packets_per_s": 1996.8160495196275,
+        "disks": {}
+      },
+      "10.206.0.4": {
+        "node": {
+          "busy_cores": 4.203668138202212,
+          "max_rss_mib": 2835.796875,
+          "write_MBps": 5.318417904943122
+        },
+        "host_idle_pct": 46.98850574712644,
+        "host_iowait_pct": 0.026272577996715927,
+        "rx_bytes_per_s": 4452413.582811746,
+        "tx_bytes_per_s": 5179272.813197195,
+        "rx_packets_per_s": 6085.550156293939,
+        "tx_packets_per_s": 5984.922618153067,
+        "disks": {}
+      },
+      "10.206.0.12": {
+        "node": {
+          "busy_cores": 4.214892378615524,
+          "max_rss_mib": 2730.0546875,
+          "write_MBps": 5.350266960802553
+        },
+        "host_idle_pct": 46.54699738903394,
+        "host_iowait_pct": 0.03263707571801567,
+        "rx_bytes_per_s": 4406829.156260666,
+        "tx_bytes_per_s": 4835944.9021061715,
+        "rx_packets_per_s": 5904.840506498001,
+        "tx_packets_per_s": 5735.320538915507,
+        "disks": {}
+      },
+      "10.206.0.6": {
+        "node": {
+          "busy_cores": 4.265980614505839,
+          "max_rss_mib": 2717.74609375,
+          "write_MBps": 6.252412771745224
+        },
+        "host_idle_pct": 46.172028890347995,
+        "host_iowait_pct": 0.01969796454366382,
+        "rx_bytes_per_s": 4524754.956567919,
+        "tx_bytes_per_s": 5451476.040493792,
+        "rx_packets_per_s": 6263.056138669491,
+        "tx_packets_per_s": 6348.1866886647385,
+        "disks": {}
+      },
+      "10.206.0.14": {
+        "node": {
+          "busy_cores": 4.21272165989717,
+          "max_rss_mib": 2715.60546875,
+          "write_MBps": 5.370397317528609
+        },
+        "host_idle_pct": 46.61954316381962,
+        "host_iowait_pct": 0.0785391714117416,
+        "rx_bytes_per_s": 4472812.164864228,
+        "tx_bytes_per_s": 5218783.3975263955,
+        "rx_packets_per_s": 6125.093536820819,
+        "tx_packets_per_s": 6065.594488694872,
+        "disks": {}
+      }
+    },
+    "criterion_version": "net-backlog-v2",
+    "slope_acceptance_passed": false,
+    "sustainable": false
+  },
+  {
+    "name": "scan-solidity-10000",
+    "configuration": "serial-v1",
+    "complete": true,
+    "workload": "solidity",
+    "target_tps": 10000,
+    "warmup_s": 5,
+    "measure_s": 20,
+    "users": 1024,
+    "requested": 250000,
+    "submitted": 250000,
+    "success": 250000,
+    "failures": 0,
+    "unresolved": 0,
+    "actual_send_tps": 10000.0,
+    "receipt_tps": 9981.0,
+    "overall_tps": 9943.676850574266,
+    "p50_ms": 94.015153,
+    "p95_ms": 142.573558,
+    "p99_ms": 149.1938,
+    "scheduled_p99_ms": null,
+    "send_s": 25.0003716,
+    "drain_s": 0.14123384,
+    "balance_mismatches": 0,
+    "balances_checked": 1024,
+    "presigned": true,
+    "start_epoch_ms": 1790757961438,
+    "queried_receipts": null,
+    "recovered_callback_failures": null,
+    "funding_delayed_receipts": null,
+    "distributed": null,
+    "driver_count": null,
+    "start_skew_ms": null,
+    "max_driver_scheduled_p99_ms": null,
+    "phase": null,
+    "common_chain_samples": 20,
+    "common_chain_tps": 10042.143555968963,
+    "common_chain_window_s": 19.006001949310303,
+    "pending_slope_per_node": -10.657120939128477,
+    "pending_net_growth_per_node": -42.50762481003099,
+    "pending_series": [
+      {
+        "elapsed_s": 0.4212474822998047,
+        "pending": 1347.5
+      },
+      {
+        "elapsed_s": 1.4207327365875244,
+        "pending": 1379.9
+      },
+      {
+        "elapsed_s": 2.426880359649658,
+        "pending": 536.2
+      },
+      {
+        "elapsed_s": 3.4212093353271484,
+        "pending": 430.2
+      },
+      {
+        "elapsed_s": 4.423959970474243,
+        "pending": 515.6
+      },
+      {
+        "elapsed_s": 5.419756174087524,
+        "pending": 657.5
+      },
+      {
+        "elapsed_s": 6.418998956680298,
+        "pending": 801.1
+      },
+      {
+        "elapsed_s": 7.418712139129639,
+        "pending": 864.7
+      },
+      {
+        "elapsed_s": 8.417986154556274,
+        "pending": 869
+      },
+      {
+        "elapsed_s": 9.419050693511963,
+        "pending": 962.7
+      },
+      {
+        "elapsed_s": 10.420194864273071,
+        "pending": 967.3
+      },
+      {
+        "elapsed_s": 11.419554471969604,
+        "pending": 1055.9
+      },
+      {
+        "elapsed_s": 12.42529034614563,
+        "pending": 1236.3
+      },
+      {
+        "elapsed_s": 13.420640230178833,
+        "pending": 1262.7
+      },
+      {
+        "elapsed_s": 14.421186447143555,
+        "pending": 1166.2
+      },
+      {
+        "elapsed_s": 15.423332214355469,
+        "pending": 882.3
+      },
+      {
+        "elapsed_s": 16.42699432373047,
+        "pending": 484.2
+      },
+      {
+        "elapsed_s": 17.424002647399902,
+        "pending": 535
+      },
+      {
+        "elapsed_s": 18.42238998413086,
+        "pending": 570.2
+      },
+      {
+        "elapsed_s": 19.427249431610107,
+        "pending": 539.6
+      }
+    ],
+    "pending_mean_per_node": 853.205,
+    "pending_max_per_node": 1379.9,
+    "state_valid": true,
+    "count_valid": true,
+    "block_height_delta": 231,
+    "committed_count_delta": 251025,
+    "expected_count_delta": 251025,
+    "final_pending_max": 0,
+    "failed_count_delta": 0,
+    "resources": {
+      "10.206.0.11": {
+        "node": {
+          "busy_cores": 7.219771145030635,
+          "max_rss_mib": 595.11328125,
+          "write_MBps": 18.34425656613691
+        },
+        "host_idle_pct": 9.26421623033231,
+        "host_iowait_pct": 0.01958608082522687,
+        "rx_bytes_per_s": 8109712.0306011345,
+        "tx_bytes_per_s": 7217107.535555483,
+        "rx_packets_per_s": 10516.541006624708,
+        "tx_packets_per_s": 9492.733994754144,
+        "disks": {}
+      },
+      "10.206.0.8": {
+        "node": {
+          "busy_cores": 7.1754393685767095,
+          "max_rss_mib": 584.69140625,
+          "write_MBps": 18.431425802282373
+        },
+        "host_idle_pct": 9.785514049155747,
+        "host_iowait_pct": 0.04563530869026664,
+        "rx_bytes_per_s": 8169903.13826875,
+        "tx_bytes_per_s": 7868242.344296586,
+        "rx_packets_per_s": 10805.154454832007,
+        "tx_packets_per_s": 10075.274368646547,
+        "disks": {}
+      },
+      "10.206.0.16": {
+        "node": {
+          "busy_cores": 7.1828374068055005,
+          "max_rss_mib": 588.21484375,
+          "write_MBps": 18.346505473906316
+        },
+        "host_idle_pct": 9.732949338918706,
+        "host_iowait_pct": 0.019636078020683335,
+        "rx_bytes_per_s": 8170661.045722119,
+        "tx_bytes_per_s": 7740608.803740936,
+        "rx_packets_per_s": 10766.013251697406,
+        "tx_packets_per_s": 10025.10102682467,
+        "disks": {}
+      },
+      "10.206.0.15": {
+        "node": {
+          "busy_cores": 7.187671965318463,
+          "max_rss_mib": 593.23828125,
+          "write_MBps": 18.37856022486334
+        },
+        "host_idle_pct": 9.634162218461137,
+        "host_iowait_pct": 0.013019138133055592,
+        "rx_bytes_per_s": 8151785.417332082,
+        "tx_bytes_per_s": 7674328.596636011,
+        "rx_packets_per_s": 10687.271798845075,
+        "tx_packets_per_s": 9916.687845102146,
+        "disks": {}
+      },
+      "10.206.0.2": {
+        "node": {
+          "busy_cores": 6.745364746660713,
+          "max_rss_mib": 587.88671875,
+          "write_MBps": 18.381234671405764
+        },
+        "driver": {
+          "busy_cores": 0.48687084739061526,
+          "max_rss_mib": 754.11328125,
+          "write_MBps": 0.0008595788753930865
+        },
+        "host_idle_pct": 8.569558101472994,
+        "host_iowait_pct": 0.05237315875613748,
+        "rx_bytes_per_s": 12645362.62979342,
+        "tx_bytes_per_s": 17048073.007632248,
+        "rx_packets_per_s": 20188.928626641173,
+        "tx_packets_per_s": 19450.857604971865,
+        "disks": {}
+      },
+      "10.206.0.17": {
+        "node": {
+          "busy_cores": 7.205668859103953,
+          "max_rss_mib": 591.45703125,
+          "write_MBps": 18.40845828544322
+        },
+        "host_idle_pct": 9.39592951427271,
+        "host_iowait_pct": 0.026009493465114768,
+        "rx_bytes_per_s": 8123209.5898146285,
+        "tx_bytes_per_s": 7411633.728391058,
+        "rx_packets_per_s": 10582.223871030661,
+        "tx_packets_per_s": 9684.034728278717,
+        "disks": {}
+      },
+      "10.206.0.4": {
+        "node": {
+          "busy_cores": 7.17434083976,
+          "max_rss_mib": 588.18359375,
+          "write_MBps": 18.388672473756074
+        },
+        "host_idle_pct": 9.826551904016693,
+        "host_iowait_pct": 0.02608242044861763,
+        "rx_bytes_per_s": 8163883.478476983,
+        "tx_bytes_per_s": 7706659.923292082,
+        "rx_packets_per_s": 10795.262365580633,
+        "tx_packets_per_s": 10014.420294083195,
+        "disks": {}
+      },
+      "10.206.0.12": {
+        "node": {
+          "busy_cores": 7.187031184256412,
+          "max_rss_mib": 587.90625,
+          "write_MBps": 18.384609696856902
+        },
+        "host_idle_pct": 9.635737939094865,
+        "host_iowait_pct": 0.01947925459385754,
+        "rx_bytes_per_s": 8140683.0342687955,
+        "tx_bytes_per_s": 7567651.41114757,
+        "rx_packets_per_s": 10670.788653347227,
+        "tx_packets_per_s": 9838.758042029314,
+        "disks": {}
+      },
+      "10.206.0.6": {
+        "node": {
+          "busy_cores": 7.178599445688052,
+          "max_rss_mib": 580.05859375,
+          "write_MBps": 18.317708689799076
+        },
+        "host_idle_pct": 9.755301794453507,
+        "host_iowait_pct": 0.01957585644371941,
+        "rx_bytes_per_s": 8148891.178285053,
+        "tx_bytes_per_s": 7683648.589196294,
+        "rx_packets_per_s": 10698.869126330399,
+        "tx_packets_per_s": 9879.642633098898,
+        "disks": {}
+      },
+      "10.206.0.14": {
+        "node": {
+          "busy_cores": 7.197236329591957,
+          "max_rss_mib": 595.09375,
+          "write_MBps": 18.36207946482656
+        },
+        "host_idle_pct": 9.520088558963339,
+        "host_iowait_pct": 0.03255844240411539,
+        "rx_bytes_per_s": 8148980.665288554,
+        "tx_bytes_per_s": 7553771.110834274,
+        "rx_packets_per_s": 10697.784340009954,
+        "tx_packets_per_s": 9834.262980690319,
+        "disks": {}
+      }
+    },
+    "criterion_version": "net-backlog-v2",
+    "slope_acceptance_passed": false,
+    "sustainable": false
+  },
+  {
+    "name": "scan-solidity-20000",
+    "configuration": "serial-v1",
+    "complete": true,
+    "workload": "solidity",
+    "target_tps": 20000,
+    "warmup_s": 5,
+    "measure_s": 20,
+    "users": 1024,
+    "requested": 500000,
+    "submitted": 500000,
+    "success": 500000,
+    "failures": 0,
+    "unresolved": 0,
+    "actual_send_tps": 20000.0,
+    "receipt_tps": 20043.45,
+    "overall_tps": 19855.68430615362,
+    "p50_ms": 143.051001,
+    "p95_ms": 197.374874,
+    "p99_ms": 233.69654,
+    "scheduled_p99_ms": null,
+    "send_s": 25.002161236,
+    "drain_s": 0.179544531,
+    "balance_mismatches": 0,
+    "balances_checked": 1024,
+    "presigned": true,
+    "start_epoch_ms": 1790758024005,
+    "queried_receipts": null,
+    "recovered_callback_failures": null,
+    "funding_delayed_receipts": null,
+    "distributed": null,
+    "driver_count": null,
+    "start_skew_ms": null,
+    "max_driver_scheduled_p99_ms": null,
+    "phase": null,
+    "common_chain_samples": 20,
+    "common_chain_tps": 19964.002889188883,
+    "common_chain_window_s": 18.99599003791809,
+    "pending_slope_per_node": 13.619538029735986,
+    "pending_net_growth_per_node": 39.10298955291559,
+    "pending_series": [
+      {
+        "elapsed_s": 0.5816075801849365,
+        "pending": 2223.8
+      },
+      {
+        "elapsed_s": 1.583662986755371,
+        "pending": 3291.9
+      },
+      {
+        "elapsed_s": 2.580071210861206,
+        "pending": 1762.1
+      },
+      {
+        "elapsed_s": 3.581124782562256,
+        "pending": 2945.1
+      },
+      {
+        "elapsed_s": 4.587961673736572,
+        "pending": 1840
+      },
+      {
+        "elapsed_s": 5.584720611572266,
+        "pending": 2986.9
+      },
+      {
+        "elapsed_s": 6.58808445930481,
+        "pending": 1603.3
+      },
+      {
+        "elapsed_s": 7.585610628128052,
+        "pending": 2232.5
+      },
+      {
+        "elapsed_s": 8.580753326416016,
+        "pending": 3495.3
+      },
+      {
+        "elapsed_s": 9.576732397079468,
+        "pending": 1995.8
+      },
+      {
+        "elapsed_s": 10.579728364944458,
+        "pending": 2707.1
+      },
+      {
+        "elapsed_s": 11.58028268814087,
+        "pending": 2501.6
+      },
+      {
+        "elapsed_s": 12.582801818847656,
+        "pending": 2760.5
+      },
+      {
+        "elapsed_s": 13.576743841171265,
+        "pending": 2824.3
+      },
+      {
+        "elapsed_s": 14.581249952316284,
+        "pending": 3426
+      },
+      {
+        "elapsed_s": 15.580281734466553,
+        "pending": 1982.4
+      },
+      {
+        "elapsed_s": 16.58741044998169,
+        "pending": 3081.8
+      },
+      {
+        "elapsed_s": 17.5867977142334,
+        "pending": 1906.4
+      },
+      {
+        "elapsed_s": 18.58252263069153,
+        "pending": 2447.1
+      },
+      {
+        "elapsed_s": 19.577597618103027,
+        "pending": 2966.6
+      }
+    ],
+    "pending_mean_per_node": 2549.025,
+    "pending_max_per_node": 3495.3,
+    "state_valid": true,
+    "count_valid": true,
+    "block_height_delta": 213,
+    "committed_count_delta": 501025,
+    "expected_count_delta": 501025,
+    "final_pending_max": 0,
+    "failed_count_delta": 0,
+    "resources": {
+      "10.206.0.11": {
+        "node": {
+          "busy_cores": 7.437903227717434,
+          "max_rss_mib": 1169.6484375,
+          "write_MBps": 40.32367790782803
+        },
+        "host_idle_pct": 6.4633828511858225,
+        "host_iowait_pct": 0.039093041438623924,
+        "rx_bytes_per_s": 15967966.933731783,
+        "tx_bytes_per_s": 14427284.15106081,
+        "rx_packets_per_s": 19993.39243311715,
+        "tx_packets_per_s": 17998.5818411992,
+        "disks": {}
+      },
+      "10.206.0.8": {
+        "node": {
+          "busy_cores": 7.443413805823988,
+          "max_rss_mib": 1171.0625,
+          "write_MBps": 40.41791101794904
+        },
+        "host_idle_pct": 6.446129707112971,
+        "host_iowait_pct": 0.03922594142259414,
+        "rx_bytes_per_s": 16015897.221828716,
+        "tx_bytes_per_s": 15400402.536214948,
+        "rx_packets_per_s": 20295.729306002075,
+        "tx_packets_per_s": 18742.433031016186,
+        "disks": {}
+      },
+      "10.206.0.16": {
+        "node": {
+          "busy_cores": 7.430972455032575,
+          "max_rss_mib": 1160.95703125,
+          "write_MBps": 40.113814942153326
+        },
+        "host_idle_pct": 6.552557653361207,
+        "host_iowait_pct": 0.0391977526621807,
+        "rx_bytes_per_s": 16043211.474821283,
+        "tx_bytes_per_s": 15328522.80709869,
+        "rx_packets_per_s": 20292.710979009717,
+        "tx_packets_per_s": 18838.583188829707,
+        "disks": {}
+      },
+      "10.206.0.15": {
+        "node": {
+          "busy_cores": 7.421221233821201,
+          "max_rss_mib": 1159.6484375,
+          "write_MBps": 40.13577530077754
+        },
+        "host_idle_pct": 6.670586698026917,
+        "host_iowait_pct": 0.03266692800209069,
+        "rx_bytes_per_s": 16001620.005998116,
+        "tx_bytes_per_s": 15035161.089329876,
+        "rx_packets_per_s": 20066.327078380287,
+        "tx_packets_per_s": 18415.201157269883,
+        "disks": {}
+      },
+      "10.206.0.2": {
+        "node": {
+          "busy_cores": 6.530304837219092,
+          "max_rss_mib": 1214.92578125,
+          "write_MBps": 42.08296311264324
+        },
+        "driver": {
+          "busy_cores": 1.0250815915750409,
+          "max_rss_mib": 1074.95703125,
+          "write_MBps": 0.0004297578504699455
+        },
+        "host_idle_pct": 4.432277408421327,
+        "host_iowait_pct": 0.019554165037152915,
+        "rx_bytes_per_s": 25087818.018836245,
+        "tx_bytes_per_s": 32888702.83280121,
+        "rx_packets_per_s": 38745.1463637306,
+        "tx_packets_per_s": 36621.590696106956,
+        "disks": {}
+      },
+      "10.206.0.17": {
+        "node": {
+          "busy_cores": 7.437300402457838,
+          "max_rss_mib": 1178.76171875,
+          "write_MBps": 40.055656656416566
+        },
+        "host_idle_pct": 6.490792738670498,
+        "host_iowait_pct": 0.032649862870575946,
+        "rx_bytes_per_s": 15980033.688723017,
+        "tx_bytes_per_s": 14740361.861849673,
+        "rx_packets_per_s": 20030.492385689635,
+        "tx_packets_per_s": 18212.229075556537,
+        "disks": {}
+      },
+      "10.206.0.4": {
+        "node": {
+          "busy_cores": 7.414362081949717,
+          "max_rss_mib": 1163.09375,
+          "write_MBps": 39.82478740145605
+        },
+        "host_idle_pct": 6.7874190806251224,
+        "host_iowait_pct": 0.03269469692015955,
+        "rx_bytes_per_s": 16052895.32816967,
+        "tx_bytes_per_s": 15248160.63057735,
+        "rx_packets_per_s": 20379.786941491664,
+        "tx_packets_per_s": 18821.0285711769,
+        "disks": {}
+      },
+      "10.206.0.12": {
+        "node": {
+          "busy_cores": 7.431826592736945,
+          "max_rss_mib": 1163.0703125,
+          "write_MBps": 40.1351951418311
+        },
+        "host_idle_pct": 6.576629477392836,
+        "host_iowait_pct": 0.03914660403210021,
+        "rx_bytes_per_s": 16012795.23891766,
+        "tx_bytes_per_s": 15119479.919636112,
+        "rx_packets_per_s": 20156.894124602008,
+        "tx_packets_per_s": 18617.41058787643,
+        "disks": {}
+      },
+      "10.206.0.6": {
+        "node": {
+          "busy_cores": 7.439244792218366,
+          "max_rss_mib": 1167.40234375,
+          "write_MBps": 40.21099266146474
+        },
+        "host_idle_pct": 6.496474275267694,
+        "host_iowait_pct": 0.019587359623922697,
+        "rx_bytes_per_s": 15994163.475996787,
+        "tx_bytes_per_s": 14957881.452589182,
+        "rx_packets_per_s": 20033.738217328395,
+        "tx_packets_per_s": 18333.061986185094,
+        "disks": {}
+      },
+      "10.206.0.14": {
+        "node": {
+          "busy_cores": 7.437007302606861,
+          "max_rss_mib": 1172.26953125,
+          "write_MBps": 39.84631044867863
+        },
+        "host_idle_pct": 6.477917672385674,
+        "host_iowait_pct": 0.03261791375823602,
+        "rx_bytes_per_s": 16075845.902793415,
+        "tx_bytes_per_s": 14936502.682579294,
+        "rx_packets_per_s": 20373.274462004778,
+        "tx_packets_per_s": 18631.674212814305,
+        "disks": {}
+      }
+    },
+    "criterion_version": "net-backlog-v2",
+    "slope_acceptance_passed": false,
+    "sustainable": false
+  },
+  {
+    "name": "scan-solidity-25000",
+    "configuration": "serial-v1",
+    "complete": true,
+    "workload": "solidity",
+    "target_tps": 25000,
+    "warmup_s": 5,
+    "measure_s": 30,
+    "users": 1024,
+    "requested": 875000,
+    "submitted": 875000,
+    "success": 875000,
+    "failures": 0,
+    "unresolved": 0,
+    "actual_send_tps": 24926.666666666668,
+    "receipt_tps": 22666.666666666668,
+    "overall_tps": 23883.576551089147,
+    "p50_ms": 2780.960163,
+    "p95_ms": 9472.989562,
+    "p99_ms": 13911.632915,
+    "scheduled_p99_ms": null,
+    "send_s": 35.088440026,
+    "drain_s": 1.547613964,
+    "balance_mismatches": 0,
+    "balances_checked": 1024,
+    "presigned": true,
+    "start_epoch_ms": 1790758181254,
+    "queried_receipts": null,
+    "recovered_callback_failures": null,
+    "funding_delayed_receipts": null,
+    "distributed": null,
+    "driver_count": null,
+    "start_skew_ms": null,
+    "max_driver_scheduled_p99_ms": null,
+    "phase": null,
+    "common_chain_samples": 30,
+    "common_chain_tps": 23081.303019154144,
+    "common_chain_window_s": 29.02782392501831,
+    "pending_slope_per_node": 633.324052618569,
+    "pending_net_growth_per_node": 1832.4074218376481,
+    "pending_series": [
+      {
+        "elapsed_s": 0.685985803604126,
+        "pending": 37031.3
+      },
+      {
+        "elapsed_s": 1.6887965202331543,
+        "pending": 51355.6
+      },
+      {
+        "elapsed_s": 2.6877479553222656,
+        "pending": 65948.4
+      },
+      {
+        "elapsed_s": 3.6853926181793213,
+        "pending": 80816.3
+      },
+      {
+        "elapsed_s": 4.697459936141968,
+        "pending": 96005.1
+      },
+      {
+        "elapsed_s": 5.696213483810425,
+        "pending": 96153.3
+      },
+      {
+        "elapsed_s": 6.692983150482178,
+        "pending": 94942.9
+      },
+      {
+        "elapsed_s": 7.6924262046813965,
+        "pending": 97247.7
+      },
+      {
+        "elapsed_s": 8.689704418182373,
+        "pending": 85085
+      },
+      {
+        "elapsed_s": 9.688814163208008,
+        "pending": 97339.9
+      },
+      {
+        "elapsed_s": 10.688262939453125,
+        "pending": 94961.9
+      },
+      {
+        "elapsed_s": 11.690259456634521,
+        "pending": 88001.3
+      },
+      {
+        "elapsed_s": 12.694030284881592,
+        "pending": 94763.7
+      },
+      {
+        "elapsed_s": 13.693092823028564,
+        "pending": 94979.2
+      },
+      {
+        "elapsed_s": 14.691036701202393,
+        "pending": 93974
+      },
+      {
+        "elapsed_s": 15.688157796859741,
+        "pending": 88029.1
+      },
+      {
+        "elapsed_s": 16.689889192581177,
+        "pending": 94885.8
+      },
+      {
+        "elapsed_s": 17.68792176246643,
+        "pending": 88711.1
+      },
+      {
+        "elapsed_s": 18.694800853729248,
+        "pending": 95371.3
+      },
+      {
+        "elapsed_s": 19.699950695037842,
+        "pending": 88827.8
+      },
+      {
+        "elapsed_s": 20.690733432769775,
+        "pending": 93776.4
+      },
+      {
+        "elapsed_s": 21.69179368019104,
+        "pending": 88066.4
+      },
+      {
+        "elapsed_s": 22.692792415618896,
+        "pending": 94427.7
+      },
+      {
+        "elapsed_s": 23.691015005111694,
+        "pending": 78751.7
+      },
+      {
+        "elapsed_s": 24.695155143737793,
+        "pending": 88854.1
+      },
+      {
+        "elapsed_s": 25.703846216201782,
+        "pending": 87906.4
+      },
+      {
+        "elapsed_s": 26.695515394210815,
+        "pending": 93321.3
+      },
+      {
+        "elapsed_s": 27.697908878326416,
+        "pending": 89213.1
+      },
+      {
+        "elapsed_s": 28.70546817779541,
+        "pending": 92199.6
+      },
+      {
+        "elapsed_s": 29.713809728622437,
+        "pending": 90222.1
+      }
+    ],
+    "pending_mean_per_node": 87372.31666666667,
+    "pending_max_per_node": 97339.9,
+    "state_valid": true,
+    "count_valid": true,
+    "block_height_delta": 96,
+    "committed_count_delta": 876025,
+    "expected_count_delta": 876025,
+    "final_pending_max": 0,
+    "failed_count_delta": 0,
+    "resources": {
+      "10.206.0.11": {
+        "node": {
+          "busy_cores": 7.234164786174889,
+          "max_rss_mib": 2414.07421875,
+          "write_MBps": 59.17876430949608
+        },
+        "host_idle_pct": 8.989872983178854,
+        "host_iowait_pct": 0.05149330587023687,
+        "rx_bytes_per_s": 19287634.396488238,
+        "tx_bytes_per_s": 16996662.36019678,
+        "rx_packets_per_s": 22137.128755207366,
+        "tx_packets_per_s": 19130.686887797037,
+        "disks": {}
+      },
+      "10.206.0.8": {
+        "node": {
+          "busy_cores": 7.12089079712729,
+          "max_rss_mib": 2426.1953125,
+          "write_MBps": 57.953853222160646
+        },
+        "host_idle_pct": 10.366272087836679,
+        "host_iowait_pct": 0.06004460456338995,
+        "rx_bytes_per_s": 19574686.019980893,
+        "tx_bytes_per_s": 19767018.89795713,
+        "rx_packets_per_s": 23062.25950255642,
+        "tx_packets_per_s": 21171.388480817423,
+        "disks": {}
+      },
+      "10.206.0.16": {
+        "node": {
+          "busy_cores": 7.127569900038153,
+          "max_rss_mib": 2391.546875,
+          "write_MBps": 59.62861564114968
+        },
+        "host_idle_pct": 10.291029102910292,
+        "host_iowait_pct": 0.04714757190004715,
+        "rx_bytes_per_s": 19628928.208101247,
+        "tx_bytes_per_s": 20423648.469109368,
+        "rx_packets_per_s": 23170.276444319723,
+        "tx_packets_per_s": 21536.293253012125,
+        "disks": {}
+      },
+      "10.206.0.15": {
+        "node": {
+          "busy_cores": 7.147020981801237,
+          "max_rss_mib": 2405.41796875,
+          "write_MBps": 59.77809529223432
+        },
+        "host_idle_pct": 10.062542837559972,
+        "host_iowait_pct": 0.05568882796435915,
+        "rx_bytes_per_s": 19428551.17039257,
+        "tx_bytes_per_s": 18729970.633402128,
+        "rx_packets_per_s": 22344.7132287895,
+        "tx_packets_per_s": 20058.422995063425,
+        "disks": {}
+      },
+      "10.206.0.2": {
+        "node": {
+          "busy_cores": 6.362181883068717,
+          "max_rss_mib": 2652.73828125,
+          "write_MBps": 60.01649356083669
+        },
+        "driver": {
+          "busy_cores": 1.183246268781114,
+          "max_rss_mib": 2448.54296875,
+          "write_MBps": 0.0008443513444124465
+        },
+        "host_idle_pct": 4.6820883396758886,
+        "host_iowait_pct": 0.02565527857356651,
+        "rx_bytes_per_s": 31075199.21511175,
+        "tx_bytes_per_s": 34095741.262982264,
+        "rx_packets_per_s": 43504.39907303802,
+        "tx_packets_per_s": 36170.539751709504,
+        "disks": {}
+      },
+      "10.206.0.17": {
+        "node": {
+          "busy_cores": 7.225978493839395,
+          "max_rss_mib": 2415.28125,
+          "write_MBps": 60.117526470176955
+        },
+        "host_idle_pct": 9.078050662209078,
+        "host_iowait_pct": 0.060006000600060005,
+        "rx_bytes_per_s": 19349053.576167606,
+        "tx_bytes_per_s": 17072426.365416486,
+        "rx_packets_per_s": 22053.76339261689,
+        "tx_packets_per_s": 19180.2565686331,
+        "disks": {}
+      },
+      "10.206.0.4": {
+        "node": {
+          "busy_cores": 7.1382076881733,
+          "max_rss_mib": 2437.71484375,
+          "write_MBps": 57.89675936420376
+        },
+        "host_idle_pct": 10.163751714677641,
+        "host_iowait_pct": 0.051440329218107,
+        "rx_bytes_per_s": 19507530.924761783,
+        "tx_bytes_per_s": 18828527.34077012,
+        "rx_packets_per_s": 22895.116017043147,
+        "tx_packets_per_s": 20452.087732339412,
+        "disks": {}
+      },
+      "10.206.0.12": {
+        "node": {
+          "busy_cores": 7.1070189918313185,
+          "max_rss_mib": 2481.93359375,
+          "write_MBps": 59.992193023752
+        },
+        "host_idle_pct": 10.53735816741597,
+        "host_iowait_pct": 0.047099122243630914,
+        "rx_bytes_per_s": 19589590.22665042,
+        "tx_bytes_per_s": 20155015.8757321,
+        "rx_packets_per_s": 22987.86594365412,
+        "tx_packets_per_s": 21270.71745348496,
+        "disks": {}
+      },
+      "10.206.0.6": {
+        "node": {
+          "busy_cores": 7.110185271221794,
+          "max_rss_mib": 2447.98828125,
+          "write_MBps": 57.556163234665384
+        },
+        "host_idle_pct": 10.493827160493828,
+        "host_iowait_pct": 0.04715363511659808,
+        "rx_bytes_per_s": 19512707.166531518,
+        "tx_bytes_per_s": 19345886.043675,
+        "rx_packets_per_s": 22673.361552060956,
+        "tx_packets_per_s": 20493.91576015622,
+        "disks": {}
+      },
+      "10.206.0.14": {
+        "node": {
+          "busy_cores": 7.131382501753254,
+          "max_rss_mib": 2433.265625,
+          "write_MBps": 57.79639590091095
+        },
+        "host_idle_pct": 10.230146144944928,
+        "host_iowait_pct": 0.060000857155102214,
+        "rx_bytes_per_s": 19680783.81183328,
+        "tx_bytes_per_s": 19456410.83748658,
+        "rx_packets_per_s": 23441.69082217749,
+        "tx_packets_per_s": 21153.500737361526,
+        "disks": {}
+      }
+    },
+    "criterion_version": "net-backlog-v2",
+    "slope_acceptance_passed": false,
+    "sustainable": false
+  },
+  {
+    "name": "scan-solidity-30000",
+    "configuration": "serial-v1",
+    "complete": true,
+    "workload": "solidity",
+    "target_tps": 30000,
+    "warmup_s": 5,
+    "measure_s": 30,
+    "users": 1024,
+    "requested": 1050000,
+    "submitted": 1050000,
+    "success": 1050000,
+    "failures": 0,
+    "unresolved": 0,
+    "actual_send_tps": 27716.166666666668,
+    "receipt_tps": 27716.366666666665,
+    "overall_tps": 26313.821273056852,
+    "p50_ms": 2641.267654,
+    "p95_ms": 8643.599457,
+    "p99_ms": 12702.892509,
+    "scheduled_p99_ms": null,
+    "send_s": 38.260159214,
+    "drain_s": 1.642825195,
+    "balance_mismatches": 0,
+    "balances_checked": 1024,
+    "presigned": true,
+    "start_epoch_ms": 1790758232561,
+    "queried_receipts": null,
+    "recovered_callback_failures": null,
+    "funding_delayed_receipts": null,
+    "distributed": null,
+    "driver_count": null,
+    "start_skew_ms": null,
+    "max_driver_scheduled_p99_ms": null,
+    "phase": null,
+    "common_chain_samples": 30,
+    "common_chain_tps": 27590.2167669823,
+    "common_chain_window_s": 28.995785236358643,
+    "pending_slope_per_node": -135.96217836020207,
+    "pending_net_growth_per_node": -160.20949121167425,
+    "pending_series": [
+      {
+        "elapsed_s": 0.45742034912109375,
+        "pending": 91243.4
+      },
+      {
+        "elapsed_s": 1.4407899379730225,
+        "pending": 85452.6
+      },
+      {
+        "elapsed_s": 2.4437735080718994,
+        "pending": 99654.1
+      },
+      {
+        "elapsed_s": 3.4402124881744385,
+        "pending": 99131.3
+      },
+      {
+        "elapsed_s": 4.441344261169434,
+        "pending": 96387.7
+      },
+      {
+        "elapsed_s": 5.445414781570435,
+        "pending": 91037.2
+      },
+      {
+        "elapsed_s": 6.455173969268799,
+        "pending": 90854.1
+      },
+      {
+        "elapsed_s": 7.446522235870361,
+        "pending": 95216.6
+      },
+      {
+        "elapsed_s": 8.446376085281372,
+        "pending": 90413
+      },
+      {
+        "elapsed_s": 9.440920114517212,
+        "pending": 96140.7
+      },
+      {
+        "elapsed_s": 10.442602157592773,
+        "pending": 96138.8
+      },
+      {
+        "elapsed_s": 11.454267263412476,
+        "pending": 95351.6
+      },
+      {
+        "elapsed_s": 12.443943738937378,
+        "pending": 100229.7
+      },
+      {
+        "elapsed_s": 13.452677249908447,
+        "pending": 98442.2
+      },
+      {
+        "elapsed_s": 14.44511890411377,
+        "pending": 98805.5
+      },
+      {
+        "elapsed_s": 15.456516027450562,
+        "pending": 91352.9
+      },
+      {
+        "elapsed_s": 16.446398496627808,
+        "pending": 93742.7
+      },
+      {
+        "elapsed_s": 17.452526569366455,
+        "pending": 78543.8
+      },
+      {
+        "elapsed_s": 18.443989515304565,
+        "pending": 95177.8
+      },
+      {
+        "elapsed_s": 19.443735361099243,
+        "pending": 96730.1
+      },
+      {
+        "elapsed_s": 20.441858053207397,
+        "pending": 93195.9
+      },
+      {
+        "elapsed_s": 21.44855570793152,
+        "pending": 92815
+      },
+      {
+        "elapsed_s": 22.447441339492798,
+        "pending": 94143.7
+      },
+      {
+        "elapsed_s": 23.449182748794556,
+        "pending": 96758.9
+      },
+      {
+        "elapsed_s": 24.449662446975708,
+        "pending": 93223.2
+      },
+      {
+        "elapsed_s": 25.446004390716553,
+        "pending": 97001
+      },
+      {
+        "elapsed_s": 26.46830725669861,
+        "pending": 78186.7
+      },
+      {
+        "elapsed_s": 27.44842553138733,
+        "pending": 99529.3
+      },
+      {
+        "elapsed_s": 28.460108518600464,
+        "pending": 85367.9
+      },
+      {
+        "elapsed_s": 29.453205585479736,
+        "pending": 86598
+      }
+    ],
+    "pending_mean_per_node": 93228.84666666666,
+    "pending_max_per_node": 100229.7,
+    "state_valid": true,
+    "count_valid": true,
+    "block_height_delta": 110,
+    "committed_count_delta": 1051025,
+    "expected_count_delta": 1051025,
+    "final_pending_max": 0,
+    "failed_count_delta": 0,
+    "resources": {
+      "10.206.0.11": {
+        "node": {
+          "busy_cores": 7.134699148440809,
+          "max_rss_mib": 2658.5,
+          "write_MBps": 68.3272015207212
+        },
+        "host_idle_pct": 10.250021479508549,
+        "host_iowait_pct": 0.051550820517226564,
+        "rx_bytes_per_s": 21475310.921164863,
+        "tx_bytes_per_s": 17444513.66891337,
+        "rx_packets_per_s": 22116.70796494266,
+        "tx_packets_per_s": 17236.54624676198,
+        "disks": {}
+      },
+      "10.206.0.8": {
+        "node": {
+          "busy_cores": 7.00929980658046,
+          "max_rss_mib": 2659.71875,
+          "write_MBps": 70.27880644341194
+        },
+        "host_idle_pct": 11.784424961320267,
+        "host_iowait_pct": 0.06446621970087674,
+        "rx_bytes_per_s": 21769966.180756204,
+        "tx_bytes_per_s": 22572053.53165429,
+        "rx_packets_per_s": 23670.339765800632,
+        "tx_packets_per_s": 20775.629276086995,
+        "disks": {}
+      },
+      "10.206.0.16": {
+        "node": {
+          "busy_cores": 7.013241757333565,
+          "max_rss_mib": 2659.90625,
+          "write_MBps": 70.95890744679848
+        },
+        "host_idle_pct": 11.736382786638579,
+        "host_iowait_pct": 0.05588753707923133,
+        "rx_bytes_per_s": 22009583.73727784,
+        "tx_bytes_per_s": 23611839.905414145,
+        "rx_packets_per_s": 24075.289047637412,
+        "tx_packets_per_s": 21533.169451543614,
+        "disks": {}
+      },
+      "10.206.0.15": {
+        "node": {
+          "busy_cores": 7.018841889442426,
+          "max_rss_mib": 2656.453125,
+          "write_MBps": 71.08276467290607
+        },
+        "host_idle_pct": 11.6785499527532,
+        "host_iowait_pct": 0.04724680010308393,
+        "rx_bytes_per_s": 21716423.111389093,
+        "tx_bytes_per_s": 21369272.69083425,
+        "rx_packets_per_s": 23012.66118780665,
+        "tx_packets_per_s": 19710.287653875366,
+        "disks": {}
+      },
+      "10.206.0.2": {
+        "node": {
+          "busy_cores": 6.306336862503872,
+          "max_rss_mib": 2829.73046875,
+          "write_MBps": 67.80622652298315
+        },
+        "driver": {
+          "busy_cores": 1.2194175397747766,
+          "max_rss_mib": 1903.109375,
+          "write_MBps": 0.0022517821326198855
+        },
+        "host_idle_pct": 5.1169966572383645,
+        "host_iowait_pct": 0.038570326562098224,
+        "rx_bytes_per_s": 36261415.00369685,
+        "tx_bytes_per_s": 36068303.31423524,
+        "rx_packets_per_s": 46572.19808713223,
+        "tx_packets_per_s": 35305.62526254028,
+        "disks": {}
+      },
+      "10.206.0.17": {
+        "node": {
+          "busy_cores": 7.097014543151433,
+          "max_rss_mib": 2673.765625,
+          "write_MBps": 67.16977998992574
+        },
+        "host_idle_pct": 10.692040036084025,
+        "host_iowait_pct": 0.05584432320975987,
+        "rx_bytes_per_s": 21545092.09980881,
+        "tx_bytes_per_s": 19225587.519365318,
+        "rx_packets_per_s": 22422.65353929215,
+        "tx_packets_per_s": 18450.931381187376,
+        "disks": {}
+      },
+      "10.206.0.4": {
+        "node": {
+          "busy_cores": 7.04390751742061,
+          "max_rss_mib": 2789.59375,
+          "write_MBps": 68.48118790826891
+        },
+        "host_idle_pct": 11.338209982788296,
+        "host_iowait_pct": 0.060240963855421686,
+        "rx_bytes_per_s": 22147594.13091295,
+        "tx_bytes_per_s": 24407746.126627542,
+        "rx_packets_per_s": 24676.61604201125,
+        "tx_packets_per_s": 22210.715328708477,
+        "disks": {}
+      },
+      "10.206.0.12": {
+        "node": {
+          "busy_cores": 6.967351282258601,
+          "max_rss_mib": 2683.99609375,
+          "write_MBps": 70.04968665547268
+        },
+        "host_idle_pct": 12.31436174778951,
+        "host_iowait_pct": 0.04292213923941969,
+        "rx_bytes_per_s": 21704787.728516944,
+        "tx_bytes_per_s": 21853304.93150646,
+        "rx_packets_per_s": 23165.918596615065,
+        "tx_packets_per_s": 20272.787961014747,
+        "disks": {}
+      },
+      "10.206.0.6": {
+        "node": {
+          "busy_cores": 7.018483460654417,
+          "max_rss_mib": 2675.06640625,
+          "write_MBps": 71.27293632349098
+        },
+        "host_idle_pct": 11.694449218078708,
+        "host_iowait_pct": 0.03866643753222203,
+        "rx_bytes_per_s": 21691076.20231273,
+        "tx_bytes_per_s": 21355554.662210446,
+        "rx_packets_per_s": 22933.395880567838,
+        "tx_packets_per_s": 19523.288380886195,
+        "disks": {}
+      },
+      "10.206.0.14": {
+        "node": {
+          "busy_cores": 7.036372967477638,
+          "max_rss_mib": 2670.1953125,
+          "write_MBps": 68.2971812202545
+        },
+        "host_idle_pct": 11.429798196650923,
+        "host_iowait_pct": 0.068699012451696,
+        "rx_bytes_per_s": 21971841.71069763,
+        "tx_bytes_per_s": 21752989.430833206,
+        "rx_packets_per_s": 24175.91282680946,
+        "tx_packets_per_s": 20730.390709818505,
+        "disks": {}
+      }
+    },
+    "criterion_version": "net-backlog-v2",
+    "slope_acceptance_passed": false,
+    "sustainable": false
+  },
+  {
+    "name": "scan-solidity-40000",
+    "configuration": "serial-v1",
+    "complete": true,
+    "workload": "solidity",
+    "target_tps": 40000,
+    "warmup_s": 5,
+    "measure_s": 20,
+    "users": 1024,
+    "requested": 1000000,
+    "submitted": 1000000,
+    "success": 1000000,
+    "failures": 0,
+    "unresolved": 0,
+    "actual_send_tps": 27989.6,
+    "receipt_tps": 27994.45,
+    "overall_tps": 26947.40003086345,
+    "p50_ms": 2583.990922,
+    "p95_ms": 9381.410657,
+    "p99_ms": 13813.064832,
+    "scheduled_p99_ms": null,
+    "send_s": 35.344268904,
+    "drain_s": 1.765062566,
+    "balance_mismatches": 0,
+    "balances_checked": 1024,
+    "presigned": true,
+    "start_epoch_ms": 1790758062954,
+    "queried_receipts": null,
+    "recovered_callback_failures": null,
+    "funding_delayed_receipts": null,
+    "distributed": null,
+    "driver_count": null,
+    "start_skew_ms": null,
+    "max_driver_scheduled_p99_ms": null,
+    "phase": null,
+    "common_chain_samples": 20,
+    "common_chain_tps": 28414.521608951076,
+    "common_chain_window_s": 19.004367113113403,
+    "pending_slope_per_node": -41.267474224226184,
+    "pending_net_growth_per_node": -161.80491471763807,
+    "pending_series": [
+      {
+        "elapsed_s": 0.6927618980407715,
+        "pending": 98176.7
+      },
+      {
+        "elapsed_s": 1.6928272247314453,
+        "pending": 82194.4
+      },
+      {
+        "elapsed_s": 2.7065606117248535,
+        "pending": 97566
+      },
+      {
+        "elapsed_s": 3.6907498836517334,
+        "pending": 91159.7
+      },
+      {
+        "elapsed_s": 4.692823648452759,
+        "pending": 95755.8
+      },
+      {
+        "elapsed_s": 5.704401731491089,
+        "pending": 92522.8
+      },
+      {
+        "elapsed_s": 6.690865755081177,
+        "pending": 99662.3
+      },
+      {
+        "elapsed_s": 7.691698789596558,
+        "pending": 99842.9
+      },
+      {
+        "elapsed_s": 8.701311349868774,
+        "pending": 97859.5
+      },
+      {
+        "elapsed_s": 9.693143367767334,
+        "pending": 95119.9
+      },
+      {
+        "elapsed_s": 10.706087112426758,
+        "pending": 92549.4
+      },
+      {
+        "elapsed_s": 11.692371129989624,
+        "pending": 99821.8
+      },
+      {
+        "elapsed_s": 12.696477890014648,
+        "pending": 94084.1
+      },
+      {
+        "elapsed_s": 13.711943626403809,
+        "pending": 91768.7
+      },
+      {
+        "elapsed_s": 14.69447946548462,
+        "pending": 91324.7
+      },
+      {
+        "elapsed_s": 15.691936731338501,
+        "pending": 92975.1
+      },
+      {
+        "elapsed_s": 16.694191217422485,
+        "pending": 92296.3
+      },
+      {
+        "elapsed_s": 17.69553017616272,
+        "pending": 86682.5
+      },
+      {
+        "elapsed_s": 18.687729120254517,
+        "pending": 98327.7
+      },
+      {
+        "elapsed_s": 19.697129011154175,
+        "pending": 95101.7
+      }
+    ],
+    "pending_mean_per_node": 94239.6,
+    "pending_max_per_node": 99842.9,
+    "state_valid": true,
+    "count_valid": true,
+    "block_height_delta": 104,
+    "committed_count_delta": 1001025,
+    "expected_count_delta": 1001025,
+    "final_pending_max": 0,
+    "failed_count_delta": 0,
+    "resources": {
+      "10.206.0.11": {
+        "node": {
+          "busy_cores": 7.137801604457106,
+          "max_rss_mib": 2061.4375,
+          "write_MBps": 74.76797566099032
+        },
+        "host_idle_pct": 10.132966529115086,
+        "host_iowait_pct": 0.05240060260692998,
+        "rx_bytes_per_s": 21768294.566809706,
+        "tx_bytes_per_s": 18927773.329690814,
+        "rx_packets_per_s": 22704.359755419995,
+        "tx_packets_per_s": 18233.170717139452,
+        "disks": {}
+      },
+      "10.206.0.8": {
+        "node": {
+          "busy_cores": 7.07078569703151,
+          "max_rss_mib": 2042.125,
+          "write_MBps": 75.6501648613427
+        },
+        "host_idle_pct": 10.965544346914712,
+        "host_iowait_pct": 0.09170706144373117,
+        "rx_bytes_per_s": 21877323.70501787,
+        "tx_bytes_per_s": 21278748.735153865,
+        "rx_packets_per_s": 23519.599811117576,
+        "tx_packets_per_s": 20351.86472542624,
+        "disks": {}
+      },
+      "10.206.0.16": {
+        "node": {
+          "busy_cores": 7.060616195917345,
+          "max_rss_mib": 2095.85546875,
+          "write_MBps": 73.84409946027323
+        },
+        "host_idle_pct": 11.125697407285855,
+        "host_iowait_pct": 0.05251066622907778,
+        "rx_bytes_per_s": 22238924.065584287,
+        "tx_bytes_per_s": 24863915.43115399,
+        "rx_packets_per_s": 24433.961900111204,
+        "tx_packets_per_s": 22167.31202559161,
+        "disks": {}
+      },
+      "10.206.0.15": {
+        "node": {
+          "busy_cores": 7.0994338585034376,
+          "max_rss_mib": 2063.8359375,
+          "write_MBps": 75.44529599068684
+        },
+        "host_idle_pct": 10.679166120361872,
+        "host_iowait_pct": 0.02622263012980202,
+        "rx_bytes_per_s": 21860105.38383097,
+        "tx_bytes_per_s": 22251420.51914266,
+        "rx_packets_per_s": 23270.33153948946,
+        "tx_packets_per_s": 20257.90169646802,
+        "disks": {}
+      },
+      "10.206.0.2": {
+        "node": {
+          "busy_cores": 6.395171159365674,
+          "max_rss_mib": 2282.73828125,
+          "write_MBps": 74.02375646487423
+        },
+        "driver": {
+          "busy_cores": 1.1868355202267116,
+          "max_rss_mib": 2015.3125,
+          "write_MBps": 0.0
+        },
+        "host_idle_pct": 4.200692493630365,
+        "host_iowait_pct": 0.05226367021624093,
+        "rx_bytes_per_s": 36293405.82150158,
+        "tx_bytes_per_s": 35262537.323551,
+        "rx_packets_per_s": 46516.71495135851,
+        "tx_packets_per_s": 34824.31349060093,
+        "disks": {}
+      },
+      "10.206.0.17": {
+        "node": {
+          "busy_cores": 7.091227141127802,
+          "max_rss_mib": 2054.9375,
+          "write_MBps": 74.54223243398783
+        },
+        "host_idle_pct": 10.748245786608958,
+        "host_iowait_pct": 0.04590464948521215,
+        "rx_bytes_per_s": 21787481.05343608,
+        "tx_bytes_per_s": 20767729.11016807,
+        "rx_packets_per_s": 22970.212780191818,
+        "tx_packets_per_s": 19406.179756312325,
+        "disks": {}
+      },
+      "10.206.0.4": {
+        "node": {
+          "busy_cores": 7.095523600550244,
+          "max_rss_mib": 2089.8359375,
+          "write_MBps": 75.38688765838745
+        },
+        "host_idle_pct": 10.65740315920561,
+        "host_iowait_pct": 0.05898931637936685,
+        "rx_bytes_per_s": 21987046.38229952,
+        "tx_bytes_per_s": 22454379.393358942,
+        "rx_packets_per_s": 23981.63092723963,
+        "tx_packets_per_s": 20794.813273427357,
+        "disks": {}
+      },
+      "10.206.0.12": {
+        "node": {
+          "busy_cores": 7.064533636780513,
+          "max_rss_mib": 2068.7578125,
+          "write_MBps": 75.65409869406201
+        },
+        "host_idle_pct": 11.068227906063976,
+        "host_iowait_pct": 0.05887355269182966,
+        "rx_bytes_per_s": 22011992.12440674,
+        "tx_bytes_per_s": 22376181.272420455,
+        "rx_packets_per_s": 23675.21517047719,
+        "tx_packets_per_s": 21032.995613695577,
+        "disks": {}
+      },
+      "10.206.0.6": {
+        "node": {
+          "busy_cores": 7.107125333108153,
+          "max_rss_mib": 2063.7890625,
+          "write_MBps": 75.42941795519782
+        },
+        "host_idle_pct": 10.514248280379954,
+        "host_iowait_pct": 0.05240746806419915,
+        "rx_bytes_per_s": 22103046.88864274,
+        "tx_bytes_per_s": 21936872.892868668,
+        "rx_packets_per_s": 23635.797376539864,
+        "tx_packets_per_s": 20444.44039585669,
+        "disks": {}
+      },
+      "10.206.0.14": {
+        "node": {
+          "busy_cores": 7.1028560604745765,
+          "max_rss_mib": 2051.3359375,
+          "write_MBps": 75.24486214944017
+        },
+        "host_idle_pct": 10.554245283018869,
+        "host_iowait_pct": 0.06551362683438156,
+        "rx_bytes_per_s": 22210022.2798162,
+        "tx_bytes_per_s": 21428566.769844916,
+        "rx_packets_per_s": 24462.26146529083,
+        "tx_packets_per_s": 20938.020898582145,
+        "disks": {}
+      }
+    },
+    "criterion_version": "net-backlog-v2",
+    "slope_acceptance_passed": false,
+    "sustainable": false
+  },
+  {
+    "name": "scan-solidity-5000",
+    "configuration": "serial-v1",
+    "complete": true,
+    "workload": "solidity",
+    "target_tps": 5000,
+    "warmup_s": 5,
+    "measure_s": 20,
+    "users": 1024,
+    "requested": 125000,
+    "submitted": 125000,
+    "success": 125000,
+    "failures": 0,
+    "unresolved": 0,
+    "actual_send_tps": 4999.95,
+    "receipt_tps": 4975.8,
+    "overall_tps": 4980.043983486313,
+    "p50_ms": 76.846279,
+    "p95_ms": 124.667291,
+    "p99_ms": 130.253788,
+    "scheduled_p99_ms": null,
+    "send_s": 25.00026323,
+    "drain_s": 0.099916691,
+    "balance_mismatches": 0,
+    "balances_checked": 1024,
+    "presigned": true,
+    "start_epoch_ms": 1790757928615,
+    "queried_receipts": null,
+    "recovered_callback_failures": null,
+    "funding_delayed_receipts": null,
+    "distributed": null,
+    "driver_count": null,
+    "start_skew_ms": null,
+    "max_driver_scheduled_p99_ms": null,
+    "phase": null,
+    "common_chain_samples": 20,
+    "common_chain_tps": 5012.296041042019,
+    "common_chain_window_s": 19.0010724067688,
+    "pending_slope_per_node": -3.6716812494643407,
+    "pending_net_growth_per_node": -11.730916825546952,
+    "pending_series": [
+      {
+        "elapsed_s": 0.18764853477478027,
+        "pending": 511.8
+      },
+      {
+        "elapsed_s": 1.1907575130462646,
+        "pending": 142.2
+      },
+      {
+        "elapsed_s": 2.187802314758301,
+        "pending": 300.4
+      },
+      {
+        "elapsed_s": 3.186004638671875,
+        "pending": 446.7
+      },
+      {
+        "elapsed_s": 4.187533140182495,
+        "pending": 466.7
+      },
+      {
+        "elapsed_s": 5.187645196914673,
+        "pending": 282.3
+      },
+      {
+        "elapsed_s": 6.187159538269043,
+        "pending": 457.4
+      },
+      {
+        "elapsed_s": 7.187832832336426,
+        "pending": 565
+      },
+      {
+        "elapsed_s": 8.188973665237427,
+        "pending": 257.4
+      },
+      {
+        "elapsed_s": 9.183133602142334,
+        "pending": 371.8
+      },
+      {
+        "elapsed_s": 10.18438196182251,
+        "pending": 507.1
+      },
+      {
+        "elapsed_s": 11.187708377838135,
+        "pending": 155.4
+      },
+      {
+        "elapsed_s": 12.183377742767334,
+        "pending": 252.2
+      },
+      {
+        "elapsed_s": 13.186422109603882,
+        "pending": 403.9
+      },
+      {
+        "elapsed_s": 14.191526889801025,
+        "pending": 571.1
+      },
+      {
+        "elapsed_s": 15.189311265945435,
+        "pending": 270.9
+      },
+      {
+        "elapsed_s": 16.184285402297974,
+        "pending": 276.9
+      },
+      {
+        "elapsed_s": 17.187386512756348,
+        "pending": 464.4
+      },
+      {
+        "elapsed_s": 18.19310474395752,
+        "pending": 187.2
+      },
+      {
+        "elapsed_s": 19.18872094154358,
+        "pending": 288.9
+      }
+    ],
+    "pending_mean_per_node": 358.985,
+    "pending_max_per_node": 571.1,
+    "state_valid": true,
+    "count_valid": false,
+    "block_height_delta": 238,
+    "committed_count_delta": 126026,
+    "expected_count_delta": 126025,
+    "final_pending_max": 0,
+    "failed_count_delta": 0,
+    "resources": {
+      "10.206.0.11": {
+        "node": {
+          "busy_cores": 6.932054911210313,
+          "max_rss_mib": 274.81640625,
+          "write_MBps": 8.009581295969896
+        },
+        "host_idle_pct": 13.106281473628412,
+        "host_iowait_pct": 0.013252054068380599,
+        "rx_bytes_per_s": 4178219.1128132185,
+        "tx_bytes_per_s": 3779596.5053405855,
+        "rx_packets_per_s": 5605.593998703974,
+        "tx_packets_per_s": 5146.41426141994,
+        "disks": {}
+      },
+      "10.206.0.8": {
+        "node": {
+          "busy_cores": 6.93170037020726,
+          "max_rss_mib": 264.6640625,
+          "write_MBps": 8.00686680024985
+        },
+        "host_idle_pct": 12.802432397464097,
+        "host_iowait_pct": 0.019407426575236125,
+        "rx_bytes_per_s": 4191403.250635926,
+        "tx_bytes_per_s": 3949264.112437526,
+        "rx_packets_per_s": 5688.289531888134,
+        "tx_packets_per_s": 5285.70376764013,
+        "disks": {}
+      },
+      "10.206.0.16": {
+        "node": {
+          "busy_cores": 6.934264902759652,
+          "max_rss_mib": 252.62109375,
+          "write_MBps": 8.005584050004083
+        },
+        "host_idle_pct": 12.896075107575955,
+        "host_iowait_pct": 0.013039509714434737,
+        "rx_bytes_per_s": 4185954.1118474067,
+        "tx_bytes_per_s": 3919295.400997239,
+        "rx_packets_per_s": 5658.922965919574,
+        "tx_packets_per_s": 5244.116583449071,
+        "disks": {}
+      },
+      "10.206.0.15": {
+        "node": {
+          "busy_cores": 6.944541838405623,
+          "max_rss_mib": 265.5859375,
+          "write_MBps": 8.004721664392122
+        },
+        "host_idle_pct": 12.770675710931386,
+        "host_iowait_pct": 0.006522306287503261,
+        "rx_bytes_per_s": 4183562.926641168,
+        "tx_bytes_per_s": 3917020.030002742,
+        "rx_packets_per_s": 5644.979681390205,
+        "tx_packets_per_s": 5230.427962455371,
+        "disks": {}
+      },
+      "10.206.0.2": {
+        "node": {
+          "busy_cores": 6.719006133147444,
+          "max_rss_mib": 262.4453125,
+          "write_MBps": 8.003973970490849
+        },
+        "driver": {
+          "busy_cores": 0.2560820831752541,
+          "max_rss_mib": 690.03125,
+          "write_MBps": 0.0
+        },
+        "host_idle_pct": 11.769664742883082,
+        "host_iowait_pct": 0.038907982621101095,
+        "rx_bytes_per_s": 6456306.742010601,
+        "tx_bytes_per_s": 8739683.574501604,
+        "rx_packets_per_s": 10545.071863965266,
+        "tx_packets_per_s": 10267.474687736352,
+        "disks": {}
+      },
+      "10.206.0.17": {
+        "node": {
+          "busy_cores": 6.947976208943723,
+          "max_rss_mib": 266.96875,
+          "write_MBps": 8.004229851262508
+        },
+        "host_idle_pct": 12.660860522552971,
+        "host_iowait_pct": 0.012998830105290524,
+        "rx_bytes_per_s": 4189586.9771673037,
+        "tx_bytes_per_s": 3901390.3203028375,
+        "rx_packets_per_s": 5670.086115029203,
+        "tx_packets_per_s": 5261.322963480058,
+        "disks": {}
+      },
+      "10.206.0.4": {
+        "node": {
+          "busy_cores": 6.948510334280253,
+          "max_rss_mib": 265.6875,
+          "write_MBps": 8.00463014810549
+        },
+        "host_idle_pct": 12.623746360401165,
+        "host_iowait_pct": 0.012940795858945324,
+        "rx_bytes_per_s": 4199392.802124913,
+        "tx_bytes_per_s": 4026271.003127479,
+        "rx_packets_per_s": 5729.3187053642305,
+        "tx_packets_per_s": 5361.366839747955,
+        "disks": {}
+      },
+      "10.206.0.12": {
+        "node": {
+          "busy_cores": 6.92405349898243,
+          "max_rss_mib": 264.39453125,
+          "write_MBps": 8.005702801248948
+        },
+        "host_idle_pct": 12.901765504753282,
+        "host_iowait_pct": 0.012934100756644895,
+        "rx_bytes_per_s": 4176036.0598529237,
+        "tx_bytes_per_s": 3841958.0389130074,
+        "rx_packets_per_s": 5611.90650894172,
+        "tx_packets_per_s": 5169.098901947348,
+        "disks": {}
+      },
+      "10.206.0.6": {
+        "node": {
+          "busy_cores": 6.932697697967649,
+          "max_rss_mib": 253.11328125,
+          "write_MBps": 8.005593068611532
+        },
+        "host_idle_pct": 12.95678891285873,
+        "host_iowait_pct": 0.013074459044257044,
+        "rx_bytes_per_s": 4187429.997917529,
+        "tx_bytes_per_s": 3923811.7135515716,
+        "rx_packets_per_s": 5664.966904231755,
+        "tx_packets_per_s": 5251.840072082512,
+        "disks": {}
+      },
+      "10.206.0.14": {
+        "node": {
+          "busy_cores": 6.930832432185871,
+          "max_rss_mib": 267.05859375,
+          "write_MBps": 8.005864237565808
+        },
+        "host_idle_pct": 13.138008749834283,
+        "host_iowait_pct": 0.01988598700782182,
+        "rx_bytes_per_s": 4189973.1353950566,
+        "tx_bytes_per_s": 3916497.9548070827,
+        "rx_packets_per_s": 5681.224503101287,
+        "tx_packets_per_s": 5255.430616084945,
+        "disks": {}
+      }
+    },
+    "criterion_version": "net-backlog-v2",
+    "slope_acceptance_passed": false,
+    "sustainable": false
+  },
+  {
+    "name": "wide-solidity-20000",
+    "configuration": "parallel-v1",
+    "complete": false
+  },
+  {
+    "name": "wide-solidity-20000-v2",
+    "configuration": "parallel-v1",
+    "complete": true,
+    "workload": "solidity",
+    "target_tps": 20000,
+    "warmup_s": 5,
+    "measure_s": 20,
+    "users": 16384,
+    "requested": 500000,
+    "submitted": 500000,
+    "success": 454023,
+    "failures": 45977,
+    "unresolved": 0,
+    "actual_send_tps": 11267.5,
+    "receipt_tps": 8099.25,
+    "overall_tps": 6319.710652387621,
+    "p50_ms": 8680.342976,
+    "p95_ms": 49614.471924,
+    "p99_ms": 53056.584983,
+    "scheduled_p99_ms": 53599.243744,
+    "send_s": 42.002050775,
+    "drain_s": 29.840320652,
+    "balance_mismatches": 12514,
+    "balances_checked": 16384,
+    "presigned": true,
+    "start_epoch_ms": 1790759058878,
+    "queried_receipts": 19034,
+    "recovered_callback_failures": null,
+    "funding_delayed_receipts": 11,
+    "distributed": null,
+    "driver_count": null,
+    "start_skew_ms": null,
+    "max_driver_scheduled_p99_ms": null,
+    "phase": null,
+    "common_chain_samples": 20,
+    "common_chain_tps": 10176.921079646054,
+    "common_chain_window_s": 18.996609926223755,
+    "pending_slope_per_node": -820.7281309260799,
+    "pending_net_growth_per_node": -2018.1916746669326,
+    "pending_series": [
+      {
+        "elapsed_s": 0.15387654304504395,
+        "pending": 47541.7
+      },
+      {
+        "elapsed_s": 1.1869494915008545,
+        "pending": 39119
+      },
+      {
+        "elapsed_s": 2.178793430328369,
+        "pending": 17346.3
+      },
+      {
+        "elapsed_s": 3.162220001220703,
+        "pending": 12391.1
+      },
+      {
+        "elapsed_s": 4.160569667816162,
+        "pending": 43038
+      },
+      {
+        "elapsed_s": 5.157280445098877,
+        "pending": 56120.9
+      },
+      {
+        "elapsed_s": 6.160625219345093,
+        "pending": 66154.5
+      },
+      {
+        "elapsed_s": 7.148528337478638,
+        "pending": 83049.2
+      },
+      {
+        "elapsed_s": 8.161027431488037,
+        "pending": 81237.5
+      },
+      {
+        "elapsed_s": 9.167681217193604,
+        "pending": 41263.8
+      },
+      {
+        "elapsed_s": 10.160708904266357,
+        "pending": 13793.1
+      },
+      {
+        "elapsed_s": 11.161807537078857,
+        "pending": 24520.4
+      },
+      {
+        "elapsed_s": 12.158667087554932,
+        "pending": 55512.9
+      },
+      {
+        "elapsed_s": 13.169209957122803,
+        "pending": 86481.2
+      },
+      {
+        "elapsed_s": 14.160204410552979,
+        "pending": 52527.4
+      },
+      {
+        "elapsed_s": 15.159958124160767,
+        "pending": 12826.4
+      },
+      {
+        "elapsed_s": 16.149787425994873,
+        "pending": 28946.5
+      },
+      {
+        "elapsed_s": 17.149240493774414,
+        "pending": 28946.5
+      },
+      {
+        "elapsed_s": 18.16090440750122,
+        "pending": 27783.2
+      },
+      {
+        "elapsed_s": 19.1504864692688,
+        "pending": 9202.9
+      }
+    ],
+    "pending_mean_per_node": 41390.125,
+    "pending_max_per_node": 86481.2,
+    "state_valid": true,
+    "count_valid": false,
+    "block_height_delta": 85,
+    "committed_count_delta": 516385,
+    "expected_count_delta": 470408,
+    "final_pending_max": 0,
+    "failed_count_delta": 0,
+    "resources": {
+      "10.206.0.11": {
+        "node": {
+          "busy_cores": 5.488003470751288,
+          "max_rss_mib": 7392.2890625,
+          "write_MBps": 51.022199717242735
+        },
+        "host_idle_pct": 30.8242551515947,
+        "host_iowait_pct": 0.04593778711116944,
+        "rx_bytes_per_s": 9218524.078935556,
+        "tx_bytes_per_s": 2170305.637079353,
+        "rx_packets_per_s": 7407.439510521516,
+        "tx_packets_per_s": 2576.1377180010572,
+        "disks": {}
+      },
+      "10.206.0.8": {
+        "node": {
+          "busy_cores": 5.436873949987569,
+          "max_rss_mib": 7220.359375,
+          "write_MBps": 48.740923586860895
+        },
+        "host_idle_pct": 31.480026195153897,
+        "host_iowait_pct": 0.07203667321545514,
+        "rx_bytes_per_s": 9434543.834583104,
+        "tx_bytes_per_s": 2063788.3644196705,
+        "rx_packets_per_s": 7763.257445651969,
+        "tx_packets_per_s": 2714.394103973512,
+        "disks": {}
+      },
+      "10.206.0.16": {
+        "node": {
+          "busy_cores": 6.196458872830938,
+          "max_rss_mib": 8859.28515625,
+          "write_MBps": 47.61089908926261
+        },
+        "host_idle_pct": 21.517904160084253,
+        "host_iowait_pct": 0.09215376513954714,
+        "rx_bytes_per_s": 17870715.69683983,
+        "tx_bytes_per_s": 72891856.05656806,
+        "rx_packets_per_s": 35215.185036006034,
+        "tx_packets_per_s": 55401.47672688529,
+        "disks": {}
+      },
+      "10.206.0.15": {
+        "node": {
+          "busy_cores": 5.42443049957311,
+          "max_rss_mib": 7343.71875,
+          "write_MBps": 50.83734981202289
+        },
+        "host_idle_pct": 31.627906976744185,
+        "host_iowait_pct": 0.07861120209629872,
+        "rx_bytes_per_s": 9438225.117408063,
+        "tx_bytes_per_s": 1656756.5147195247,
+        "rx_packets_per_s": 7559.187745921124,
+        "tx_packets_per_s": 2602.760710043886,
+        "disks": {}
+      },
+      "10.206.0.2": {
+        "node": {
+          "busy_cores": 5.0167904117997955,
+          "max_rss_mib": 8090.50390625,
+          "write_MBps": 50.14240425207392
+        },
+        "driver": {
+          "busy_cores": 0.6986135214590427,
+          "max_rss_mib": 1935.86328125,
+          "write_MBps": 1.1519180639906876
+        },
+        "host_idle_pct": 27.67216996645399,
+        "host_iowait_pct": 0.03946589488916661,
+        "rx_bytes_per_s": 14459596.610401673,
+        "tx_bytes_per_s": 14494494.796484409,
+        "rx_packets_per_s": 16715.181428760625,
+        "tx_packets_per_s": 12110.47326767269,
+        "disks": {}
+      },
+      "10.206.0.17": {
+        "node": {
+          "busy_cores": 5.458492624312162,
+          "max_rss_mib": 7527.78125,
+          "write_MBps": 50.9722078057836
+        },
+        "host_idle_pct": 31.20298292666972,
+        "host_iowait_pct": 0.03924903512788644,
+        "rx_bytes_per_s": 9174107.191412346,
+        "tx_bytes_per_s": 2665134.197882289,
+        "rx_packets_per_s": 7417.449393485572,
+        "tx_packets_per_s": 2674.3831324657253,
+        "disks": {}
+      },
+      "10.206.0.4": {
+        "node": {
+          "busy_cores": 5.428291543266083,
+          "max_rss_mib": 7266.91796875,
+          "write_MBps": 48.81606648097315
+        },
+        "host_idle_pct": 31.559357450698705,
+        "host_iowait_pct": 0.032649862870575946,
+        "rx_bytes_per_s": 9433877.750950688,
+        "tx_bytes_per_s": 1870685.3464122992,
+        "rx_packets_per_s": 7705.821854276234,
+        "tx_packets_per_s": 2688.78679285949,
+        "disks": {}
+      },
+      "10.206.0.12": {
+        "node": {
+          "busy_cores": 5.368769344317152,
+          "max_rss_mib": 7269.046875,
+          "write_MBps": 50.80351325456872
+        },
+        "host_idle_pct": 32.31946624803768,
+        "host_iowait_pct": 0.052328623757195186,
+        "rx_bytes_per_s": 9380770.437849244,
+        "tx_bytes_per_s": 2315580.412280406,
+        "rx_packets_per_s": 7701.327386908778,
+        "tx_packets_per_s": 2682.6517947293655,
+        "disks": {}
+      },
+      "10.206.0.6": {
+        "node": {
+          "busy_cores": 5.393507261999977,
+          "max_rss_mib": 7359.2109375,
+          "write_MBps": 49.05916312910536
+        },
+        "host_idle_pct": 32.09722859201992,
+        "host_iowait_pct": 0.032758959575443884,
+        "rx_bytes_per_s": 9365602.43792977,
+        "tx_bytes_per_s": 2061685.0827216655,
+        "rx_packets_per_s": 7473.627555200006,
+        "tx_packets_per_s": 2589.9650223081944,
+        "disks": {}
+      },
+      "10.206.0.14": {
+        "node": {
+          "busy_cores": 4.594742646562752,
+          "max_rss_mib": 7324.1171875,
+          "write_MBps": 50.877828922348684
+        },
+        "host_idle_pct": 42.04426401257203,
+        "host_iowait_pct": 0.045835515976951284,
+        "rx_bytes_per_s": 8949634.897035219,
+        "tx_bytes_per_s": 2587382.743241462,
+        "rx_packets_per_s": 7539.220892393631,
+        "tx_packets_per_s": 2696.418842208747,
+        "disks": {}
+      }
+    },
+    "criterion_version": "net-backlog-v2",
+    "slope_acceptance_passed": false,
+    "sustainable": false
+  }
+]

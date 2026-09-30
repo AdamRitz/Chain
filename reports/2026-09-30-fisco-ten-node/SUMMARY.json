@@ -1,0 +1,28 @@
+{
+  "native": {
+    "target_tps": 25000,
+    "median_common_chain_tps": 25078.41140090565,
+    "min_common_chain_tps": 24913.270348591363,
+    "max_common_chain_tps": 25078.779487666445,
+    "median_p99_ms": 738,
+    "peak_common_chain_tps": 43130.27876798209,
+    "accepted_runs": [
+      "stable-native-25000-seal200-r1",
+      "stable-native-25000-seal200-r2",
+      "stable-native-25000-seal200-r3"
+    ]
+  },
+  "solidity": {
+    "target_tps": 25000,
+    "median_common_chain_tps": 24906.354193679093,
+    "min_common_chain_tps": 24883.811402347135,
+    "max_common_chain_tps": 24909.663210478815,
+    "median_p99_ms": 711,
+    "peak_common_chain_tps": 41563.83784968595,
+    "accepted_runs": [
+      "stable-solidity-25000-seal200-r1",
+      "stable-solidity-25000-seal200-r2",
+      "stable-solidity-25000-seal200-r3"
+    ]
+  }
+}

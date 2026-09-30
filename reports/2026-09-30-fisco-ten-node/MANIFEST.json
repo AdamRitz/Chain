@@ -1,0 +1,111 @@
+{
+  "version": "FISCO BCOS Version : 3.7.3\nBuild Time         : 20240621 17:08:42\nBuild Type         : Linux/g++/Release\nGit Branch         : HEAD\nGit Commit         : 5811f123b0a82928de8ec662e84763d67c16fb1e\n",
+  "binary_sha256": "7c29bd2afe615a57af02a440fc4d665c3beec3cf7301ec4007cc07caf5b683f4",
+  "archive_sha256": "b2b0121722a612ded5ccf4209bf88d12f224f4ebc75a5f2d9bafeac898b27d89",
+  "release": "v3.7.3",
+  "java_sdk": "3.7.0",
+  "upstream_contract_tag": "v3.10.0",
+  "date": "2026-09-30",
+  "nodes": 10,
+  "logical_cpus_per_node": 8,
+  "ram_GiB": 16,
+  "network": "Tencent Cloud intranet",
+  "workloads": [
+    "ParallelOk Solidity transfer",
+    "DagTransfer precompiled transfer"
+  ],
+  "users_per_driver": 2048,
+  "driver_count": 10,
+  "pre_signing": true,
+  "default_storage_options": true,
+  "config": {
+    "consensus": {
+      "min_seal_time": "200"
+    },
+    "txpool": {
+      "limit": "200000",
+      "notify_worker_num": "2",
+      "txs_expiration_time": "600",
+      "enable_txs_from_free_node": "false",
+      "verify_worker_num": "8"
+    },
+    "executor": {
+      "enable_dag": "true",
+      "baseline_scheduler": "false",
+      "baseline_scheduler_parallel": "false",
+      "baseline_scheduler_maxthread": "8",
+      "baseline_scheduler_chunksize": "100"
+    },
+    "storage": {
+      "data_path": "data",
+      "enable_cache": "true",
+      "key_page_size": "0",
+      "pd_ssl_ca_path": "",
+      "pd_ssl_cert_path": "",
+      "pd_ssl_key_path": "",
+      "enable_archive": "false",
+      "archive_ip": "127.0.0.1",
+      "archive_port": ""
+    },
+    "rpc": {
+      "listen_ip": "10.206.0.2",
+      "listen_port": "20200",
+      "thread_count": "4",
+      "sm_ssl": "false",
+      "enable_ssl": "true",
+      "return_input_params": "false"
+    },
+    "log": {
+      "enable": "true",
+      "enable_console_output": "false",
+      "log_path": "./log",
+      "level": "warning",
+      "max_log_file_size": "1024",
+      "enable_rate_collector": "false"
+    }
+  },
+  "genesis_settings": {
+    "version": {
+      "compatibility_version": "3.7.3"
+    },
+    "consensus": {
+      "consensus_type": "pbft",
+      "block_tx_count_limit": "10000",
+      "consensus_timeout": "3000",
+      "leader_period": "1",
+      "epoch_sealer_num": "4",
+      "epoch_block_num": "1000"
+    },
+    "executor": {
+      "is_wasm": "false",
+      "is_auth_check": "false",
+      "auth_admin_account": "0xb7563f3168c91c1895e278b6c99f64acc8065eac",
+      "is_serial_execute": "false",
+      "version": "0"
+    }
+  },
+  "files_sha256": {
+    "driver-stable/FiscoBench.java": "29a35af611e3cdfe8e09552faa94182756236186e1fec467957fc777afc62dbf",
+    "driver-stable/classes/FiscoBench.class": "52c4634fe8fb920c7b903e394e612fae2b703fbfa868eb73859518f8b06c28bc",
+    "Distributed.py": "bd446d441f98c89ef901fda78d19bada1400e4522fb4144ed656f8a3fe6dbb6b",
+    "NodeSample.py": "56a4f1ef3b6d1185a4d31f19e68ad2d23428cb0ab36b756cd0299291d9e65e88",
+    "Analyze.py": "f3594408f120ac56141d0f5600ab5cc8073ea8229e9f1a7846bc022411032678",
+    "runtime-stable/node0/config.ini": "7f0074b231dd674ba372d84b22f7a9044288c0b8fa168342d5834db6a54297cd",
+    "runtime-stable/node0/config.genesis": "a8ca090f5aca6c875b144a09693ed1ae859769a2ac69efb7184f363a1026f0ff"
+  },
+  "hosts": [
+    "10.206.0.16",
+    "10.206.0.4",
+    "10.206.0.14",
+    "10.206.0.17",
+    "10.206.0.15",
+    "10.206.0.12",
+    "10.206.0.2",
+    "10.206.0.6",
+    "10.206.0.11",
+    "10.206.0.8"
+  ],
+  "short_scan_min_seal_ms": 100,
+  "sustained_min_seal_ms": 200,
+  "presigned_block_limit_window": 500
+}

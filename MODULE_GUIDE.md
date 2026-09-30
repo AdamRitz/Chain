@@ -51,6 +51,7 @@
 | `Test/BenchCores.py`、`Test/PlotCores.py` | 物理核心亲和性测试及图表 | 同步落盘、三次中位数、混合架构核心映射 |
 | `Test/Experiments.py` | 五组实验、速率控制、共同链采样、账户核对 | 测量窗口、未完成样本、发送瓶颈、独立数据库 |
 | `Test/Cluster.py` | 动态节点清单、并行查询、共同前缀和故障调度 | 全连接增长、断线重连、所有节点查询一致性 |
+| `Test/Fisco/` | FISCO BCOS 十节点独立对照测试、分布式发压、共同链计数、余额核对与图表 | 固定版本和合约；区分短时峰值与三轮持续负载；目录与 Chain 数据隔离；结果见 `reports/2026-09-30-fisco-ten-node/REPORT.md` |
 | `Test/ClusterWorker.py` | 通过标准输入 JSON 管理本地或远程节点 | 路径边界、进程创建时间和可执行文件身份 |
 | `Test/Netem.py` | Linux 接收端延迟、丢包、网络隔离与租约清理 | 只匹配实验节点和链端口，保留其他入口规则 |
 | `Test/PlotExperiments.py` | 实测结果生成六组 PNG/SVG 图 | 重复中位数和范围、失败与缺测保持可见 |

@@ -1,0 +1,40 @@
+{
+  "nodes": {
+    "10.206.0.11": {
+      "owned_processes": []
+    },
+    "10.206.0.12": {
+      "owned_processes": []
+    },
+    "10.206.0.14": {
+      "owned_processes": []
+    },
+    "10.206.0.15": {
+      "owned_processes": []
+    },
+    "10.206.0.16": {
+      "owned_processes": []
+    },
+    "10.206.0.17": {
+      "owned_processes": []
+    },
+    "10.206.0.2": {
+      "owned_processes": []
+    },
+    "10.206.0.4": {
+      "owned_processes": []
+    },
+    "10.206.0.6": {
+      "owned_processes": []
+    },
+    "10.206.0.8": {
+      "owned_processes": []
+    }
+  },
+  "verified_identical_hashes": {
+    "/home/ubuntu/fisco-bench/20260930/runtime-stable/fisco-bcos": "7c29bd2afe615a57af02a440fc4d665c3beec3cf7301ec4007cc07caf5b683f4",
+    "/home/ubuntu/fisco-bench/20260930/runtime-stable/node0/config.genesis": "a8ca090f5aca6c875b144a09693ed1ae859769a2ac69efb7184f363a1026f0ff",
+    "/home/ubuntu/fisco-bench/20260930/driver-stable/classes/FiscoBench.class": "52c4634fe8fb920c7b903e394e612fae2b703fbfa868eb73859518f8b06c28bc",
+    "/home/ubuntu/fisco-bench/20260930/driver-stable/FiscoBench.java": "29a35af611e3cdfe8e09552faa94182756236186e1fec467957fc777afc62dbf"
+  }
+}
