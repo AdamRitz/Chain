@@ -2,7 +2,7 @@
 
 C++20 区块链原型，使用 Boost.Asio、libsodium、默克尔树、RocksDB 和 evmone。支持账户转账、并发验签、原子状态落库、分叉恢复与以太坊虚拟机（Ethereum Virtual Machine，EVM）合约部署和执行。
 
-修改前阅读 [MODULE_GUIDE.md](MODULE_GUIDE.md)。合约操作与分叉规则见 [EVM_GUIDE.md](EVM_GUIDE.md)，本次测试见 [分叉与 EVM 报告](reports/2026-09-16-fork-evm/REPORT.md)。
+修改前阅读 [MODULE_GUIDE.md](MODULE_GUIDE.md)。合约操作与分叉规则见 [EVM_GUIDE.md](EVM_GUIDE.md)，最新性能测试见 [十节点吞吐量优化与复测](reports/2026-09-30-tps-opt/REPORT.md)，合约接入测试见 [分叉与 EVM 报告](reports/2026-09-16-fork-evm/REPORT.md)。
 
 同父块候选按交易数、哈希排序。分支按累计有效交易数、高度和链头哈希比较，在 256 块窗口内通过原子回滚与重放收敛。每秒交易数（Transactions Per Second，TPS）统计完成执行与同步落盘的交易。
 

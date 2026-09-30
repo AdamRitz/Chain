@@ -1,0 +1,46 @@
+{
+  "before": {
+    "latency": {
+      "block_verify_ms": 1337.725939820038,
+      "verify_worker_ms": 739.0265232508215,
+      "tx_commit_wait_ms": 46.12714055471268,
+      "tx_pool_wait_ms": 3.136718884229328,
+      "db_write_ms": 63.2174332043699,
+      "process_cpu_seconds": 2.1730499099488987
+    },
+    "throughput": {
+      "block_verify_ms": 3873.273649921537,
+      "verify_worker_ms": 461.2506666721075,
+      "tx_commit_wait_ms": 19.03559028964027,
+      "tx_pool_wait_ms": 0.8211143562969501,
+      "db_write_ms": 85.23009561873971,
+      "process_cpu_seconds": 4.25873020793294
+    }
+  },
+  "after": {
+    "latency": {
+      "block_verify_ms": 3.842704989926321,
+      "verify_worker_ms": 323.80848417952427,
+      "tx_commit_wait_ms": 15.278736771396463,
+      "tx_pool_wait_ms": 0.06679950255813938,
+      "pool_refresh_ms": 0.008769863888654628,
+      "db_write_ms": 120.10774055433433,
+      "signature_checks": 8012.794944232219,
+      "signature_cache_hits": 505.9389727619815,
+      "duplicate_blocks": 558.0269724580489,
+      "process_cpu_seconds": 0.4704433158274579
+    },
+    "throughput": {
+      "block_verify_ms": 2.510849663345661,
+      "verify_worker_ms": 315.83442586829995,
+      "tx_commit_wait_ms": 18.152632982090697,
+      "tx_pool_wait_ms": 0.0784075937664562,
+      "pool_refresh_ms": 0.0043236852558963725,
+      "db_write_ms": 75.37305061515029,
+      "signature_checks": 8003.875059866205,
+      "signature_cache_hits": 198.4749035884343,
+      "duplicate_blocks": 140.339214363971,
+      "process_cpu_seconds": 0.42566452076737704
+    }
+  }
+}
