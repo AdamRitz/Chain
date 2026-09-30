@@ -1,0 +1,2507 @@
+{
+  "ten/hardware.json": {
+    "lscpu": "{\n   \"lscpu\": [\n      {\n         \"field\": \"Architecture:\",\n         \"data\": \"x86_64\"\n      },{\n         \"field\": \"CPU op-mode(s):\",\n         \"data\": \"32-bit, 64-bit\"\n      },{\n         \"field\": \"Address sizes:\",\n         \"data\": \"52 bits physical, 48 bits virtual\"\n      },{\n         \"field\": \"Byte Order:\",\n         \"data\": \"Little Endian\"\n      },{\n         \"field\": \"CPU(s):\",\n         \"data\": \"8\"\n      },{\n         \"field\": \"On-line CPU(s) list:\",\n         \"data\": \"0-7\"\n      },{\n         \"field\": \"Vendor ID:\",\n         \"data\": \"AuthenticAMD\"\n      },{\n         \"field\": \"Model name:\",\n         \"data\": \"AMD EPYC 9K85 128-Core Processor\"\n      },{\n         \"field\": \"CPU family:\",\n         \"data\": \"26\"\n      },{\n         \"field\": \"Model:\",\n         \"data\": \"0\"\n      },{\n         \"field\": \"Thread(s) per core:\",\n         \"data\": \"2\"\n      },{\n         \"field\": \"Core(s) per socket:\",\n         \"data\": \"4\"\n      },{\n         \"field\": \"Socket(s):\",\n         \"data\": \"1\"\n      },{\n         \"field\": \"Stepping:\",\n         \"data\": \"0\"\n      },{\n         \"field\": \"BogoMIPS:\",\n         \"data\": \"5400.50\"\n      },{\n         \"field\": \"Flags:\",\n         \"data\": \"fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush mmx fxsr sse sse2 ht syscall nx mmxext fxsr_opt pdpe1gb rdtscp lm rep_good nopl cpuid extd_apicid tsc_known_freq pni pclmulqdq ssse3 fma cx16 pcid sse4_1 sse4_2 x2apic movbe popcnt aes xsave avx f16c rdrand hypervisor lahf_lm cmp_legacy cr8_legacy abm sse4a misalignsse 3dnowprefetch osvw topoext perfctr_core ssbd ibrs ibpb stibp vmmcall fsgsbase bmi1 avx2 smep bmi2 erms invpcid avx512f avx512dq adx smap avx512ifma clflushopt clwb avx512cd sha_ni avx512bw avx512vl xsaveopt xsavec xgetbv1 xsaves avx512_bf16 clzero xsaveerptr wbnoinvd arat avx512vbmi umip avx512_vbmi2 gfni vaes vpclmulqdq avx512_vnni avx512_bitalg avx512_vpopcntdq rdpid movdiri movdir64b fsrm\"\n      },{\n         \"field\": \"Hypervisor vendor:\",\n         \"data\": \"KVM\"\n      },{\n         \"field\": \"Virtualization type:\",\n         \"data\": \"full\"\n      },{\n         \"field\": \"L1d cache:\",\n         \"data\": \"192 KiB (4 instances)\"\n      },{\n         \"field\": \"L1i cache:\",\n         \"data\": \"128 KiB (4 instances)\"\n      },{\n         \"field\": \"L2 cache:\",\n         \"data\": \"4 MiB (4 instances)\"\n      },{\n         \"field\": \"L3 cache:\",\n         \"data\": \"32 MiB (1 instance)\"\n      },{\n         \"field\": \"NUMA node(s):\",\n         \"data\": \"1\"\n      },{\n         \"field\": \"NUMA node0 CPU(s):\",\n         \"data\": \"0-7\"\n      },{\n         \"field\": \"Vulnerability Gather data sampling:\",\n         \"data\": \"Not affected\"\n      },{\n         \"field\": \"Vulnerability Indirect target selection:\",\n         \"data\": \"Not affected\"\n      },{\n         \"field\": \"Vulnerability Itlb multihit:\",\n         \"data\": \"Not affected\"\n      },{\n         \"field\": \"Vulnerability L1tf:\",\n         \"data\": \"Not affected\"\n      },{\n         \"field\": \"Vulnerability Mds:\",\n         \"data\": \"Not affected\"\n      },{\n         \"field\": \"Vulnerability Meltdown:\",\n         \"data\": \"Not affected\"\n      },{\n         \"field\": \"Vulnerability Mmio stale data:\",\n         \"data\": \"Not affected\"\n      },{\n         \"field\": \"Vulnerability Reg file data sampling:\",\n         \"data\": \"Not affected\"\n      },{\n         \"field\": \"Vulnerability Retbleed:\",\n         \"data\": \"Not affected\"\n      },{\n         \"field\": \"Vulnerability Spec rstack overflow:\",\n         \"data\": \"Not affected\"\n      },{\n         \"field\": \"Vulnerability Spec store bypass:\",\n         \"data\": \"Mitigation; Speculative Store Bypass disabled via prctl\"\n      },{\n         \"field\": \"Vulnerability Spectre v1:\",\n         \"data\": \"Mitigation; usercopy/swapgs barriers and __user pointer sanitization\"\n      },{\n         \"field\": \"Vulnerability Spectre v2:\",\n         \"data\": \"Mitigation; Retpolines; IBPB conditional; IBRS_FW; STIBP always-on; RSB filling; PBRSB-eIBRS Not affected; BHI Not affected\"\n      },{\n         \"field\": \"Vulnerability Srbds:\",\n         \"data\": \"Not affected\"\n      },{\n         \"field\": \"Vulnerability Tsa:\",\n         \"data\": \"Not affected\"\n      },{\n         \"field\": \"Vulnerability Tsx async abort:\",\n         \"data\": \"Not affected\"\n      },{\n         \"field\": \"Vulnerability Vmscape:\",\n         \"data\": \"Not affected\"\n      }\n   ]\n}\n",
+    "binary_sha256": "7c29bd2afe615a57af02a440fc4d665c3beec3cf7301ec4007cc07caf5b683f4",
+    "driver_sha256": "29a35af611e3cdfe8e09552faa94182756236186e1fec467957fc777afc62dbf"
+  },
+  "ten/large-block-config.json": {
+    "spec": {
+      "action": "configure",
+      "name": "large-block",
+      "ini": {
+        "consensus": {
+          "min_seal_time": "500"
+        }
+      },
+      "block": 50000
+    },
+    "nodes": [
+      {
+        "host": "10.206.0.16",
+        "ini": "[p2p]\nlisten_ip = 10.206.0.16\nlisten_port = 30300\nsm_ssl = false\nnodes_path = ./\nnodes_file = nodes.json\nenable_ssl_verify = true\n\n[certificate_blacklist]\n\n[certificate_whitelist]\n\n[rpc]\nlisten_ip = 10.206.0.16\nlisten_port = 20200\nthread_count = 4\nsm_ssl = false\nenable_ssl = true\nreturn_input_params = false\n\n[web3_rpc]\nenable = false\nlisten_ip = 10.206.0.16\nlisten_port = 8545\nthread_count = 8\nrequest_body_size_limit = 10240000\nenable_cors = true\ncors_allow_credentials = true\ncors_allowed_origins = *\ncors_allowed_methods = GET, POST, OPTIONS\ncors_allowed_headers = Content-Type, Authorization, X-Requested-With\ncors_max_age = 86400\n\n[cert]\nca_path = ./conf\nca_cert = ca.crt\nnode_key = ssl.key\nnode_cert = ssl.crt\nmulti_ca_path = multiCaPath\n\n[security]\nprivate_key_path = conf/node.pem\nenable_hsm = false\n\n[storage_security]\nenable = false\n\n[consensus]\nmin_seal_time = 500\n\n[executor]\nenable_dag = true\nbaseline_scheduler = false\nbaseline_scheduler_parallel = false\nbaseline_scheduler_maxthread = 8\nbaseline_scheduler_chunksize = 100\n\n[storage]\ndata_path = data\nenable_cache = true\nkey_page_size = 0\npd_ssl_ca_path = \npd_ssl_cert_path = \npd_ssl_key_path = \nenable_archive = false\narchive_ip = 127.0.0.1\narchive_port = \n\n[txpool]\nlimit = 200000\nnotify_worker_num = 2\ntxs_expiration_time = 600\nenable_txs_from_free_node = false\nverify_worker_num = 8\n\n[sync]\nsend_txs_by_tree = false\nsync_block_by_tree = false\ntree_width = 3\n\n[redis]\n\n[flow_control]\n\n[log]\nenable = true\nenable_console_output = false\nlog_path = ./log\nlevel = warning\nmax_log_file_size = 1024\nenable_rate_collector = false\n\n"
+      },
+      {
+        "host": "10.206.0.4",
+        "ini": "[p2p]\nlisten_ip = 10.206.0.4\nlisten_port = 30300\nsm_ssl = false\nnodes_path = ./\nnodes_file = nodes.json\nenable_ssl_verify = true\n\n[certificate_blacklist]\n\n[certificate_whitelist]\n\n[rpc]\nlisten_ip = 10.206.0.4\nlisten_port = 20200\nthread_count = 4\nsm_ssl = false\nenable_ssl = true\nreturn_input_params = false\n\n[web3_rpc]\nenable = false\nlisten_ip = 10.206.0.4\nlisten_port = 8545\nthread_count = 8\nrequest_body_size_limit = 10240000\nenable_cors = true\ncors_allow_credentials = true\ncors_allowed_origins = *\ncors_allowed_methods = GET, POST, OPTIONS\ncors_allowed_headers = Content-Type, Authorization, X-Requested-With\ncors_max_age = 86400\n\n[cert]\nca_path = ./conf\nca_cert = ca.crt\nnode_key = ssl.key\nnode_cert = ssl.crt\nmulti_ca_path = multiCaPath\n\n[security]\nprivate_key_path = conf/node.pem\nenable_hsm = false\n\n[storage_security]\nenable = false\n\n[consensus]\nmin_seal_time = 500\n\n[executor]\nenable_dag = true\nbaseline_scheduler = false\nbaseline_scheduler_parallel = false\nbaseline_scheduler_maxthread = 8\nbaseline_scheduler_chunksize = 100\n\n[storage]\ndata_path = data\nenable_cache = true\nkey_page_size = 0\npd_ssl_ca_path = \npd_ssl_cert_path = \npd_ssl_key_path = \nenable_archive = false\narchive_ip = 127.0.0.1\narchive_port = \n\n[txpool]\nlimit = 200000\nnotify_worker_num = 2\ntxs_expiration_time = 600\nenable_txs_from_free_node = false\nverify_worker_num = 8\n\n[sync]\nsend_txs_by_tree = false\nsync_block_by_tree = false\ntree_width = 3\n\n[redis]\n\n[flow_control]\n\n[log]\nenable = true\nenable_console_output = false\nlog_path = ./log\nlevel = warning\nmax_log_file_size = 1024\nenable_rate_collector = false\n\n"
+      },
+      {
+        "host": "10.206.0.14",
+        "ini": "[p2p]\nlisten_ip = 10.206.0.14\nlisten_port = 30300\nsm_ssl = false\nnodes_path = ./\nnodes_file = nodes.json\nenable_ssl_verify = true\n\n[certificate_blacklist]\n\n[certificate_whitelist]\n\n[rpc]\nlisten_ip = 10.206.0.14\nlisten_port = 20200\nthread_count = 4\nsm_ssl = false\nenable_ssl = true\nreturn_input_params = false\n\n[web3_rpc]\nenable = false\nlisten_ip = 10.206.0.14\nlisten_port = 8545\nthread_count = 8\nrequest_body_size_limit = 10240000\nenable_cors = true\ncors_allow_credentials = true\ncors_allowed_origins = *\ncors_allowed_methods = GET, POST, OPTIONS\ncors_allowed_headers = Content-Type, Authorization, X-Requested-With\ncors_max_age = 86400\n\n[cert]\nca_path = ./conf\nca_cert = ca.crt\nnode_key = ssl.key\nnode_cert = ssl.crt\nmulti_ca_path = multiCaPath\n\n[security]\nprivate_key_path = conf/node.pem\nenable_hsm = false\n\n[storage_security]\nenable = false\n\n[consensus]\nmin_seal_time = 500\n\n[executor]\nenable_dag = true\nbaseline_scheduler = false\nbaseline_scheduler_parallel = false\nbaseline_scheduler_maxthread = 8\nbaseline_scheduler_chunksize = 100\n\n[storage]\ndata_path = data\nenable_cache = true\nkey_page_size = 0\npd_ssl_ca_path = \npd_ssl_cert_path = \npd_ssl_key_path = \nenable_archive = false\narchive_ip = 127.0.0.1\narchive_port = \n\n[txpool]\nlimit = 200000\nnotify_worker_num = 2\ntxs_expiration_time = 600\nenable_txs_from_free_node = false\nverify_worker_num = 8\n\n[sync]\nsend_txs_by_tree = false\nsync_block_by_tree = false\ntree_width = 3\n\n[redis]\n\n[flow_control]\n\n[log]\nenable = true\nenable_console_output = false\nlog_path = ./log\nlevel = warning\nmax_log_file_size = 1024\nenable_rate_collector = false\n\n"
+      },
+      {
+        "host": "10.206.0.17",
+        "ini": "[p2p]\nlisten_ip = 10.206.0.17\nlisten_port = 30300\nsm_ssl = false\nnodes_path = ./\nnodes_file = nodes.json\nenable_ssl_verify = true\n\n[certificate_blacklist]\n\n[certificate_whitelist]\n\n[rpc]\nlisten_ip = 10.206.0.17\nlisten_port = 20200\nthread_count = 4\nsm_ssl = false\nenable_ssl = true\nreturn_input_params = false\n\n[web3_rpc]\nenable = false\nlisten_ip = 10.206.0.17\nlisten_port = 8545\nthread_count = 8\nrequest_body_size_limit = 10240000\nenable_cors = true\ncors_allow_credentials = true\ncors_allowed_origins = *\ncors_allowed_methods = GET, POST, OPTIONS\ncors_allowed_headers = Content-Type, Authorization, X-Requested-With\ncors_max_age = 86400\n\n[cert]\nca_path = ./conf\nca_cert = ca.crt\nnode_key = ssl.key\nnode_cert = ssl.crt\nmulti_ca_path = multiCaPath\n\n[security]\nprivate_key_path = conf/node.pem\nenable_hsm = false\n\n[storage_security]\nenable = false\n\n[consensus]\nmin_seal_time = 500\n\n[executor]\nenable_dag = true\nbaseline_scheduler = false\nbaseline_scheduler_parallel = false\nbaseline_scheduler_maxthread = 8\nbaseline_scheduler_chunksize = 100\n\n[storage]\ndata_path = data\nenable_cache = true\nkey_page_size = 0\npd_ssl_ca_path = \npd_ssl_cert_path = \npd_ssl_key_path = \nenable_archive = false\narchive_ip = 127.0.0.1\narchive_port = \n\n[txpool]\nlimit = 200000\nnotify_worker_num = 2\ntxs_expiration_time = 600\nenable_txs_from_free_node = false\nverify_worker_num = 8\n\n[sync]\nsend_txs_by_tree = false\nsync_block_by_tree = false\ntree_width = 3\n\n[redis]\n\n[flow_control]\n\n[log]\nenable = true\nenable_console_output = false\nlog_path = ./log\nlevel = warning\nmax_log_file_size = 1024\nenable_rate_collector = false\n\n"
+      },
+      {
+        "host": "10.206.0.15",
+        "ini": "[p2p]\nlisten_ip = 10.206.0.15\nlisten_port = 30300\nsm_ssl = false\nnodes_path = ./\nnodes_file = nodes.json\nenable_ssl_verify = true\n\n[certificate_blacklist]\n\n[certificate_whitelist]\n\n[rpc]\nlisten_ip = 10.206.0.15\nlisten_port = 20200\nthread_count = 4\nsm_ssl = false\nenable_ssl = true\nreturn_input_params = false\n\n[web3_rpc]\nenable = false\nlisten_ip = 10.206.0.15\nlisten_port = 8545\nthread_count = 8\nrequest_body_size_limit = 10240000\nenable_cors = true\ncors_allow_credentials = true\ncors_allowed_origins = *\ncors_allowed_methods = GET, POST, OPTIONS\ncors_allowed_headers = Content-Type, Authorization, X-Requested-With\ncors_max_age = 86400\n\n[cert]\nca_path = ./conf\nca_cert = ca.crt\nnode_key = ssl.key\nnode_cert = ssl.crt\nmulti_ca_path = multiCaPath\n\n[security]\nprivate_key_path = conf/node.pem\nenable_hsm = false\n\n[storage_security]\nenable = false\n\n[consensus]\nmin_seal_time = 500\n\n[executor]\nenable_dag = true\nbaseline_scheduler = false\nbaseline_scheduler_parallel = false\nbaseline_scheduler_maxthread = 8\nbaseline_scheduler_chunksize = 100\n\n[storage]\ndata_path = data\nenable_cache = true\nkey_page_size = 0\npd_ssl_ca_path = \npd_ssl_cert_path = \npd_ssl_key_path = \nenable_archive = false\narchive_ip = 127.0.0.1\narchive_port = \n\n[txpool]\nlimit = 200000\nnotify_worker_num = 2\ntxs_expiration_time = 600\nenable_txs_from_free_node = false\nverify_worker_num = 8\n\n[sync]\nsend_txs_by_tree = false\nsync_block_by_tree = false\ntree_width = 3\n\n[redis]\n\n[flow_control]\n\n[log]\nenable = true\nenable_console_output = false\nlog_path = ./log\nlevel = warning\nmax_log_file_size = 1024\nenable_rate_collector = false\n\n"
+      },
+      {
+        "host": "10.206.0.12",
+        "ini": "[p2p]\nlisten_ip = 10.206.0.12\nlisten_port = 30300\nsm_ssl = false\nnodes_path = ./\nnodes_file = nodes.json\nenable_ssl_verify = true\n\n[certificate_blacklist]\n\n[certificate_whitelist]\n\n[rpc]\nlisten_ip = 10.206.0.12\nlisten_port = 20200\nthread_count = 4\nsm_ssl = false\nenable_ssl = true\nreturn_input_params = false\n\n[web3_rpc]\nenable = false\nlisten_ip = 10.206.0.12\nlisten_port = 8545\nthread_count = 8\nrequest_body_size_limit = 10240000\nenable_cors = true\ncors_allow_credentials = true\ncors_allowed_origins = *\ncors_allowed_methods = GET, POST, OPTIONS\ncors_allowed_headers = Content-Type, Authorization, X-Requested-With\ncors_max_age = 86400\n\n[cert]\nca_path = ./conf\nca_cert = ca.crt\nnode_key = ssl.key\nnode_cert = ssl.crt\nmulti_ca_path = multiCaPath\n\n[security]\nprivate_key_path = conf/node.pem\nenable_hsm = false\n\n[storage_security]\nenable = false\n\n[consensus]\nmin_seal_time = 500\n\n[executor]\nenable_dag = true\nbaseline_scheduler = false\nbaseline_scheduler_parallel = false\nbaseline_scheduler_maxthread = 8\nbaseline_scheduler_chunksize = 100\n\n[storage]\ndata_path = data\nenable_cache = true\nkey_page_size = 0\npd_ssl_ca_path = \npd_ssl_cert_path = \npd_ssl_key_path = \nenable_archive = false\narchive_ip = 127.0.0.1\narchive_port = \n\n[txpool]\nlimit = 200000\nnotify_worker_num = 2\ntxs_expiration_time = 600\nenable_txs_from_free_node = false\nverify_worker_num = 8\n\n[sync]\nsend_txs_by_tree = false\nsync_block_by_tree = false\ntree_width = 3\n\n[redis]\n\n[flow_control]\n\n[log]\nenable = true\nenable_console_output = false\nlog_path = ./log\nlevel = warning\nmax_log_file_size = 1024\nenable_rate_collector = false\n\n"
+      },
+      {
+        "host": "10.206.0.2",
+        "ini": "[p2p]\nlisten_ip = 10.206.0.2\nlisten_port = 30300\nsm_ssl = false\nnodes_path = ./\nnodes_file = nodes.json\nenable_ssl_verify = true\n\n[certificate_blacklist]\n\n[certificate_whitelist]\n\n[rpc]\nlisten_ip = 10.206.0.2\nlisten_port = 20200\nthread_count = 4\nsm_ssl = false\nenable_ssl = true\nreturn_input_params = false\n\n[web3_rpc]\nenable = false\nlisten_ip = 10.206.0.2\nlisten_port = 8545\nthread_count = 8\nrequest_body_size_limit = 10240000\nenable_cors = true\ncors_allow_credentials = true\ncors_allowed_origins = *\ncors_allowed_methods = GET, POST, OPTIONS\ncors_allowed_headers = Content-Type, Authorization, X-Requested-With\ncors_max_age = 86400\n\n[cert]\nca_path = ./conf\nca_cert = ca.crt\nnode_key = ssl.key\nnode_cert = ssl.crt\nmulti_ca_path = multiCaPath\n\n[security]\nprivate_key_path = conf/node.pem\nenable_hsm = false\n\n[storage_security]\nenable = false\n\n[consensus]\nmin_seal_time = 500\n\n[executor]\nenable_dag = true\nbaseline_scheduler = false\nbaseline_scheduler_parallel = false\nbaseline_scheduler_maxthread = 8\nbaseline_scheduler_chunksize = 100\n\n[storage]\ndata_path = data\nenable_cache = true\nkey_page_size = 0\npd_ssl_ca_path = \npd_ssl_cert_path = \npd_ssl_key_path = \nenable_archive = false\narchive_ip = 127.0.0.1\narchive_port = \n\n[txpool]\nlimit = 200000\nnotify_worker_num = 2\ntxs_expiration_time = 600\nenable_txs_from_free_node = false\nverify_worker_num = 8\n\n[sync]\nsend_txs_by_tree = false\nsync_block_by_tree = false\ntree_width = 3\n\n[redis]\n\n[flow_control]\n\n[log]\nenable = true\nenable_console_output = false\nlog_path = ./log\nlevel = warning\nmax_log_file_size = 1024\nenable_rate_collector = false\n\n"
+      },
+      {
+        "host": "10.206.0.6",
+        "ini": "[p2p]\nlisten_ip = 10.206.0.6\nlisten_port = 30300\nsm_ssl = false\nnodes_path = ./\nnodes_file = nodes.json\nenable_ssl_verify = true\n\n[certificate_blacklist]\n\n[certificate_whitelist]\n\n[rpc]\nlisten_ip = 10.206.0.6\nlisten_port = 20200\nthread_count = 4\nsm_ssl = false\nenable_ssl = true\nreturn_input_params = false\n\n[web3_rpc]\nenable = false\nlisten_ip = 10.206.0.6\nlisten_port = 8545\nthread_count = 8\nrequest_body_size_limit = 10240000\nenable_cors = true\ncors_allow_credentials = true\ncors_allowed_origins = *\ncors_allowed_methods = GET, POST, OPTIONS\ncors_allowed_headers = Content-Type, Authorization, X-Requested-With\ncors_max_age = 86400\n\n[cert]\nca_path = ./conf\nca_cert = ca.crt\nnode_key = ssl.key\nnode_cert = ssl.crt\nmulti_ca_path = multiCaPath\n\n[security]\nprivate_key_path = conf/node.pem\nenable_hsm = false\n\n[storage_security]\nenable = false\n\n[consensus]\nmin_seal_time = 500\n\n[executor]\nenable_dag = true\nbaseline_scheduler = false\nbaseline_scheduler_parallel = false\nbaseline_scheduler_maxthread = 8\nbaseline_scheduler_chunksize = 100\n\n[storage]\ndata_path = data\nenable_cache = true\nkey_page_size = 0\npd_ssl_ca_path = \npd_ssl_cert_path = \npd_ssl_key_path = \nenable_archive = false\narchive_ip = 127.0.0.1\narchive_port = \n\n[txpool]\nlimit = 200000\nnotify_worker_num = 2\ntxs_expiration_time = 600\nenable_txs_from_free_node = false\nverify_worker_num = 8\n\n[sync]\nsend_txs_by_tree = false\nsync_block_by_tree = false\ntree_width = 3\n\n[redis]\n\n[flow_control]\n\n[log]\nenable = true\nenable_console_output = false\nlog_path = ./log\nlevel = warning\nmax_log_file_size = 1024\nenable_rate_collector = false\n\n"
+      },
+      {
+        "host": "10.206.0.11",
+        "ini": "[p2p]\nlisten_ip = 10.206.0.11\nlisten_port = 30300\nsm_ssl = false\nnodes_path = ./\nnodes_file = nodes.json\nenable_ssl_verify = true\n\n[certificate_blacklist]\n\n[certificate_whitelist]\n\n[rpc]\nlisten_ip = 10.206.0.11\nlisten_port = 20200\nthread_count = 4\nsm_ssl = false\nenable_ssl = true\nreturn_input_params = false\n\n[web3_rpc]\nenable = false\nlisten_ip = 10.206.0.11\nlisten_port = 8545\nthread_count = 8\nrequest_body_size_limit = 10240000\nenable_cors = true\ncors_allow_credentials = true\ncors_allowed_origins = *\ncors_allowed_methods = GET, POST, OPTIONS\ncors_allowed_headers = Content-Type, Authorization, X-Requested-With\ncors_max_age = 86400\n\n[cert]\nca_path = ./conf\nca_cert = ca.crt\nnode_key = ssl.key\nnode_cert = ssl.crt\nmulti_ca_path = multiCaPath\n\n[security]\nprivate_key_path = conf/node.pem\nenable_hsm = false\n\n[storage_security]\nenable = false\n\n[consensus]\nmin_seal_time = 500\n\n[executor]\nenable_dag = true\nbaseline_scheduler = false\nbaseline_scheduler_parallel = false\nbaseline_scheduler_maxthread = 8\nbaseline_scheduler_chunksize = 100\n\n[storage]\ndata_path = data\nenable_cache = true\nkey_page_size = 0\npd_ssl_ca_path = \npd_ssl_cert_path = \npd_ssl_key_path = \nenable_archive = false\narchive_ip = 127.0.0.1\narchive_port = \n\n[txpool]\nlimit = 200000\nnotify_worker_num = 2\ntxs_expiration_time = 600\nenable_txs_from_free_node = false\nverify_worker_num = 8\n\n[sync]\nsend_txs_by_tree = false\nsync_block_by_tree = false\ntree_width = 3\n\n[redis]\n\n[flow_control]\n\n[log]\nenable = true\nenable_console_output = false\nlog_path = ./log\nlevel = warning\nmax_log_file_size = 1024\nenable_rate_collector = false\n\n"
+      },
+      {
+        "host": "10.206.0.8",
+        "ini": "[p2p]\nlisten_ip = 10.206.0.8\nlisten_port = 30300\nsm_ssl = false\nnodes_path = ./\nnodes_file = nodes.json\nenable_ssl_verify = true\n\n[certificate_blacklist]\n\n[certificate_whitelist]\n\n[rpc]\nlisten_ip = 10.206.0.8\nlisten_port = 20200\nthread_count = 4\nsm_ssl = false\nenable_ssl = true\nreturn_input_params = false\n\n[web3_rpc]\nenable = false\nlisten_ip = 10.206.0.8\nlisten_port = 8545\nthread_count = 8\nrequest_body_size_limit = 10240000\nenable_cors = true\ncors_allow_credentials = true\ncors_allowed_origins = *\ncors_allowed_methods = GET, POST, OPTIONS\ncors_allowed_headers = Content-Type, Authorization, X-Requested-With\ncors_max_age = 86400\n\n[cert]\nca_path = ./conf\nca_cert = ca.crt\nnode_key = ssl.key\nnode_cert = ssl.crt\nmulti_ca_path = multiCaPath\n\n[security]\nprivate_key_path = conf/node.pem\nenable_hsm = false\n\n[storage_security]\nenable = false\n\n[consensus]\nmin_seal_time = 500\n\n[executor]\nenable_dag = true\nbaseline_scheduler = false\nbaseline_scheduler_parallel = false\nbaseline_scheduler_maxthread = 8\nbaseline_scheduler_chunksize = 100\n\n[storage]\ndata_path = data\nenable_cache = true\nkey_page_size = 0\npd_ssl_ca_path = \npd_ssl_cert_path = \npd_ssl_key_path = \nenable_archive = false\narchive_ip = 127.0.0.1\narchive_port = \n\n[txpool]\nlimit = 200000\nnotify_worker_num = 2\ntxs_expiration_time = 600\nenable_txs_from_free_node = false\nverify_worker_num = 8\n\n[sync]\nsend_txs_by_tree = false\nsync_block_by_tree = false\ntree_width = 3\n\n[redis]\n\n[flow_control]\n\n[log]\nenable = true\nenable_console_output = false\nlog_path = ./log\nlevel = warning\nmax_log_file_size = 1024\nenable_rate_collector = false\n\n"
+      }
+    ],
+    "before": {
+      "valid": true,
+      "nodes": [
+        {
+          "blockNumber": 7544,
+          "failedTransactionCount": 0,
+          "transactionCount": 52882643,
+          "host": "10.206.0.16",
+          "pending": 0,
+          "begin_epoch": 1790767375.5428848,
+          "end_epoch": 1790767375.55488
+        },
+        {
+          "blockNumber": 7544,
+          "failedTransactionCount": 0,
+          "transactionCount": 52882643,
+          "host": "10.206.0.4",
+          "pending": 0,
+          "begin_epoch": 1790767375.5431087,
+          "end_epoch": 1790767375.552767
+        },
+        {
+          "blockNumber": 7544,
+          "failedTransactionCount": 0,
+          "transactionCount": 52882643,
+          "host": "10.206.0.14",
+          "pending": 0,
+          "begin_epoch": 1790767375.543264,
+          "end_epoch": 1790767375.5548174
+        },
+        {
+          "blockNumber": 7544,
+          "failedTransactionCount": 0,
+          "transactionCount": 52882643,
+          "host": "10.206.0.17",
+          "pending": 0,
+          "begin_epoch": 1790767375.543385,
+          "end_epoch": 1790767375.554408
+        },
+        {
+          "blockNumber": 7544,
+          "failedTransactionCount": 0,
+          "transactionCount": 52882643,
+          "host": "10.206.0.15",
+          "pending": 0,
+          "begin_epoch": 1790767375.5434766,
+          "end_epoch": 1790767375.554144
+        },
+        {
+          "blockNumber": 7544,
+          "failedTransactionCount": 0,
+          "transactionCount": 52882643,
+          "host": "10.206.0.12",
+          "pending": 0,
+          "begin_epoch": 1790767375.543745,
+          "end_epoch": 1790767375.5539453
+        },
+        {
+          "blockNumber": 7544,
+          "failedTransactionCount": 0,
+          "transactionCount": 52882643,
+          "host": "10.206.0.2",
+          "pending": 0,
+          "begin_epoch": 1790767375.544085,
+          "end_epoch": 1790767375.5533953
+        },
+        {
+          "blockNumber": 7544,
+          "failedTransactionCount": 0,
+          "transactionCount": 52882643,
+          "host": "10.206.0.6",
+          "pending": 0,
+          "begin_epoch": 1790767375.5443678,
+          "end_epoch": 1790767375.5548558
+        },
+        {
+          "blockNumber": 7544,
+          "failedTransactionCount": 0,
+          "transactionCount": 52882643,
+          "host": "10.206.0.11",
+          "pending": 0,
+          "begin_epoch": 1790767375.5445604,
+          "end_epoch": 1790767375.5548365
+        },
+        {
+          "blockNumber": 7544,
+          "failedTransactionCount": 0,
+          "transactionCount": 52882643,
+          "host": "10.206.0.8",
+          "pending": 0,
+          "begin_epoch": 1790767375.54465,
+          "end_epoch": 1790767375.5551078
+        }
+      ],
+      "blocks": [
+        {
+          "host": "10.206.0.16",
+          "height": 7544,
+          "hash": "0x08b4871cd483795746a2d70a29131fec7509fe41e677d561bdfa76edab8901fb",
+          "stateRoot": "0x1ca1bc19ef04e697823ed3267a3f0d9c2cf4da0cc65b230a17807de29b91e517",
+          "sealers": 10,
+          "observers": 0
+        },
+        {
+          "host": "10.206.0.4",
+          "height": 7544,
+          "hash": "0x08b4871cd483795746a2d70a29131fec7509fe41e677d561bdfa76edab8901fb",
+          "stateRoot": "0x1ca1bc19ef04e697823ed3267a3f0d9c2cf4da0cc65b230a17807de29b91e517",
+          "sealers": 10,
+          "observers": 0
+        },
+        {
+          "host": "10.206.0.14",
+          "height": 7544,
+          "hash": "0x08b4871cd483795746a2d70a29131fec7509fe41e677d561bdfa76edab8901fb",
+          "stateRoot": "0x1ca1bc19ef04e697823ed3267a3f0d9c2cf4da0cc65b230a17807de29b91e517",
+          "sealers": 10,
+          "observers": 0
+        },
+        {
+          "host": "10.206.0.17",
+          "height": 7544,
+          "hash": "0x08b4871cd483795746a2d70a29131fec7509fe41e677d561bdfa76edab8901fb",
+          "stateRoot": "0x1ca1bc19ef04e697823ed3267a3f0d9c2cf4da0cc65b230a17807de29b91e517",
+          "sealers": 10,
+          "observers": 0
+        },
+        {
+          "host": "10.206.0.15",
+          "height": 7544,
+          "hash": "0x08b4871cd483795746a2d70a29131fec7509fe41e677d561bdfa76edab8901fb",
+          "stateRoot": "0x1ca1bc19ef04e697823ed3267a3f0d9c2cf4da0cc65b230a17807de29b91e517",
+          "sealers": 10,
+          "observers": 0
+        },
+        {
+          "host": "10.206.0.12",
+          "height": 7544,
+          "hash": "0x08b4871cd483795746a2d70a29131fec7509fe41e677d561bdfa76edab8901fb",
+          "stateRoot": "0x1ca1bc19ef04e697823ed3267a3f0d9c2cf4da0cc65b230a17807de29b91e517",
+          "sealers": 10,
+          "observers": 0
+        },
+        {
+          "host": "10.206.0.2",
+          "height": 7544,
+          "hash": "0x08b4871cd483795746a2d70a29131fec7509fe41e677d561bdfa76edab8901fb",
+          "stateRoot": "0x1ca1bc19ef04e697823ed3267a3f0d9c2cf4da0cc65b230a17807de29b91e517",
+          "sealers": 10,
+          "observers": 0
+        },
+        {
+          "host": "10.206.0.6",
+          "height": 7544,
+          "hash": "0x08b4871cd483795746a2d70a29131fec7509fe41e677d561bdfa76edab8901fb",
+          "stateRoot": "0x1ca1bc19ef04e697823ed3267a3f0d9c2cf4da0cc65b230a17807de29b91e517",
+          "sealers": 10,
+          "observers": 0
+        },
+        {
+          "host": "10.206.0.11",
+          "height": 7544,
+          "hash": "0x08b4871cd483795746a2d70a29131fec7509fe41e677d561bdfa76edab8901fb",
+          "stateRoot": "0x1ca1bc19ef04e697823ed3267a3f0d9c2cf4da0cc65b230a17807de29b91e517",
+          "sealers": 10,
+          "observers": 0
+        },
+        {
+          "host": "10.206.0.8",
+          "height": 7544,
+          "hash": "0x08b4871cd483795746a2d70a29131fec7509fe41e677d561bdfa76edab8901fb",
+          "stateRoot": "0x1ca1bc19ef04e697823ed3267a3f0d9c2cf4da0cc65b230a17807de29b91e517",
+          "sealers": 10,
+          "observers": 0
+        }
+      ]
+    },
+    "after": {
+      "valid": true,
+      "nodes": [
+        {
+          "blockNumber": 7544,
+          "failedTransactionCount": 0,
+          "transactionCount": 52882643,
+          "host": "10.206.0.16",
+          "pending": 0,
+          "begin_epoch": 1790767406.995993,
+          "end_epoch": 1790767407.002605
+        },
+        {
+          "blockNumber": 7544,
+          "failedTransactionCount": 0,
+          "transactionCount": 52882643,
+          "host": "10.206.0.4",
+          "pending": 0,
+          "begin_epoch": 1790767406.996186,
+          "end_epoch": 1790767407.0027354
+        },
+        {
+          "blockNumber": 7544,
+          "failedTransactionCount": 0,
+          "transactionCount": 52882643,
+          "host": "10.206.0.14",
+          "pending": 0,
+          "begin_epoch": 1790767406.9963381,
+          "end_epoch": 1790767407.0032334
+        },
+        {
+          "blockNumber": 7544,
+          "failedTransactionCount": 0,
+          "transactionCount": 52882643,
+          "host": "10.206.0.17",
+          "pending": 0,
+          "begin_epoch": 1790767406.9965985,
+          "end_epoch": 1790767407.0039563
+        },
+        {
+          "blockNumber": 7544,
+          "failedTransactionCount": 0,
+          "transactionCount": 52882643,
+          "host": "10.206.0.15",
+          "pending": 0,
+          "begin_epoch": 1790767406.996766,
+          "end_epoch": 1790767407.004579
+        },
+        {
+          "blockNumber": 7544,
+          "failedTransactionCount": 0,
+          "transactionCount": 52882643,
+          "host": "10.206.0.12",
+          "pending": 0,
+          "begin_epoch": 1790767406.9970067,
+          "end_epoch": 1790767407.0040128
+        },
+        {
+          "blockNumber": 7544,
+          "failedTransactionCount": 0,
+          "transactionCount": 52882643,
+          "host": "10.206.0.2",
+          "pending": 0,
+          "begin_epoch": 1790767406.997101,
+          "end_epoch": 1790767407.0044763
+        },
+        {
+          "blockNumber": 7544,
+          "failedTransactionCount": 0,
+          "transactionCount": 52882643,
+          "host": "10.206.0.6",
+          "pending": 0,
+          "begin_epoch": 1790767406.9973843,
+          "end_epoch": 1790767407.0043056
+        },
+        {
+          "blockNumber": 7544,
+          "failedTransactionCount": 0,
+          "transactionCount": 52882643,
+          "host": "10.206.0.11",
+          "pending": 0,
+          "begin_epoch": 1790767406.9975917,
+          "end_epoch": 1790767407.005119
+        },
+        {
+          "blockNumber": 7544,
+          "failedTransactionCount": 0,
+          "transactionCount": 52882643,
+          "host": "10.206.0.8",
+          "pending": 0,
+          "begin_epoch": 1790767406.997796,
+          "end_epoch": 1790767407.0048094
+        }
+      ],
+      "blocks": [
+        {
+          "host": "10.206.0.16",
+          "height": 7544,
+          "hash": "0x08b4871cd483795746a2d70a29131fec7509fe41e677d561bdfa76edab8901fb",
+          "stateRoot": "0x1ca1bc19ef04e697823ed3267a3f0d9c2cf4da0cc65b230a17807de29b91e517",
+          "sealers": 10,
+          "observers": 0
+        },
+        {
+          "host": "10.206.0.4",
+          "height": 7544,
+          "hash": "0x08b4871cd483795746a2d70a29131fec7509fe41e677d561bdfa76edab8901fb",
+          "stateRoot": "0x1ca1bc19ef04e697823ed3267a3f0d9c2cf4da0cc65b230a17807de29b91e517",
+          "sealers": 10,
+          "observers": 0
+        },
+        {
+          "host": "10.206.0.14",
+          "height": 7544,
+          "hash": "0x08b4871cd483795746a2d70a29131fec7509fe41e677d561bdfa76edab8901fb",
+          "stateRoot": "0x1ca1bc19ef04e697823ed3267a3f0d9c2cf4da0cc65b230a17807de29b91e517",
+          "sealers": 10,
+          "observers": 0
+        },
+        {
+          "host": "10.206.0.17",
+          "height": 7544,
+          "hash": "0x08b4871cd483795746a2d70a29131fec7509fe41e677d561bdfa76edab8901fb",
+          "stateRoot": "0x1ca1bc19ef04e697823ed3267a3f0d9c2cf4da0cc65b230a17807de29b91e517",
+          "sealers": 10,
+          "observers": 0
+        },
+        {
+          "host": "10.206.0.15",
+          "height": 7544,
+          "hash": "0x08b4871cd483795746a2d70a29131fec7509fe41e677d561bdfa76edab8901fb",
+          "stateRoot": "0x1ca1bc19ef04e697823ed3267a3f0d9c2cf4da0cc65b230a17807de29b91e517",
+          "sealers": 10,
+          "observers": 0
+        },
+        {
+          "host": "10.206.0.12",
+          "height": 7544,
+          "hash": "0x08b4871cd483795746a2d70a29131fec7509fe41e677d561bdfa76edab8901fb",
+          "stateRoot": "0x1ca1bc19ef04e697823ed3267a3f0d9c2cf4da0cc65b230a17807de29b91e517",
+          "sealers": 10,
+          "observers": 0
+        },
+        {
+          "host": "10.206.0.2",
+          "height": 7544,
+          "hash": "0x08b4871cd483795746a2d70a29131fec7509fe41e677d561bdfa76edab8901fb",
+          "stateRoot": "0x1ca1bc19ef04e697823ed3267a3f0d9c2cf4da0cc65b230a17807de29b91e517",
+          "sealers": 10,
+          "observers": 0
+        },
+        {
+          "host": "10.206.0.6",
+          "height": 7544,
+          "hash": "0x08b4871cd483795746a2d70a29131fec7509fe41e677d561bdfa76edab8901fb",
+          "stateRoot": "0x1ca1bc19ef04e697823ed3267a3f0d9c2cf4da0cc65b230a17807de29b91e517",
+          "sealers": 10,
+          "observers": 0
+        },
+        {
+          "host": "10.206.0.11",
+          "height": 7544,
+          "hash": "0x08b4871cd483795746a2d70a29131fec7509fe41e677d561bdfa76edab8901fb",
+          "stateRoot": "0x1ca1bc19ef04e697823ed3267a3f0d9c2cf4da0cc65b230a17807de29b91e517",
+          "sealers": 10,
+          "observers": 0
+        },
+        {
+          "host": "10.206.0.8",
+          "height": 7544,
+          "hash": "0x08b4871cd483795746a2d70a29131fec7509fe41e677d561bdfa76edab8901fb",
+          "stateRoot": "0x1ca1bc19ef04e697823ed3267a3f0d9c2cf4da0cc65b230a17807de29b91e517",
+          "sealers": 10,
+          "observers": 0
+        }
+      ]
+    }
+  },
+  "ten/blob-batch-config.json": {
+    "spec": {
+      "action": "configure",
+      "name": "blob-batch",
+      "ini": {
+        "storage": {
+          "enable_rocksdb_blob": "true",
+          "write_buffer_size": "134217728",
+          "max_background_jobs": "2",
+          "max_write_buffer_number": "6",
+          "block_cache_size": "268435456",
+          "cache_size": "536870912"
+        },
+        "txpool": {
+          "limit": "500000"
+        }
+      }
+    },
+    "nodes": [
+      {
+        "host": "10.206.0.16",
+        "ini": "[p2p]\nlisten_ip = 10.206.0.16\nlisten_port = 30300\nsm_ssl = false\nnodes_path = ./\nnodes_file = nodes.json\nenable_ssl_verify = true\n\n[certificate_blacklist]\n\n[certificate_whitelist]\n\n[rpc]\nlisten_ip = 10.206.0.16\nlisten_port = 20200\nthread_count = 4\nsm_ssl = false\nenable_ssl = true\nreturn_input_params = false\n\n[web3_rpc]\nenable = false\nlisten_ip = 10.206.0.16\nlisten_port = 8545\nthread_count = 8\nrequest_body_size_limit = 10240000\nenable_cors = true\ncors_allow_credentials = true\ncors_allowed_origins = *\ncors_allowed_methods = GET, POST, OPTIONS\ncors_allowed_headers = Content-Type, Authorization, X-Requested-With\ncors_max_age = 86400\n\n[cert]\nca_path = ./conf\nca_cert = ca.crt\nnode_key = ssl.key\nnode_cert = ssl.crt\nmulti_ca_path = multiCaPath\n\n[security]\nprivate_key_path = conf/node.pem\nenable_hsm = false\n\n[storage_security]\nenable = false\n\n[consensus]\nmin_seal_time = 500\n\n[executor]\nenable_dag = true\nbaseline_scheduler = false\nbaseline_scheduler_parallel = false\nbaseline_scheduler_maxthread = 8\nbaseline_scheduler_chunksize = 100\n\n[storage]\ndata_path = data\nenable_cache = true\nkey_page_size = 0\npd_ssl_ca_path = \npd_ssl_cert_path = \npd_ssl_key_path = \nenable_archive = false\narchive_ip = 127.0.0.1\narchive_port = \nenable_rocksdb_blob = true\nwrite_buffer_size = 134217728\nmax_background_jobs = 2\nmax_write_buffer_number = 6\nblock_cache_size = 268435456\ncache_size = 536870912\n\n[txpool]\nlimit = 500000\nnotify_worker_num = 2\ntxs_expiration_time = 600\nenable_txs_from_free_node = false\nverify_worker_num = 8\n\n[sync]\nsend_txs_by_tree = false\nsync_block_by_tree = false\ntree_width = 3\n\n[redis]\n\n[flow_control]\n\n[log]\nenable = true\nenable_console_output = false\nlog_path = ./log\nlevel = warning\nmax_log_file_size = 1024\nenable_rate_collector = false\n\n"
+      },
+      {
+        "host": "10.206.0.4",
+        "ini": "[p2p]\nlisten_ip = 10.206.0.4\nlisten_port = 30300\nsm_ssl = false\nnodes_path = ./\nnodes_file = nodes.json\nenable_ssl_verify = true\n\n[certificate_blacklist]\n\n[certificate_whitelist]\n\n[rpc]\nlisten_ip = 10.206.0.4\nlisten_port = 20200\nthread_count = 4\nsm_ssl = false\nenable_ssl = true\nreturn_input_params = false\n\n[web3_rpc]\nenable = false\nlisten_ip = 10.206.0.4\nlisten_port = 8545\nthread_count = 8\nrequest_body_size_limit = 10240000\nenable_cors = true\ncors_allow_credentials = true\ncors_allowed_origins = *\ncors_allowed_methods = GET, POST, OPTIONS\ncors_allowed_headers = Content-Type, Authorization, X-Requested-With\ncors_max_age = 86400\n\n[cert]\nca_path = ./conf\nca_cert = ca.crt\nnode_key = ssl.key\nnode_cert = ssl.crt\nmulti_ca_path = multiCaPath\n\n[security]\nprivate_key_path = conf/node.pem\nenable_hsm = false\n\n[storage_security]\nenable = false\n\n[consensus]\nmin_seal_time = 500\n\n[executor]\nenable_dag = true\nbaseline_scheduler = false\nbaseline_scheduler_parallel = false\nbaseline_scheduler_maxthread = 8\nbaseline_scheduler_chunksize = 100\n\n[storage]\ndata_path = data\nenable_cache = true\nkey_page_size = 0\npd_ssl_ca_path = \npd_ssl_cert_path = \npd_ssl_key_path = \nenable_archive = false\narchive_ip = 127.0.0.1\narchive_port = \nenable_rocksdb_blob = true\nwrite_buffer_size = 134217728\nmax_background_jobs = 2\nmax_write_buffer_number = 6\nblock_cache_size = 268435456\ncache_size = 536870912\n\n[txpool]\nlimit = 500000\nnotify_worker_num = 2\ntxs_expiration_time = 600\nenable_txs_from_free_node = false\nverify_worker_num = 8\n\n[sync]\nsend_txs_by_tree = false\nsync_block_by_tree = false\ntree_width = 3\n\n[redis]\n\n[flow_control]\n\n[log]\nenable = true\nenable_console_output = false\nlog_path = ./log\nlevel = warning\nmax_log_file_size = 1024\nenable_rate_collector = false\n\n"
+      },
+      {
+        "host": "10.206.0.14",
+        "ini": "[p2p]\nlisten_ip = 10.206.0.14\nlisten_port = 30300\nsm_ssl = false\nnodes_path = ./\nnodes_file = nodes.json\nenable_ssl_verify = true\n\n[certificate_blacklist]\n\n[certificate_whitelist]\n\n[rpc]\nlisten_ip = 10.206.0.14\nlisten_port = 20200\nthread_count = 4\nsm_ssl = false\nenable_ssl = true\nreturn_input_params = false\n\n[web3_rpc]\nenable = false\nlisten_ip = 10.206.0.14\nlisten_port = 8545\nthread_count = 8\nrequest_body_size_limit = 10240000\nenable_cors = true\ncors_allow_credentials = true\ncors_allowed_origins = *\ncors_allowed_methods = GET, POST, OPTIONS\ncors_allowed_headers = Content-Type, Authorization, X-Requested-With\ncors_max_age = 86400\n\n[cert]\nca_path = ./conf\nca_cert = ca.crt\nnode_key = ssl.key\nnode_cert = ssl.crt\nmulti_ca_path = multiCaPath\n\n[security]\nprivate_key_path = conf/node.pem\nenable_hsm = false\n\n[storage_security]\nenable = false\n\n[consensus]\nmin_seal_time = 500\n\n[executor]\nenable_dag = true\nbaseline_scheduler = false\nbaseline_scheduler_parallel = false\nbaseline_scheduler_maxthread = 8\nbaseline_scheduler_chunksize = 100\n\n[storage]\ndata_path = data\nenable_cache = true\nkey_page_size = 0\npd_ssl_ca_path = \npd_ssl_cert_path = \npd_ssl_key_path = \nenable_archive = false\narchive_ip = 127.0.0.1\narchive_port = \nenable_rocksdb_blob = true\nwrite_buffer_size = 134217728\nmax_background_jobs = 2\nmax_write_buffer_number = 6\nblock_cache_size = 268435456\ncache_size = 536870912\n\n[txpool]\nlimit = 500000\nnotify_worker_num = 2\ntxs_expiration_time = 600\nenable_txs_from_free_node = false\nverify_worker_num = 8\n\n[sync]\nsend_txs_by_tree = false\nsync_block_by_tree = false\ntree_width = 3\n\n[redis]\n\n[flow_control]\n\n[log]\nenable = true\nenable_console_output = false\nlog_path = ./log\nlevel = warning\nmax_log_file_size = 1024\nenable_rate_collector = false\n\n"
+      },
+      {
+        "host": "10.206.0.17",
+        "ini": "[p2p]\nlisten_ip = 10.206.0.17\nlisten_port = 30300\nsm_ssl = false\nnodes_path = ./\nnodes_file = nodes.json\nenable_ssl_verify = true\n\n[certificate_blacklist]\n\n[certificate_whitelist]\n\n[rpc]\nlisten_ip = 10.206.0.17\nlisten_port = 20200\nthread_count = 4\nsm_ssl = false\nenable_ssl = true\nreturn_input_params = false\n\n[web3_rpc]\nenable = false\nlisten_ip = 10.206.0.17\nlisten_port = 8545\nthread_count = 8\nrequest_body_size_limit = 10240000\nenable_cors = true\ncors_allow_credentials = true\ncors_allowed_origins = *\ncors_allowed_methods = GET, POST, OPTIONS\ncors_allowed_headers = Content-Type, Authorization, X-Requested-With\ncors_max_age = 86400\n\n[cert]\nca_path = ./conf\nca_cert = ca.crt\nnode_key = ssl.key\nnode_cert = ssl.crt\nmulti_ca_path = multiCaPath\n\n[security]\nprivate_key_path = conf/node.pem\nenable_hsm = false\n\n[storage_security]\nenable = false\n\n[consensus]\nmin_seal_time = 500\n\n[executor]\nenable_dag = true\nbaseline_scheduler = false\nbaseline_scheduler_parallel = false\nbaseline_scheduler_maxthread = 8\nbaseline_scheduler_chunksize = 100\n\n[storage]\ndata_path = data\nenable_cache = true\nkey_page_size = 0\npd_ssl_ca_path = \npd_ssl_cert_path = \npd_ssl_key_path = \nenable_archive = false\narchive_ip = 127.0.0.1\narchive_port = \nenable_rocksdb_blob = true\nwrite_buffer_size = 134217728\nmax_background_jobs = 2\nmax_write_buffer_number = 6\nblock_cache_size = 268435456\ncache_size = 536870912\n\n[txpool]\nlimit = 500000\nnotify_worker_num = 2\ntxs_expiration_time = 600\nenable_txs_from_free_node = false\nverify_worker_num = 8\n\n[sync]\nsend_txs_by_tree = false\nsync_block_by_tree = false\ntree_width = 3\n\n[redis]\n\n[flow_control]\n\n[log]\nenable = true\nenable_console_output = false\nlog_path = ./log\nlevel = warning\nmax_log_file_size = 1024\nenable_rate_collector = false\n\n"
+      },
+      {
+        "host": "10.206.0.15",
+        "ini": "[p2p]\nlisten_ip = 10.206.0.15\nlisten_port = 30300\nsm_ssl = false\nnodes_path = ./\nnodes_file = nodes.json\nenable_ssl_verify = true\n\n[certificate_blacklist]\n\n[certificate_whitelist]\n\n[rpc]\nlisten_ip = 10.206.0.15\nlisten_port = 20200\nthread_count = 4\nsm_ssl = false\nenable_ssl = true\nreturn_input_params = false\n\n[web3_rpc]\nenable = false\nlisten_ip = 10.206.0.15\nlisten_port = 8545\nthread_count = 8\nrequest_body_size_limit = 10240000\nenable_cors = true\ncors_allow_credentials = true\ncors_allowed_origins = *\ncors_allowed_methods = GET, POST, OPTIONS\ncors_allowed_headers = Content-Type, Authorization, X-Requested-With\ncors_max_age = 86400\n\n[cert]\nca_path = ./conf\nca_cert = ca.crt\nnode_key = ssl.key\nnode_cert = ssl.crt\nmulti_ca_path = multiCaPath\n\n[security]\nprivate_key_path = conf/node.pem\nenable_hsm = false\n\n[storage_security]\nenable = false\n\n[consensus]\nmin_seal_time = 500\n\n[executor]\nenable_dag = true\nbaseline_scheduler = false\nbaseline_scheduler_parallel = false\nbaseline_scheduler_maxthread = 8\nbaseline_scheduler_chunksize = 100\n\n[storage]\ndata_path = data\nenable_cache = true\nkey_page_size = 0\npd_ssl_ca_path = \npd_ssl_cert_path = \npd_ssl_key_path = \nenable_archive = false\narchive_ip = 127.0.0.1\narchive_port = \nenable_rocksdb_blob = true\nwrite_buffer_size = 134217728\nmax_background_jobs = 2\nmax_write_buffer_number = 6\nblock_cache_size = 268435456\ncache_size = 536870912\n\n[txpool]\nlimit = 500000\nnotify_worker_num = 2\ntxs_expiration_time = 600\nenable_txs_from_free_node = false\nverify_worker_num = 8\n\n[sync]\nsend_txs_by_tree = false\nsync_block_by_tree = false\ntree_width = 3\n\n[redis]\n\n[flow_control]\n\n[log]\nenable = true\nenable_console_output = false\nlog_path = ./log\nlevel = warning\nmax_log_file_size = 1024\nenable_rate_collector = false\n\n"
+      },
+      {
+        "host": "10.206.0.12",
+        "ini": "[p2p]\nlisten_ip = 10.206.0.12\nlisten_port = 30300\nsm_ssl = false\nnodes_path = ./\nnodes_file = nodes.json\nenable_ssl_verify = true\n\n[certificate_blacklist]\n\n[certificate_whitelist]\n\n[rpc]\nlisten_ip = 10.206.0.12\nlisten_port = 20200\nthread_count = 4\nsm_ssl = false\nenable_ssl = true\nreturn_input_params = false\n\n[web3_rpc]\nenable = false\nlisten_ip = 10.206.0.12\nlisten_port = 8545\nthread_count = 8\nrequest_body_size_limit = 10240000\nenable_cors = true\ncors_allow_credentials = true\ncors_allowed_origins = *\ncors_allowed_methods = GET, POST, OPTIONS\ncors_allowed_headers = Content-Type, Authorization, X-Requested-With\ncors_max_age = 86400\n\n[cert]\nca_path = ./conf\nca_cert = ca.crt\nnode_key = ssl.key\nnode_cert = ssl.crt\nmulti_ca_path = multiCaPath\n\n[security]\nprivate_key_path = conf/node.pem\nenable_hsm = false\n\n[storage_security]\nenable = false\n\n[consensus]\nmin_seal_time = 500\n\n[executor]\nenable_dag = true\nbaseline_scheduler = false\nbaseline_scheduler_parallel = false\nbaseline_scheduler_maxthread = 8\nbaseline_scheduler_chunksize = 100\n\n[storage]\ndata_path = data\nenable_cache = true\nkey_page_size = 0\npd_ssl_ca_path = \npd_ssl_cert_path = \npd_ssl_key_path = \nenable_archive = false\narchive_ip = 127.0.0.1\narchive_port = \nenable_rocksdb_blob = true\nwrite_buffer_size = 134217728\nmax_background_jobs = 2\nmax_write_buffer_number = 6\nblock_cache_size = 268435456\ncache_size = 536870912\n\n[txpool]\nlimit = 500000\nnotify_worker_num = 2\ntxs_expiration_time = 600\nenable_txs_from_free_node = false\nverify_worker_num = 8\n\n[sync]\nsend_txs_by_tree = false\nsync_block_by_tree = false\ntree_width = 3\n\n[redis]\n\n[flow_control]\n\n[log]\nenable = true\nenable_console_output = false\nlog_path = ./log\nlevel = warning\nmax_log_file_size = 1024\nenable_rate_collector = false\n\n"
+      },
+      {
+        "host": "10.206.0.2",
+        "ini": "[p2p]\nlisten_ip = 10.206.0.2\nlisten_port = 30300\nsm_ssl = false\nnodes_path = ./\nnodes_file = nodes.json\nenable_ssl_verify = true\n\n[certificate_blacklist]\n\n[certificate_whitelist]\n\n[rpc]\nlisten_ip = 10.206.0.2\nlisten_port = 20200\nthread_count = 4\nsm_ssl = false\nenable_ssl = true\nreturn_input_params = false\n\n[web3_rpc]\nenable = false\nlisten_ip = 10.206.0.2\nlisten_port = 8545\nthread_count = 8\nrequest_body_size_limit = 10240000\nenable_cors = true\ncors_allow_credentials = true\ncors_allowed_origins = *\ncors_allowed_methods = GET, POST, OPTIONS\ncors_allowed_headers = Content-Type, Authorization, X-Requested-With\ncors_max_age = 86400\n\n[cert]\nca_path = ./conf\nca_cert = ca.crt\nnode_key = ssl.key\nnode_cert = ssl.crt\nmulti_ca_path = multiCaPath\n\n[security]\nprivate_key_path = conf/node.pem\nenable_hsm = false\n\n[storage_security]\nenable = false\n\n[consensus]\nmin_seal_time = 500\n\n[executor]\nenable_dag = true\nbaseline_scheduler = false\nbaseline_scheduler_parallel = false\nbaseline_scheduler_maxthread = 8\nbaseline_scheduler_chunksize = 100\n\n[storage]\ndata_path = data\nenable_cache = true\nkey_page_size = 0\npd_ssl_ca_path = \npd_ssl_cert_path = \npd_ssl_key_path = \nenable_archive = false\narchive_ip = 127.0.0.1\narchive_port = \nenable_rocksdb_blob = true\nwrite_buffer_size = 134217728\nmax_background_jobs = 2\nmax_write_buffer_number = 6\nblock_cache_size = 268435456\ncache_size = 536870912\n\n[txpool]\nlimit = 500000\nnotify_worker_num = 2\ntxs_expiration_time = 600\nenable_txs_from_free_node = false\nverify_worker_num = 8\n\n[sync]\nsend_txs_by_tree = false\nsync_block_by_tree = false\ntree_width = 3\n\n[redis]\n\n[flow_control]\n\n[log]\nenable = true\nenable_console_output = false\nlog_path = ./log\nlevel = warning\nmax_log_file_size = 1024\nenable_rate_collector = false\n\n"
+      },
+      {
+        "host": "10.206.0.6",
+        "ini": "[p2p]\nlisten_ip = 10.206.0.6\nlisten_port = 30300\nsm_ssl = false\nnodes_path = ./\nnodes_file = nodes.json\nenable_ssl_verify = true\n\n[certificate_blacklist]\n\n[certificate_whitelist]\n\n[rpc]\nlisten_ip = 10.206.0.6\nlisten_port = 20200\nthread_count = 4\nsm_ssl = false\nenable_ssl = true\nreturn_input_params = false\n\n[web3_rpc]\nenable = false\nlisten_ip = 10.206.0.6\nlisten_port = 8545\nthread_count = 8\nrequest_body_size_limit = 10240000\nenable_cors = true\ncors_allow_credentials = true\ncors_allowed_origins = *\ncors_allowed_methods = GET, POST, OPTIONS\ncors_allowed_headers = Content-Type, Authorization, X-Requested-With\ncors_max_age = 86400\n\n[cert]\nca_path = ./conf\nca_cert = ca.crt\nnode_key = ssl.key\nnode_cert = ssl.crt\nmulti_ca_path = multiCaPath\n\n[security]\nprivate_key_path = conf/node.pem\nenable_hsm = false\n\n[storage_security]\nenable = false\n\n[consensus]\nmin_seal_time = 500\n\n[executor]\nenable_dag = true\nbaseline_scheduler = false\nbaseline_scheduler_parallel = false\nbaseline_scheduler_maxthread = 8\nbaseline_scheduler_chunksize = 100\n\n[storage]\ndata_path = data\nenable_cache = true\nkey_page_size = 0\npd_ssl_ca_path = \npd_ssl_cert_path = \npd_ssl_key_path = \nenable_archive = false\narchive_ip = 127.0.0.1\narchive_port = \nenable_rocksdb_blob = true\nwrite_buffer_size = 134217728\nmax_background_jobs = 2\nmax_write_buffer_number = 6\nblock_cache_size = 268435456\ncache_size = 536870912\n\n[txpool]\nlimit = 500000\nnotify_worker_num = 2\ntxs_expiration_time = 600\nenable_txs_from_free_node = false\nverify_worker_num = 8\n\n[sync]\nsend_txs_by_tree = false\nsync_block_by_tree = false\ntree_width = 3\n\n[redis]\n\n[flow_control]\n\n[log]\nenable = true\nenable_console_output = false\nlog_path = ./log\nlevel = warning\nmax_log_file_size = 1024\nenable_rate_collector = false\n\n"
+      },
+      {
+        "host": "10.206.0.11",
+        "ini": "[p2p]\nlisten_ip = 10.206.0.11\nlisten_port = 30300\nsm_ssl = false\nnodes_path = ./\nnodes_file = nodes.json\nenable_ssl_verify = true\n\n[certificate_blacklist]\n\n[certificate_whitelist]\n\n[rpc]\nlisten_ip = 10.206.0.11\nlisten_port = 20200\nthread_count = 4\nsm_ssl = false\nenable_ssl = true\nreturn_input_params = false\n\n[web3_rpc]\nenable = false\nlisten_ip = 10.206.0.11\nlisten_port = 8545\nthread_count = 8\nrequest_body_size_limit = 10240000\nenable_cors = true\ncors_allow_credentials = true\ncors_allowed_origins = *\ncors_allowed_methods = GET, POST, OPTIONS\ncors_allowed_headers = Content-Type, Authorization, X-Requested-With\ncors_max_age = 86400\n\n[cert]\nca_path = ./conf\nca_cert = ca.crt\nnode_key = ssl.key\nnode_cert = ssl.crt\nmulti_ca_path = multiCaPath\n\n[security]\nprivate_key_path = conf/node.pem\nenable_hsm = false\n\n[storage_security]\nenable = false\n\n[consensus]\nmin_seal_time = 500\n\n[executor]\nenable_dag = true\nbaseline_scheduler = false\nbaseline_scheduler_parallel = false\nbaseline_scheduler_maxthread = 8\nbaseline_scheduler_chunksize = 100\n\n[storage]\ndata_path = data\nenable_cache = true\nkey_page_size = 0\npd_ssl_ca_path = \npd_ssl_cert_path = \npd_ssl_key_path = \nenable_archive = false\narchive_ip = 127.0.0.1\narchive_port = \nenable_rocksdb_blob = true\nwrite_buffer_size = 134217728\nmax_background_jobs = 2\nmax_write_buffer_number = 6\nblock_cache_size = 268435456\ncache_size = 536870912\n\n[txpool]\nlimit = 500000\nnotify_worker_num = 2\ntxs_expiration_time = 600\nenable_txs_from_free_node = false\nverify_worker_num = 8\n\n[sync]\nsend_txs_by_tree = false\nsync_block_by_tree = false\ntree_width = 3\n\n[redis]\n\n[flow_control]\n\n[log]\nenable = true\nenable_console_output = false\nlog_path = ./log\nlevel = warning\nmax_log_file_size = 1024\nenable_rate_collector = false\n\n"
+      },
+      {
+        "host": "10.206.0.8",
+        "ini": "[p2p]\nlisten_ip = 10.206.0.8\nlisten_port = 30300\nsm_ssl = false\nnodes_path = ./\nnodes_file = nodes.json\nenable_ssl_verify = true\n\n[certificate_blacklist]\n\n[certificate_whitelist]\n\n[rpc]\nlisten_ip = 10.206.0.8\nlisten_port = 20200\nthread_count = 4\nsm_ssl = false\nenable_ssl = true\nreturn_input_params = false\n\n[web3_rpc]\nenable = false\nlisten_ip = 10.206.0.8\nlisten_port = 8545\nthread_count = 8\nrequest_body_size_limit = 10240000\nenable_cors = true\ncors_allow_credentials = true\ncors_allowed_origins = *\ncors_allowed_methods = GET, POST, OPTIONS\ncors_allowed_headers = Content-Type, Authorization, X-Requested-With\ncors_max_age = 86400\n\n[cert]\nca_path = ./conf\nca_cert = ca.crt\nnode_key = ssl.key\nnode_cert = ssl.crt\nmulti_ca_path = multiCaPath\n\n[security]\nprivate_key_path = conf/node.pem\nenable_hsm = false\n\n[storage_security]\nenable = false\n\n[consensus]\nmin_seal_time = 500\n\n[executor]\nenable_dag = true\nbaseline_scheduler = false\nbaseline_scheduler_parallel = false\nbaseline_scheduler_maxthread = 8\nbaseline_scheduler_chunksize = 100\n\n[storage]\ndata_path = data\nenable_cache = true\nkey_page_size = 0\npd_ssl_ca_path = \npd_ssl_cert_path = \npd_ssl_key_path = \nenable_archive = false\narchive_ip = 127.0.0.1\narchive_port = \nenable_rocksdb_blob = true\nwrite_buffer_size = 134217728\nmax_background_jobs = 2\nmax_write_buffer_number = 6\nblock_cache_size = 268435456\ncache_size = 536870912\n\n[txpool]\nlimit = 500000\nnotify_worker_num = 2\ntxs_expiration_time = 600\nenable_txs_from_free_node = false\nverify_worker_num = 8\n\n[sync]\nsend_txs_by_tree = false\nsync_block_by_tree = false\ntree_width = 3\n\n[redis]\n\n[flow_control]\n\n[log]\nenable = true\nenable_console_output = false\nlog_path = ./log\nlevel = warning\nmax_log_file_size = 1024\nenable_rate_collector = false\n\n"
+      }
+    ],
+    "before": {
+      "valid": true,
+      "nodes": [
+        {
+          "blockNumber": 7648,
+          "failedTransactionCount": 0,
+          "transactionCount": 55673604,
+          "host": "10.206.0.16",
+          "pending": 0,
+          "begin_epoch": 1790767584.795531,
+          "end_epoch": 1790767584.8057702
+        },
+        {
+          "blockNumber": 7648,
+          "failedTransactionCount": 0,
+          "transactionCount": 55673604,
+          "host": "10.206.0.4",
+          "pending": 0,
+          "begin_epoch": 1790767584.795714,
+          "end_epoch": 1790767584.8032389
+        },
+        {
+          "blockNumber": 7648,
+          "failedTransactionCount": 0,
+          "transactionCount": 55673604,
+          "host": "10.206.0.14",
+          "pending": 0,
+          "begin_epoch": 1790767584.795844,
+          "end_epoch": 1790767584.80656
+        },
+        {
+          "blockNumber": 7648,
+          "failedTransactionCount": 0,
+          "transactionCount": 55673604,
+          "host": "10.206.0.17",
+          "pending": 0,
+          "begin_epoch": 1790767584.7960112,
+          "end_epoch": 1790767584.8063357
+        },
+        {
+          "blockNumber": 7648,
+          "failedTransactionCount": 0,
+          "transactionCount": 55673604,
+          "host": "10.206.0.15",
+          "pending": 0,
+          "begin_epoch": 1790767584.7961555,
+          "end_epoch": 1790767584.8060267
+        },
+        {
+          "blockNumber": 7648,
+          "failedTransactionCount": 0,
+          "transactionCount": 55673604,
+          "host": "10.206.0.12",
+          "pending": 0,
+          "begin_epoch": 1790767584.7962828,
+          "end_epoch": 1790767584.8065841
+        },
+        {
+          "blockNumber": 7648,
+          "failedTransactionCount": 0,
+          "transactionCount": 55673604,
+          "host": "10.206.0.2",
+          "pending": 0,
+          "begin_epoch": 1790767584.7965283,
+          "end_epoch": 1790767584.8046412
+        },
+        {
+          "blockNumber": 7648,
+          "failedTransactionCount": 0,
+          "transactionCount": 55673604,
+          "host": "10.206.0.6",
+          "pending": 0,
+          "begin_epoch": 1790767584.796827,
+          "end_epoch": 1790767584.806262
+        },
+        {
+          "blockNumber": 7648,
+          "failedTransactionCount": 0,
+          "transactionCount": 55673604,
+          "host": "10.206.0.11",
+          "pending": 0,
+          "begin_epoch": 1790767584.796983,
+          "end_epoch": 1790767584.8058903
+        },
+        {
+          "blockNumber": 7648,
+          "failedTransactionCount": 0,
+          "transactionCount": 55673604,
+          "host": "10.206.0.8",
+          "pending": 0,
+          "begin_epoch": 1790767584.7971528,
+          "end_epoch": 1790767584.8056264
+        }
+      ],
+      "blocks": [
+        {
+          "host": "10.206.0.16",
+          "height": 7648,
+          "hash": "0x262a918ebb033f14c48f952116dcba8ec92595ee4771d6effca1a36a5d811174",
+          "stateRoot": "0x326fb7075b4205a02266fe6ff7fd9540fbe1cc3423c5d6c3f7c67d4419097c7a",
+          "sealers": 10,
+          "observers": 0
+        },
+        {
+          "host": "10.206.0.4",
+          "height": 7648,
+          "hash": "0x262a918ebb033f14c48f952116dcba8ec92595ee4771d6effca1a36a5d811174",
+          "stateRoot": "0x326fb7075b4205a02266fe6ff7fd9540fbe1cc3423c5d6c3f7c67d4419097c7a",
+          "sealers": 10,
+          "observers": 0
+        },
+        {
+          "host": "10.206.0.14",
+          "height": 7648,
+          "hash": "0x262a918ebb033f14c48f952116dcba8ec92595ee4771d6effca1a36a5d811174",
+          "stateRoot": "0x326fb7075b4205a02266fe6ff7fd9540fbe1cc3423c5d6c3f7c67d4419097c7a",
+          "sealers": 10,
+          "observers": 0
+        },
+        {
+          "host": "10.206.0.17",
+          "height": 7648,
+          "hash": "0x262a918ebb033f14c48f952116dcba8ec92595ee4771d6effca1a36a5d811174",
+          "stateRoot": "0x326fb7075b4205a02266fe6ff7fd9540fbe1cc3423c5d6c3f7c67d4419097c7a",
+          "sealers": 10,
+          "observers": 0
+        },
+        {
+          "host": "10.206.0.15",
+          "height": 7648,
+          "hash": "0x262a918ebb033f14c48f952116dcba8ec92595ee4771d6effca1a36a5d811174",
+          "stateRoot": "0x326fb7075b4205a02266fe6ff7fd9540fbe1cc3423c5d6c3f7c67d4419097c7a",
+          "sealers": 10,
+          "observers": 0
+        },
+        {
+          "host": "10.206.0.12",
+          "height": 7648,
+          "hash": "0x262a918ebb033f14c48f952116dcba8ec92595ee4771d6effca1a36a5d811174",
+          "stateRoot": "0x326fb7075b4205a02266fe6ff7fd9540fbe1cc3423c5d6c3f7c67d4419097c7a",
+          "sealers": 10,
+          "observers": 0
+        },
+        {
+          "host": "10.206.0.2",
+          "height": 7648,
+          "hash": "0x262a918ebb033f14c48f952116dcba8ec92595ee4771d6effca1a36a5d811174",
+          "stateRoot": "0x326fb7075b4205a02266fe6ff7fd9540fbe1cc3423c5d6c3f7c67d4419097c7a",
+          "sealers": 10,
+          "observers": 0
+        },
+        {
+          "host": "10.206.0.6",
+          "height": 7648,
+          "hash": "0x262a918ebb033f14c48f952116dcba8ec92595ee4771d6effca1a36a5d811174",
+          "stateRoot": "0x326fb7075b4205a02266fe6ff7fd9540fbe1cc3423c5d6c3f7c67d4419097c7a",
+          "sealers": 10,
+          "observers": 0
+        },
+        {
+          "host": "10.206.0.11",
+          "height": 7648,
+          "hash": "0x262a918ebb033f14c48f952116dcba8ec92595ee4771d6effca1a36a5d811174",
+          "stateRoot": "0x326fb7075b4205a02266fe6ff7fd9540fbe1cc3423c5d6c3f7c67d4419097c7a",
+          "sealers": 10,
+          "observers": 0
+        },
+        {
+          "host": "10.206.0.8",
+          "height": 7648,
+          "hash": "0x262a918ebb033f14c48f952116dcba8ec92595ee4771d6effca1a36a5d811174",
+          "stateRoot": "0x326fb7075b4205a02266fe6ff7fd9540fbe1cc3423c5d6c3f7c67d4419097c7a",
+          "sealers": 10,
+          "observers": 0
+        }
+      ]
+    },
+    "after": {
+      "valid": true,
+      "nodes": [
+        {
+          "blockNumber": 7648,
+          "failedTransactionCount": 0,
+          "transactionCount": 55673604,
+          "host": "10.206.0.16",
+          "pending": 0,
+          "begin_epoch": 1790767619.2957277,
+          "end_epoch": 1790767619.3060575
+        },
+        {
+          "blockNumber": 7648,
+          "failedTransactionCount": 0,
+          "transactionCount": 55673604,
+          "host": "10.206.0.4",
+          "pending": 0,
+          "begin_epoch": 1790767619.2959342,
+          "end_epoch": 1790767619.3037143
+        },
+        {
+          "blockNumber": 7648,
+          "failedTransactionCount": 0,
+          "transactionCount": 55673604,
+          "host": "10.206.0.14",
+          "pending": 0,
+          "begin_epoch": 1790767619.2960675,
+          "end_epoch": 1790767619.3038902
+        },
+        {
+          "blockNumber": 7648,
+          "failedTransactionCount": 0,
+          "transactionCount": 55673604,
+          "host": "10.206.0.17",
+          "pending": 0,
+          "begin_epoch": 1790767619.2962291,
+          "end_epoch": 1790767619.3063312
+        },
+        {
+          "blockNumber": 7648,
+          "failedTransactionCount": 0,
+          "transactionCount": 55673604,
+          "host": "10.206.0.15",
+          "pending": 0,
+          "begin_epoch": 1790767619.2963796,
+          "end_epoch": 1790767619.304336
+        },
+        {
+          "blockNumber": 7648,
+          "failedTransactionCount": 0,
+          "transactionCount": 55673604,
+          "host": "10.206.0.12",
+          "pending": 0,
+          "begin_epoch": 1790767619.2967434,
+          "end_epoch": 1790767619.3039985
+        },
+        {
+          "blockNumber": 7648,
+          "failedTransactionCount": 0,
+          "transactionCount": 55673604,
+          "host": "10.206.0.2",
+          "pending": 0,
+          "begin_epoch": 1790767619.2970173,
+          "end_epoch": 1790767619.3057878
+        },
+        {
+          "blockNumber": 7648,
+          "failedTransactionCount": 0,
+          "transactionCount": 55673604,
+          "host": "10.206.0.6",
+          "pending": 0,
+          "begin_epoch": 1790767619.2971373,
+          "end_epoch": 1790767619.3051698
+        },
+        {
+          "blockNumber": 7648,
+          "failedTransactionCount": 0,
+          "transactionCount": 55673604,
+          "host": "10.206.0.11",
+          "pending": 0,
+          "begin_epoch": 1790767619.2973123,
+          "end_epoch": 1790767619.3064215
+        },
+        {
+          "blockNumber": 7648,
+          "failedTransactionCount": 0,
+          "transactionCount": 55673604,
+          "host": "10.206.0.8",
+          "pending": 0,
+          "begin_epoch": 1790767619.2974365,
+          "end_epoch": 1790767619.3063078
+        }
+      ],
+      "blocks": [
+        {
+          "host": "10.206.0.16",
+          "height": 7648,
+          "hash": "0x262a918ebb033f14c48f952116dcba8ec92595ee4771d6effca1a36a5d811174",
+          "stateRoot": "0x326fb7075b4205a02266fe6ff7fd9540fbe1cc3423c5d6c3f7c67d4419097c7a",
+          "sealers": 10,
+          "observers": 0
+        },
+        {
+          "host": "10.206.0.4",
+          "height": 7648,
+          "hash": "0x262a918ebb033f14c48f952116dcba8ec92595ee4771d6effca1a36a5d811174",
+          "stateRoot": "0x326fb7075b4205a02266fe6ff7fd9540fbe1cc3423c5d6c3f7c67d4419097c7a",
+          "sealers": 10,
+          "observers": 0
+        },
+        {
+          "host": "10.206.0.14",
+          "height": 7648,
+          "hash": "0x262a918ebb033f14c48f952116dcba8ec92595ee4771d6effca1a36a5d811174",
+          "stateRoot": "0x326fb7075b4205a02266fe6ff7fd9540fbe1cc3423c5d6c3f7c67d4419097c7a",
+          "sealers": 10,
+          "observers": 0
+        },
+        {
+          "host": "10.206.0.17",
+          "height": 7648,
+          "hash": "0x262a918ebb033f14c48f952116dcba8ec92595ee4771d6effca1a36a5d811174",
+          "stateRoot": "0x326fb7075b4205a02266fe6ff7fd9540fbe1cc3423c5d6c3f7c67d4419097c7a",
+          "sealers": 10,
+          "observers": 0
+        },
+        {
+          "host": "10.206.0.15",
+          "height": 7648,
+          "hash": "0x262a918ebb033f14c48f952116dcba8ec92595ee4771d6effca1a36a5d811174",
+          "stateRoot": "0x326fb7075b4205a02266fe6ff7fd9540fbe1cc3423c5d6c3f7c67d4419097c7a",
+          "sealers": 10,
+          "observers": 0
+        },
+        {
+          "host": "10.206.0.12",
+          "height": 7648,
+          "hash": "0x262a918ebb033f14c48f952116dcba8ec92595ee4771d6effca1a36a5d811174",
+          "stateRoot": "0x326fb7075b4205a02266fe6ff7fd9540fbe1cc3423c5d6c3f7c67d4419097c7a",
+          "sealers": 10,
+          "observers": 0
+        },
+        {
+          "host": "10.206.0.2",
+          "height": 7648,
+          "hash": "0x262a918ebb033f14c48f952116dcba8ec92595ee4771d6effca1a36a5d811174",
+          "stateRoot": "0x326fb7075b4205a02266fe6ff7fd9540fbe1cc3423c5d6c3f7c67d4419097c7a",
+          "sealers": 10,
+          "observers": 0
+        },
+        {
+          "host": "10.206.0.6",
+          "height": 7648,
+          "hash": "0x262a918ebb033f14c48f952116dcba8ec92595ee4771d6effca1a36a5d811174",
+          "stateRoot": "0x326fb7075b4205a02266fe6ff7fd9540fbe1cc3423c5d6c3f7c67d4419097c7a",
+          "sealers": 10,
+          "observers": 0
+        },
+        {
+          "host": "10.206.0.11",
+          "height": 7648,
+          "hash": "0x262a918ebb033f14c48f952116dcba8ec92595ee4771d6effca1a36a5d811174",
+          "stateRoot": "0x326fb7075b4205a02266fe6ff7fd9540fbe1cc3423c5d6c3f7c67d4419097c7a",
+          "sealers": 10,
+          "observers": 0
+        },
+        {
+          "host": "10.206.0.8",
+          "height": 7648,
+          "hash": "0x262a918ebb033f14c48f952116dcba8ec92595ee4771d6effca1a36a5d811174",
+          "stateRoot": "0x326fb7075b4205a02266fe6ff7fd9540fbe1cc3423c5d6c3f7c67d4419097c7a",
+          "sealers": 10,
+          "observers": 0
+        }
+      ]
+    }
+  },
+  "ten/INCIDENTS.json": [
+    {
+      "case": "stable-native-40000-profile-baseline-r1",
+      "host": "10.206.0.16",
+      "stage": "preparation",
+      "event": "TransactionExecutor is not running; remaining drivers stopped before start gate"
+    },
+    {
+      "case": "stable-native-70000-blob-batch-r1",
+      "host": "10.206.0.14",
+      "stage": "preparation",
+      "event": "TransactionExecutor is not running; node exec thread segfault at 19:27:53, kernel journal verified; recovered and Blob setting withdrawn"
+    },
+    {
+      "case": "stable-native-70000-blob-batch-r2",
+      "host": "10.206.0.14",
+      "stage": "before measurement",
+      "event": "RPC connection refused while node was stopped after crash"
+    },
+    {
+      "case": "stable-native-70000-batch1000-r1",
+      "host": "10.206.0.2",
+      "stage": "measurement",
+      "event": "Node stopped progressing at height 7664; peers reached 7680; restart alone did not recover. After increasing P2P message capacity to 128 MiB and receive buffer to 256 MiB, node reached the common head. Recovery state recorded separately."
+    }
+  ],
+  "ten/large-message-recovery-config.json": {
+    "spec": {
+      "action": "configure",
+      "name": "large-message-recovery",
+      "recover": true,
+      "ini": {
+        "p2p": {
+          "allow_max_msg_size": "134217728",
+          "session_recv_buffer_size": "268435456",
+          "session_max_read_data_size": "262144"
+        }
+      }
+    },
+    "nodes": [
+      {
+        "host": "10.206.0.16",
+        "ini": "[p2p]\nlisten_ip = 10.206.0.16\nlisten_port = 30300\nsm_ssl = false\nnodes_path = ./\nnodes_file = nodes.json\nenable_ssl_verify = true\nallow_max_msg_size = 134217728\nsession_recv_buffer_size = 268435456\nsession_max_read_data_size = 262144\n\n[certificate_blacklist]\n\n[certificate_whitelist]\n\n[rpc]\nlisten_ip = 10.206.0.16\nlisten_port = 20200\nthread_count = 4\nsm_ssl = false\nenable_ssl = true\nreturn_input_params = false\n\n[web3_rpc]\nenable = false\nlisten_ip = 10.206.0.16\nlisten_port = 8545\nthread_count = 8\nrequest_body_size_limit = 10240000\nenable_cors = true\ncors_allow_credentials = true\ncors_allowed_origins = *\ncors_allowed_methods = GET, POST, OPTIONS\ncors_allowed_headers = Content-Type, Authorization, X-Requested-With\ncors_max_age = 86400\n\n[cert]\nca_path = ./conf\nca_cert = ca.crt\nnode_key = ssl.key\nnode_cert = ssl.crt\nmulti_ca_path = multiCaPath\n\n[security]\nprivate_key_path = conf/node.pem\nenable_hsm = false\n\n[storage_security]\nenable = false\n\n[consensus]\nmin_seal_time = 1000\n\n[executor]\nenable_dag = true\nbaseline_scheduler = false\nbaseline_scheduler_parallel = false\nbaseline_scheduler_maxthread = 8\nbaseline_scheduler_chunksize = 100\n\n[storage]\ndata_path = data\nenable_cache = true\nkey_page_size = 0\npd_ssl_ca_path = \npd_ssl_cert_path = \npd_ssl_key_path = \nenable_archive = false\narchive_ip = 127.0.0.1\narchive_port = \nenable_rocksdb_blob = false\nwrite_buffer_size = 134217728\nmax_background_jobs = 4\nmax_write_buffer_number = 6\nblock_cache_size = 268435456\ncache_size = 536870912\n\n[txpool]\nlimit = 500000\nnotify_worker_num = 2\ntxs_expiration_time = 600\nenable_txs_from_free_node = false\nverify_worker_num = 8\n\n[sync]\nsend_txs_by_tree = false\nsync_block_by_tree = false\ntree_width = 3\n\n[redis]\n\n[flow_control]\n\n[log]\nenable = true\nenable_console_output = false\nlog_path = ./log\nlevel = warning\nmax_log_file_size = 1024\nenable_rate_collector = false\n\n"
+      },
+      {
+        "host": "10.206.0.4",
+        "ini": "[p2p]\nlisten_ip = 10.206.0.4\nlisten_port = 30300\nsm_ssl = false\nnodes_path = ./\nnodes_file = nodes.json\nenable_ssl_verify = true\nallow_max_msg_size = 134217728\nsession_recv_buffer_size = 268435456\nsession_max_read_data_size = 262144\n\n[certificate_blacklist]\n\n[certificate_whitelist]\n\n[rpc]\nlisten_ip = 10.206.0.4\nlisten_port = 20200\nthread_count = 4\nsm_ssl = false\nenable_ssl = true\nreturn_input_params = false\n\n[web3_rpc]\nenable = false\nlisten_ip = 10.206.0.4\nlisten_port = 8545\nthread_count = 8\nrequest_body_size_limit = 10240000\nenable_cors = true\ncors_allow_credentials = true\ncors_allowed_origins = *\ncors_allowed_methods = GET, POST, OPTIONS\ncors_allowed_headers = Content-Type, Authorization, X-Requested-With\ncors_max_age = 86400\n\n[cert]\nca_path = ./conf\nca_cert = ca.crt\nnode_key = ssl.key\nnode_cert = ssl.crt\nmulti_ca_path = multiCaPath\n\n[security]\nprivate_key_path = conf/node.pem\nenable_hsm = false\n\n[storage_security]\nenable = false\n\n[consensus]\nmin_seal_time = 1000\n\n[executor]\nenable_dag = true\nbaseline_scheduler = false\nbaseline_scheduler_parallel = false\nbaseline_scheduler_maxthread = 8\nbaseline_scheduler_chunksize = 100\n\n[storage]\ndata_path = data\nenable_cache = true\nkey_page_size = 0\npd_ssl_ca_path = \npd_ssl_cert_path = \npd_ssl_key_path = \nenable_archive = false\narchive_ip = 127.0.0.1\narchive_port = \nenable_rocksdb_blob = false\nwrite_buffer_size = 134217728\nmax_background_jobs = 4\nmax_write_buffer_number = 6\nblock_cache_size = 268435456\ncache_size = 536870912\n\n[txpool]\nlimit = 500000\nnotify_worker_num = 2\ntxs_expiration_time = 600\nenable_txs_from_free_node = false\nverify_worker_num = 8\n\n[sync]\nsend_txs_by_tree = false\nsync_block_by_tree = false\ntree_width = 3\n\n[redis]\n\n[flow_control]\n\n[log]\nenable = true\nenable_console_output = false\nlog_path = ./log\nlevel = warning\nmax_log_file_size = 1024\nenable_rate_collector = false\n\n"
+      },
+      {
+        "host": "10.206.0.14",
+        "ini": "[p2p]\nlisten_ip = 10.206.0.14\nlisten_port = 30300\nsm_ssl = false\nnodes_path = ./\nnodes_file = nodes.json\nenable_ssl_verify = true\nallow_max_msg_size = 134217728\nsession_recv_buffer_size = 268435456\nsession_max_read_data_size = 262144\n\n[certificate_blacklist]\n\n[certificate_whitelist]\n\n[rpc]\nlisten_ip = 10.206.0.14\nlisten_port = 20200\nthread_count = 4\nsm_ssl = false\nenable_ssl = true\nreturn_input_params = false\n\n[web3_rpc]\nenable = false\nlisten_ip = 10.206.0.14\nlisten_port = 8545\nthread_count = 8\nrequest_body_size_limit = 10240000\nenable_cors = true\ncors_allow_credentials = true\ncors_allowed_origins = *\ncors_allowed_methods = GET, POST, OPTIONS\ncors_allowed_headers = Content-Type, Authorization, X-Requested-With\ncors_max_age = 86400\n\n[cert]\nca_path = ./conf\nca_cert = ca.crt\nnode_key = ssl.key\nnode_cert = ssl.crt\nmulti_ca_path = multiCaPath\n\n[security]\nprivate_key_path = conf/node.pem\nenable_hsm = false\n\n[storage_security]\nenable = false\n\n[consensus]\nmin_seal_time = 1000\n\n[executor]\nenable_dag = true\nbaseline_scheduler = false\nbaseline_scheduler_parallel = false\nbaseline_scheduler_maxthread = 8\nbaseline_scheduler_chunksize = 100\n\n[storage]\ndata_path = data\nenable_cache = true\nkey_page_size = 0\npd_ssl_ca_path = \npd_ssl_cert_path = \npd_ssl_key_path = \nenable_archive = false\narchive_ip = 127.0.0.1\narchive_port = \nenable_rocksdb_blob = false\nwrite_buffer_size = 134217728\nmax_background_jobs = 4\nmax_write_buffer_number = 6\nblock_cache_size = 268435456\ncache_size = 536870912\n\n[txpool]\nlimit = 500000\nnotify_worker_num = 2\ntxs_expiration_time = 600\nenable_txs_from_free_node = false\nverify_worker_num = 8\n\n[sync]\nsend_txs_by_tree = false\nsync_block_by_tree = false\ntree_width = 3\n\n[redis]\n\n[flow_control]\n\n[log]\nenable = true\nenable_console_output = false\nlog_path = ./log\nlevel = warning\nmax_log_file_size = 1024\nenable_rate_collector = false\n\n"
+      },
+      {
+        "host": "10.206.0.17",
+        "ini": "[p2p]\nlisten_ip = 10.206.0.17\nlisten_port = 30300\nsm_ssl = false\nnodes_path = ./\nnodes_file = nodes.json\nenable_ssl_verify = true\nallow_max_msg_size = 134217728\nsession_recv_buffer_size = 268435456\nsession_max_read_data_size = 262144\n\n[certificate_blacklist]\n\n[certificate_whitelist]\n\n[rpc]\nlisten_ip = 10.206.0.17\nlisten_port = 20200\nthread_count = 4\nsm_ssl = false\nenable_ssl = true\nreturn_input_params = false\n\n[web3_rpc]\nenable = false\nlisten_ip = 10.206.0.17\nlisten_port = 8545\nthread_count = 8\nrequest_body_size_limit = 10240000\nenable_cors = true\ncors_allow_credentials = true\ncors_allowed_origins = *\ncors_allowed_methods = GET, POST, OPTIONS\ncors_allowed_headers = Content-Type, Authorization, X-Requested-With\ncors_max_age = 86400\n\n[cert]\nca_path = ./conf\nca_cert = ca.crt\nnode_key = ssl.key\nnode_cert = ssl.crt\nmulti_ca_path = multiCaPath\n\n[security]\nprivate_key_path = conf/node.pem\nenable_hsm = false\n\n[storage_security]\nenable = false\n\n[consensus]\nmin_seal_time = 1000\n\n[executor]\nenable_dag = true\nbaseline_scheduler = false\nbaseline_scheduler_parallel = false\nbaseline_scheduler_maxthread = 8\nbaseline_scheduler_chunksize = 100\n\n[storage]\ndata_path = data\nenable_cache = true\nkey_page_size = 0\npd_ssl_ca_path = \npd_ssl_cert_path = \npd_ssl_key_path = \nenable_archive = false\narchive_ip = 127.0.0.1\narchive_port = \nenable_rocksdb_blob = false\nwrite_buffer_size = 134217728\nmax_background_jobs = 4\nmax_write_buffer_number = 6\nblock_cache_size = 268435456\ncache_size = 536870912\n\n[txpool]\nlimit = 500000\nnotify_worker_num = 2\ntxs_expiration_time = 600\nenable_txs_from_free_node = false\nverify_worker_num = 8\n\n[sync]\nsend_txs_by_tree = false\nsync_block_by_tree = false\ntree_width = 3\n\n[redis]\n\n[flow_control]\n\n[log]\nenable = true\nenable_console_output = false\nlog_path = ./log\nlevel = warning\nmax_log_file_size = 1024\nenable_rate_collector = false\n\n"
+      },
+      {
+        "host": "10.206.0.15",
+        "ini": "[p2p]\nlisten_ip = 10.206.0.15\nlisten_port = 30300\nsm_ssl = false\nnodes_path = ./\nnodes_file = nodes.json\nenable_ssl_verify = true\nallow_max_msg_size = 134217728\nsession_recv_buffer_size = 268435456\nsession_max_read_data_size = 262144\n\n[certificate_blacklist]\n\n[certificate_whitelist]\n\n[rpc]\nlisten_ip = 10.206.0.15\nlisten_port = 20200\nthread_count = 4\nsm_ssl = false\nenable_ssl = true\nreturn_input_params = false\n\n[web3_rpc]\nenable = false\nlisten_ip = 10.206.0.15\nlisten_port = 8545\nthread_count = 8\nrequest_body_size_limit = 10240000\nenable_cors = true\ncors_allow_credentials = true\ncors_allowed_origins = *\ncors_allowed_methods = GET, POST, OPTIONS\ncors_allowed_headers = Content-Type, Authorization, X-Requested-With\ncors_max_age = 86400\n\n[cert]\nca_path = ./conf\nca_cert = ca.crt\nnode_key = ssl.key\nnode_cert = ssl.crt\nmulti_ca_path = multiCaPath\n\n[security]\nprivate_key_path = conf/node.pem\nenable_hsm = false\n\n[storage_security]\nenable = false\n\n[consensus]\nmin_seal_time = 1000\n\n[executor]\nenable_dag = true\nbaseline_scheduler = false\nbaseline_scheduler_parallel = false\nbaseline_scheduler_maxthread = 8\nbaseline_scheduler_chunksize = 100\n\n[storage]\ndata_path = data\nenable_cache = true\nkey_page_size = 0\npd_ssl_ca_path = \npd_ssl_cert_path = \npd_ssl_key_path = \nenable_archive = false\narchive_ip = 127.0.0.1\narchive_port = \nenable_rocksdb_blob = false\nwrite_buffer_size = 134217728\nmax_background_jobs = 4\nmax_write_buffer_number = 6\nblock_cache_size = 268435456\ncache_size = 536870912\n\n[txpool]\nlimit = 500000\nnotify_worker_num = 2\ntxs_expiration_time = 600\nenable_txs_from_free_node = false\nverify_worker_num = 8\n\n[sync]\nsend_txs_by_tree = false\nsync_block_by_tree = false\ntree_width = 3\n\n[redis]\n\n[flow_control]\n\n[log]\nenable = true\nenable_console_output = false\nlog_path = ./log\nlevel = warning\nmax_log_file_size = 1024\nenable_rate_collector = false\n\n"
+      },
+      {
+        "host": "10.206.0.12",
+        "ini": "[p2p]\nlisten_ip = 10.206.0.12\nlisten_port = 30300\nsm_ssl = false\nnodes_path = ./\nnodes_file = nodes.json\nenable_ssl_verify = true\nallow_max_msg_size = 134217728\nsession_recv_buffer_size = 268435456\nsession_max_read_data_size = 262144\n\n[certificate_blacklist]\n\n[certificate_whitelist]\n\n[rpc]\nlisten_ip = 10.206.0.12\nlisten_port = 20200\nthread_count = 4\nsm_ssl = false\nenable_ssl = true\nreturn_input_params = false\n\n[web3_rpc]\nenable = false\nlisten_ip = 10.206.0.12\nlisten_port = 8545\nthread_count = 8\nrequest_body_size_limit = 10240000\nenable_cors = true\ncors_allow_credentials = true\ncors_allowed_origins = *\ncors_allowed_methods = GET, POST, OPTIONS\ncors_allowed_headers = Content-Type, Authorization, X-Requested-With\ncors_max_age = 86400\n\n[cert]\nca_path = ./conf\nca_cert = ca.crt\nnode_key = ssl.key\nnode_cert = ssl.crt\nmulti_ca_path = multiCaPath\n\n[security]\nprivate_key_path = conf/node.pem\nenable_hsm = false\n\n[storage_security]\nenable = false\n\n[consensus]\nmin_seal_time = 1000\n\n[executor]\nenable_dag = true\nbaseline_scheduler = false\nbaseline_scheduler_parallel = false\nbaseline_scheduler_maxthread = 8\nbaseline_scheduler_chunksize = 100\n\n[storage]\ndata_path = data\nenable_cache = true\nkey_page_size = 0\npd_ssl_ca_path = \npd_ssl_cert_path = \npd_ssl_key_path = \nenable_archive = false\narchive_ip = 127.0.0.1\narchive_port = \nenable_rocksdb_blob = false\nwrite_buffer_size = 134217728\nmax_background_jobs = 4\nmax_write_buffer_number = 6\nblock_cache_size = 268435456\ncache_size = 536870912\n\n[txpool]\nlimit = 500000\nnotify_worker_num = 2\ntxs_expiration_time = 600\nenable_txs_from_free_node = false\nverify_worker_num = 8\n\n[sync]\nsend_txs_by_tree = false\nsync_block_by_tree = false\ntree_width = 3\n\n[redis]\n\n[flow_control]\n\n[log]\nenable = true\nenable_console_output = false\nlog_path = ./log\nlevel = warning\nmax_log_file_size = 1024\nenable_rate_collector = false\n\n"
+      },
+      {
+        "host": "10.206.0.2",
+        "ini": "[p2p]\nlisten_ip = 10.206.0.2\nlisten_port = 30300\nsm_ssl = false\nnodes_path = ./\nnodes_file = nodes.json\nenable_ssl_verify = true\nallow_max_msg_size = 134217728\nsession_recv_buffer_size = 268435456\nsession_max_read_data_size = 262144\n\n[certificate_blacklist]\n\n[certificate_whitelist]\n\n[rpc]\nlisten_ip = 10.206.0.2\nlisten_port = 20200\nthread_count = 4\nsm_ssl = false\nenable_ssl = true\nreturn_input_params = false\n\n[web3_rpc]\nenable = false\nlisten_ip = 10.206.0.2\nlisten_port = 8545\nthread_count = 8\nrequest_body_size_limit = 10240000\nenable_cors = true\ncors_allow_credentials = true\ncors_allowed_origins = *\ncors_allowed_methods = GET, POST, OPTIONS\ncors_allowed_headers = Content-Type, Authorization, X-Requested-With\ncors_max_age = 86400\n\n[cert]\nca_path = ./conf\nca_cert = ca.crt\nnode_key = ssl.key\nnode_cert = ssl.crt\nmulti_ca_path = multiCaPath\n\n[security]\nprivate_key_path = conf/node.pem\nenable_hsm = false\n\n[storage_security]\nenable = false\n\n[consensus]\nmin_seal_time = 1000\n\n[executor]\nenable_dag = true\nbaseline_scheduler = false\nbaseline_scheduler_parallel = false\nbaseline_scheduler_maxthread = 8\nbaseline_scheduler_chunksize = 100\n\n[storage]\ndata_path = data\nenable_cache = true\nkey_page_size = 0\npd_ssl_ca_path = \npd_ssl_cert_path = \npd_ssl_key_path = \nenable_archive = false\narchive_ip = 127.0.0.1\narchive_port = \nenable_rocksdb_blob = false\nwrite_buffer_size = 134217728\nmax_background_jobs = 4\nmax_write_buffer_number = 6\nblock_cache_size = 268435456\ncache_size = 536870912\n\n[txpool]\nlimit = 500000\nnotify_worker_num = 2\ntxs_expiration_time = 600\nenable_txs_from_free_node = false\nverify_worker_num = 8\n\n[sync]\nsend_txs_by_tree = false\nsync_block_by_tree = false\ntree_width = 3\n\n[redis]\n\n[flow_control]\n\n[log]\nenable = true\nenable_console_output = false\nlog_path = ./log\nlevel = warning\nmax_log_file_size = 1024\nenable_rate_collector = false\n\n"
+      },
+      {
+        "host": "10.206.0.6",
+        "ini": "[p2p]\nlisten_ip = 10.206.0.6\nlisten_port = 30300\nsm_ssl = false\nnodes_path = ./\nnodes_file = nodes.json\nenable_ssl_verify = true\nallow_max_msg_size = 134217728\nsession_recv_buffer_size = 268435456\nsession_max_read_data_size = 262144\n\n[certificate_blacklist]\n\n[certificate_whitelist]\n\n[rpc]\nlisten_ip = 10.206.0.6\nlisten_port = 20200\nthread_count = 4\nsm_ssl = false\nenable_ssl = true\nreturn_input_params = false\n\n[web3_rpc]\nenable = false\nlisten_ip = 10.206.0.6\nlisten_port = 8545\nthread_count = 8\nrequest_body_size_limit = 10240000\nenable_cors = true\ncors_allow_credentials = true\ncors_allowed_origins = *\ncors_allowed_methods = GET, POST, OPTIONS\ncors_allowed_headers = Content-Type, Authorization, X-Requested-With\ncors_max_age = 86400\n\n[cert]\nca_path = ./conf\nca_cert = ca.crt\nnode_key = ssl.key\nnode_cert = ssl.crt\nmulti_ca_path = multiCaPath\n\n[security]\nprivate_key_path = conf/node.pem\nenable_hsm = false\n\n[storage_security]\nenable = false\n\n[consensus]\nmin_seal_time = 1000\n\n[executor]\nenable_dag = true\nbaseline_scheduler = false\nbaseline_scheduler_parallel = false\nbaseline_scheduler_maxthread = 8\nbaseline_scheduler_chunksize = 100\n\n[storage]\ndata_path = data\nenable_cache = true\nkey_page_size = 0\npd_ssl_ca_path = \npd_ssl_cert_path = \npd_ssl_key_path = \nenable_archive = false\narchive_ip = 127.0.0.1\narchive_port = \nenable_rocksdb_blob = false\nwrite_buffer_size = 134217728\nmax_background_jobs = 4\nmax_write_buffer_number = 6\nblock_cache_size = 268435456\ncache_size = 536870912\n\n[txpool]\nlimit = 500000\nnotify_worker_num = 2\ntxs_expiration_time = 600\nenable_txs_from_free_node = false\nverify_worker_num = 8\n\n[sync]\nsend_txs_by_tree = false\nsync_block_by_tree = false\ntree_width = 3\n\n[redis]\n\n[flow_control]\n\n[log]\nenable = true\nenable_console_output = false\nlog_path = ./log\nlevel = warning\nmax_log_file_size = 1024\nenable_rate_collector = false\n\n"
+      },
+      {
+        "host": "10.206.0.11",
+        "ini": "[p2p]\nlisten_ip = 10.206.0.11\nlisten_port = 30300\nsm_ssl = false\nnodes_path = ./\nnodes_file = nodes.json\nenable_ssl_verify = true\nallow_max_msg_size = 134217728\nsession_recv_buffer_size = 268435456\nsession_max_read_data_size = 262144\n\n[certificate_blacklist]\n\n[certificate_whitelist]\n\n[rpc]\nlisten_ip = 10.206.0.11\nlisten_port = 20200\nthread_count = 4\nsm_ssl = false\nenable_ssl = true\nreturn_input_params = false\n\n[web3_rpc]\nenable = false\nlisten_ip = 10.206.0.11\nlisten_port = 8545\nthread_count = 8\nrequest_body_size_limit = 10240000\nenable_cors = true\ncors_allow_credentials = true\ncors_allowed_origins = *\ncors_allowed_methods = GET, POST, OPTIONS\ncors_allowed_headers = Content-Type, Authorization, X-Requested-With\ncors_max_age = 86400\n\n[cert]\nca_path = ./conf\nca_cert = ca.crt\nnode_key = ssl.key\nnode_cert = ssl.crt\nmulti_ca_path = multiCaPath\n\n[security]\nprivate_key_path = conf/node.pem\nenable_hsm = false\n\n[storage_security]\nenable = false\n\n[consensus]\nmin_seal_time = 1000\n\n[executor]\nenable_dag = true\nbaseline_scheduler = false\nbaseline_scheduler_parallel = false\nbaseline_scheduler_maxthread = 8\nbaseline_scheduler_chunksize = 100\n\n[storage]\ndata_path = data\nenable_cache = true\nkey_page_size = 0\npd_ssl_ca_path = \npd_ssl_cert_path = \npd_ssl_key_path = \nenable_archive = false\narchive_ip = 127.0.0.1\narchive_port = \nenable_rocksdb_blob = false\nwrite_buffer_size = 134217728\nmax_background_jobs = 4\nmax_write_buffer_number = 6\nblock_cache_size = 268435456\ncache_size = 536870912\n\n[txpool]\nlimit = 500000\nnotify_worker_num = 2\ntxs_expiration_time = 600\nenable_txs_from_free_node = false\nverify_worker_num = 8\n\n[sync]\nsend_txs_by_tree = false\nsync_block_by_tree = false\ntree_width = 3\n\n[redis]\n\n[flow_control]\n\n[log]\nenable = true\nenable_console_output = false\nlog_path = ./log\nlevel = warning\nmax_log_file_size = 1024\nenable_rate_collector = false\n\n"
+      },
+      {
+        "host": "10.206.0.8",
+        "ini": "[p2p]\nlisten_ip = 10.206.0.8\nlisten_port = 30300\nsm_ssl = false\nnodes_path = ./\nnodes_file = nodes.json\nenable_ssl_verify = true\nallow_max_msg_size = 134217728\nsession_recv_buffer_size = 268435456\nsession_max_read_data_size = 262144\n\n[certificate_blacklist]\n\n[certificate_whitelist]\n\n[rpc]\nlisten_ip = 10.206.0.8\nlisten_port = 20200\nthread_count = 4\nsm_ssl = false\nenable_ssl = true\nreturn_input_params = false\n\n[web3_rpc]\nenable = false\nlisten_ip = 10.206.0.8\nlisten_port = 8545\nthread_count = 8\nrequest_body_size_limit = 10240000\nenable_cors = true\ncors_allow_credentials = true\ncors_allowed_origins = *\ncors_allowed_methods = GET, POST, OPTIONS\ncors_allowed_headers = Content-Type, Authorization, X-Requested-With\ncors_max_age = 86400\n\n[cert]\nca_path = ./conf\nca_cert = ca.crt\nnode_key = ssl.key\nnode_cert = ssl.crt\nmulti_ca_path = multiCaPath\n\n[security]\nprivate_key_path = conf/node.pem\nenable_hsm = false\n\n[storage_security]\nenable = false\n\n[consensus]\nmin_seal_time = 1000\n\n[executor]\nenable_dag = true\nbaseline_scheduler = false\nbaseline_scheduler_parallel = false\nbaseline_scheduler_maxthread = 8\nbaseline_scheduler_chunksize = 100\n\n[storage]\ndata_path = data\nenable_cache = true\nkey_page_size = 0\npd_ssl_ca_path = \npd_ssl_cert_path = \npd_ssl_key_path = \nenable_archive = false\narchive_ip = 127.0.0.1\narchive_port = \nenable_rocksdb_blob = false\nwrite_buffer_size = 134217728\nmax_background_jobs = 4\nmax_write_buffer_number = 6\nblock_cache_size = 268435456\ncache_size = 536870912\n\n[txpool]\nlimit = 500000\nnotify_worker_num = 2\ntxs_expiration_time = 600\nenable_txs_from_free_node = false\nverify_worker_num = 8\n\n[sync]\nsend_txs_by_tree = false\nsync_block_by_tree = false\ntree_width = 3\n\n[redis]\n\n[flow_control]\n\n[log]\nenable = true\nenable_console_output = false\nlog_path = ./log\nlevel = warning\nmax_log_file_size = 1024\nenable_rate_collector = false\n\n"
+      }
+    ],
+    "before": {
+      "valid": false,
+      "nodes": [
+        {
+          "blockNumber": 7680,
+          "failedTransactionCount": 0,
+          "transactionCount": 57462687,
+          "host": "10.206.0.16",
+          "pending": 0,
+          "begin_epoch": 1790768514.1001167,
+          "end_epoch": 1790768514.11019
+        },
+        {
+          "blockNumber": 7680,
+          "failedTransactionCount": 0,
+          "transactionCount": 57462687,
+          "host": "10.206.0.4",
+          "pending": 0,
+          "begin_epoch": 1790768514.100327,
+          "end_epoch": 1790768514.1094213
+        },
+        {
+          "blockNumber": 7680,
+          "failedTransactionCount": 0,
+          "transactionCount": 57462687,
+          "host": "10.206.0.14",
+          "pending": 0,
+          "begin_epoch": 1790768514.1004984,
+          "end_epoch": 1790768514.1100683
+        },
+        {
+          "blockNumber": 7680,
+          "failedTransactionCount": 0,
+          "transactionCount": 57462687,
+          "host": "10.206.0.17",
+          "pending": 0,
+          "begin_epoch": 1790768514.1006677,
+          "end_epoch": 1790768514.1111367
+        },
+        {
+          "blockNumber": 7680,
+          "failedTransactionCount": 0,
+          "transactionCount": 57462687,
+          "host": "10.206.0.15",
+          "pending": 0,
+          "begin_epoch": 1790768514.1009479,
+          "end_epoch": 1790768514.11112
+        },
+        {
+          "blockNumber": 7680,
+          "failedTransactionCount": 0,
+          "transactionCount": 57462687,
+          "host": "10.206.0.12",
+          "pending": 0,
+          "begin_epoch": 1790768514.1011405,
+          "end_epoch": 1790768514.111209
+        },
+        {
+          "blockNumber": 7664,
+          "failedTransactionCount": 0,
+          "transactionCount": 56420430,
+          "host": "10.206.0.2",
+          "pending": 0,
+          "begin_epoch": 1790768514.1012464,
+          "end_epoch": 1790768514.1104767
+        },
+        {
+          "blockNumber": 7680,
+          "failedTransactionCount": 0,
+          "transactionCount": 57462687,
+          "host": "10.206.0.6",
+          "pending": 0,
+          "begin_epoch": 1790768514.1014857,
+          "end_epoch": 1790768514.1112394
+        },
+        {
+          "blockNumber": 7680,
+          "failedTransactionCount": 0,
+          "transactionCount": 57462687,
+          "host": "10.206.0.11",
+          "pending": 0,
+          "begin_epoch": 1790768514.1016393,
+          "end_epoch": 1790768514.1109378
+        },
+        {
+          "blockNumber": 7680,
+          "failedTransactionCount": 0,
+          "transactionCount": 57462687,
+          "host": "10.206.0.8",
+          "pending": 0,
+          "begin_epoch": 1790768514.1019046,
+          "end_epoch": 1790768514.1107113
+        }
+      ],
+      "blocks": [
+        {
+          "host": "10.206.0.16",
+          "height": 7664,
+          "hash": "0x795457a8a9a122c4b2a8731958beaac81a1be7fe762877dbdae0d88ac73d33cc",
+          "stateRoot": "0xd22326756103128ec7727473d56363f948f7b8180d308e0f935119179a873065",
+          "sealers": 10,
+          "observers": 0
+        },
+        {
+          "host": "10.206.0.4",
+          "height": 7664,
+          "hash": "0x795457a8a9a122c4b2a8731958beaac81a1be7fe762877dbdae0d88ac73d33cc",
+          "stateRoot": "0xd22326756103128ec7727473d56363f948f7b8180d308e0f935119179a873065",
+          "sealers": 10,
+          "observers": 0
+        },
+        {
+          "host": "10.206.0.14",
+          "height": 7664,
+          "hash": "0x795457a8a9a122c4b2a8731958beaac81a1be7fe762877dbdae0d88ac73d33cc",
+          "stateRoot": "0xd22326756103128ec7727473d56363f948f7b8180d308e0f935119179a873065",
+          "sealers": 10,
+          "observers": 0
+        },
+        {
+          "host": "10.206.0.17",
+          "height": 7664,
+          "hash": "0x795457a8a9a122c4b2a8731958beaac81a1be7fe762877dbdae0d88ac73d33cc",
+          "stateRoot": "0xd22326756103128ec7727473d56363f948f7b8180d308e0f935119179a873065",
+          "sealers": 10,
+          "observers": 0
+        },
+        {
+          "host": "10.206.0.15",
+          "height": 7664,
+          "hash": "0x795457a8a9a122c4b2a8731958beaac81a1be7fe762877dbdae0d88ac73d33cc",
+          "stateRoot": "0xd22326756103128ec7727473d56363f948f7b8180d308e0f935119179a873065",
+          "sealers": 10,
+          "observers": 0
+        },
+        {
+          "host": "10.206.0.12",
+          "height": 7664,
+          "hash": "0x795457a8a9a122c4b2a8731958beaac81a1be7fe762877dbdae0d88ac73d33cc",
+          "stateRoot": "0xd22326756103128ec7727473d56363f948f7b8180d308e0f935119179a873065",
+          "sealers": 10,
+          "observers": 0
+        },
+        {
+          "host": "10.206.0.2",
+          "height": 7664,
+          "hash": "0x795457a8a9a122c4b2a8731958beaac81a1be7fe762877dbdae0d88ac73d33cc",
+          "stateRoot": "0xd22326756103128ec7727473d56363f948f7b8180d308e0f935119179a873065",
+          "sealers": 10,
+          "observers": 0
+        },
+        {
+          "host": "10.206.0.6",
+          "height": 7664,
+          "hash": "0x795457a8a9a122c4b2a8731958beaac81a1be7fe762877dbdae0d88ac73d33cc",
+          "stateRoot": "0xd22326756103128ec7727473d56363f948f7b8180d308e0f935119179a873065",
+          "sealers": 10,
+          "observers": 0
+        },
+        {
+          "host": "10.206.0.11",
+          "height": 7664,
+          "hash": "0x795457a8a9a122c4b2a8731958beaac81a1be7fe762877dbdae0d88ac73d33cc",
+          "stateRoot": "0xd22326756103128ec7727473d56363f948f7b8180d308e0f935119179a873065",
+          "sealers": 10,
+          "observers": 0
+        },
+        {
+          "host": "10.206.0.8",
+          "height": 7664,
+          "hash": "0x795457a8a9a122c4b2a8731958beaac81a1be7fe762877dbdae0d88ac73d33cc",
+          "stateRoot": "0xd22326756103128ec7727473d56363f948f7b8180d308e0f935119179a873065",
+          "sealers": 10,
+          "observers": 0
+        }
+      ]
+    },
+    "after": {
+      "valid": true,
+      "nodes": [
+        {
+          "blockNumber": 7680,
+          "failedTransactionCount": 0,
+          "transactionCount": 57462687,
+          "host": "10.206.0.16",
+          "pending": 0,
+          "begin_epoch": 1790768584.2622378,
+          "end_epoch": 1790768584.2722204
+        },
+        {
+          "blockNumber": 7680,
+          "failedTransactionCount": 0,
+          "transactionCount": 57462687,
+          "host": "10.206.0.4",
+          "pending": 0,
+          "begin_epoch": 1790768584.2624424,
+          "end_epoch": 1790768584.2724314
+        },
+        {
+          "blockNumber": 7680,
+          "failedTransactionCount": 0,
+          "transactionCount": 57462687,
+          "host": "10.206.0.14",
+          "pending": 0,
+          "begin_epoch": 1790768584.2625856,
+          "end_epoch": 1790768584.2714314
+        },
+        {
+          "blockNumber": 7680,
+          "failedTransactionCount": 0,
+          "transactionCount": 57462687,
+          "host": "10.206.0.17",
+          "pending": 0,
+          "begin_epoch": 1790768584.2626984,
+          "end_epoch": 1790768584.2699056
+        },
+        {
+          "blockNumber": 7680,
+          "failedTransactionCount": 0,
+          "transactionCount": 57462687,
+          "host": "10.206.0.15",
+          "pending": 0,
+          "begin_epoch": 1790768584.2628958,
+          "end_epoch": 1790768584.2710645
+        },
+        {
+          "blockNumber": 7680,
+          "failedTransactionCount": 0,
+          "transactionCount": 57462687,
+          "host": "10.206.0.12",
+          "pending": 0,
+          "begin_epoch": 1790768584.263323,
+          "end_epoch": 1790768584.271223
+        },
+        {
+          "blockNumber": 7680,
+          "failedTransactionCount": 0,
+          "transactionCount": 57462687,
+          "host": "10.206.0.2",
+          "pending": 0,
+          "begin_epoch": 1790768584.2634954,
+          "end_epoch": 1790768584.271797
+        },
+        {
+          "blockNumber": 7680,
+          "failedTransactionCount": 0,
+          "transactionCount": 57462687,
+          "host": "10.206.0.6",
+          "pending": 0,
+          "begin_epoch": 1790768584.2636454,
+          "end_epoch": 1790768584.2721064
+        },
+        {
+          "blockNumber": 7680,
+          "failedTransactionCount": 0,
+          "transactionCount": 57462687,
+          "host": "10.206.0.11",
+          "pending": 0,
+          "begin_epoch": 1790768584.263861,
+          "end_epoch": 1790768584.2720015
+        },
+        {
+          "blockNumber": 7680,
+          "failedTransactionCount": 0,
+          "transactionCount": 57462687,
+          "host": "10.206.0.8",
+          "pending": 0,
+          "begin_epoch": 1790768584.263982,
+          "end_epoch": 1790768584.2722428
+        }
+      ],
+      "blocks": [
+        {
+          "host": "10.206.0.16",
+          "height": 7680,
+          "hash": "0x5274f46a258e519b5a9442274a7b62ce556d5f30cdd0ef32a9846440412983a4",
+          "stateRoot": "0x9bd365750f8898ce59cfd891cc48d10f86b58ea11c09f6e7788937f0c3931cca",
+          "sealers": 10,
+          "observers": 0
+        },
+        {
+          "host": "10.206.0.4",
+          "height": 7680,
+          "hash": "0x5274f46a258e519b5a9442274a7b62ce556d5f30cdd0ef32a9846440412983a4",
+          "stateRoot": "0x9bd365750f8898ce59cfd891cc48d10f86b58ea11c09f6e7788937f0c3931cca",
+          "sealers": 10,
+          "observers": 0
+        },
+        {
+          "host": "10.206.0.14",
+          "height": 7680,
+          "hash": "0x5274f46a258e519b5a9442274a7b62ce556d5f30cdd0ef32a9846440412983a4",
+          "stateRoot": "0x9bd365750f8898ce59cfd891cc48d10f86b58ea11c09f6e7788937f0c3931cca",
+          "sealers": 10,
+          "observers": 0
+        },
+        {
+          "host": "10.206.0.17",
+          "height": 7680,
+          "hash": "0x5274f46a258e519b5a9442274a7b62ce556d5f30cdd0ef32a9846440412983a4",
+          "stateRoot": "0x9bd365750f8898ce59cfd891cc48d10f86b58ea11c09f6e7788937f0c3931cca",
+          "sealers": 10,
+          "observers": 0
+        },
+        {
+          "host": "10.206.0.15",
+          "height": 7680,
+          "hash": "0x5274f46a258e519b5a9442274a7b62ce556d5f30cdd0ef32a9846440412983a4",
+          "stateRoot": "0x9bd365750f8898ce59cfd891cc48d10f86b58ea11c09f6e7788937f0c3931cca",
+          "sealers": 10,
+          "observers": 0
+        },
+        {
+          "host": "10.206.0.12",
+          "height": 7680,
+          "hash": "0x5274f46a258e519b5a9442274a7b62ce556d5f30cdd0ef32a9846440412983a4",
+          "stateRoot": "0x9bd365750f8898ce59cfd891cc48d10f86b58ea11c09f6e7788937f0c3931cca",
+          "sealers": 10,
+          "observers": 0
+        },
+        {
+          "host": "10.206.0.2",
+          "height": 7680,
+          "hash": "0x5274f46a258e519b5a9442274a7b62ce556d5f30cdd0ef32a9846440412983a4",
+          "stateRoot": "0x9bd365750f8898ce59cfd891cc48d10f86b58ea11c09f6e7788937f0c3931cca",
+          "sealers": 10,
+          "observers": 0
+        },
+        {
+          "host": "10.206.0.6",
+          "height": 7680,
+          "hash": "0x5274f46a258e519b5a9442274a7b62ce556d5f30cdd0ef32a9846440412983a4",
+          "stateRoot": "0x9bd365750f8898ce59cfd891cc48d10f86b58ea11c09f6e7788937f0c3931cca",
+          "sealers": 10,
+          "observers": 0
+        },
+        {
+          "host": "10.206.0.11",
+          "height": 7680,
+          "hash": "0x5274f46a258e519b5a9442274a7b62ce556d5f30cdd0ef32a9846440412983a4",
+          "stateRoot": "0x9bd365750f8898ce59cfd891cc48d10f86b58ea11c09f6e7788937f0c3931cca",
+          "sealers": 10,
+          "observers": 0
+        },
+        {
+          "host": "10.206.0.8",
+          "height": 7680,
+          "hash": "0x5274f46a258e519b5a9442274a7b62ce556d5f30cdd0ef32a9846440412983a4",
+          "stateRoot": "0x9bd365750f8898ce59cfd891cc48d10f86b58ea11c09f6e7788937f0c3931cca",
+          "sealers": 10,
+          "observers": 0
+        }
+      ]
+    }
+  },
+  "ten/final-batch500-config.json": {
+    "spec": {
+      "action": "configure",
+      "name": "final-batch500",
+      "ini": {
+        "consensus": {
+          "min_seal_time": "500"
+        }
+      },
+      "block": 50000
+    },
+    "nodes": [
+      {
+        "host": "10.206.0.16",
+        "ini": "[p2p]\nlisten_ip = 10.206.0.16\nlisten_port = 30300\nsm_ssl = false\nnodes_path = ./\nnodes_file = nodes.json\nenable_ssl_verify = true\nallow_max_msg_size = 134217728\nsession_recv_buffer_size = 268435456\nsession_max_read_data_size = 262144\n\n[certificate_blacklist]\n\n[certificate_whitelist]\n\n[rpc]\nlisten_ip = 10.206.0.16\nlisten_port = 20200\nthread_count = 4\nsm_ssl = false\nenable_ssl = true\nreturn_input_params = false\n\n[web3_rpc]\nenable = false\nlisten_ip = 10.206.0.16\nlisten_port = 8545\nthread_count = 8\nrequest_body_size_limit = 10240000\nenable_cors = true\ncors_allow_credentials = true\ncors_allowed_origins = *\ncors_allowed_methods = GET, POST, OPTIONS\ncors_allowed_headers = Content-Type, Authorization, X-Requested-With\ncors_max_age = 86400\n\n[cert]\nca_path = ./conf\nca_cert = ca.crt\nnode_key = ssl.key\nnode_cert = ssl.crt\nmulti_ca_path = multiCaPath\n\n[security]\nprivate_key_path = conf/node.pem\nenable_hsm = false\n\n[storage_security]\nenable = false\n\n[consensus]\nmin_seal_time = 500\n\n[executor]\nenable_dag = true\nbaseline_scheduler = false\nbaseline_scheduler_parallel = false\nbaseline_scheduler_maxthread = 8\nbaseline_scheduler_chunksize = 100\n\n[storage]\ndata_path = data\nenable_cache = true\nkey_page_size = 0\npd_ssl_ca_path = \npd_ssl_cert_path = \npd_ssl_key_path = \nenable_archive = false\narchive_ip = 127.0.0.1\narchive_port = \nenable_rocksdb_blob = false\nwrite_buffer_size = 134217728\nmax_background_jobs = 4\nmax_write_buffer_number = 6\nblock_cache_size = 268435456\ncache_size = 536870912\n\n[txpool]\nlimit = 500000\nnotify_worker_num = 2\ntxs_expiration_time = 600\nenable_txs_from_free_node = false\nverify_worker_num = 8\n\n[sync]\nsend_txs_by_tree = false\nsync_block_by_tree = false\ntree_width = 3\n\n[redis]\n\n[flow_control]\n\n[log]\nenable = true\nenable_console_output = false\nlog_path = ./log\nlevel = warning\nmax_log_file_size = 1024\nenable_rate_collector = false\n\n"
+      },
+      {
+        "host": "10.206.0.4",
+        "ini": "[p2p]\nlisten_ip = 10.206.0.4\nlisten_port = 30300\nsm_ssl = false\nnodes_path = ./\nnodes_file = nodes.json\nenable_ssl_verify = true\nallow_max_msg_size = 134217728\nsession_recv_buffer_size = 268435456\nsession_max_read_data_size = 262144\n\n[certificate_blacklist]\n\n[certificate_whitelist]\n\n[rpc]\nlisten_ip = 10.206.0.4\nlisten_port = 20200\nthread_count = 4\nsm_ssl = false\nenable_ssl = true\nreturn_input_params = false\n\n[web3_rpc]\nenable = false\nlisten_ip = 10.206.0.4\nlisten_port = 8545\nthread_count = 8\nrequest_body_size_limit = 10240000\nenable_cors = true\ncors_allow_credentials = true\ncors_allowed_origins = *\ncors_allowed_methods = GET, POST, OPTIONS\ncors_allowed_headers = Content-Type, Authorization, X-Requested-With\ncors_max_age = 86400\n\n[cert]\nca_path = ./conf\nca_cert = ca.crt\nnode_key = ssl.key\nnode_cert = ssl.crt\nmulti_ca_path = multiCaPath\n\n[security]\nprivate_key_path = conf/node.pem\nenable_hsm = false\n\n[storage_security]\nenable = false\n\n[consensus]\nmin_seal_time = 500\n\n[executor]\nenable_dag = true\nbaseline_scheduler = false\nbaseline_scheduler_parallel = false\nbaseline_scheduler_maxthread = 8\nbaseline_scheduler_chunksize = 100\n\n[storage]\ndata_path = data\nenable_cache = true\nkey_page_size = 0\npd_ssl_ca_path = \npd_ssl_cert_path = \npd_ssl_key_path = \nenable_archive = false\narchive_ip = 127.0.0.1\narchive_port = \nenable_rocksdb_blob = false\nwrite_buffer_size = 134217728\nmax_background_jobs = 4\nmax_write_buffer_number = 6\nblock_cache_size = 268435456\ncache_size = 536870912\n\n[txpool]\nlimit = 500000\nnotify_worker_num = 2\ntxs_expiration_time = 600\nenable_txs_from_free_node = false\nverify_worker_num = 8\n\n[sync]\nsend_txs_by_tree = false\nsync_block_by_tree = false\ntree_width = 3\n\n[redis]\n\n[flow_control]\n\n[log]\nenable = true\nenable_console_output = false\nlog_path = ./log\nlevel = warning\nmax_log_file_size = 1024\nenable_rate_collector = false\n\n"
+      },
+      {
+        "host": "10.206.0.14",
+        "ini": "[p2p]\nlisten_ip = 10.206.0.14\nlisten_port = 30300\nsm_ssl = false\nnodes_path = ./\nnodes_file = nodes.json\nenable_ssl_verify = true\nallow_max_msg_size = 134217728\nsession_recv_buffer_size = 268435456\nsession_max_read_data_size = 262144\n\n[certificate_blacklist]\n\n[certificate_whitelist]\n\n[rpc]\nlisten_ip = 10.206.0.14\nlisten_port = 20200\nthread_count = 4\nsm_ssl = false\nenable_ssl = true\nreturn_input_params = false\n\n[web3_rpc]\nenable = false\nlisten_ip = 10.206.0.14\nlisten_port = 8545\nthread_count = 8\nrequest_body_size_limit = 10240000\nenable_cors = true\ncors_allow_credentials = true\ncors_allowed_origins = *\ncors_allowed_methods = GET, POST, OPTIONS\ncors_allowed_headers = Content-Type, Authorization, X-Requested-With\ncors_max_age = 86400\n\n[cert]\nca_path = ./conf\nca_cert = ca.crt\nnode_key = ssl.key\nnode_cert = ssl.crt\nmulti_ca_path = multiCaPath\n\n[security]\nprivate_key_path = conf/node.pem\nenable_hsm = false\n\n[storage_security]\nenable = false\n\n[consensus]\nmin_seal_time = 500\n\n[executor]\nenable_dag = true\nbaseline_scheduler = false\nbaseline_scheduler_parallel = false\nbaseline_scheduler_maxthread = 8\nbaseline_scheduler_chunksize = 100\n\n[storage]\ndata_path = data\nenable_cache = true\nkey_page_size = 0\npd_ssl_ca_path = \npd_ssl_cert_path = \npd_ssl_key_path = \nenable_archive = false\narchive_ip = 127.0.0.1\narchive_port = \nenable_rocksdb_blob = false\nwrite_buffer_size = 134217728\nmax_background_jobs = 4\nmax_write_buffer_number = 6\nblock_cache_size = 268435456\ncache_size = 536870912\n\n[txpool]\nlimit = 500000\nnotify_worker_num = 2\ntxs_expiration_time = 600\nenable_txs_from_free_node = false\nverify_worker_num = 8\n\n[sync]\nsend_txs_by_tree = false\nsync_block_by_tree = false\ntree_width = 3\n\n[redis]\n\n[flow_control]\n\n[log]\nenable = true\nenable_console_output = false\nlog_path = ./log\nlevel = warning\nmax_log_file_size = 1024\nenable_rate_collector = false\n\n"
+      },
+      {
+        "host": "10.206.0.17",
+        "ini": "[p2p]\nlisten_ip = 10.206.0.17\nlisten_port = 30300\nsm_ssl = false\nnodes_path = ./\nnodes_file = nodes.json\nenable_ssl_verify = true\nallow_max_msg_size = 134217728\nsession_recv_buffer_size = 268435456\nsession_max_read_data_size = 262144\n\n[certificate_blacklist]\n\n[certificate_whitelist]\n\n[rpc]\nlisten_ip = 10.206.0.17\nlisten_port = 20200\nthread_count = 4\nsm_ssl = false\nenable_ssl = true\nreturn_input_params = false\n\n[web3_rpc]\nenable = false\nlisten_ip = 10.206.0.17\nlisten_port = 8545\nthread_count = 8\nrequest_body_size_limit = 10240000\nenable_cors = true\ncors_allow_credentials = true\ncors_allowed_origins = *\ncors_allowed_methods = GET, POST, OPTIONS\ncors_allowed_headers = Content-Type, Authorization, X-Requested-With\ncors_max_age = 86400\n\n[cert]\nca_path = ./conf\nca_cert = ca.crt\nnode_key = ssl.key\nnode_cert = ssl.crt\nmulti_ca_path = multiCaPath\n\n[security]\nprivate_key_path = conf/node.pem\nenable_hsm = false\n\n[storage_security]\nenable = false\n\n[consensus]\nmin_seal_time = 500\n\n[executor]\nenable_dag = true\nbaseline_scheduler = false\nbaseline_scheduler_parallel = false\nbaseline_scheduler_maxthread = 8\nbaseline_scheduler_chunksize = 100\n\n[storage]\ndata_path = data\nenable_cache = true\nkey_page_size = 0\npd_ssl_ca_path = \npd_ssl_cert_path = \npd_ssl_key_path = \nenable_archive = false\narchive_ip = 127.0.0.1\narchive_port = \nenable_rocksdb_blob = false\nwrite_buffer_size = 134217728\nmax_background_jobs = 4\nmax_write_buffer_number = 6\nblock_cache_size = 268435456\ncache_size = 536870912\n\n[txpool]\nlimit = 500000\nnotify_worker_num = 2\ntxs_expiration_time = 600\nenable_txs_from_free_node = false\nverify_worker_num = 8\n\n[sync]\nsend_txs_by_tree = false\nsync_block_by_tree = false\ntree_width = 3\n\n[redis]\n\n[flow_control]\n\n[log]\nenable = true\nenable_console_output = false\nlog_path = ./log\nlevel = warning\nmax_log_file_size = 1024\nenable_rate_collector = false\n\n"
+      },
+      {
+        "host": "10.206.0.15",
+        "ini": "[p2p]\nlisten_ip = 10.206.0.15\nlisten_port = 30300\nsm_ssl = false\nnodes_path = ./\nnodes_file = nodes.json\nenable_ssl_verify = true\nallow_max_msg_size = 134217728\nsession_recv_buffer_size = 268435456\nsession_max_read_data_size = 262144\n\n[certificate_blacklist]\n\n[certificate_whitelist]\n\n[rpc]\nlisten_ip = 10.206.0.15\nlisten_port = 20200\nthread_count = 4\nsm_ssl = false\nenable_ssl = true\nreturn_input_params = false\n\n[web3_rpc]\nenable = false\nlisten_ip = 10.206.0.15\nlisten_port = 8545\nthread_count = 8\nrequest_body_size_limit = 10240000\nenable_cors = true\ncors_allow_credentials = true\ncors_allowed_origins = *\ncors_allowed_methods = GET, POST, OPTIONS\ncors_allowed_headers = Content-Type, Authorization, X-Requested-With\ncors_max_age = 86400\n\n[cert]\nca_path = ./conf\nca_cert = ca.crt\nnode_key = ssl.key\nnode_cert = ssl.crt\nmulti_ca_path = multiCaPath\n\n[security]\nprivate_key_path = conf/node.pem\nenable_hsm = false\n\n[storage_security]\nenable = false\n\n[consensus]\nmin_seal_time = 500\n\n[executor]\nenable_dag = true\nbaseline_scheduler = false\nbaseline_scheduler_parallel = false\nbaseline_scheduler_maxthread = 8\nbaseline_scheduler_chunksize = 100\n\n[storage]\ndata_path = data\nenable_cache = true\nkey_page_size = 0\npd_ssl_ca_path = \npd_ssl_cert_path = \npd_ssl_key_path = \nenable_archive = false\narchive_ip = 127.0.0.1\narchive_port = \nenable_rocksdb_blob = false\nwrite_buffer_size = 134217728\nmax_background_jobs = 4\nmax_write_buffer_number = 6\nblock_cache_size = 268435456\ncache_size = 536870912\n\n[txpool]\nlimit = 500000\nnotify_worker_num = 2\ntxs_expiration_time = 600\nenable_txs_from_free_node = false\nverify_worker_num = 8\n\n[sync]\nsend_txs_by_tree = false\nsync_block_by_tree = false\ntree_width = 3\n\n[redis]\n\n[flow_control]\n\n[log]\nenable = true\nenable_console_output = false\nlog_path = ./log\nlevel = warning\nmax_log_file_size = 1024\nenable_rate_collector = false\n\n"
+      },
+      {
+        "host": "10.206.0.12",
+        "ini": "[p2p]\nlisten_ip = 10.206.0.12\nlisten_port = 30300\nsm_ssl = false\nnodes_path = ./\nnodes_file = nodes.json\nenable_ssl_verify = true\nallow_max_msg_size = 134217728\nsession_recv_buffer_size = 268435456\nsession_max_read_data_size = 262144\n\n[certificate_blacklist]\n\n[certificate_whitelist]\n\n[rpc]\nlisten_ip = 10.206.0.12\nlisten_port = 20200\nthread_count = 4\nsm_ssl = false\nenable_ssl = true\nreturn_input_params = false\n\n[web3_rpc]\nenable = false\nlisten_ip = 10.206.0.12\nlisten_port = 8545\nthread_count = 8\nrequest_body_size_limit = 10240000\nenable_cors = true\ncors_allow_credentials = true\ncors_allowed_origins = *\ncors_allowed_methods = GET, POST, OPTIONS\ncors_allowed_headers = Content-Type, Authorization, X-Requested-With\ncors_max_age = 86400\n\n[cert]\nca_path = ./conf\nca_cert = ca.crt\nnode_key = ssl.key\nnode_cert = ssl.crt\nmulti_ca_path = multiCaPath\n\n[security]\nprivate_key_path = conf/node.pem\nenable_hsm = false\n\n[storage_security]\nenable = false\n\n[consensus]\nmin_seal_time = 500\n\n[executor]\nenable_dag = true\nbaseline_scheduler = false\nbaseline_scheduler_parallel = false\nbaseline_scheduler_maxthread = 8\nbaseline_scheduler_chunksize = 100\n\n[storage]\ndata_path = data\nenable_cache = true\nkey_page_size = 0\npd_ssl_ca_path = \npd_ssl_cert_path = \npd_ssl_key_path = \nenable_archive = false\narchive_ip = 127.0.0.1\narchive_port = \nenable_rocksdb_blob = false\nwrite_buffer_size = 134217728\nmax_background_jobs = 4\nmax_write_buffer_number = 6\nblock_cache_size = 268435456\ncache_size = 536870912\n\n[txpool]\nlimit = 500000\nnotify_worker_num = 2\ntxs_expiration_time = 600\nenable_txs_from_free_node = false\nverify_worker_num = 8\n\n[sync]\nsend_txs_by_tree = false\nsync_block_by_tree = false\ntree_width = 3\n\n[redis]\n\n[flow_control]\n\n[log]\nenable = true\nenable_console_output = false\nlog_path = ./log\nlevel = warning\nmax_log_file_size = 1024\nenable_rate_collector = false\n\n"
+      },
+      {
+        "host": "10.206.0.2",
+        "ini": "[p2p]\nlisten_ip = 10.206.0.2\nlisten_port = 30300\nsm_ssl = false\nnodes_path = ./\nnodes_file = nodes.json\nenable_ssl_verify = true\nallow_max_msg_size = 134217728\nsession_recv_buffer_size = 268435456\nsession_max_read_data_size = 262144\n\n[certificate_blacklist]\n\n[certificate_whitelist]\n\n[rpc]\nlisten_ip = 10.206.0.2\nlisten_port = 20200\nthread_count = 4\nsm_ssl = false\nenable_ssl = true\nreturn_input_params = false\n\n[web3_rpc]\nenable = false\nlisten_ip = 10.206.0.2\nlisten_port = 8545\nthread_count = 8\nrequest_body_size_limit = 10240000\nenable_cors = true\ncors_allow_credentials = true\ncors_allowed_origins = *\ncors_allowed_methods = GET, POST, OPTIONS\ncors_allowed_headers = Content-Type, Authorization, X-Requested-With\ncors_max_age = 86400\n\n[cert]\nca_path = ./conf\nca_cert = ca.crt\nnode_key = ssl.key\nnode_cert = ssl.crt\nmulti_ca_path = multiCaPath\n\n[security]\nprivate_key_path = conf/node.pem\nenable_hsm = false\n\n[storage_security]\nenable = false\n\n[consensus]\nmin_seal_time = 500\n\n[executor]\nenable_dag = true\nbaseline_scheduler = false\nbaseline_scheduler_parallel = false\nbaseline_scheduler_maxthread = 8\nbaseline_scheduler_chunksize = 100\n\n[storage]\ndata_path = data\nenable_cache = true\nkey_page_size = 0\npd_ssl_ca_path = \npd_ssl_cert_path = \npd_ssl_key_path = \nenable_archive = false\narchive_ip = 127.0.0.1\narchive_port = \nenable_rocksdb_blob = false\nwrite_buffer_size = 134217728\nmax_background_jobs = 4\nmax_write_buffer_number = 6\nblock_cache_size = 268435456\ncache_size = 536870912\n\n[txpool]\nlimit = 500000\nnotify_worker_num = 2\ntxs_expiration_time = 600\nenable_txs_from_free_node = false\nverify_worker_num = 8\n\n[sync]\nsend_txs_by_tree = false\nsync_block_by_tree = false\ntree_width = 3\n\n[redis]\n\n[flow_control]\n\n[log]\nenable = true\nenable_console_output = false\nlog_path = ./log\nlevel = warning\nmax_log_file_size = 1024\nenable_rate_collector = false\n\n"
+      },
+      {
+        "host": "10.206.0.6",
+        "ini": "[p2p]\nlisten_ip = 10.206.0.6\nlisten_port = 30300\nsm_ssl = false\nnodes_path = ./\nnodes_file = nodes.json\nenable_ssl_verify = true\nallow_max_msg_size = 134217728\nsession_recv_buffer_size = 268435456\nsession_max_read_data_size = 262144\n\n[certificate_blacklist]\n\n[certificate_whitelist]\n\n[rpc]\nlisten_ip = 10.206.0.6\nlisten_port = 20200\nthread_count = 4\nsm_ssl = false\nenable_ssl = true\nreturn_input_params = false\n\n[web3_rpc]\nenable = false\nlisten_ip = 10.206.0.6\nlisten_port = 8545\nthread_count = 8\nrequest_body_size_limit = 10240000\nenable_cors = true\ncors_allow_credentials = true\ncors_allowed_origins = *\ncors_allowed_methods = GET, POST, OPTIONS\ncors_allowed_headers = Content-Type, Authorization, X-Requested-With\ncors_max_age = 86400\n\n[cert]\nca_path = ./conf\nca_cert = ca.crt\nnode_key = ssl.key\nnode_cert = ssl.crt\nmulti_ca_path = multiCaPath\n\n[security]\nprivate_key_path = conf/node.pem\nenable_hsm = false\n\n[storage_security]\nenable = false\n\n[consensus]\nmin_seal_time = 500\n\n[executor]\nenable_dag = true\nbaseline_scheduler = false\nbaseline_scheduler_parallel = false\nbaseline_scheduler_maxthread = 8\nbaseline_scheduler_chunksize = 100\n\n[storage]\ndata_path = data\nenable_cache = true\nkey_page_size = 0\npd_ssl_ca_path = \npd_ssl_cert_path = \npd_ssl_key_path = \nenable_archive = false\narchive_ip = 127.0.0.1\narchive_port = \nenable_rocksdb_blob = false\nwrite_buffer_size = 134217728\nmax_background_jobs = 4\nmax_write_buffer_number = 6\nblock_cache_size = 268435456\ncache_size = 536870912\n\n[txpool]\nlimit = 500000\nnotify_worker_num = 2\ntxs_expiration_time = 600\nenable_txs_from_free_node = false\nverify_worker_num = 8\n\n[sync]\nsend_txs_by_tree = false\nsync_block_by_tree = false\ntree_width = 3\n\n[redis]\n\n[flow_control]\n\n[log]\nenable = true\nenable_console_output = false\nlog_path = ./log\nlevel = warning\nmax_log_file_size = 1024\nenable_rate_collector = false\n\n"
+      },
+      {
+        "host": "10.206.0.11",
+        "ini": "[p2p]\nlisten_ip = 10.206.0.11\nlisten_port = 30300\nsm_ssl = false\nnodes_path = ./\nnodes_file = nodes.json\nenable_ssl_verify = true\nallow_max_msg_size = 134217728\nsession_recv_buffer_size = 268435456\nsession_max_read_data_size = 262144\n\n[certificate_blacklist]\n\n[certificate_whitelist]\n\n[rpc]\nlisten_ip = 10.206.0.11\nlisten_port = 20200\nthread_count = 4\nsm_ssl = false\nenable_ssl = true\nreturn_input_params = false\n\n[web3_rpc]\nenable = false\nlisten_ip = 10.206.0.11\nlisten_port = 8545\nthread_count = 8\nrequest_body_size_limit = 10240000\nenable_cors = true\ncors_allow_credentials = true\ncors_allowed_origins = *\ncors_allowed_methods = GET, POST, OPTIONS\ncors_allowed_headers = Content-Type, Authorization, X-Requested-With\ncors_max_age = 86400\n\n[cert]\nca_path = ./conf\nca_cert = ca.crt\nnode_key = ssl.key\nnode_cert = ssl.crt\nmulti_ca_path = multiCaPath\n\n[security]\nprivate_key_path = conf/node.pem\nenable_hsm = false\n\n[storage_security]\nenable = false\n\n[consensus]\nmin_seal_time = 500\n\n[executor]\nenable_dag = true\nbaseline_scheduler = false\nbaseline_scheduler_parallel = false\nbaseline_scheduler_maxthread = 8\nbaseline_scheduler_chunksize = 100\n\n[storage]\ndata_path = data\nenable_cache = true\nkey_page_size = 0\npd_ssl_ca_path = \npd_ssl_cert_path = \npd_ssl_key_path = \nenable_archive = false\narchive_ip = 127.0.0.1\narchive_port = \nenable_rocksdb_blob = false\nwrite_buffer_size = 134217728\nmax_background_jobs = 4\nmax_write_buffer_number = 6\nblock_cache_size = 268435456\ncache_size = 536870912\n\n[txpool]\nlimit = 500000\nnotify_worker_num = 2\ntxs_expiration_time = 600\nenable_txs_from_free_node = false\nverify_worker_num = 8\n\n[sync]\nsend_txs_by_tree = false\nsync_block_by_tree = false\ntree_width = 3\n\n[redis]\n\n[flow_control]\n\n[log]\nenable = true\nenable_console_output = false\nlog_path = ./log\nlevel = warning\nmax_log_file_size = 1024\nenable_rate_collector = false\n\n"
+      },
+      {
+        "host": "10.206.0.8",
+        "ini": "[p2p]\nlisten_ip = 10.206.0.8\nlisten_port = 30300\nsm_ssl = false\nnodes_path = ./\nnodes_file = nodes.json\nenable_ssl_verify = true\nallow_max_msg_size = 134217728\nsession_recv_buffer_size = 268435456\nsession_max_read_data_size = 262144\n\n[certificate_blacklist]\n\n[certificate_whitelist]\n\n[rpc]\nlisten_ip = 10.206.0.8\nlisten_port = 20200\nthread_count = 4\nsm_ssl = false\nenable_ssl = true\nreturn_input_params = false\n\n[web3_rpc]\nenable = false\nlisten_ip = 10.206.0.8\nlisten_port = 8545\nthread_count = 8\nrequest_body_size_limit = 10240000\nenable_cors = true\ncors_allow_credentials = true\ncors_allowed_origins = *\ncors_allowed_methods = GET, POST, OPTIONS\ncors_allowed_headers = Content-Type, Authorization, X-Requested-With\ncors_max_age = 86400\n\n[cert]\nca_path = ./conf\nca_cert = ca.crt\nnode_key = ssl.key\nnode_cert = ssl.crt\nmulti_ca_path = multiCaPath\n\n[security]\nprivate_key_path = conf/node.pem\nenable_hsm = false\n\n[storage_security]\nenable = false\n\n[consensus]\nmin_seal_time = 500\n\n[executor]\nenable_dag = true\nbaseline_scheduler = false\nbaseline_scheduler_parallel = false\nbaseline_scheduler_maxthread = 8\nbaseline_scheduler_chunksize = 100\n\n[storage]\ndata_path = data\nenable_cache = true\nkey_page_size = 0\npd_ssl_ca_path = \npd_ssl_cert_path = \npd_ssl_key_path = \nenable_archive = false\narchive_ip = 127.0.0.1\narchive_port = \nenable_rocksdb_blob = false\nwrite_buffer_size = 134217728\nmax_background_jobs = 4\nmax_write_buffer_number = 6\nblock_cache_size = 268435456\ncache_size = 536870912\n\n[txpool]\nlimit = 500000\nnotify_worker_num = 2\ntxs_expiration_time = 600\nenable_txs_from_free_node = false\nverify_worker_num = 8\n\n[sync]\nsend_txs_by_tree = false\nsync_block_by_tree = false\ntree_width = 3\n\n[redis]\n\n[flow_control]\n\n[log]\nenable = true\nenable_console_output = false\nlog_path = ./log\nlevel = warning\nmax_log_file_size = 1024\nenable_rate_collector = false\n\n"
+      }
+    ],
+    "before": {
+      "valid": true,
+      "nodes": [
+        {
+          "blockNumber": 7713,
+          "failedTransactionCount": 0,
+          "transactionCount": 59233168,
+          "host": "10.206.0.16",
+          "pending": 0,
+          "begin_epoch": 1790768752.872503,
+          "end_epoch": 1790768752.8808954
+        },
+        {
+          "blockNumber": 7713,
+          "failedTransactionCount": 0,
+          "transactionCount": 59233168,
+          "host": "10.206.0.4",
+          "pending": 0,
+          "begin_epoch": 1790768752.8726833,
+          "end_epoch": 1790768752.8802888
+        },
+        {
+          "blockNumber": 7713,
+          "failedTransactionCount": 0,
+          "transactionCount": 59233168,
+          "host": "10.206.0.14",
+          "pending": 0,
+          "begin_epoch": 1790768752.8728414,
+          "end_epoch": 1790768752.8796444
+        },
+        {
+          "blockNumber": 7713,
+          "failedTransactionCount": 0,
+          "transactionCount": 59233168,
+          "host": "10.206.0.17",
+          "pending": 0,
+          "begin_epoch": 1790768752.872954,
+          "end_epoch": 1790768752.8802578
+        },
+        {
+          "blockNumber": 7713,
+          "failedTransactionCount": 0,
+          "transactionCount": 59233168,
+          "host": "10.206.0.15",
+          "pending": 0,
+          "begin_epoch": 1790768752.8732383,
+          "end_epoch": 1790768752.8822389
+        },
+        {
+          "blockNumber": 7713,
+          "failedTransactionCount": 0,
+          "transactionCount": 59233168,
+          "host": "10.206.0.12",
+          "pending": 0,
+          "begin_epoch": 1790768752.8735225,
+          "end_epoch": 1790768752.881992
+        },
+        {
+          "blockNumber": 7713,
+          "failedTransactionCount": 0,
+          "transactionCount": 59233168,
+          "host": "10.206.0.2",
+          "pending": 0,
+          "begin_epoch": 1790768752.8736806,
+          "end_epoch": 1790768752.8822205
+        },
+        {
+          "blockNumber": 7713,
+          "failedTransactionCount": 0,
+          "transactionCount": 59233168,
+          "host": "10.206.0.6",
+          "pending": 0,
+          "begin_epoch": 1790768752.8737574,
+          "end_epoch": 1790768752.8819072
+        },
+        {
+          "blockNumber": 7713,
+          "failedTransactionCount": 0,
+          "transactionCount": 59233168,
+          "host": "10.206.0.11",
+          "pending": 0,
+          "begin_epoch": 1790768752.8740172,
+          "end_epoch": 1790768752.882476
+        },
+        {
+          "blockNumber": 7713,
+          "failedTransactionCount": 0,
+          "transactionCount": 59233168,
+          "host": "10.206.0.8",
+          "pending": 0,
+          "begin_epoch": 1790768752.8741972,
+          "end_epoch": 1790768752.8822582
+        }
+      ],
+      "blocks": [
+        {
+          "host": "10.206.0.16",
+          "height": 7713,
+          "hash": "0x520896d8dc16511d9e6b8a6db5fe480b7b35e57f65eedf842021529623fb30d2",
+          "stateRoot": "0xa8d6c47150ea0ed9bbcfda8e3bebfbdfd7773f45a43733568a61a9e13a5c67e0",
+          "sealers": 10,
+          "observers": 0
+        },
+        {
+          "host": "10.206.0.4",
+          "height": 7713,
+          "hash": "0x520896d8dc16511d9e6b8a6db5fe480b7b35e57f65eedf842021529623fb30d2",
+          "stateRoot": "0xa8d6c47150ea0ed9bbcfda8e3bebfbdfd7773f45a43733568a61a9e13a5c67e0",
+          "sealers": 10,
+          "observers": 0
+        },
+        {
+          "host": "10.206.0.14",
+          "height": 7713,
+          "hash": "0x520896d8dc16511d9e6b8a6db5fe480b7b35e57f65eedf842021529623fb30d2",
+          "stateRoot": "0xa8d6c47150ea0ed9bbcfda8e3bebfbdfd7773f45a43733568a61a9e13a5c67e0",
+          "sealers": 10,
+          "observers": 0
+        },
+        {
+          "host": "10.206.0.17",
+          "height": 7713,
+          "hash": "0x520896d8dc16511d9e6b8a6db5fe480b7b35e57f65eedf842021529623fb30d2",
+          "stateRoot": "0xa8d6c47150ea0ed9bbcfda8e3bebfbdfd7773f45a43733568a61a9e13a5c67e0",
+          "sealers": 10,
+          "observers": 0
+        },
+        {
+          "host": "10.206.0.15",
+          "height": 7713,
+          "hash": "0x520896d8dc16511d9e6b8a6db5fe480b7b35e57f65eedf842021529623fb30d2",
+          "stateRoot": "0xa8d6c47150ea0ed9bbcfda8e3bebfbdfd7773f45a43733568a61a9e13a5c67e0",
+          "sealers": 10,
+          "observers": 0
+        },
+        {
+          "host": "10.206.0.12",
+          "height": 7713,
+          "hash": "0x520896d8dc16511d9e6b8a6db5fe480b7b35e57f65eedf842021529623fb30d2",
+          "stateRoot": "0xa8d6c47150ea0ed9bbcfda8e3bebfbdfd7773f45a43733568a61a9e13a5c67e0",
+          "sealers": 10,
+          "observers": 0
+        },
+        {
+          "host": "10.206.0.2",
+          "height": 7713,
+          "hash": "0x520896d8dc16511d9e6b8a6db5fe480b7b35e57f65eedf842021529623fb30d2",
+          "stateRoot": "0xa8d6c47150ea0ed9bbcfda8e3bebfbdfd7773f45a43733568a61a9e13a5c67e0",
+          "sealers": 10,
+          "observers": 0
+        },
+        {
+          "host": "10.206.0.6",
+          "height": 7713,
+          "hash": "0x520896d8dc16511d9e6b8a6db5fe480b7b35e57f65eedf842021529623fb30d2",
+          "stateRoot": "0xa8d6c47150ea0ed9bbcfda8e3bebfbdfd7773f45a43733568a61a9e13a5c67e0",
+          "sealers": 10,
+          "observers": 0
+        },
+        {
+          "host": "10.206.0.11",
+          "height": 7713,
+          "hash": "0x520896d8dc16511d9e6b8a6db5fe480b7b35e57f65eedf842021529623fb30d2",
+          "stateRoot": "0xa8d6c47150ea0ed9bbcfda8e3bebfbdfd7773f45a43733568a61a9e13a5c67e0",
+          "sealers": 10,
+          "observers": 0
+        },
+        {
+          "host": "10.206.0.8",
+          "height": 7713,
+          "hash": "0x520896d8dc16511d9e6b8a6db5fe480b7b35e57f65eedf842021529623fb30d2",
+          "stateRoot": "0xa8d6c47150ea0ed9bbcfda8e3bebfbdfd7773f45a43733568a61a9e13a5c67e0",
+          "sealers": 10,
+          "observers": 0
+        }
+      ]
+    },
+    "after": {
+      "valid": true,
+      "nodes": [
+        {
+          "blockNumber": 7713,
+          "failedTransactionCount": 0,
+          "transactionCount": 59233168,
+          "host": "10.206.0.16",
+          "pending": 0,
+          "begin_epoch": 1790768789.3601997,
+          "end_epoch": 1790768789.368802
+        },
+        {
+          "blockNumber": 7713,
+          "failedTransactionCount": 0,
+          "transactionCount": 59233168,
+          "host": "10.206.0.4",
+          "pending": 0,
+          "begin_epoch": 1790768789.3604128,
+          "end_epoch": 1790768789.3702397
+        },
+        {
+          "blockNumber": 7713,
+          "failedTransactionCount": 0,
+          "transactionCount": 59233168,
+          "host": "10.206.0.14",
+          "pending": 0,
+          "begin_epoch": 1790768789.3605547,
+          "end_epoch": 1790768789.3706965
+        },
+        {
+          "blockNumber": 7713,
+          "failedTransactionCount": 0,
+          "transactionCount": 59233168,
+          "host": "10.206.0.17",
+          "pending": 0,
+          "begin_epoch": 1790768789.3606942,
+          "end_epoch": 1790768789.3676593
+        },
+        {
+          "blockNumber": 7713,
+          "failedTransactionCount": 0,
+          "transactionCount": 59233168,
+          "host": "10.206.0.15",
+          "pending": 0,
+          "begin_epoch": 1790768789.3608756,
+          "end_epoch": 1790768789.3689108
+        },
+        {
+          "blockNumber": 7713,
+          "failedTransactionCount": 0,
+          "transactionCount": 59233168,
+          "host": "10.206.0.12",
+          "pending": 0,
+          "begin_epoch": 1790768789.361041,
+          "end_epoch": 1790768789.370557
+        },
+        {
+          "blockNumber": 7713,
+          "failedTransactionCount": 0,
+          "transactionCount": 59233168,
+          "host": "10.206.0.2",
+          "pending": 0,
+          "begin_epoch": 1790768789.3613029,
+          "end_epoch": 1790768789.3691308
+        },
+        {
+          "blockNumber": 7713,
+          "failedTransactionCount": 0,
+          "transactionCount": 59233168,
+          "host": "10.206.0.6",
+          "pending": 0,
+          "begin_epoch": 1790768789.3615022,
+          "end_epoch": 1790768789.3706117
+        },
+        {
+          "blockNumber": 7713,
+          "failedTransactionCount": 0,
+          "transactionCount": 59233168,
+          "host": "10.206.0.11",
+          "pending": 0,
+          "begin_epoch": 1790768789.361719,
+          "end_epoch": 1790768789.3699331
+        },
+        {
+          "blockNumber": 7713,
+          "failedTransactionCount": 0,
+          "transactionCount": 59233168,
+          "host": "10.206.0.8",
+          "pending": 0,
+          "begin_epoch": 1790768789.3618677,
+          "end_epoch": 1790768789.3705766
+        }
+      ],
+      "blocks": [
+        {
+          "host": "10.206.0.16",
+          "height": 7713,
+          "hash": "0x520896d8dc16511d9e6b8a6db5fe480b7b35e57f65eedf842021529623fb30d2",
+          "stateRoot": "0xa8d6c47150ea0ed9bbcfda8e3bebfbdfd7773f45a43733568a61a9e13a5c67e0",
+          "sealers": 10,
+          "observers": 0
+        },
+        {
+          "host": "10.206.0.4",
+          "height": 7713,
+          "hash": "0x520896d8dc16511d9e6b8a6db5fe480b7b35e57f65eedf842021529623fb30d2",
+          "stateRoot": "0xa8d6c47150ea0ed9bbcfda8e3bebfbdfd7773f45a43733568a61a9e13a5c67e0",
+          "sealers": 10,
+          "observers": 0
+        },
+        {
+          "host": "10.206.0.14",
+          "height": 7713,
+          "hash": "0x520896d8dc16511d9e6b8a6db5fe480b7b35e57f65eedf842021529623fb30d2",
+          "stateRoot": "0xa8d6c47150ea0ed9bbcfda8e3bebfbdfd7773f45a43733568a61a9e13a5c67e0",
+          "sealers": 10,
+          "observers": 0
+        },
+        {
+          "host": "10.206.0.17",
+          "height": 7713,
+          "hash": "0x520896d8dc16511d9e6b8a6db5fe480b7b35e57f65eedf842021529623fb30d2",
+          "stateRoot": "0xa8d6c47150ea0ed9bbcfda8e3bebfbdfd7773f45a43733568a61a9e13a5c67e0",
+          "sealers": 10,
+          "observers": 0
+        },
+        {
+          "host": "10.206.0.15",
+          "height": 7713,
+          "hash": "0x520896d8dc16511d9e6b8a6db5fe480b7b35e57f65eedf842021529623fb30d2",
+          "stateRoot": "0xa8d6c47150ea0ed9bbcfda8e3bebfbdfd7773f45a43733568a61a9e13a5c67e0",
+          "sealers": 10,
+          "observers": 0
+        },
+        {
+          "host": "10.206.0.12",
+          "height": 7713,
+          "hash": "0x520896d8dc16511d9e6b8a6db5fe480b7b35e57f65eedf842021529623fb30d2",
+          "stateRoot": "0xa8d6c47150ea0ed9bbcfda8e3bebfbdfd7773f45a43733568a61a9e13a5c67e0",
+          "sealers": 10,
+          "observers": 0
+        },
+        {
+          "host": "10.206.0.2",
+          "height": 7713,
+          "hash": "0x520896d8dc16511d9e6b8a6db5fe480b7b35e57f65eedf842021529623fb30d2",
+          "stateRoot": "0xa8d6c47150ea0ed9bbcfda8e3bebfbdfd7773f45a43733568a61a9e13a5c67e0",
+          "sealers": 10,
+          "observers": 0
+        },
+        {
+          "host": "10.206.0.6",
+          "height": 7713,
+          "hash": "0x520896d8dc16511d9e6b8a6db5fe480b7b35e57f65eedf842021529623fb30d2",
+          "stateRoot": "0xa8d6c47150ea0ed9bbcfda8e3bebfbdfd7773f45a43733568a61a9e13a5c67e0",
+          "sealers": 10,
+          "observers": 0
+        },
+        {
+          "host": "10.206.0.11",
+          "height": 7713,
+          "hash": "0x520896d8dc16511d9e6b8a6db5fe480b7b35e57f65eedf842021529623fb30d2",
+          "stateRoot": "0xa8d6c47150ea0ed9bbcfda8e3bebfbdfd7773f45a43733568a61a9e13a5c67e0",
+          "sealers": 10,
+          "observers": 0
+        },
+        {
+          "host": "10.206.0.8",
+          "height": 7713,
+          "hash": "0x520896d8dc16511d9e6b8a6db5fe480b7b35e57f65eedf842021529623fb30d2",
+          "stateRoot": "0xa8d6c47150ea0ed9bbcfda8e3bebfbdfd7773f45a43733568a61a9e13a5c67e0",
+          "sealers": 10,
+          "observers": 0
+        }
+      ]
+    }
+  },
+  "ten/final-check.json": {
+    "valid": true,
+    "nodes": [
+      {
+        "blockNumber": 8005,
+        "failedTransactionCount": 0,
+        "transactionCount": 65894619,
+        "host": "10.206.0.16",
+        "pending": 0,
+        "begin_epoch": 1790769256.4662845,
+        "end_epoch": 1790769256.475341
+      },
+      {
+        "blockNumber": 8005,
+        "failedTransactionCount": 0,
+        "transactionCount": 65894619,
+        "host": "10.206.0.4",
+        "pending": 0,
+        "begin_epoch": 1790769256.466476,
+        "end_epoch": 1790769256.4763632
+      },
+      {
+        "blockNumber": 8005,
+        "failedTransactionCount": 0,
+        "transactionCount": 65894619,
+        "host": "10.206.0.14",
+        "pending": 0,
+        "begin_epoch": 1790769256.4666119,
+        "end_epoch": 1790769256.4741771
+      },
+      {
+        "blockNumber": 8005,
+        "failedTransactionCount": 0,
+        "transactionCount": 65894619,
+        "host": "10.206.0.17",
+        "pending": 0,
+        "begin_epoch": 1790769256.4667537,
+        "end_epoch": 1790769256.4738743
+      },
+      {
+        "blockNumber": 8005,
+        "failedTransactionCount": 0,
+        "transactionCount": 65894619,
+        "host": "10.206.0.15",
+        "pending": 0,
+        "begin_epoch": 1790769256.4668634,
+        "end_epoch": 1790769256.4758136
+      },
+      {
+        "blockNumber": 8005,
+        "failedTransactionCount": 0,
+        "transactionCount": 65894619,
+        "host": "10.206.0.12",
+        "pending": 0,
+        "begin_epoch": 1790769256.467016,
+        "end_epoch": 1790769256.4761066
+      },
+      {
+        "blockNumber": 8005,
+        "failedTransactionCount": 0,
+        "transactionCount": 65894619,
+        "host": "10.206.0.2",
+        "pending": 0,
+        "begin_epoch": 1790769256.4672468,
+        "end_epoch": 1790769256.475372
+      },
+      {
+        "blockNumber": 8005,
+        "failedTransactionCount": 0,
+        "transactionCount": 65894619,
+        "host": "10.206.0.6",
+        "pending": 0,
+        "begin_epoch": 1790769256.4675484,
+        "end_epoch": 1790769256.4762278
+      },
+      {
+        "blockNumber": 8005,
+        "failedTransactionCount": 0,
+        "transactionCount": 65894619,
+        "host": "10.206.0.11",
+        "pending": 0,
+        "begin_epoch": 1790769256.4677696,
+        "end_epoch": 1790769256.4758468
+      },
+      {
+        "blockNumber": 8005,
+        "failedTransactionCount": 0,
+        "transactionCount": 65894619,
+        "host": "10.206.0.8",
+        "pending": 0,
+        "begin_epoch": 1790769256.4679892,
+        "end_epoch": 1790769256.475635
+      }
+    ],
+    "blocks": [
+      {
+        "host": "10.206.0.16",
+        "height": 8005,
+        "hash": "0xc4d4033be8b5bf043c19dc4d49aef1d0ff56aa9bd56040b2b0842b0113b6a780",
+        "stateRoot": "0x7c26a1cdb29af975a41dcc4fb8dc9f9c61c134e1321a4de10de9a76b19994e67",
+        "sealers": 10,
+        "observers": 0
+      },
+      {
+        "host": "10.206.0.4",
+        "height": 8005,
+        "hash": "0xc4d4033be8b5bf043c19dc4d49aef1d0ff56aa9bd56040b2b0842b0113b6a780",
+        "stateRoot": "0x7c26a1cdb29af975a41dcc4fb8dc9f9c61c134e1321a4de10de9a76b19994e67",
+        "sealers": 10,
+        "observers": 0
+      },
+      {
+        "host": "10.206.0.14",
+        "height": 8005,
+        "hash": "0xc4d4033be8b5bf043c19dc4d49aef1d0ff56aa9bd56040b2b0842b0113b6a780",
+        "stateRoot": "0x7c26a1cdb29af975a41dcc4fb8dc9f9c61c134e1321a4de10de9a76b19994e67",
+        "sealers": 10,
+        "observers": 0
+      },
+      {
+        "host": "10.206.0.17",
+        "height": 8005,
+        "hash": "0xc4d4033be8b5bf043c19dc4d49aef1d0ff56aa9bd56040b2b0842b0113b6a780",
+        "stateRoot": "0x7c26a1cdb29af975a41dcc4fb8dc9f9c61c134e1321a4de10de9a76b19994e67",
+        "sealers": 10,
+        "observers": 0
+      },
+      {
+        "host": "10.206.0.15",
+        "height": 8005,
+        "hash": "0xc4d4033be8b5bf043c19dc4d49aef1d0ff56aa9bd56040b2b0842b0113b6a780",
+        "stateRoot": "0x7c26a1cdb29af975a41dcc4fb8dc9f9c61c134e1321a4de10de9a76b19994e67",
+        "sealers": 10,
+        "observers": 0
+      },
+      {
+        "host": "10.206.0.12",
+        "height": 8005,
+        "hash": "0xc4d4033be8b5bf043c19dc4d49aef1d0ff56aa9bd56040b2b0842b0113b6a780",
+        "stateRoot": "0x7c26a1cdb29af975a41dcc4fb8dc9f9c61c134e1321a4de10de9a76b19994e67",
+        "sealers": 10,
+        "observers": 0
+      },
+      {
+        "host": "10.206.0.2",
+        "height": 8005,
+        "hash": "0xc4d4033be8b5bf043c19dc4d49aef1d0ff56aa9bd56040b2b0842b0113b6a780",
+        "stateRoot": "0x7c26a1cdb29af975a41dcc4fb8dc9f9c61c134e1321a4de10de9a76b19994e67",
+        "sealers": 10,
+        "observers": 0
+      },
+      {
+        "host": "10.206.0.6",
+        "height": 8005,
+        "hash": "0xc4d4033be8b5bf043c19dc4d49aef1d0ff56aa9bd56040b2b0842b0113b6a780",
+        "stateRoot": "0x7c26a1cdb29af975a41dcc4fb8dc9f9c61c134e1321a4de10de9a76b19994e67",
+        "sealers": 10,
+        "observers": 0
+      },
+      {
+        "host": "10.206.0.11",
+        "height": 8005,
+        "hash": "0xc4d4033be8b5bf043c19dc4d49aef1d0ff56aa9bd56040b2b0842b0113b6a780",
+        "stateRoot": "0x7c26a1cdb29af975a41dcc4fb8dc9f9c61c134e1321a4de10de9a76b19994e67",
+        "sealers": 10,
+        "observers": 0
+      },
+      {
+        "host": "10.206.0.8",
+        "height": 8005,
+        "hash": "0xc4d4033be8b5bf043c19dc4d49aef1d0ff56aa9bd56040b2b0842b0113b6a780",
+        "stateRoot": "0x7c26a1cdb29af975a41dcc4fb8dc9f9c61c134e1321a4de10de9a76b19994e67",
+        "sealers": 10,
+        "observers": 0
+      }
+    ]
+  },
+  "ten/batch1000-config.json": {
+    "spec": {
+      "action": "configure",
+      "name": "batch1000",
+      "ini": {
+        "consensus": {
+          "min_seal_time": "1000"
+        },
+        "storage": {
+          "enable_rocksdb_blob": "false",
+          "max_background_jobs": "4"
+        }
+      },
+      "block": 100000
+    },
+    "nodes": [
+      {
+        "host": "10.206.0.16",
+        "ini": "[p2p]\nlisten_ip = 10.206.0.16\nlisten_port = 30300\nsm_ssl = false\nnodes_path = ./\nnodes_file = nodes.json\nenable_ssl_verify = true\n\n[certificate_blacklist]\n\n[certificate_whitelist]\n\n[rpc]\nlisten_ip = 10.206.0.16\nlisten_port = 20200\nthread_count = 4\nsm_ssl = false\nenable_ssl = true\nreturn_input_params = false\n\n[web3_rpc]\nenable = false\nlisten_ip = 10.206.0.16\nlisten_port = 8545\nthread_count = 8\nrequest_body_size_limit = 10240000\nenable_cors = true\ncors_allow_credentials = true\ncors_allowed_origins = *\ncors_allowed_methods = GET, POST, OPTIONS\ncors_allowed_headers = Content-Type, Authorization, X-Requested-With\ncors_max_age = 86400\n\n[cert]\nca_path = ./conf\nca_cert = ca.crt\nnode_key = ssl.key\nnode_cert = ssl.crt\nmulti_ca_path = multiCaPath\n\n[security]\nprivate_key_path = conf/node.pem\nenable_hsm = false\n\n[storage_security]\nenable = false\n\n[consensus]\nmin_seal_time = 1000\n\n[executor]\nenable_dag = true\nbaseline_scheduler = false\nbaseline_scheduler_parallel = false\nbaseline_scheduler_maxthread = 8\nbaseline_scheduler_chunksize = 100\n\n[storage]\ndata_path = data\nenable_cache = true\nkey_page_size = 0\npd_ssl_ca_path = \npd_ssl_cert_path = \npd_ssl_key_path = \nenable_archive = false\narchive_ip = 127.0.0.1\narchive_port = \nenable_rocksdb_blob = false\nwrite_buffer_size = 134217728\nmax_background_jobs = 4\nmax_write_buffer_number = 6\nblock_cache_size = 268435456\ncache_size = 536870912\n\n[txpool]\nlimit = 500000\nnotify_worker_num = 2\ntxs_expiration_time = 600\nenable_txs_from_free_node = false\nverify_worker_num = 8\n\n[sync]\nsend_txs_by_tree = false\nsync_block_by_tree = false\ntree_width = 3\n\n[redis]\n\n[flow_control]\n\n[log]\nenable = true\nenable_console_output = false\nlog_path = ./log\nlevel = warning\nmax_log_file_size = 1024\nenable_rate_collector = false\n\n"
+      },
+      {
+        "host": "10.206.0.4",
+        "ini": "[p2p]\nlisten_ip = 10.206.0.4\nlisten_port = 30300\nsm_ssl = false\nnodes_path = ./\nnodes_file = nodes.json\nenable_ssl_verify = true\n\n[certificate_blacklist]\n\n[certificate_whitelist]\n\n[rpc]\nlisten_ip = 10.206.0.4\nlisten_port = 20200\nthread_count = 4\nsm_ssl = false\nenable_ssl = true\nreturn_input_params = false\n\n[web3_rpc]\nenable = false\nlisten_ip = 10.206.0.4\nlisten_port = 8545\nthread_count = 8\nrequest_body_size_limit = 10240000\nenable_cors = true\ncors_allow_credentials = true\ncors_allowed_origins = *\ncors_allowed_methods = GET, POST, OPTIONS\ncors_allowed_headers = Content-Type, Authorization, X-Requested-With\ncors_max_age = 86400\n\n[cert]\nca_path = ./conf\nca_cert = ca.crt\nnode_key = ssl.key\nnode_cert = ssl.crt\nmulti_ca_path = multiCaPath\n\n[security]\nprivate_key_path = conf/node.pem\nenable_hsm = false\n\n[storage_security]\nenable = false\n\n[consensus]\nmin_seal_time = 1000\n\n[executor]\nenable_dag = true\nbaseline_scheduler = false\nbaseline_scheduler_parallel = false\nbaseline_scheduler_maxthread = 8\nbaseline_scheduler_chunksize = 100\n\n[storage]\ndata_path = data\nenable_cache = true\nkey_page_size = 0\npd_ssl_ca_path = \npd_ssl_cert_path = \npd_ssl_key_path = \nenable_archive = false\narchive_ip = 127.0.0.1\narchive_port = \nenable_rocksdb_blob = false\nwrite_buffer_size = 134217728\nmax_background_jobs = 4\nmax_write_buffer_number = 6\nblock_cache_size = 268435456\ncache_size = 536870912\n\n[txpool]\nlimit = 500000\nnotify_worker_num = 2\ntxs_expiration_time = 600\nenable_txs_from_free_node = false\nverify_worker_num = 8\n\n[sync]\nsend_txs_by_tree = false\nsync_block_by_tree = false\ntree_width = 3\n\n[redis]\n\n[flow_control]\n\n[log]\nenable = true\nenable_console_output = false\nlog_path = ./log\nlevel = warning\nmax_log_file_size = 1024\nenable_rate_collector = false\n\n"
+      },
+      {
+        "host": "10.206.0.14",
+        "ini": "[p2p]\nlisten_ip = 10.206.0.14\nlisten_port = 30300\nsm_ssl = false\nnodes_path = ./\nnodes_file = nodes.json\nenable_ssl_verify = true\n\n[certificate_blacklist]\n\n[certificate_whitelist]\n\n[rpc]\nlisten_ip = 10.206.0.14\nlisten_port = 20200\nthread_count = 4\nsm_ssl = false\nenable_ssl = true\nreturn_input_params = false\n\n[web3_rpc]\nenable = false\nlisten_ip = 10.206.0.14\nlisten_port = 8545\nthread_count = 8\nrequest_body_size_limit = 10240000\nenable_cors = true\ncors_allow_credentials = true\ncors_allowed_origins = *\ncors_allowed_methods = GET, POST, OPTIONS\ncors_allowed_headers = Content-Type, Authorization, X-Requested-With\ncors_max_age = 86400\n\n[cert]\nca_path = ./conf\nca_cert = ca.crt\nnode_key = ssl.key\nnode_cert = ssl.crt\nmulti_ca_path = multiCaPath\n\n[security]\nprivate_key_path = conf/node.pem\nenable_hsm = false\n\n[storage_security]\nenable = false\n\n[consensus]\nmin_seal_time = 1000\n\n[executor]\nenable_dag = true\nbaseline_scheduler = false\nbaseline_scheduler_parallel = false\nbaseline_scheduler_maxthread = 8\nbaseline_scheduler_chunksize = 100\n\n[storage]\ndata_path = data\nenable_cache = true\nkey_page_size = 0\npd_ssl_ca_path = \npd_ssl_cert_path = \npd_ssl_key_path = \nenable_archive = false\narchive_ip = 127.0.0.1\narchive_port = \nenable_rocksdb_blob = false\nwrite_buffer_size = 134217728\nmax_background_jobs = 4\nmax_write_buffer_number = 6\nblock_cache_size = 268435456\ncache_size = 536870912\n\n[txpool]\nlimit = 500000\nnotify_worker_num = 2\ntxs_expiration_time = 600\nenable_txs_from_free_node = false\nverify_worker_num = 8\n\n[sync]\nsend_txs_by_tree = false\nsync_block_by_tree = false\ntree_width = 3\n\n[redis]\n\n[flow_control]\n\n[log]\nenable = true\nenable_console_output = false\nlog_path = ./log\nlevel = warning\nmax_log_file_size = 1024\nenable_rate_collector = false\n\n"
+      },
+      {
+        "host": "10.206.0.17",
+        "ini": "[p2p]\nlisten_ip = 10.206.0.17\nlisten_port = 30300\nsm_ssl = false\nnodes_path = ./\nnodes_file = nodes.json\nenable_ssl_verify = true\n\n[certificate_blacklist]\n\n[certificate_whitelist]\n\n[rpc]\nlisten_ip = 10.206.0.17\nlisten_port = 20200\nthread_count = 4\nsm_ssl = false\nenable_ssl = true\nreturn_input_params = false\n\n[web3_rpc]\nenable = false\nlisten_ip = 10.206.0.17\nlisten_port = 8545\nthread_count = 8\nrequest_body_size_limit = 10240000\nenable_cors = true\ncors_allow_credentials = true\ncors_allowed_origins = *\ncors_allowed_methods = GET, POST, OPTIONS\ncors_allowed_headers = Content-Type, Authorization, X-Requested-With\ncors_max_age = 86400\n\n[cert]\nca_path = ./conf\nca_cert = ca.crt\nnode_key = ssl.key\nnode_cert = ssl.crt\nmulti_ca_path = multiCaPath\n\n[security]\nprivate_key_path = conf/node.pem\nenable_hsm = false\n\n[storage_security]\nenable = false\n\n[consensus]\nmin_seal_time = 1000\n\n[executor]\nenable_dag = true\nbaseline_scheduler = false\nbaseline_scheduler_parallel = false\nbaseline_scheduler_maxthread = 8\nbaseline_scheduler_chunksize = 100\n\n[storage]\ndata_path = data\nenable_cache = true\nkey_page_size = 0\npd_ssl_ca_path = \npd_ssl_cert_path = \npd_ssl_key_path = \nenable_archive = false\narchive_ip = 127.0.0.1\narchive_port = \nenable_rocksdb_blob = false\nwrite_buffer_size = 134217728\nmax_background_jobs = 4\nmax_write_buffer_number = 6\nblock_cache_size = 268435456\ncache_size = 536870912\n\n[txpool]\nlimit = 500000\nnotify_worker_num = 2\ntxs_expiration_time = 600\nenable_txs_from_free_node = false\nverify_worker_num = 8\n\n[sync]\nsend_txs_by_tree = false\nsync_block_by_tree = false\ntree_width = 3\n\n[redis]\n\n[flow_control]\n\n[log]\nenable = true\nenable_console_output = false\nlog_path = ./log\nlevel = warning\nmax_log_file_size = 1024\nenable_rate_collector = false\n\n"
+      },
+      {
+        "host": "10.206.0.15",
+        "ini": "[p2p]\nlisten_ip = 10.206.0.15\nlisten_port = 30300\nsm_ssl = false\nnodes_path = ./\nnodes_file = nodes.json\nenable_ssl_verify = true\n\n[certificate_blacklist]\n\n[certificate_whitelist]\n\n[rpc]\nlisten_ip = 10.206.0.15\nlisten_port = 20200\nthread_count = 4\nsm_ssl = false\nenable_ssl = true\nreturn_input_params = false\n\n[web3_rpc]\nenable = false\nlisten_ip = 10.206.0.15\nlisten_port = 8545\nthread_count = 8\nrequest_body_size_limit = 10240000\nenable_cors = true\ncors_allow_credentials = true\ncors_allowed_origins = *\ncors_allowed_methods = GET, POST, OPTIONS\ncors_allowed_headers = Content-Type, Authorization, X-Requested-With\ncors_max_age = 86400\n\n[cert]\nca_path = ./conf\nca_cert = ca.crt\nnode_key = ssl.key\nnode_cert = ssl.crt\nmulti_ca_path = multiCaPath\n\n[security]\nprivate_key_path = conf/node.pem\nenable_hsm = false\n\n[storage_security]\nenable = false\n\n[consensus]\nmin_seal_time = 1000\n\n[executor]\nenable_dag = true\nbaseline_scheduler = false\nbaseline_scheduler_parallel = false\nbaseline_scheduler_maxthread = 8\nbaseline_scheduler_chunksize = 100\n\n[storage]\ndata_path = data\nenable_cache = true\nkey_page_size = 0\npd_ssl_ca_path = \npd_ssl_cert_path = \npd_ssl_key_path = \nenable_archive = false\narchive_ip = 127.0.0.1\narchive_port = \nenable_rocksdb_blob = false\nwrite_buffer_size = 134217728\nmax_background_jobs = 4\nmax_write_buffer_number = 6\nblock_cache_size = 268435456\ncache_size = 536870912\n\n[txpool]\nlimit = 500000\nnotify_worker_num = 2\ntxs_expiration_time = 600\nenable_txs_from_free_node = false\nverify_worker_num = 8\n\n[sync]\nsend_txs_by_tree = false\nsync_block_by_tree = false\ntree_width = 3\n\n[redis]\n\n[flow_control]\n\n[log]\nenable = true\nenable_console_output = false\nlog_path = ./log\nlevel = warning\nmax_log_file_size = 1024\nenable_rate_collector = false\n\n"
+      },
+      {
+        "host": "10.206.0.12",
+        "ini": "[p2p]\nlisten_ip = 10.206.0.12\nlisten_port = 30300\nsm_ssl = false\nnodes_path = ./\nnodes_file = nodes.json\nenable_ssl_verify = true\n\n[certificate_blacklist]\n\n[certificate_whitelist]\n\n[rpc]\nlisten_ip = 10.206.0.12\nlisten_port = 20200\nthread_count = 4\nsm_ssl = false\nenable_ssl = true\nreturn_input_params = false\n\n[web3_rpc]\nenable = false\nlisten_ip = 10.206.0.12\nlisten_port = 8545\nthread_count = 8\nrequest_body_size_limit = 10240000\nenable_cors = true\ncors_allow_credentials = true\ncors_allowed_origins = *\ncors_allowed_methods = GET, POST, OPTIONS\ncors_allowed_headers = Content-Type, Authorization, X-Requested-With\ncors_max_age = 86400\n\n[cert]\nca_path = ./conf\nca_cert = ca.crt\nnode_key = ssl.key\nnode_cert = ssl.crt\nmulti_ca_path = multiCaPath\n\n[security]\nprivate_key_path = conf/node.pem\nenable_hsm = false\n\n[storage_security]\nenable = false\n\n[consensus]\nmin_seal_time = 1000\n\n[executor]\nenable_dag = true\nbaseline_scheduler = false\nbaseline_scheduler_parallel = false\nbaseline_scheduler_maxthread = 8\nbaseline_scheduler_chunksize = 100\n\n[storage]\ndata_path = data\nenable_cache = true\nkey_page_size = 0\npd_ssl_ca_path = \npd_ssl_cert_path = \npd_ssl_key_path = \nenable_archive = false\narchive_ip = 127.0.0.1\narchive_port = \nenable_rocksdb_blob = false\nwrite_buffer_size = 134217728\nmax_background_jobs = 4\nmax_write_buffer_number = 6\nblock_cache_size = 268435456\ncache_size = 536870912\n\n[txpool]\nlimit = 500000\nnotify_worker_num = 2\ntxs_expiration_time = 600\nenable_txs_from_free_node = false\nverify_worker_num = 8\n\n[sync]\nsend_txs_by_tree = false\nsync_block_by_tree = false\ntree_width = 3\n\n[redis]\n\n[flow_control]\n\n[log]\nenable = true\nenable_console_output = false\nlog_path = ./log\nlevel = warning\nmax_log_file_size = 1024\nenable_rate_collector = false\n\n"
+      },
+      {
+        "host": "10.206.0.2",
+        "ini": "[p2p]\nlisten_ip = 10.206.0.2\nlisten_port = 30300\nsm_ssl = false\nnodes_path = ./\nnodes_file = nodes.json\nenable_ssl_verify = true\n\n[certificate_blacklist]\n\n[certificate_whitelist]\n\n[rpc]\nlisten_ip = 10.206.0.2\nlisten_port = 20200\nthread_count = 4\nsm_ssl = false\nenable_ssl = true\nreturn_input_params = false\n\n[web3_rpc]\nenable = false\nlisten_ip = 10.206.0.2\nlisten_port = 8545\nthread_count = 8\nrequest_body_size_limit = 10240000\nenable_cors = true\ncors_allow_credentials = true\ncors_allowed_origins = *\ncors_allowed_methods = GET, POST, OPTIONS\ncors_allowed_headers = Content-Type, Authorization, X-Requested-With\ncors_max_age = 86400\n\n[cert]\nca_path = ./conf\nca_cert = ca.crt\nnode_key = ssl.key\nnode_cert = ssl.crt\nmulti_ca_path = multiCaPath\n\n[security]\nprivate_key_path = conf/node.pem\nenable_hsm = false\n\n[storage_security]\nenable = false\n\n[consensus]\nmin_seal_time = 1000\n\n[executor]\nenable_dag = true\nbaseline_scheduler = false\nbaseline_scheduler_parallel = false\nbaseline_scheduler_maxthread = 8\nbaseline_scheduler_chunksize = 100\n\n[storage]\ndata_path = data\nenable_cache = true\nkey_page_size = 0\npd_ssl_ca_path = \npd_ssl_cert_path = \npd_ssl_key_path = \nenable_archive = false\narchive_ip = 127.0.0.1\narchive_port = \nenable_rocksdb_blob = false\nwrite_buffer_size = 134217728\nmax_background_jobs = 4\nmax_write_buffer_number = 6\nblock_cache_size = 268435456\ncache_size = 536870912\n\n[txpool]\nlimit = 500000\nnotify_worker_num = 2\ntxs_expiration_time = 600\nenable_txs_from_free_node = false\nverify_worker_num = 8\n\n[sync]\nsend_txs_by_tree = false\nsync_block_by_tree = false\ntree_width = 3\n\n[redis]\n\n[flow_control]\n\n[log]\nenable = true\nenable_console_output = false\nlog_path = ./log\nlevel = warning\nmax_log_file_size = 1024\nenable_rate_collector = false\n\n"
+      },
+      {
+        "host": "10.206.0.6",
+        "ini": "[p2p]\nlisten_ip = 10.206.0.6\nlisten_port = 30300\nsm_ssl = false\nnodes_path = ./\nnodes_file = nodes.json\nenable_ssl_verify = true\n\n[certificate_blacklist]\n\n[certificate_whitelist]\n\n[rpc]\nlisten_ip = 10.206.0.6\nlisten_port = 20200\nthread_count = 4\nsm_ssl = false\nenable_ssl = true\nreturn_input_params = false\n\n[web3_rpc]\nenable = false\nlisten_ip = 10.206.0.6\nlisten_port = 8545\nthread_count = 8\nrequest_body_size_limit = 10240000\nenable_cors = true\ncors_allow_credentials = true\ncors_allowed_origins = *\ncors_allowed_methods = GET, POST, OPTIONS\ncors_allowed_headers = Content-Type, Authorization, X-Requested-With\ncors_max_age = 86400\n\n[cert]\nca_path = ./conf\nca_cert = ca.crt\nnode_key = ssl.key\nnode_cert = ssl.crt\nmulti_ca_path = multiCaPath\n\n[security]\nprivate_key_path = conf/node.pem\nenable_hsm = false\n\n[storage_security]\nenable = false\n\n[consensus]\nmin_seal_time = 1000\n\n[executor]\nenable_dag = true\nbaseline_scheduler = false\nbaseline_scheduler_parallel = false\nbaseline_scheduler_maxthread = 8\nbaseline_scheduler_chunksize = 100\n\n[storage]\ndata_path = data\nenable_cache = true\nkey_page_size = 0\npd_ssl_ca_path = \npd_ssl_cert_path = \npd_ssl_key_path = \nenable_archive = false\narchive_ip = 127.0.0.1\narchive_port = \nenable_rocksdb_blob = false\nwrite_buffer_size = 134217728\nmax_background_jobs = 4\nmax_write_buffer_number = 6\nblock_cache_size = 268435456\ncache_size = 536870912\n\n[txpool]\nlimit = 500000\nnotify_worker_num = 2\ntxs_expiration_time = 600\nenable_txs_from_free_node = false\nverify_worker_num = 8\n\n[sync]\nsend_txs_by_tree = false\nsync_block_by_tree = false\ntree_width = 3\n\n[redis]\n\n[flow_control]\n\n[log]\nenable = true\nenable_console_output = false\nlog_path = ./log\nlevel = warning\nmax_log_file_size = 1024\nenable_rate_collector = false\n\n"
+      },
+      {
+        "host": "10.206.0.11",
+        "ini": "[p2p]\nlisten_ip = 10.206.0.11\nlisten_port = 30300\nsm_ssl = false\nnodes_path = ./\nnodes_file = nodes.json\nenable_ssl_verify = true\n\n[certificate_blacklist]\n\n[certificate_whitelist]\n\n[rpc]\nlisten_ip = 10.206.0.11\nlisten_port = 20200\nthread_count = 4\nsm_ssl = false\nenable_ssl = true\nreturn_input_params = false\n\n[web3_rpc]\nenable = false\nlisten_ip = 10.206.0.11\nlisten_port = 8545\nthread_count = 8\nrequest_body_size_limit = 10240000\nenable_cors = true\ncors_allow_credentials = true\ncors_allowed_origins = *\ncors_allowed_methods = GET, POST, OPTIONS\ncors_allowed_headers = Content-Type, Authorization, X-Requested-With\ncors_max_age = 86400\n\n[cert]\nca_path = ./conf\nca_cert = ca.crt\nnode_key = ssl.key\nnode_cert = ssl.crt\nmulti_ca_path = multiCaPath\n\n[security]\nprivate_key_path = conf/node.pem\nenable_hsm = false\n\n[storage_security]\nenable = false\n\n[consensus]\nmin_seal_time = 1000\n\n[executor]\nenable_dag = true\nbaseline_scheduler = false\nbaseline_scheduler_parallel = false\nbaseline_scheduler_maxthread = 8\nbaseline_scheduler_chunksize = 100\n\n[storage]\ndata_path = data\nenable_cache = true\nkey_page_size = 0\npd_ssl_ca_path = \npd_ssl_cert_path = \npd_ssl_key_path = \nenable_archive = false\narchive_ip = 127.0.0.1\narchive_port = \nenable_rocksdb_blob = false\nwrite_buffer_size = 134217728\nmax_background_jobs = 4\nmax_write_buffer_number = 6\nblock_cache_size = 268435456\ncache_size = 536870912\n\n[txpool]\nlimit = 500000\nnotify_worker_num = 2\ntxs_expiration_time = 600\nenable_txs_from_free_node = false\nverify_worker_num = 8\n\n[sync]\nsend_txs_by_tree = false\nsync_block_by_tree = false\ntree_width = 3\n\n[redis]\n\n[flow_control]\n\n[log]\nenable = true\nenable_console_output = false\nlog_path = ./log\nlevel = warning\nmax_log_file_size = 1024\nenable_rate_collector = false\n\n"
+      },
+      {
+        "host": "10.206.0.8",
+        "ini": "[p2p]\nlisten_ip = 10.206.0.8\nlisten_port = 30300\nsm_ssl = false\nnodes_path = ./\nnodes_file = nodes.json\nenable_ssl_verify = true\n\n[certificate_blacklist]\n\n[certificate_whitelist]\n\n[rpc]\nlisten_ip = 10.206.0.8\nlisten_port = 20200\nthread_count = 4\nsm_ssl = false\nenable_ssl = true\nreturn_input_params = false\n\n[web3_rpc]\nenable = false\nlisten_ip = 10.206.0.8\nlisten_port = 8545\nthread_count = 8\nrequest_body_size_limit = 10240000\nenable_cors = true\ncors_allow_credentials = true\ncors_allowed_origins = *\ncors_allowed_methods = GET, POST, OPTIONS\ncors_allowed_headers = Content-Type, Authorization, X-Requested-With\ncors_max_age = 86400\n\n[cert]\nca_path = ./conf\nca_cert = ca.crt\nnode_key = ssl.key\nnode_cert = ssl.crt\nmulti_ca_path = multiCaPath\n\n[security]\nprivate_key_path = conf/node.pem\nenable_hsm = false\n\n[storage_security]\nenable = false\n\n[consensus]\nmin_seal_time = 1000\n\n[executor]\nenable_dag = true\nbaseline_scheduler = false\nbaseline_scheduler_parallel = false\nbaseline_scheduler_maxthread = 8\nbaseline_scheduler_chunksize = 100\n\n[storage]\ndata_path = data\nenable_cache = true\nkey_page_size = 0\npd_ssl_ca_path = \npd_ssl_cert_path = \npd_ssl_key_path = \nenable_archive = false\narchive_ip = 127.0.0.1\narchive_port = \nenable_rocksdb_blob = false\nwrite_buffer_size = 134217728\nmax_background_jobs = 4\nmax_write_buffer_number = 6\nblock_cache_size = 268435456\ncache_size = 536870912\n\n[txpool]\nlimit = 500000\nnotify_worker_num = 2\ntxs_expiration_time = 600\nenable_txs_from_free_node = false\nverify_worker_num = 8\n\n[sync]\nsend_txs_by_tree = false\nsync_block_by_tree = false\ntree_width = 3\n\n[redis]\n\n[flow_control]\n\n[log]\nenable = true\nenable_console_output = false\nlog_path = ./log\nlevel = warning\nmax_log_file_size = 1024\nenable_rate_collector = false\n\n"
+      }
+    ],
+    "before": {
+      "valid": true,
+      "nodes": [
+        {
+          "blockNumber": 7650,
+          "failedTransactionCount": 0,
+          "transactionCount": 55692206,
+          "host": "10.206.0.16",
+          "pending": 0,
+          "begin_epoch": 1790768062.1817188,
+          "end_epoch": 1790768062.193608
+        },
+        {
+          "blockNumber": 7650,
+          "failedTransactionCount": 0,
+          "transactionCount": 55692206,
+          "host": "10.206.0.4",
+          "pending": 0,
+          "begin_epoch": 1790768062.1819212,
+          "end_epoch": 1790768062.192781
+        },
+        {
+          "blockNumber": 7650,
+          "failedTransactionCount": 0,
+          "transactionCount": 55692206,
+          "host": "10.206.0.14",
+          "pending": 0,
+          "begin_epoch": 1790768062.1821094,
+          "end_epoch": 1790768062.191512
+        },
+        {
+          "blockNumber": 7650,
+          "failedTransactionCount": 0,
+          "transactionCount": 55692206,
+          "host": "10.206.0.17",
+          "pending": 0,
+          "begin_epoch": 1790768062.1822536,
+          "end_epoch": 1790768062.1929796
+        },
+        {
+          "blockNumber": 7650,
+          "failedTransactionCount": 0,
+          "transactionCount": 55692206,
+          "host": "10.206.0.15",
+          "pending": 0,
+          "begin_epoch": 1790768062.1823778,
+          "end_epoch": 1790768062.192235
+        },
+        {
+          "blockNumber": 7650,
+          "failedTransactionCount": 0,
+          "transactionCount": 55692206,
+          "host": "10.206.0.12",
+          "pending": 0,
+          "begin_epoch": 1790768062.1828334,
+          "end_epoch": 1790768062.1934
+        },
+        {
+          "blockNumber": 7650,
+          "failedTransactionCount": 0,
+          "transactionCount": 55692206,
+          "host": "10.206.0.2",
+          "pending": 0,
+          "begin_epoch": 1790768062.1830587,
+          "end_epoch": 1790768062.1933832
+        },
+        {
+          "blockNumber": 7650,
+          "failedTransactionCount": 0,
+          "transactionCount": 55692206,
+          "host": "10.206.0.6",
+          "pending": 0,
+          "begin_epoch": 1790768062.183306,
+          "end_epoch": 1790768062.1930869
+        },
+        {
+          "blockNumber": 7650,
+          "failedTransactionCount": 0,
+          "transactionCount": 55692206,
+          "host": "10.206.0.11",
+          "pending": 0,
+          "begin_epoch": 1790768062.1834385,
+          "end_epoch": 1790768062.1933677
+        },
+        {
+          "blockNumber": 7650,
+          "failedTransactionCount": 0,
+          "transactionCount": 55692206,
+          "host": "10.206.0.8",
+          "pending": 0,
+          "begin_epoch": 1790768062.1835911,
+          "end_epoch": 1790768062.1924953
+        }
+      ],
+      "blocks": [
+        {
+          "host": "10.206.0.16",
+          "height": 7650,
+          "hash": "0xb51fbff3b3d394ad3395066a49cfce89868176a07485c3771985ae910bdbff06",
+          "stateRoot": "0x50e5b71933d9d30c5c0f171e5ecf8e210c4192276e30f0ec0e8817fe22df04e9",
+          "sealers": 10,
+          "observers": 0
+        },
+        {
+          "host": "10.206.0.4",
+          "height": 7650,
+          "hash": "0xb51fbff3b3d394ad3395066a49cfce89868176a07485c3771985ae910bdbff06",
+          "stateRoot": "0x50e5b71933d9d30c5c0f171e5ecf8e210c4192276e30f0ec0e8817fe22df04e9",
+          "sealers": 10,
+          "observers": 0
+        },
+        {
+          "host": "10.206.0.14",
+          "height": 7650,
+          "hash": "0xb51fbff3b3d394ad3395066a49cfce89868176a07485c3771985ae910bdbff06",
+          "stateRoot": "0x50e5b71933d9d30c5c0f171e5ecf8e210c4192276e30f0ec0e8817fe22df04e9",
+          "sealers": 10,
+          "observers": 0
+        },
+        {
+          "host": "10.206.0.17",
+          "height": 7650,
+          "hash": "0xb51fbff3b3d394ad3395066a49cfce89868176a07485c3771985ae910bdbff06",
+          "stateRoot": "0x50e5b71933d9d30c5c0f171e5ecf8e210c4192276e30f0ec0e8817fe22df04e9",
+          "sealers": 10,
+          "observers": 0
+        },
+        {
+          "host": "10.206.0.15",
+          "height": 7650,
+          "hash": "0xb51fbff3b3d394ad3395066a49cfce89868176a07485c3771985ae910bdbff06",
+          "stateRoot": "0x50e5b71933d9d30c5c0f171e5ecf8e210c4192276e30f0ec0e8817fe22df04e9",
+          "sealers": 10,
+          "observers": 0
+        },
+        {
+          "host": "10.206.0.12",
+          "height": 7650,
+          "hash": "0xb51fbff3b3d394ad3395066a49cfce89868176a07485c3771985ae910bdbff06",
+          "stateRoot": "0x50e5b71933d9d30c5c0f171e5ecf8e210c4192276e30f0ec0e8817fe22df04e9",
+          "sealers": 10,
+          "observers": 0
+        },
+        {
+          "host": "10.206.0.2",
+          "height": 7650,
+          "hash": "0xb51fbff3b3d394ad3395066a49cfce89868176a07485c3771985ae910bdbff06",
+          "stateRoot": "0x50e5b71933d9d30c5c0f171e5ecf8e210c4192276e30f0ec0e8817fe22df04e9",
+          "sealers": 10,
+          "observers": 0
+        },
+        {
+          "host": "10.206.0.6",
+          "height": 7650,
+          "hash": "0xb51fbff3b3d394ad3395066a49cfce89868176a07485c3771985ae910bdbff06",
+          "stateRoot": "0x50e5b71933d9d30c5c0f171e5ecf8e210c4192276e30f0ec0e8817fe22df04e9",
+          "sealers": 10,
+          "observers": 0
+        },
+        {
+          "host": "10.206.0.11",
+          "height": 7650,
+          "hash": "0xb51fbff3b3d394ad3395066a49cfce89868176a07485c3771985ae910bdbff06",
+          "stateRoot": "0x50e5b71933d9d30c5c0f171e5ecf8e210c4192276e30f0ec0e8817fe22df04e9",
+          "sealers": 10,
+          "observers": 0
+        },
+        {
+          "host": "10.206.0.8",
+          "height": 7650,
+          "hash": "0xb51fbff3b3d394ad3395066a49cfce89868176a07485c3771985ae910bdbff06",
+          "stateRoot": "0x50e5b71933d9d30c5c0f171e5ecf8e210c4192276e30f0ec0e8817fe22df04e9",
+          "sealers": 10,
+          "observers": 0
+        }
+      ]
+    },
+    "after": {
+      "valid": true,
+      "nodes": [
+        {
+          "blockNumber": 7650,
+          "failedTransactionCount": 0,
+          "transactionCount": 55692206,
+          "host": "10.206.0.16",
+          "pending": 0,
+          "begin_epoch": 1790768096.6508806,
+          "end_epoch": 1790768096.6609306
+        },
+        {
+          "blockNumber": 7650,
+          "failedTransactionCount": 0,
+          "transactionCount": 55692206,
+          "host": "10.206.0.4",
+          "pending": 0,
+          "begin_epoch": 1790768096.651101,
+          "end_epoch": 1790768096.6600583
+        },
+        {
+          "blockNumber": 7650,
+          "failedTransactionCount": 0,
+          "transactionCount": 55692206,
+          "host": "10.206.0.14",
+          "pending": 0,
+          "begin_epoch": 1790768096.651254,
+          "end_epoch": 1790768096.6608934
+        },
+        {
+          "blockNumber": 7650,
+          "failedTransactionCount": 0,
+          "transactionCount": 55692206,
+          "host": "10.206.0.17",
+          "pending": 0,
+          "begin_epoch": 1790768096.6513836,
+          "end_epoch": 1790768096.6596081
+        },
+        {
+          "blockNumber": 7650,
+          "failedTransactionCount": 0,
+          "transactionCount": 55692206,
+          "host": "10.206.0.15",
+          "pending": 0,
+          "begin_epoch": 1790768096.6514928,
+          "end_epoch": 1790768096.6597102
+        },
+        {
+          "blockNumber": 7650,
+          "failedTransactionCount": 0,
+          "transactionCount": 55692206,
+          "host": "10.206.0.12",
+          "pending": 0,
+          "begin_epoch": 1790768096.6518323,
+          "end_epoch": 1790768096.6610608
+        },
+        {
+          "blockNumber": 7650,
+          "failedTransactionCount": 0,
+          "transactionCount": 55692206,
+          "host": "10.206.0.2",
+          "pending": 0,
+          "begin_epoch": 1790768096.6521254,
+          "end_epoch": 1790768096.66117
+        },
+        {
+          "blockNumber": 7650,
+          "failedTransactionCount": 0,
+          "transactionCount": 55692206,
+          "host": "10.206.0.6",
+          "pending": 0,
+          "begin_epoch": 1790768096.6523526,
+          "end_epoch": 1790768096.6601825
+        },
+        {
+          "blockNumber": 7650,
+          "failedTransactionCount": 0,
+          "transactionCount": 55692206,
+          "host": "10.206.0.11",
+          "pending": 0,
+          "begin_epoch": 1790768096.6524932,
+          "end_epoch": 1790768096.6610863
+        },
+        {
+          "blockNumber": 7650,
+          "failedTransactionCount": 0,
+          "transactionCount": 55692206,
+          "host": "10.206.0.8",
+          "pending": 0,
+          "begin_epoch": 1790768096.652676,
+          "end_epoch": 1790768096.6609113
+        }
+      ],
+      "blocks": [
+        {
+          "host": "10.206.0.16",
+          "height": 7650,
+          "hash": "0xb51fbff3b3d394ad3395066a49cfce89868176a07485c3771985ae910bdbff06",
+          "stateRoot": "0x50e5b71933d9d30c5c0f171e5ecf8e210c4192276e30f0ec0e8817fe22df04e9",
+          "sealers": 10,
+          "observers": 0
+        },
+        {
+          "host": "10.206.0.4",
+          "height": 7650,
+          "hash": "0xb51fbff3b3d394ad3395066a49cfce89868176a07485c3771985ae910bdbff06",
+          "stateRoot": "0x50e5b71933d9d30c5c0f171e5ecf8e210c4192276e30f0ec0e8817fe22df04e9",
+          "sealers": 10,
+          "observers": 0
+        },
+        {
+          "host": "10.206.0.14",
+          "height": 7650,
+          "hash": "0xb51fbff3b3d394ad3395066a49cfce89868176a07485c3771985ae910bdbff06",
+          "stateRoot": "0x50e5b71933d9d30c5c0f171e5ecf8e210c4192276e30f0ec0e8817fe22df04e9",
+          "sealers": 10,
+          "observers": 0
+        },
+        {
+          "host": "10.206.0.17",
+          "height": 7650,
+          "hash": "0xb51fbff3b3d394ad3395066a49cfce89868176a07485c3771985ae910bdbff06",
+          "stateRoot": "0x50e5b71933d9d30c5c0f171e5ecf8e210c4192276e30f0ec0e8817fe22df04e9",
+          "sealers": 10,
+          "observers": 0
+        },
+        {
+          "host": "10.206.0.15",
+          "height": 7650,
+          "hash": "0xb51fbff3b3d394ad3395066a49cfce89868176a07485c3771985ae910bdbff06",
+          "stateRoot": "0x50e5b71933d9d30c5c0f171e5ecf8e210c4192276e30f0ec0e8817fe22df04e9",
+          "sealers": 10,
+          "observers": 0
+        },
+        {
+          "host": "10.206.0.12",
+          "height": 7650,
+          "hash": "0xb51fbff3b3d394ad3395066a49cfce89868176a07485c3771985ae910bdbff06",
+          "stateRoot": "0x50e5b71933d9d30c5c0f171e5ecf8e210c4192276e30f0ec0e8817fe22df04e9",
+          "sealers": 10,
+          "observers": 0
+        },
+        {
+          "host": "10.206.0.2",
+          "height": 7650,
+          "hash": "0xb51fbff3b3d394ad3395066a49cfce89868176a07485c3771985ae910bdbff06",
+          "stateRoot": "0x50e5b71933d9d30c5c0f171e5ecf8e210c4192276e30f0ec0e8817fe22df04e9",
+          "sealers": 10,
+          "observers": 0
+        },
+        {
+          "host": "10.206.0.6",
+          "height": 7650,
+          "hash": "0xb51fbff3b3d394ad3395066a49cfce89868176a07485c3771985ae910bdbff06",
+          "stateRoot": "0x50e5b71933d9d30c5c0f171e5ecf8e210c4192276e30f0ec0e8817fe22df04e9",
+          "sealers": 10,
+          "observers": 0
+        },
+        {
+          "host": "10.206.0.11",
+          "height": 7650,
+          "hash": "0xb51fbff3b3d394ad3395066a49cfce89868176a07485c3771985ae910bdbff06",
+          "stateRoot": "0x50e5b71933d9d30c5c0f171e5ecf8e210c4192276e30f0ec0e8817fe22df04e9",
+          "sealers": 10,
+          "observers": 0
+        },
+        {
+          "host": "10.206.0.8",
+          "height": 7650,
+          "hash": "0xb51fbff3b3d394ad3395066a49cfce89868176a07485c3771985ae910bdbff06",
+          "stateRoot": "0x50e5b71933d9d30c5c0f171e5ecf8e210c4192276e30f0ec0e8817fe22df04e9",
+          "sealers": 10,
+          "observers": 0
+        }
+      ]
+    }
+  },
+  "single/single-batch500-config.json": {
+    "spec": {
+      "action": "configure",
+      "name": "single-batch500",
+      "ini": {
+        "rpc": {
+          "thread_count": "8"
+        }
+      },
+      "block": 50000
+    },
+    "nodes": [
+      {
+        "host": "10.206.0.16",
+        "ini": "[p2p]\nlisten_ip = 10.206.0.16\nlisten_port = 30300\nsm_ssl = false\nnodes_path = ./\nnodes_file = nodes.json\nenable_ssl_verify = true\nallow_max_msg_size = 134217728\nsession_recv_buffer_size = 268435456\nsession_max_read_data_size = 262144\n\n[certificate_blacklist]\n\n[certificate_whitelist]\n\n[rpc]\nlisten_ip = 10.206.0.16\nlisten_port = 20200\nthread_count = 8\nsm_ssl = false\nenable_ssl = true\nreturn_input_params = false\n\n[web3_rpc]\nenable = false\nlisten_ip = 10.206.0.16\nlisten_port = 8545\nthread_count = 8\nrequest_body_size_limit = 10240000\nenable_cors = true\ncors_allow_credentials = true\ncors_allowed_origins = *\ncors_allowed_methods = GET, POST, OPTIONS\ncors_allowed_headers = Content-Type, Authorization, X-Requested-With\ncors_max_age = 86400\n\n[cert]\nca_path = ./conf\nca_cert = ca.crt\nnode_key = ssl.key\nnode_cert = ssl.crt\nmulti_ca_path = multiCaPath\n\n[security]\nprivate_key_path = conf/node.pem\nenable_hsm = false\n\n[storage_security]\nenable = false\n\n[consensus]\nmin_seal_time = 500\n\n[executor]\nenable_dag = true\nbaseline_scheduler = false\nbaseline_scheduler_parallel = false\nbaseline_scheduler_maxthread = 8\nbaseline_scheduler_chunksize = 100\n\n[storage]\ndata_path = data\nenable_cache = true\nkey_page_size = 0\npd_ssl_ca_path = \npd_ssl_cert_path = \npd_ssl_key_path = \nenable_archive = false\narchive_ip = 127.0.0.1\narchive_port = \nenable_rocksdb_blob = false\nwrite_buffer_size = 134217728\nmax_background_jobs = 4\nmax_write_buffer_number = 6\nblock_cache_size = 268435456\ncache_size = 536870912\n\n[txpool]\nlimit = 500000\nnotify_worker_num = 2\ntxs_expiration_time = 600\nenable_txs_from_free_node = false\nverify_worker_num = 8\n\n[sync]\nsend_txs_by_tree = false\nsync_block_by_tree = false\ntree_width = 3\n\n[redis]\n\n[flow_control]\n\n[log]\nenable = true\nenable_console_output = false\nlog_path = ./log\nlevel = warning\nmax_log_file_size = 1024\nenable_rate_collector = false\n\n"
+      }
+    ],
+    "before": {
+      "valid": true,
+      "nodes": [
+        {
+          "blockNumber": 0,
+          "failedTransactionCount": 0,
+          "transactionCount": 0,
+          "host": "10.206.0.16",
+          "pending": 0,
+          "begin_epoch": 1790769437.789481,
+          "end_epoch": 1790769437.7959068
+        }
+      ],
+      "blocks": [
+        {
+          "host": "10.206.0.16",
+          "height": 0,
+          "hash": "0xb4e808f575ca4fb017d11e0687a1356add416541b5ade99f6e57d66433f10ddb",
+          "stateRoot": "0x0000000000000000000000000000000000000000000000000000000000000000",
+          "sealers": 1,
+          "observers": 0
+        }
+      ]
+    },
+    "after": {
+      "valid": true,
+      "nodes": [
+        {
+          "blockNumber": 0,
+          "failedTransactionCount": 0,
+          "transactionCount": 0,
+          "host": "10.206.0.16",
+          "pending": 0,
+          "begin_epoch": 1790769440.3783686,
+          "end_epoch": 1790769440.3840086
+        }
+      ],
+      "blocks": [
+        {
+          "host": "10.206.0.16",
+          "height": 0,
+          "hash": "0xb4e808f575ca4fb017d11e0687a1356add416541b5ade99f6e57d66433f10ddb",
+          "stateRoot": "0x0000000000000000000000000000000000000000000000000000000000000000",
+          "sealers": 1,
+          "observers": 0
+        }
+      ]
+    }
+  },
+  "single/single-genesis-check.json": {
+    "valid": true,
+    "nodes": [
+      {
+        "blockNumber": 0,
+        "failedTransactionCount": 0,
+        "transactionCount": 0,
+        "host": "10.206.0.16",
+        "pending": 0,
+        "begin_epoch": 1790769374.1468484,
+        "end_epoch": 1790769374.152877
+      }
+    ],
+    "blocks": [
+      {
+        "host": "10.206.0.16",
+        "height": 0,
+        "hash": "0xb4e808f575ca4fb017d11e0687a1356add416541b5ade99f6e57d66433f10ddb",
+        "stateRoot": "0x0000000000000000000000000000000000000000000000000000000000000000",
+        "sealers": 1,
+        "observers": 0
+      }
+    ]
+  },
+  "single/single-rpc16-config.json": {
+    "spec": {
+      "action": "configure",
+      "name": "single-rpc16",
+      "ini": {
+        "rpc": {
+          "thread_count": "16"
+        }
+      }
+    },
+    "nodes": [
+      {
+        "host": "10.206.0.16",
+        "ini": "[p2p]\nlisten_ip = 10.206.0.16\nlisten_port = 30300\nsm_ssl = false\nnodes_path = ./\nnodes_file = nodes.json\nenable_ssl_verify = true\nallow_max_msg_size = 134217728\nsession_recv_buffer_size = 268435456\nsession_max_read_data_size = 262144\n\n[certificate_blacklist]\n\n[certificate_whitelist]\n\n[rpc]\nlisten_ip = 10.206.0.16\nlisten_port = 20200\nthread_count = 16\nsm_ssl = false\nenable_ssl = true\nreturn_input_params = false\n\n[web3_rpc]\nenable = false\nlisten_ip = 10.206.0.16\nlisten_port = 8545\nthread_count = 8\nrequest_body_size_limit = 10240000\nenable_cors = true\ncors_allow_credentials = true\ncors_allowed_origins = *\ncors_allowed_methods = GET, POST, OPTIONS\ncors_allowed_headers = Content-Type, Authorization, X-Requested-With\ncors_max_age = 86400\n\n[cert]\nca_path = ./conf\nca_cert = ca.crt\nnode_key = ssl.key\nnode_cert = ssl.crt\nmulti_ca_path = multiCaPath\n\n[security]\nprivate_key_path = conf/node.pem\nenable_hsm = false\n\n[storage_security]\nenable = false\n\n[consensus]\nmin_seal_time = 500\n\n[executor]\nenable_dag = true\nbaseline_scheduler = false\nbaseline_scheduler_parallel = false\nbaseline_scheduler_maxthread = 8\nbaseline_scheduler_chunksize = 100\n\n[storage]\ndata_path = data\nenable_cache = true\nkey_page_size = 0\npd_ssl_ca_path = \npd_ssl_cert_path = \npd_ssl_key_path = \nenable_archive = false\narchive_ip = 127.0.0.1\narchive_port = \nenable_rocksdb_blob = false\nwrite_buffer_size = 134217728\nmax_background_jobs = 4\nmax_write_buffer_number = 6\nblock_cache_size = 268435456\ncache_size = 536870912\n\n[txpool]\nlimit = 500000\nnotify_worker_num = 2\ntxs_expiration_time = 600\nenable_txs_from_free_node = false\nverify_worker_num = 8\n\n[sync]\nsend_txs_by_tree = false\nsync_block_by_tree = false\ntree_width = 3\n\n[redis]\n\n[flow_control]\n\n[log]\nenable = true\nenable_console_output = false\nlog_path = ./log\nlevel = warning\nmax_log_file_size = 1024\nenable_rate_collector = false\n\n"
+      }
+    ],
+    "before": {
+      "valid": true,
+      "nodes": [
+        {
+          "blockNumber": 76,
+          "failedTransactionCount": 0,
+          "transactionCount": 1770481,
+          "host": "10.206.0.16",
+          "pending": 0,
+          "begin_epoch": 1790769772.1311784,
+          "end_epoch": 1790769772.1361508
+        }
+      ],
+      "blocks": [
+        {
+          "host": "10.206.0.16",
+          "height": 76,
+          "hash": "0x932b6bc16194164daa3c8736fb6f8be4ae93764644bc899576a0999dd72baf6e",
+          "stateRoot": "0x5229afc5be501268345390d084f15cac6efec4047cb3efe7f0e670f6dfde6f22",
+          "sealers": 1,
+          "observers": 0
+        }
+      ]
+    },
+    "after": {
+      "valid": true,
+      "nodes": [
+        {
+          "blockNumber": 76,
+          "failedTransactionCount": 0,
+          "transactionCount": 1770481,
+          "host": "10.206.0.16",
+          "pending": 0,
+          "begin_epoch": 1790769774.7192104,
+          "end_epoch": 1790769774.7247949
+        }
+      ],
+      "blocks": [
+        {
+          "host": "10.206.0.16",
+          "height": 76,
+          "hash": "0x932b6bc16194164daa3c8736fb6f8be4ae93764644bc899576a0999dd72baf6e",
+          "stateRoot": "0x5229afc5be501268345390d084f15cac6efec4047cb3efe7f0e670f6dfde6f22",
+          "sealers": 1,
+          "observers": 0
+        }
+      ]
+    }
+  },
+  "single/final-check.json": {
+    "valid": true,
+    "nodes": [
+      {
+        "blockNumber": 156,
+        "failedTransactionCount": 0,
+        "transactionCount": 3540963,
+        "host": "10.206.0.16",
+        "pending": 0,
+        "begin_epoch": 1790770134.092771,
+        "end_epoch": 1790770134.097799
+      }
+    ],
+    "blocks": [
+      {
+        "host": "10.206.0.16",
+        "height": 156,
+        "hash": "0xfb4716031e5453324266d9a122b1a0006c242400b302585a69d4689d2c0434d9",
+        "stateRoot": "0x401eb790de03828b85266e8de2343c5cf92ea4b1f46905cc08fcc41ece3edeb4",
+        "sealers": 1,
+        "observers": 0
+      }
+    ]
+  },
+  "single/single-final-rpc8-config.json": {
+    "spec": {
+      "action": "configure",
+      "name": "single-final-rpc8",
+      "ini": {
+        "rpc": {
+          "thread_count": "8"
+        }
+      }
+    },
+    "nodes": [
+      {
+        "host": "10.206.0.16",
+        "ini": "[p2p]\nlisten_ip = 10.206.0.16\nlisten_port = 30300\nsm_ssl = false\nnodes_path = ./\nnodes_file = nodes.json\nenable_ssl_verify = true\nallow_max_msg_size = 134217728\nsession_recv_buffer_size = 268435456\nsession_max_read_data_size = 262144\n\n[certificate_blacklist]\n\n[certificate_whitelist]\n\n[rpc]\nlisten_ip = 10.206.0.16\nlisten_port = 20200\nthread_count = 8\nsm_ssl = false\nenable_ssl = true\nreturn_input_params = false\n\n[web3_rpc]\nenable = false\nlisten_ip = 10.206.0.16\nlisten_port = 8545\nthread_count = 8\nrequest_body_size_limit = 10240000\nenable_cors = true\ncors_allow_credentials = true\ncors_allowed_origins = *\ncors_allowed_methods = GET, POST, OPTIONS\ncors_allowed_headers = Content-Type, Authorization, X-Requested-With\ncors_max_age = 86400\n\n[cert]\nca_path = ./conf\nca_cert = ca.crt\nnode_key = ssl.key\nnode_cert = ssl.crt\nmulti_ca_path = multiCaPath\n\n[security]\nprivate_key_path = conf/node.pem\nenable_hsm = false\n\n[storage_security]\nenable = false\n\n[consensus]\nmin_seal_time = 500\n\n[executor]\nenable_dag = true\nbaseline_scheduler = false\nbaseline_scheduler_parallel = false\nbaseline_scheduler_maxthread = 8\nbaseline_scheduler_chunksize = 100\n\n[storage]\ndata_path = data\nenable_cache = true\nkey_page_size = 0\npd_ssl_ca_path = \npd_ssl_cert_path = \npd_ssl_key_path = \nenable_archive = false\narchive_ip = 127.0.0.1\narchive_port = \nenable_rocksdb_blob = false\nwrite_buffer_size = 134217728\nmax_background_jobs = 4\nmax_write_buffer_number = 6\nblock_cache_size = 268435456\ncache_size = 536870912\n\n[txpool]\nlimit = 500000\nnotify_worker_num = 2\ntxs_expiration_time = 600\nenable_txs_from_free_node = false\nverify_worker_num = 8\n\n[sync]\nsend_txs_by_tree = false\nsync_block_by_tree = false\ntree_width = 3\n\n[redis]\n\n[flow_control]\n\n[log]\nenable = true\nenable_console_output = false\nlog_path = ./log\nlevel = warning\nmax_log_file_size = 1024\nenable_rate_collector = false\n\n"
+      }
+    ],
+    "before": {
+      "valid": true,
+      "nodes": [
+        {
+          "blockNumber": 155,
+          "failedTransactionCount": 0,
+          "transactionCount": 3540962,
+          "host": "10.206.0.16",
+          "pending": 0,
+          "begin_epoch": 1790770089.16929,
+          "end_epoch": 1790770089.1742668
+        }
+      ],
+      "blocks": [
+        {
+          "host": "10.206.0.16",
+          "height": 155,
+          "hash": "0x43876d56dee30b1e0b4f2529b7047a229ef7ba4df10874d453d9beccc46cd84d",
+          "stateRoot": "0xfa446ad8d7143b09f697bea5d187a7960055a27897b19fa023f935f6cd822c60",
+          "sealers": 1,
+          "observers": 0
+        }
+      ]
+    },
+    "after": {
+      "valid": true,
+      "nodes": [
+        {
+          "blockNumber": 155,
+          "failedTransactionCount": 0,
+          "transactionCount": 3540962,
+          "host": "10.206.0.16",
+          "pending": 0,
+          "begin_epoch": 1790770092.7582731,
+          "end_epoch": 1790770092.76402
+        }
+      ],
+      "blocks": [
+        {
+          "host": "10.206.0.16",
+          "height": 155,
+          "hash": "0x43876d56dee30b1e0b4f2529b7047a229ef7ba4df10874d453d9beccc46cd84d",
+          "stateRoot": "0xfa446ad8d7143b09f697bea5d187a7960055a27897b19fa023f935f6cd822c60",
+          "sealers": 1,
+          "observers": 0
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,26 @@
+[
+  {
+    "case": "stable-native-40000-profile-baseline-r1",
+    "host": "10.206.0.16",
+    "stage": "preparation",
+    "event": "TransactionExecutor is not running; remaining drivers stopped before start gate"
+  },
+  {
+    "case": "stable-native-70000-blob-batch-r1",
+    "host": "10.206.0.14",
+    "stage": "preparation",
+    "event": "TransactionExecutor is not running; node exec thread segfault at 19:27:53, kernel journal verified; recovered and Blob setting withdrawn"
+  },
+  {
+    "case": "stable-native-70000-blob-batch-r2",
+    "host": "10.206.0.14",
+    "stage": "before measurement",
+    "event": "RPC connection refused while node was stopped after crash"
+  },
+  {
+    "case": "stable-native-70000-batch1000-r1",
+    "host": "10.206.0.2",
+    "stage": "measurement",
+    "event": "Node stopped progressing at height 7664; peers reached 7680; restart alone did not recover. After increasing P2P message capacity to 128 MiB and receive buffer to 256 MiB, node reached the common head. Recovery state recorded separately."
+  }
+]

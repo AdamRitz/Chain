@@ -1,0 +1,12 @@
+{
+  "ten_node_tps": 39713.45763726207,
+  "baseline_tps": 25078.41140090565,
+  "improvement_pct": 58.35715030908182,
+  "continuous_runs": [
+    "stable-native-40000-final-batch500-r1",
+    "stable-native-40000-final-batch500-r2"
+  ],
+  "single_peak_case": "stable-native-70000-single-batch500-r1",
+  "single_peak_tps": 46200.62042597458,
+  "continuous_transactions_verified": 5600000
+}

@@ -9,10 +9,11 @@ from pathlib import Path
 import tarfile
 import threading
 import paramiko
+import os
 
-ROOT = Path('/home/ubuntu/fisco-bench/20260930')
-HOSTS = ['10.206.0.16','10.206.0.4','10.206.0.14','10.206.0.17','10.206.0.15',
-         '10.206.0.12','10.206.0.2','10.206.0.6','10.206.0.11','10.206.0.8']
+ROOT = Path(os.environ.get('FISCO_BENCH_ROOT','/home/ubuntu/fisco-bench/20260930'))
+HOSTS = os.environ.get('FISCO_BENCH_HOSTS',
+    '10.206.0.16,10.206.0.4,10.206.0.14,10.206.0.17,10.206.0.15,10.206.0.12,10.206.0.2,10.206.0.6,10.206.0.11,10.206.0.8').split(',')
 
 def Remote(client, command):
     _, out, err = client.exec_command(command, timeout=180)

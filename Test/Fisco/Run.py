@@ -36,7 +36,7 @@ def Check():
     with concurrent.futures.ThreadPoolExecutor(max_workers=10) as pool:checks=list(pool.map(One,HOSTS))
     valid=(len({x['blockNumber'] for x in rows})==1 and len({x['transactionCount'] for x in rows})==1 and
         len({x['hash'] for x in checks})==1 and len({x['stateRoot'] for x in checks})==1 and
-        all(x['sealers']==10 and x['observers']==0 for x in checks))
+        all(x['sealers']==len(HOSTS) and x['observers']==0 for x in checks))
     return {'valid':valid,'nodes':rows,'blocks':checks}
 
 def Samplers(password):

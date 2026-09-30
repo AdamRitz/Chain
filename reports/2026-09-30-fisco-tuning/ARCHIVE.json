@@ -1,0 +1,12 @@
+{
+  "remote_path": "/home/ubuntu/fisco-bench/20260930/tuning-results-20260930.tar.gz",
+  "bytes": 2816245,
+  "sha256": "4919e528a8c715d7425827515e3339470f0ec0418c74c6b9af0d4410d137b1f2",
+  "all_ten_hosts_stopped": true,
+  "original_root": "/home/ubuntu/fisco-bench/20260930",
+  "single_root": "/home/ubuntu/fisco-bench/20260930-single",
+  "local_archive": "D:\\Project\\Chain\\bench-results\\fisco-tuning-20260930\\tuning-download\\tuning-results-20260930.tar.gz",
+  "raw_directory": "D:\\Project\\Chain\\bench-results\\fisco-tuning-20260930\\raw",
+  "verified_sha256": true,
+  "cleanup": "CLEANUP.json"
+}

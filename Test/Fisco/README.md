@@ -16,10 +16,44 @@
 | `NodeSample.py`、`Inspect.py` | 采集进程处理器时间、内存、磁盘写入和网卡计数，汇总各节点数据 |
 | `Analyze.py` | 计算共同链吞吐、积压斜率、资源占用和持续负载判据 |
 | `Plot.py`、`BuildReport.py` | 从指标生成四张数据图和 Markdown 报告 |
+| `BuildTuningReport.py` | 从归档指标重建调优报告、吞吐量、区块参数与处理器占用图 |
 | `TestAnalyze.py` | 核对部署计数、积压增长、短暂排队恢复、余额错误和时间窗口 |
+| `Tune.py`、`ConfigTx.java` | 调整封块、消息容量与存储参数，提交动态区块上限，采样热点，建立独立单节点对照链 |
 | `vendor/` | 固定版本的上游合约包装类及许可证 |
 
 函数沿用 PascalCase。Java 的 `main` 与 SDK 回调保持接口要求的名称。
+
+## 性能调优与单节点对照
+
+本次后续调优见 [瓶颈与复测报告](../../reports/2026-09-30-fisco-tuning/REPORT.md)。`Tune.py` 在控制机交互运行，密码通过隐藏提示输入。使用它之前先启动现有测试节点，并确保所有交易已处理完毕。
+
+```bash
+python Tune.py
+```
+
+每行输入一个 JSON 操作，等待 `ACTION_DONE` 后再执行下一项。例如：
+
+```json
+{"action":"configure","name":"batch500","ini":{"consensus":{"min_seal_time":"500"},"p2p":{"allow_max_msg_size":"134217728","session_recv_buffer_size":"268435456","session_max_read_data_size":"262144"}},"block":50000}
+{"action":"sample"}
+{"action":"run","case":{"mode":"native","rate":40000,"warm":10,"seconds":60,"users":2048,"phase":"batch500","name":"stable-native-40000-batch500-new","inflight":15000}}
+{"action":"stop"}
+{"action":"exit"}
+```
+
+`configure` 先核对状态，再停止和启动节点。区块上限由 `ConfigTx` 向链上系统合约提交，所有节点查询结果一致后开始实验；这笔配置交易也用于完成重启后的执行器初始化。`recover:true` 支持在已停止发压、交易池清空的情况下调整落后节点的网络参数，要求恢复到原最高交易计数。每组参数保存独立记录。
+
+`inflight` 是每个发送端的在途请求上限；增加它会扩大排队容量。`heap`、`driver_cpus` 可分别设置 Java 最大堆与处理器数。`profile:true` 在控制机节点测量窗口内采集 12 秒 Linux perf 样本，正式吞吐复测省略此项。调整 `min_seal_time` 时同时查看测得的实际平均区块间隔、每块交易数和回执延迟。
+
+支持以下环境变量，默认仍使用原十节点环境：
+
+- `FISCO_BENCH_ROOT`：本次服务器实验目录。
+- `FISCO_BENCH_HOSTS`：参与共识和状态核对的节点地址，用逗号分隔。
+- `FISCO_BENCH_SENDERS`：运行发送端的机器地址，用逗号分隔；默认与共识节点相同。
+
+单节点对照使用同级新目录、一个共识节点和原十台发送端。先停止原十节点链，在控制机新目录下创建指向原 `nodes` 目录的符号链接以读取测试证书，然后设置上述环境变量并执行 `{"action":"single"}`。此操作复制配置与程序、建立空数据库，原数据库保留。再通过 `configure` 设置区块上限、通过 `sample` 启动资源采样，按相同方式发压。报告分别标明节点数量、发送端数量和数据库历史规模。
+
+`Analyze.py` 自动从实验前的节点清单确定节点数量，同时统计实际平均区块间隔和每块交易数。`NodeSample.py` 额外记录按线程名称汇总的处理器时间。准备失败与最终节点查询失败的用例保留诊断和回执数据。
 
 ## 固定版本与依赖
 
@@ -55,7 +89,7 @@ python Analyze.py . RESULTS.json
 
 `solidity` 每台发送端部署一个 ParallelOk 合约，总计 10 个；`native` 共用预编译转账合约，每台使用独立账户名前缀。签名、部署和账户初始化均在计时前完成，结束后逐一核对共 20,480 个账户。
 
-最终持续测试将 `runtime-stable/node0/config.ini` 中的 `consensus.min_seal_time` 设为 `200`，阶段记为 `seal200`。前期扫描为 `100`。预签名交易在随后 500 个区块内有效；使用 200 毫秒封块间隔后，本次 70 秒发压的区块增长保持在有效期内。延长测试时间时需使用滚动生成签名的发送方式，同时记录发送端处理器开销。
+原报告的持续测试将 `runtime-stable/node0/config.ini` 中的 `consensus.min_seal_time` 设为 `200`，阶段记为 `seal200`。前期扫描为 `100`。后续调优报告使用 `500` 和每块最多 50,000 笔，阶段为 `final-batch500`。预签名交易在随后 500 个区块内有效；本次 70 秒发压的区块增长保持在有效期内。延长测试时间时需使用滚动生成签名的发送方式，同时记录发送端处理器开销。
 
 正式用例的 `phase` 字段记录配置阶段，默认 `initial`。`Distributed.py` 在至少 60 秒的用例结束后自动检查持续负载条件；未通过时结束当前计划，保留全部数据。三轮统计在相同业务、速率和阶段中分组。
 

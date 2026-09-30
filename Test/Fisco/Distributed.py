@@ -1,12 +1,13 @@
-"""One pre-signed sender per validator; common start gate and ten-node accounting."""
-import concurrent.futures,getpass,json,math,shlex,time,argparse
+"""Distributed pre-signed senders, a common start gate and all-validator accounting."""
+import concurrent.futures,getpass,json,math,shlex,time,argparse,os
 from pathlib import Path
 from Deploy import ROOT,HOSTS,Connect,Remote
 from Run import Check,Snapshot
 
+SENDER_HOSTS=os.environ.get('FISCO_BENCH_SENDERS',','.join(HOSTS)).split(',')
 CLIENTS={};FILES={}
-def All(function):
-    with concurrent.futures.ThreadPoolExecutor(max_workers=len(HOSTS)) as pool:return list(pool.map(function,HOSTS))
+def All(function,hosts=SENDER_HOSTS):
+    with concurrent.futures.ThreadPoolExecutor(max_workers=len(hosts)) as pool:return list(pool.map(function,hosts))
 def Exists(sftp,path):
     try:sftp.stat(str(path));return True
     except FileNotFoundError:return False
@@ -30,11 +31,12 @@ def Run(case):
     out=ROOT/'results'/name;out.mkdir(parents=True,exist_ok=False)
     before=Check();(out/'before.json').write_text(json.dumps(before,indent=2))
     assert before['valid'] and all(n['pending']==0 for n in before['nodes'])
-    rate=case['rate'];assert rate%len(HOSTS)==0
+    rate=case['rate'];assert rate%len(SENDER_HOSTS)==0
     remote=ROOT/'driver-stable/runs'/name
     def Launch(host):
         Remote(CLIENTS[host],f'umask 077; mkdir -p {remote}; test ! -e {remote}/run.sh')
-        command=['java','-Xms128m','-Xmx2g','-XX:ActiveProcessorCount=2','-cp','classes:lib/*','FiscoBench','config.toml',case['mode'],str(rate//len(HOSTS)),str(case['warm']),str(case['seconds']),str(remote/'driver.json'),str(case.get('users',2048)),str(remote/'go'),str(100000//len(HOSTS))]
+        command=['java','-Xms128m','-Xmx'+case.get('heap','2g'),'-XX:ActiveProcessorCount='+str(case.get('driver_cpus',2)),
+            '-cp','classes:lib/*','FiscoBench','config.toml',case['mode'],str(rate//len(SENDER_HOSTS)),str(case['warm']),str(case['seconds']),str(remote/'driver.json'),str(case.get('users',2048)),str(remote/'go'),str(case.get('inflight',100000//len(SENDER_HOSTS)))]
         script='#!/bin/bash\numask 077\ncd '+str(ROOT/'driver-stable')+'\n'+shlex.join(command)+'\nprintf "%s\\n" "$?" > '+str(remote/'exit')+'\n'
         Write(FILES[host],remote/'run.sh',script)
         Remote(CLIENTS[host],f'(nohup bash {remote}/run.sh > {remote}/driver.log 2>&1 < /dev/null & echo $! > {remote}/launcher.pid)')
@@ -47,9 +49,15 @@ def Run(case):
         states=All(lambda h:(Exists(FILES[h],remote/'go.ready'),Exists(FILES[h],remote/'exit')))
         if all(r for r,e in states):break
         if any(e for r,e in states) or time.time()>deadline:
-            Abort(remote);raise RuntimeError(('Preparation failed',name,states))
+            Abort(remote)
+            (out/'failure.json').write_text(json.dumps({'reason':'Preparation failed','states':states}))
+            for host in SENDER_HOSTS:
+                dest=out/'drivers'/host;dest.mkdir(parents=True,exist_ok=True)
+                for file in ['driver.log','exit','run.sh']:
+                    if Exists(FILES[host],remote/file):FILES[host].get(str(remote/file),str(dest/file))
+            raise RuntimeError(('Preparation failed',name,states))
         time.sleep(1)
-    prefixes=All(lambda h:Read(FILES[h],remote/'go.ready'));assert len(set(prefixes))==len(HOSTS)
+    prefixes=All(lambda h:Read(FILES[h],remote/'go.ready'));assert len(set(prefixes))==len(SENDER_HOSTS)
     target=int((time.time()+3)*1000)
     def Gate(host):
         Write(FILES[host],remote/'go.tmp',str(target))
@@ -71,9 +79,12 @@ def Run(case):
             if Exists(FILES[host],remote/file):FILES[host].get(str(remote/file),str(dest/file))
         return json.loads((dest/'driver.json').read_text()) if (dest/'driver.json').exists() else None
     drivers=All(Download)
-    after=Check();deadline=time.time()+60
-    while (not after['valid'] or any(n['pending'] for n in after['nodes'])) and time.time()<deadline:
-        time.sleep(1);after=Check()
+    after={'valid':False,'nodes':[]};deadline=time.time()+60
+    while True:
+        try:after=Check()
+        except Exception as error:after={'valid':False,'nodes':[],'error':repr(error)}
+        if (after['valid'] and not any(n['pending'] for n in after['nodes'])) or time.time()>=deadline:break
+        time.sleep(1)
     (out/'after.json').write_text(json.dumps(after,indent=2))
     if any(d is None or 'balances_checked' not in d for d in drivers):
         (out/'failure.json').write_text(json.dumps({'reason':'At least one driver incomplete'}));return False

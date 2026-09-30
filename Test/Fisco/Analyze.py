@@ -52,26 +52,33 @@ def Analyze(raw):
                     'distributed','driver_count','start_skew_ms','max_driver_scheduled_p99_ms','phase']:
             row[key]=d.get(key)
         start=d['start_epoch_ms']/1000+d['warmup_s'];end=d.get('end_epoch_ms',(start+d['measure_s'])*1000)/1000
+        node_count=len(Load(folder/'before.json')['nodes'])
+        row['node_count']=node_count
         samples=[]
         for s in Lines(folder/'chain.jsonl'):
-            if 'nodes' not in s or len(s['nodes'])!=10:continue
-            # Use the latest response time of the ten-node observation.
+            if 'nodes' not in s or len(s['nodes'])!=node_count:continue
+            # Use the latest response time of the all-node observation.
             epoch=max(x['end_epoch'] for x in s['nodes'])
             if not start<=epoch<=end:continue
             samples.append({'epoch':epoch,'count':min(x['transactionCount'] for x in s['nodes']),
+                            'height':min(x.get('blockNumber',0) for x in s['nodes']),
                             'pending':statistics.mean(x['pending'] for x in s['nodes'])})
         row['common_chain_samples']=len(samples)
         row['common_chain_tps']=None
         if len(samples)>1:
             a,b=samples[0],samples[-1];row['common_chain_window_s']=b['epoch']-a['epoch']
             row['common_chain_tps']=(b['count']-a['count'])/(b['epoch']-a['epoch'])
+            blocks=b['height']-a['height']
+            if blocks>0:
+                row['mean_transactions_per_block']=(b['count']-a['count'])/blocks
+                row['mean_block_interval_ms']=(b['epoch']-a['epoch'])*1000/blocks
             row['pending_slope_per_node']=Slope([(s['epoch'],s['pending']) for s in samples])
             row['pending_net_growth_per_node']=(b['pending']-a['pending'])/(b['epoch']-a['epoch'])
             row['pending_series']=[{'elapsed_s':s['epoch']-start,'pending':s['pending']} for s in samples]
             row['pending_mean_per_node']=statistics.mean(s['pending'] for s in samples)
             row['pending_max_per_node']=max(s['pending'] for s in samples)
         row['state_valid']=False;row['count_valid']=False
-        if (folder/'after.json').exists():
+        if (folder/'after.json').exists() and Load(folder/'after.json').get('nodes'):
             before=Load(folder/'before.json');after=Load(folder/'after.json')
             row['state_valid']=after['valid']
             if 'blockNumber' in before['nodes'][0]:
