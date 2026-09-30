@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <atomic>
 #include <condition_variable>
+#include <deque>
 #include <mutex>
 #include <span>
 #include <unordered_map>
@@ -46,6 +47,14 @@ atomic<uint64_t> receivedTx{0},validTx{0},invalidTx{0},duplicateTx{0},rejectedTx
 atomic<uint64_t> invalidUserTx{0},conflictTx{0};
 atomic<uint64_t> txCommitWaitNs{0},txReadNs{0},txPoolWaitNs{0};
 atomic<uint64_t> verifyNs{0},poolNs{0},committedTx{0},firstTxTime{0},lastCommitTime{0};
+atomic<uint64_t> signatureChecks{0},signatureCacheHits{0},poolRefreshNs{0};
+struct VerifiedTransactions {
+    mutex lock;
+    unordered_set<array<uint8_t,32>,GetMapHash> hashes;
+    deque<array<uint8_t,32>> order;
+};
+array<VerifiedTransactions,16> verifiedTransactions;
+constexpr size_t maxVerifiedPerBucket=8192;
 atomic<bool> nodeRunning{true},nodeFailed{false};
 
 // 调用方持有交易池锁。提交某个序号后，一起清理该账户已过期的候选交易。
@@ -120,14 +129,35 @@ array<uint8_t,176> GenerateTx(const array<uint8_t,32>& sender,const array<uint8_
     return SerializeTxALL(tx,partByte);
 }
 bool VerifyTransaction(const array<uint8_t,176>& data,span<const uint8_t> payload={}) {
+    if (!payload.empty()&&(!ValidEvmPayload(payload)||memcmp(payload.data()+13,genesisRoot.data(),32))) return false;
+    // 完整交易和合约输入共同标识验签结果，缓存独立于交易池和分支状态。
+    array<uint8_t,32> fingerprint;
+    crypto_generichash_state state;
+    crypto_generichash_init(&state,nullptr,0,fingerprint.size());
+    crypto_generichash_update(&state,data.data(),data.size());
+    if (!payload.empty()) crypto_generichash_update(&state,payload.data(),payload.size());
+    crypto_generichash_final(&state,fingerprint.data(),fingerprint.size());
+    auto& cache=verifiedTransactions[fingerprint[0]%verifiedTransactions.size()];
+    {
+        lock_guard lock(cache.lock);
+        if (cache.hashes.count(fingerprint)) { signatureCacheHits++; return true; }
+    }
     array<uint8_t,32> hash;
     if (payload.empty()) crypto_generichash(hash.data(),32,data.data(),80,nullptr,0);
     else {
-        if (!ValidEvmPayload(payload)||memcmp(payload.data()+13,genesisRoot.data(),32)) return false;
         hash=EvmTransactionHash(data,payload);
     }
     if (sodium_memcmp(hash.data(),data.data()+80,32)!=0) return false;
-    return crypto_sign_verify_detached(data.data()+112,hash.data(),32,data.data())==0;
+    signatureChecks++;
+    if (crypto_sign_verify_detached(data.data()+112,hash.data(),32,data.data())!=0) return false;
+    {
+        lock_guard lock(cache.lock);
+        if (!cache.hashes.count(fingerprint)) {
+            if (cache.order.size()==maxVerifiedPerBucket) { cache.hashes.erase(cache.order.front()); cache.order.pop_front(); }
+            cache.hashes.insert(fingerprint); cache.order.push_back(fingerprint);
+        }
+    }
+    return true;
 }
 
 // ------------------------------------------------交易处理入口------------------------------------------------
@@ -221,5 +251,28 @@ bool ProcessEvmTx(span<const uint8_t> data) {
         evmPool.emplace(hash,vector<uint8_t>(payload.begin(),payload.end())); evmPoolBytes+=payload.size();
     }
     validTx++; WakeMainLoop(); return true;
+}
+void RefreshTxPool() {
+    auto start=GetSteadyTime();
+    shared_lock commitLock(dbCommitMutex);
+    lock_guard lock(txpoolMutex);
+    txUserPool.clear(); readyPoolTx=0;
+    for (auto it=txpool.begin();it!=txpool.end();) {
+        const auto& tx=it->second;
+        array<uint8_t,32> key; memcpy(key.data(),tx.data(),32);
+        auto user=GetUser(users,key);
+        auto nonce=ReadU64(tx.data()+72);
+        auto payload=evmPool.find(it->first);
+        bool valid=payload==evmPool.end()?CheckUserTx(user,ReadU64(tx.data()+64),nonce,true):CheckEvmUserTx(user,tx,payload->second,true);
+        if (!valid) { EraseEvmPool(it->first); it=txpool.erase(it); continue; }
+        auto& pending=txUserPool[key];
+        pending.readyNonce=user.nonce;
+        pending.txs.emplace(nonce,it->first);
+        ++it;
+    }
+    for (auto& [key,pending]:txUserPool) {
+        while (pending.readyNonce<UINT64_MAX&&pending.txs.count(pending.readyNonce+1)) { pending.readyNonce++; readyPoolTx++; }
+    }
+    poolRefreshNs+=GetSteadyTime()-start;
 }
 #endif

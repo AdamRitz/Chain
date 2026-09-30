@@ -18,6 +18,7 @@ pair<Block,vector<uint8_t>> BlockBuffer[3];
 mutex blockBufferLock;
 atomic<uint64_t> blockBuildNs{0},blockVerifyNs{0},blockCount{0};
 atomic<uint64_t> blockCommitNs{0};
+atomic<uint64_t> duplicateBlocks{0};
 atomic<bool> blockReady{false};
 
 // ------------------------------------------------序列化和反序列化------------------------------------------------
@@ -215,8 +216,15 @@ bool ProcessBlock(vector<uint8_t> data) {
     {
         shared_lock lock(dbCommitMutex);
         current=DBReadBlockHeight(); head=DBReadCurrentBlock();
+        if (height>=2&&height<=current&&current-height<=256&&DBReadBlockByHeight(to_string(height))==data) {
+            duplicateBlocks++; return false;
+        }
     }
     if (height<2||height>current+256||current>height+256) return false;
+    {
+        lock_guard lock(blockBufferLock);
+        if (height>=epoch&&height-epoch<3&&BlockBuffer[height-epoch].second==data) { duplicateBlocks++; return false; }
+    }
     Block block;
     if (!VerifyBlock(data,&block)) return false;
     if (height!=current+1||block.previousHash!=head) {

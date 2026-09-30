@@ -48,6 +48,8 @@ int main(int argc,char* argv[]) {
         auto tx=GenerateTx(wallet.public_key,receiver.public_key,100,1,wallet);
         auto tx2=GenerateTx(wallet.public_key,receiver.public_key,200,2,wallet);
         Require(VerifyTransaction(tx),"valid transaction");
+        auto checksBefore=signatureChecks.load();
+        Require(VerifyTransaction(tx)&&signatureChecks==checksBefore&&signatureCacheHits>0,"identical transaction reuses signature result");
         auto value=UnserializeTx(tx);
         Require(value.amount==100&&value.nonce==1&&value.receiver==receiver.public_key,"roundtrip");
         auto high=GenerateTx(wallet.public_key,receiver.public_key,UINT64_MAX,UINT64_MAX,wallet);
@@ -94,6 +96,12 @@ int main(int argc,char* argv[]) {
         Require(!CommitBlock(wrong,wrongData)&&txpool.size()==2&&DBReadBlockHeight()==1,"wrong parent preserves pool");
         Require(CommitBlock(block,data),"atomic block commit");
         Require(txpool.empty()&&DBReadBlockHeight()==2,"commit removes pool transactions");
+        checksBefore=signatureChecks.load();
+        Require(VerifyBlock(data)&&signatureChecks==checksBefore,"signature result survives pool removal");
+        auto verifiedBefore=blockVerifyNs.load();
+        Require(!ProcessBlock(data)&&blockVerifyNs==verifiedBefore&&duplicateBlocks>0,"known complete block skips expensive validation");
+        changed=data; changed[112+112]^=1;
+        Require(!ProcessBlock(changed),"known header does not hide altered signature bytes");
         Require(DBReadBlockByHeight("2")==data,"height resolves full block");
         Require(DBHasTx(GetTransactionHash(tx))&&DBHasTx(GetTransactionHash(tx2)),"transaction index persisted");
         Require(ProcessTxPackage(package)==0&&txpool.empty(),"committed replay rejected");

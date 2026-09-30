@@ -137,26 +137,15 @@ bool ProcessForks() {
         if (!result) continue;
         adopted=true;
         RemoveForkBlock(entry->first.hash);
-        vector<vector<uint8_t>> pending;
-        {
-            shared_lock commitLock(dbCommitMutex);
-            lock_guard lock(txpoolMutex);
-            for (const auto& [hash,tx]:txpool) {
-                vector<uint8_t> data(tx.begin(),tx.end());
-                if (auto found=evmPool.find(hash);found!=evmPool.end()) data.insert(data.end(),found->second.begin(),found->second.end());
-                pending.push_back(std::move(data));
-            }
-            txpool.clear(); txUserPool.clear(); evmPool.clear(); evmPoolBytes=0; readyPoolTx=0;
-        }
+        RefreshTxPool();
         for (const auto& data:detached) {
             Block block=UnSerializeBlock(data);
             for (size_t i=0;i<block.txs.size();i++) {
                 vector<uint8_t> tx(block.txs[i].begin(),block.txs[i].end());
                 if (block.evm.count(i)) tx.insert(tx.end(),block.evm.at(i).begin(),block.evm.at(i).end());
-                pending.push_back(std::move(tx));
+                if (tx.size()==176) ProcessTxPackage(tx); else ProcessEvmTx(tx);
             }
         }
-        for (const auto& tx:pending) { if (tx.size()==176) ProcessTxPackage(tx); else ProcessEvmTx(tx); }
         {
             lock_guard lock(blockBufferLock);
             for (auto& slot:BlockBuffer) slot={};

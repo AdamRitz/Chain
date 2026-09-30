@@ -345,6 +345,8 @@ nlohmann::json GetNodeStats() {
         {"blocks",blockCount.load()},{"height",DBReadBlockHeight()},{"head",U32ToHex(DBReadCurrentBlock())},
         {"elapsed_seconds",elapsed},{"local_commit_tps",elapsed>0?committedTx.load()/elapsed:0},
         {"verify_worker_ms",verifyNs.load()/1e6},{"pool_worker_ms",poolNs.load()/1e6},
+        {"signature_checks",signatureChecks.load()},{"signature_cache_hits",signatureCacheHits.load()},
+        {"duplicate_blocks",duplicateBlocks.load()},{"pool_refresh_ms",poolRefreshNs.load()/1e6},
         {"tx_commit_wait_ms",txCommitWaitNs.load()/1e6},{"tx_read_ms",txReadNs.load()/1e6},
         {"tx_pool_wait_ms",txPoolWaitNs.load()/1e6},{"block_commit_ms",blockCommitNs.load()/1e6},
         {"queue_wait_ms",queueWaitNs.load()/1e6},{"block_build_ms",blockBuildNs.load()/1e6},
