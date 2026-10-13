@@ -1,0 +1,72 @@
+[
+  {
+    "running_nodes": [],
+    "sha256": "16d2a98cd5758877456401491d692c4a660b97a114b5a8bb8daefa20369c4ccc",
+    "config": "node:\n  port: 8089\n  bind: 127.0.0.1\n  id: 1\n  name: Watson\n  data: data/accounts-v5\n  io_threads: 4\n  verify_threads: 8\n  block_ms: 50\n  sync: true\n  produce: true\n",
+    "free_gib": 1.3357200622558594,
+    "host": "10.206.0.16"
+  },
+  {
+    "running_nodes": [],
+    "sha256": "16d2a98cd5758877456401491d692c4a660b97a114b5a8bb8daefa20369c4ccc",
+    "config": "node:\n  port: 8089\n  bind: 127.0.0.1\n  id: 1\n  name: Watson\n  data: data/accounts-v5\n  io_threads: 4\n  verify_threads: 8\n  block_ms: 50\n  sync: true\n  produce: true\n",
+    "free_gib": 3.4770965576171875,
+    "host": "10.206.0.4"
+  },
+  {
+    "running_nodes": [],
+    "sha256": "16d2a98cd5758877456401491d692c4a660b97a114b5a8bb8daefa20369c4ccc",
+    "config": "node:\n  port: 8089\n  bind: 127.0.0.1\n  id: 1\n  name: Watson\n  data: data/accounts-v5\n  io_threads: 4\n  verify_threads: 8\n  block_ms: 50\n  sync: true\n  produce: true\n",
+    "free_gib": 3.969745635986328,
+    "host": "10.206.0.14"
+  },
+  {
+    "running_nodes": [],
+    "sha256": "16d2a98cd5758877456401491d692c4a660b97a114b5a8bb8daefa20369c4ccc",
+    "config": "node:\n  port: 8089\n  bind: 127.0.0.1\n  id: 1\n  name: Watson\n  data: data/accounts-v5\n  io_threads: 4\n  verify_threads: 8\n  block_ms: 50\n  sync: true\n  produce: true\n",
+    "free_gib": 3.370067596435547,
+    "host": "10.206.0.17"
+  },
+  {
+    "running_nodes": [],
+    "sha256": "16d2a98cd5758877456401491d692c4a660b97a114b5a8bb8daefa20369c4ccc",
+    "config": "node:\n  port: 8089\n  bind: 127.0.0.1\n  id: 1\n  name: Watson\n  data: data/accounts-v5\n  io_threads: 4\n  verify_threads: 8\n  block_ms: 50\n  sync: true\n  produce: true\n",
+    "free_gib": 2.2237167358398438,
+    "host": "10.206.0.15"
+  },
+  {
+    "running_nodes": [],
+    "sha256": "16d2a98cd5758877456401491d692c4a660b97a114b5a8bb8daefa20369c4ccc",
+    "config": "node:\n  port: 8089\n  bind: 127.0.0.1\n  id: 1\n  name: Watson\n  data: data/accounts-v5\n  io_threads: 4\n  verify_threads: 8\n  block_ms: 50\n  sync: true\n  produce: true\n",
+    "free_gib": 2.8665809631347656,
+    "host": "10.206.0.12"
+  },
+  {
+    "running_nodes": [],
+    "sha256": "16d2a98cd5758877456401491d692c4a660b97a114b5a8bb8daefa20369c4ccc",
+    "config": "node:\n  port: 8089\n  bind: 127.0.0.1\n  id: 1\n  name: Watson\n  data: data/accounts-v5\n  io_threads: 4\n  verify_threads: 8\n  block_ms: 50\n  sync: true\n  produce: true\n",
+    "free_gib": 0.9328041076660156,
+    "host": "10.206.0.2"
+  },
+  {
+    "running_nodes": [],
+    "sha256": "16d2a98cd5758877456401491d692c4a660b97a114b5a8bb8daefa20369c4ccc",
+    "config": "node:\n  port: 8089\n  bind: 127.0.0.1\n  id: 1\n  name: Watson\n  data: data/accounts-v5\n  io_threads: 4\n  verify_threads: 8\n  block_ms: 50\n  sync: true\n  produce: true\n",
+    "free_gib": 3.107860565185547,
+    "host": "10.206.0.6"
+  },
+  {
+    "running_nodes": [],
+    "sha256": "16d2a98cd5758877456401491d692c4a660b97a114b5a8bb8daefa20369c4ccc",
+    "config": "node:\n  port: 8089\n  bind: 127.0.0.1\n  id: 1\n  name: Watson\n  data: data/accounts-v5\n  io_threads: 4\n  verify_threads: 8\n  block_ms: 50\n  sync: true\n  produce: true\n",
+    "free_gib": 3.7354354858398438,
+    "host": "10.206.0.11"
+  },
+  {
+    "running_nodes": [],
+    "sha256": "16d2a98cd5758877456401491d692c4a660b97a114b5a8bb8daefa20369c4ccc",
+    "config": "node:\n  port: 8089\n  bind: 127.0.0.1\n  id: 1\n  name: Watson\n  data: data/accounts-v5\n  io_threads: 4\n  verify_threads: 8\n  block_ms: 50\n  sync: true\n  produce: true\n",
+    "free_gib": 2.380523681640625,
+    "host": "10.206.0.8"
+  }
+]
