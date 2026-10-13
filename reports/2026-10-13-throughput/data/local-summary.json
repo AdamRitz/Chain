@@ -1,0 +1,98 @@
+[
+  {
+    "version": "old",
+    "workload": "native",
+    "cores": 1,
+    "median_tps": 24243.50819688441,
+    "min_tps": 23897.9696261829,
+    "max_tps": 24317.465878783434
+  },
+  {
+    "version": "old",
+    "workload": "native",
+    "cores": 4,
+    "median_tps": 82616.47249914877,
+    "min_tps": 82082.00906688994,
+    "max_tps": 83639.39776104434
+  },
+  {
+    "version": "old",
+    "workload": "native",
+    "cores": 8,
+    "median_tps": 128624.15712524523,
+    "min_tps": 127270.59760146347,
+    "max_tps": 130893.02772518476
+  },
+  {
+    "version": "old",
+    "workload": "evm",
+    "cores": 1,
+    "median_tps": 14802.483792013274,
+    "min_tps": 13330.889336968132,
+    "max_tps": 15210.453353631356
+  },
+  {
+    "version": "old",
+    "workload": "evm",
+    "cores": 4,
+    "median_tps": 25901.56886955034,
+    "min_tps": 25788.083844907665,
+    "max_tps": 27239.035074740284
+  },
+  {
+    "version": "old",
+    "workload": "evm",
+    "cores": 8,
+    "median_tps": 31824.84623625099,
+    "min_tps": 28547.359078059322,
+    "max_tps": 32044.236406189753
+  },
+  {
+    "version": "new",
+    "workload": "native",
+    "cores": 1,
+    "median_tps": 24118.215141526314,
+    "min_tps": 24076.20620022213,
+    "max_tps": 24232.131412119565
+  },
+  {
+    "version": "new",
+    "workload": "native",
+    "cores": 4,
+    "median_tps": 82461.13277131722,
+    "min_tps": 82125.06151629833,
+    "max_tps": 83388.87727208588
+  },
+  {
+    "version": "new",
+    "workload": "native",
+    "cores": 8,
+    "median_tps": 128353.09629843778,
+    "min_tps": 128350.45493758246,
+    "max_tps": 128449.3741367294
+  },
+  {
+    "version": "new",
+    "workload": "evm",
+    "cores": 1,
+    "median_tps": 16533.06026099144,
+    "min_tps": 15908.949898048932,
+    "max_tps": 17142.02648746713
+  },
+  {
+    "version": "new",
+    "workload": "evm",
+    "cores": 4,
+    "median_tps": 33311.8804947454,
+    "min_tps": 31350.625707121668,
+    "max_tps": 35917.41150899735
+  },
+  {
+    "version": "new",
+    "workload": "evm",
+    "cores": 8,
+    "median_tps": 38930.10723202486,
+    "min_tps": 38741.490445754345,
+    "max_tps": 41438.032352642294
+  }
+]

@@ -1,0 +1,125 @@
+{
+  "cores": [
+    {
+      "logical_cpus": [
+        0,
+        1
+      ],
+      "efficiency_class": 1
+    },
+    {
+      "logical_cpus": [
+        2,
+        3
+      ],
+      "efficiency_class": 1
+    },
+    {
+      "logical_cpus": [
+        4,
+        5
+      ],
+      "efficiency_class": 1
+    },
+    {
+      "logical_cpus": [
+        6,
+        7
+      ],
+      "efficiency_class": 1
+    },
+    {
+      "logical_cpus": [
+        8,
+        9
+      ],
+      "efficiency_class": 1
+    },
+    {
+      "logical_cpus": [
+        10,
+        11
+      ],
+      "efficiency_class": 1
+    },
+    {
+      "logical_cpus": [
+        12,
+        13
+      ],
+      "efficiency_class": 1
+    },
+    {
+      "logical_cpus": [
+        14,
+        15
+      ],
+      "efficiency_class": 1
+    },
+    {
+      "logical_cpus": [
+        16
+      ],
+      "efficiency_class": 0
+    },
+    {
+      "logical_cpus": [
+        17
+      ],
+      "efficiency_class": 0
+    },
+    {
+      "logical_cpus": [
+        18
+      ],
+      "efficiency_class": 0
+    },
+    {
+      "logical_cpus": [
+        19
+      ],
+      "efficiency_class": 0
+    },
+    {
+      "logical_cpus": [
+        20
+      ],
+      "efficiency_class": 0
+    },
+    {
+      "logical_cpus": [
+        21
+      ],
+      "efficiency_class": 0
+    },
+    {
+      "logical_cpus": [
+        22
+      ],
+      "efficiency_class": 0
+    },
+    {
+      "logical_cpus": [
+        23
+      ],
+      "efficiency_class": 0
+    }
+  ],
+  "points": [
+    1,
+    4,
+    8
+  ],
+  "sender_cpus": [
+    0,
+    1
+  ],
+  "sync": 1,
+  "repeats": 3,
+  "native_count": 300000,
+  "evm_count": 10000,
+  "sha256": {
+    "old": "f46a13f390b725c48a52f857c8f2251706008f22f72e8c168635fc0746a5947c",
+    "new": "d6c244d7ecf578f64fe056ab1b3713ac833500e1b4b0ff6ecd9b6675ed921b4b"
+  }
+}

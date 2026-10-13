@@ -1,0 +1,266 @@
+[
+  {
+    "case": {
+      "suite": "throughput",
+      "mode": "throughput",
+      "rate": 50000,
+      "repeat": 1,
+      "nodes": 10,
+      "version": "new"
+    },
+    "status": "complete",
+    "metrics": {
+      "offered_tps": 50000,
+      "achieved_send_tps": 54346.192049962054,
+      "common_commit_tps": 28892.44725174919,
+      "sent_unique": 900000,
+      "sent_wire_copies": 9000000,
+      "p50_ms": 13346.241744999134,
+      "p95_ms": 31608.226262000244,
+      "p99_ms": 34693.969284999184,
+      "p99_after_send_ms": 34693.61295600174,
+      "samples": 300,
+      "unresolved_samples": 18,
+      "deadline_ms": 100,
+      "deadline_success_fraction": 0.0,
+      "send_lateness_p99_ms": 1108.3843389969843,
+      "backlog_growth_per_second": 45194.19162021979,
+      "max_backlog_sum": 2214260,
+      "reorganizations_sum": 374,
+      "max_reorg_depth": 10,
+      "invalid_or_rejected_sum": 3131267,
+      "drained": false,
+      "recovery_seconds": null,
+      "checks": null,
+      "events": [],
+      "sample_poll_seconds": 0.05,
+      "measurement_seconds": 13.502767578000203,
+      "resources": [
+        {
+          "node": "node01",
+          "cpu_core_equivalents": 4.964403601911646,
+          "peak_resident_bytes": 561131520,
+          "received_bytes_per_second": 28103993.778155684,
+          "sent_bytes_per_second": 68358587.79824331,
+          "process_write_bytes_per_second": 45440203.90306319,
+          "db_write_ms_per_second": 196.6997691886036
+        },
+        {
+          "node": "node02",
+          "cpu_core_equivalents": 5.2148992858861565,
+          "peak_resident_bytes": 597262336,
+          "received_bytes_per_second": 37180539.40423031,
+          "sent_bytes_per_second": 41223762.81636621,
+          "process_write_bytes_per_second": 25762199.489144962,
+          "db_write_ms_per_second": 145.43512629214942
+        },
+        {
+          "node": "node03",
+          "cpu_core_equivalents": 5.2617519771100465,
+          "peak_resident_bytes": 565010432,
+          "received_bytes_per_second": 38201600.747422144,
+          "sent_bytes_per_second": 28968161.285490368,
+          "process_write_bytes_per_second": 46287447.10220107,
+          "db_write_ms_per_second": 222.1702915843491
+        },
+        {
+          "node": "node04",
+          "cpu_core_equivalents": 5.2668416744334285,
+          "peak_resident_bytes": 607297536,
+          "received_bytes_per_second": 39392596.586393826,
+          "sent_bytes_per_second": 31323236.62958584,
+          "process_write_bytes_per_second": 44366968.51511125,
+          "db_write_ms_per_second": 200.12503424873503
+        },
+        {
+          "node": "node05",
+          "cpu_core_equivalents": 5.204636352809697,
+          "peak_resident_bytes": 572571648,
+          "received_bytes_per_second": 39882029.80531166,
+          "sent_bytes_per_second": 31591283.752451003,
+          "process_write_bytes_per_second": 28690694.241911523,
+          "db_write_ms_per_second": 176.42265863194316
+        },
+        {
+          "node": "node06",
+          "cpu_core_equivalents": 5.2670995474938875,
+          "peak_resident_bytes": 593940480,
+          "received_bytes_per_second": 40865325.33515787,
+          "sent_bytes_per_second": 27701782.67819951,
+          "process_write_bytes_per_second": 43980810.05019807,
+          "db_write_ms_per_second": 190.71641255202545
+        },
+        {
+          "node": "node07",
+          "cpu_core_equivalents": 6.008735804072565,
+          "peak_resident_bytes": 624738304,
+          "received_bytes_per_second": 58516486.96726076,
+          "sent_bytes_per_second": 15135002.422241718,
+          "process_write_bytes_per_second": 52175377.820162416,
+          "db_write_ms_per_second": 272.4134409299202
+        },
+        {
+          "node": "node08",
+          "cpu_core_equivalents": 5.363425281643319,
+          "peak_resident_bytes": 558739456,
+          "received_bytes_per_second": 44842000.3900915,
+          "sent_bytes_per_second": 22717599.575644225,
+          "process_write_bytes_per_second": 45740212.32552913,
+          "db_write_ms_per_second": 212.54307210885452
+        },
+        {
+          "node": "node09",
+          "cpu_core_equivalents": 5.421068501487237,
+          "peak_resident_bytes": 549978112,
+          "received_bytes_per_second": 47662798.92490869,
+          "sent_bytes_per_second": 21758405.99364833,
+          "process_write_bytes_per_second": 50222137.94932506,
+          "db_write_ms_per_second": 242.5980423700033
+        },
+        {
+          "node": "node10",
+          "cpu_core_equivalents": 5.391767767566243,
+          "peak_resident_bytes": 599597056,
+          "received_bytes_per_second": 45217315.74457163,
+          "sent_bytes_per_second": 23740794.555502284,
+          "process_write_bytes_per_second": 49247793.103055514,
+          "db_write_ms_per_second": 232.26448399436063
+        }
+      ],
+      "controller_cpu_core_equivalents": 0.03842456143445011,
+      "sustainable": false
+    }
+  },
+  {
+    "case": {
+      "suite": "throughput",
+      "mode": "throughput",
+      "rate": 60000,
+      "repeat": 1,
+      "nodes": 10,
+      "version": "new"
+    },
+    "status": "complete",
+    "metrics": {
+      "offered_tps": 60000,
+      "achieved_send_tps": 50882.21052212935,
+      "common_commit_tps": 16963.328640349257,
+      "sent_unique": 1080000,
+      "sent_wire_copies": 10800000,
+      "p50_ms": 13850.993598996865,
+      "p95_ms": 16559.52548199639,
+      "p99_ms": 18544.844475996797,
+      "p99_after_send_ms": 16926.259840998682,
+      "samples": 300,
+      "unresolved_samples": 214,
+      "deadline_ms": 100,
+      "deadline_success_fraction": 0.0,
+      "send_lateness_p99_ms": 4232.134204667091,
+      "backlog_growth_per_second": 86822.89350696455,
+      "max_backlog_sum": 2314914,
+      "reorganizations_sum": 91,
+      "max_reorg_depth": 13,
+      "invalid_or_rejected_sum": 5003774,
+      "drained": false,
+      "recovery_seconds": null,
+      "checks": null,
+      "events": [],
+      "sample_poll_seconds": 0.05,
+      "measurement_seconds": 12.346633401997678,
+      "resources": [
+        {
+          "node": "node01",
+          "cpu_core_equivalents": 5.621055452150295,
+          "peak_resident_bytes": 652263424,
+          "received_bytes_per_second": 35196540.29167891,
+          "sent_bytes_per_second": 37437874.51607749,
+          "process_write_bytes_per_second": 44581276.05140855,
+          "db_write_ms_per_second": 194.77867971773546
+        },
+        {
+          "node": "node02",
+          "cpu_core_equivalents": 6.042177537070929,
+          "peak_resident_bytes": 664920064,
+          "received_bytes_per_second": 45328327.38918518,
+          "sent_bytes_per_second": 22252563.112106863,
+          "process_write_bytes_per_second": 46267231.34968703,
+          "db_write_ms_per_second": 200.69420540169904
+        },
+        {
+          "node": "node03",
+          "cpu_core_equivalents": 5.270237066362704,
+          "peak_resident_bytes": 622473216,
+          "received_bytes_per_second": 34579962.25359055,
+          "sent_bytes_per_second": 45172971.67904563,
+          "process_write_bytes_per_second": 38829388.41631366,
+          "db_write_ms_per_second": 156.6954010869856
+        },
+        {
+          "node": "node04",
+          "cpu_core_equivalents": 5.585952279820753,
+          "peak_resident_bytes": 660463616,
+          "received_bytes_per_second": 36677544.17384176,
+          "sent_bytes_per_second": 31085123.815039486,
+          "process_write_bytes_per_second": 40783398.00050497,
+          "db_write_ms_per_second": 183.54112689806954
+        },
+        {
+          "node": "node05",
+          "cpu_core_equivalents": 5.904333969145391,
+          "peak_resident_bytes": 807428096,
+          "received_bytes_per_second": 46114351.94211552,
+          "sent_bytes_per_second": 24400992.010603853,
+          "process_write_bytes_per_second": 45257051.52220612,
+          "db_write_ms_per_second": 233.93891160100904
+        },
+        {
+          "node": "node06",
+          "cpu_core_equivalents": 5.829557957746961,
+          "peak_resident_bytes": 611667968,
+          "received_bytes_per_second": 36009293.83130992,
+          "sent_bytes_per_second": 27619944.31168777,
+          "process_write_bytes_per_second": 40600935.30588609,
+          "db_write_ms_per_second": 165.439164223464
+        },
+        {
+          "node": "node07",
+          "cpu_core_equivalents": 5.605761080490289,
+          "peak_resident_bytes": 665280512,
+          "received_bytes_per_second": 37517734.01849379,
+          "sent_bytes_per_second": 24916652.66016763,
+          "process_write_bytes_per_second": 41483722.99748763,
+          "db_write_ms_per_second": 167.89757932430348
+        },
+        {
+          "node": "node08",
+          "cpu_core_equivalents": 5.680026993322174,
+          "peak_resident_bytes": 652025856,
+          "received_bytes_per_second": 35300082.84926333,
+          "sent_bytes_per_second": 29072251.707248632,
+          "process_write_bytes_per_second": 42432197.259151965,
+          "db_write_ms_per_second": 147.00306115076967
+        },
+        {
+          "node": "node09",
+          "cpu_core_equivalents": 6.317648581627067,
+          "peak_resident_bytes": 729493504,
+          "received_bytes_per_second": 39570055.90859705,
+          "sent_bytes_per_second": 8870847.010188129,
+          "process_write_bytes_per_second": 27879967.987411436,
+          "db_write_ms_per_second": 220.944521812612
+        },
+        {
+          "node": "node10",
+          "cpu_core_equivalents": 5.363091852171319,
+          "peak_resident_bytes": 653697024,
+          "received_bytes_per_second": 35612322.86437354,
+          "sent_bytes_per_second": 29364901.280808933,
+          "process_write_bytes_per_second": 40278805.712295294,
+          "db_write_ms_per_second": 171.46589957530173
+        }
+      ],
+      "controller_cpu_core_equivalents": 0.0466789673092445,
+      "sustainable": false
+    }
+  }
+]

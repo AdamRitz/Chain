@@ -1,0 +1,13 @@
+{
+  "main.cpp": true,
+  "DB\\DB.h": true,
+  "EVM\\Execute.h": true,
+  "Network\\Client.h": true,
+  "Network\\Server.h": true,
+  "Transaction\\Block.h": true,
+  "Transaction\\Fork.h": true,
+  "Transaction\\Transaction.h": true,
+  "ThirdParty\\evmone\\test\\state\\host.cpp": true,
+  "ThirdParty\\evmone\\test\\state\\state.cpp": true,
+  "ThirdParty\\evmone\\test\\state\\state.hpp": true
+}
