@@ -57,6 +57,7 @@ config.local.yaml
 
 # Isolated tests and benchmark datasets
 /bench-results/
+/build-throughput/
 /test-data/
 /network-test-data/
 /user-test-data/

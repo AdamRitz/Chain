@@ -93,24 +93,97 @@ evmc_message build_message(
 
 Account& State::insert(const address& addr, Account account)
 {
+    m_deleted.erase(addr);
+    m_accessed.insert(addr);
     const auto r = m_accounts.insert({addr, std::move(account)});
     assert(r.second);
     return r.first->second;
 }
 
-Account* State::find(const address& addr) noexcept
+Account* State::find(const address& addr)
 {
+    m_accessed.insert(addr);
     const auto it = m_accounts.find(addr);
     if (it != m_accounts.end())
         return &it->second;
+    if (m_base && !m_deleted.count(addr))
+    {
+        if (const auto* parent = m_base->ReadAccount(addr))
+        {
+            Account account;
+            account.nonce = parent->nonce;
+            account.balance = parent->balance;
+            account.code = parent->code;
+            return &m_accounts.emplace(addr, std::move(account)).first->second;
+        }
+    }
     return nullptr;
 }
 
-Account& State::get(const address& addr) noexcept
+Account& State::get(const address& addr)
 {
     auto acc = find(addr);
     assert(acc != nullptr);
     return *acc;
+}
+
+const Account* State::ReadAccount(const address& addr) const noexcept
+{
+    if (auto it = m_accounts.find(addr); it != m_accounts.end()) return &it->second;
+    return m_base && !m_deleted.count(addr) ? m_base->ReadAccount(addr) : nullptr;
+}
+bytes32 State::ReadStorage(const address& addr, const bytes32& key) const noexcept
+{
+    if (m_deleted.count(addr)) return {};
+    if (auto it = m_accounts.find(addr); it != m_accounts.end())
+        if (auto slot = it->second.storage.find(key); slot != it->second.storage.end()) return slot->second.current;
+    return m_base && !m_cleared.count(addr) ? m_base->ReadStorage(addr, key) : bytes32{};
+}
+StorageValue& State::GetStorage(const address& addr, const bytes32& key)
+{
+    auto& account = get(addr);
+    m_accessed_slots[addr].insert(key);
+    if (auto it = account.storage.find(key); it != account.storage.end()) return it->second;
+    auto word = m_base && !m_cleared.count(addr) ? m_base->ReadStorage(addr, key) : bytes32{};
+    return account.storage.emplace(key, StorageValue{word, word, EVMC_ACCESS_COLD}).first->second;
+}
+bool State::HasStorage(const address& addr) const noexcept
+{
+    if (m_deleted.count(addr)) return false;
+    auto local = m_accounts.find(addr);
+    if (local != m_accounts.end())
+        for (const auto& [key, slot] : local->second.storage) if (slot.current != bytes32{}) return true;
+    if (m_base && !m_cleared.count(addr))
+        if (auto parent = m_base->ReadAccount(addr))
+            for (const auto& [key, slot] : parent->storage)
+                if (slot.current != bytes32{} && (local == m_accounts.end() || !local->second.storage.count(key))) return true;
+    return false;
+}
+void State::EraseAccount(const address& addr)
+{
+    m_accounts.erase(addr);
+    if (m_base && m_base->ReadAccount(addr)) { m_deleted.insert(addr); m_cleared.insert(addr); }
+}
+void State::EraseMarked(bool destructed)
+{
+    for (const auto& addr : m_accessed)
+        if (auto it = m_accounts.find(addr); it != m_accounts.end())
+            if (destructed ? it->second.destructed : it->second.erase_if_empty && it->second.is_empty()) EraseAccount(addr);
+}
+void State::ResetTransaction()
+{
+    for (const auto& addr : m_accessed)
+        if (auto it = m_accounts.find(addr); it != m_accounts.end())
+        {
+            auto& account = it->second;
+            account.transient_storage.clear(); account.access_status = EVMC_ACCESS_COLD; account.just_created = false;
+        }
+    for (const auto& [addr, keys] : m_accessed_slots)
+        if (auto it = m_accounts.find(addr); it != m_accounts.end())
+            for (const auto& key : keys)
+                if (auto slot = it->second.storage.find(key); slot != it->second.storage.end())
+                { slot->second.access_status = EVMC_ACCESS_COLD; slot->second.original = slot->second.current; }
+    m_accessed.clear(); m_accessed_slots.clear();
 }
 
 Account& State::get_or_insert(const address& addr, Account account)
@@ -206,7 +279,7 @@ void State::rollback(size_t checkpoint)
                         //       so we need to delete them here explicitly.
                         //       This should be changed by tuning "erasable" flag
                         //       and clear in all revisions.
-                        m_accounts.erase(e.addr);
+                        EraseAccount(e.addr);
                     }
                 }
                 else if constexpr (std::is_same_v<T, JournalStorageChange>)
@@ -372,10 +445,7 @@ namespace
 /// Deletes "touched" (marked as erasable) empty accounts in the state.
 void delete_empty_accounts(State& state)
 {
-    std::erase_if(state.get_accounts(), [](const std::pair<const address, Account>& p) noexcept {
-        const auto& acc = p.second;
-        return acc.erase_if_empty && acc.is_empty();
-    });
+    state.EraseMarked(false);
 }
 }  // namespace
 
@@ -491,9 +561,8 @@ std::variant<TransactionReceipt, std::error_code> transition(State& state, const
     for (const auto& [a, storage_keys] : tx.access_list)
     {
         host.access_account(a);  // TODO: Return account ref.
-        auto& storage = state.get(a).storage;
         for (const auto& key : storage_keys)
-            storage[key].access_status = EVMC_ACCESS_WARM;
+            state.GetStorage(a, key).access_status = EVMC_ACCESS_WARM;
     }
     // EIP-3651: Warm COINBASE.
     // This may create an empty coinbase account. The account cannot be created unconditionally
@@ -515,8 +584,7 @@ std::variant<TransactionReceipt, std::error_code> transition(State& state, const
     state.touch(block.coinbase).balance += gas_used * priority_gas_price;
 
     // Apply destructs.
-    std::erase_if(state.get_accounts(),
-        [](const std::pair<const address, Account>& p) noexcept { return p.second.destructed; });
+    state.EraseMarked(true);
 
     // Cumulative gas used is unknown in this scope.
     TransactionReceipt receipt{tx.type, result.status_code, gas_used, {}, host.take_logs(), {}, {}};
@@ -534,17 +602,7 @@ std::variant<TransactionReceipt, std::error_code> transition(State& state, const
     // Post-transaction clean-up.
     // - Set accounts and their storage access status to cold.
     // - Clear the "just created" account flag.
-    for (auto& [addr, acc] : state.get_accounts())
-    {
-        acc.transient_storage.clear();
-        acc.access_status = EVMC_ACCESS_COLD;
-        acc.just_created = false;
-        for (auto& [key, val] : acc.storage)
-        {
-            val.access_status = EVMC_ACCESS_COLD;
-            val.original = val.current;
-        }
-    }
+    state.ResetTransaction();
 
     state.clear_journal();
     return receipt;

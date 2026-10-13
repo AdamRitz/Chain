@@ -12,6 +12,7 @@
 #include <optional>
 #include <variant>
 #include <vector>
+#include <unordered_set>
 
 namespace evmone::state
 {
@@ -63,6 +64,9 @@ class State
             JournalCreate, JournalTransientStorageChange, JournalDestruct, JournalAccessAccount>;
 
     std::unordered_map<address, Account> m_accounts;
+    const State* m_base = nullptr;
+    std::unordered_set<address> m_deleted, m_cleared, m_accessed;
+    std::unordered_map<address, std::unordered_set<bytes32>> m_accessed_slots;
 
     /// The state journal: the list of changes made in the state
     /// with information how to revert them.
@@ -79,10 +83,22 @@ public:
     Account& insert(const address& addr, Account account = {});
 
     /// Returns the pointer to the account at the address if the account exists. Null otherwise.
-    Account* find(const address& addr) noexcept;
+    Account* find(const address& addr);
 
     /// Gets the account at the address (the account must exist).
-    Account& get(const address& addr) noexcept;
+    Account& get(const address& addr);
+
+    // Chain: block-local overlay. The parent state stays unchanged during execution.
+    void SetBase(const State& base) { assert(base.m_base == nullptr); m_base = &base; }
+    const Account* ReadAccount(const address& addr) const noexcept;
+    bytes32 ReadStorage(const address& addr, const bytes32& key) const noexcept;
+    StorageValue& GetStorage(const address& addr, const bytes32& key);
+    bool HasStorage(const address& addr) const noexcept;
+    void EraseAccount(const address& addr);
+    void EraseMarked(bool destructed);
+    void ResetTransaction();
+    const auto& GetDeleted() const noexcept { return m_deleted; }
+    const auto& GetCleared() const noexcept { return m_cleared; }
 
     /// Gets an existing account or inserts new account.
     Account& get_or_insert(const address& addr, Account account = {});

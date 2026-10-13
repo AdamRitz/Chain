@@ -2,6 +2,9 @@
 #define CHAIN_BLOCK_H
 #include "Transaction.h"
 #include "../Crypto/MerkleTree.h"
+#include <boost/asio/thread_pool.hpp>
+#include <boost/asio/post.hpp>
+#include <latch>
 using namespace std;
 
 struct Block {
@@ -20,6 +23,44 @@ atomic<uint64_t> blockBuildNs{0},blockVerifyNs{0},blockCount{0};
 atomic<uint64_t> blockCommitNs{0};
 atomic<uint64_t> duplicateBlocks{0};
 atomic<bool> blockReady{false};
+unique_ptr<boost::asio::thread_pool> blockVerifyThreads;
+size_t blockVerifyNum=1;
+atomic<size_t> blockVerifyJobs{0},peakBlockVerifyJobs{0};
+atomic<uint64_t> coldSignatureNs{0},parallelSignatureBlocks{0};
+
+bool VerifyBlockTransactions(const Block& block,const vector<bool>& verified) {
+    vector<size_t> cold;
+    for (size_t i=0;i<block.txs.size();i++) if (!verified[i]) cold.push_back(i);
+    if (cold.empty()) return true;
+    auto start=GetSteadyTime();
+    atomic<bool> valid{true};
+    exception_ptr failure; mutex failureMutex;
+    auto verify=[&](size_t begin,size_t end) {
+        try {
+            for (size_t j=begin;j<end&&valid.load();j++) {
+                auto i=cold[j]; auto input=block.evm.find(i);
+                if (!VerifyTransaction(block.txs[i],input==block.evm.end()?span<const uint8_t>{}:span<const uint8_t>{input->second})) valid=false;
+            }
+        } catch (...) { lock_guard lock(failureMutex); failure=current_exception(); valid=false; }
+    };
+    size_t parts=blockVerifyThreads&&cold.size()>=128?min(blockVerifyNum,cold.size()/64):1;
+    latch done(ptrdiff_t(parts-1));
+    auto chunk=(cold.size()+parts-1)/parts;
+    for (size_t part=1;part<parts;part++) {
+        auto begin=min(part*chunk,cold.size()),end=min(begin+chunk,cold.size());
+        auto jobs=blockVerifyJobs.load(); bool queued=false;
+        while (jobs<blockVerifyNum*2) if (blockVerifyJobs.compare_exchange_weak(jobs,jobs+1)) { queued=true; break; }
+        if (queued) {
+            auto peak=peakBlockVerifyJobs.load(); while (peak<jobs+1&&!peakBlockVerifyJobs.compare_exchange_weak(peak,jobs+1)) {}
+            try { boost::asio::post(*blockVerifyThreads,[&,begin,end] { verify(begin,end); blockVerifyJobs--; done.count_down(); }); }
+            catch (...) { blockVerifyJobs--; verify(begin,end); done.count_down(); }
+        } else { verify(begin,end); done.count_down(); }
+    }
+    verify(0,min(chunk,cold.size())); done.wait();
+    coldSignatureNs+=GetSteadyTime()-start; if (parts>1) parallelSignatureBlocks++;
+    if (failure) rethrow_exception(failure);
+    return valid.load();
+}
 
 // ------------------------------------------------序列化和反序列化------------------------------------------------
 array<uint8_t,80> SerializeBlockHeader(const Block& block) {
@@ -148,10 +189,9 @@ bool VerifyBlock(const vector<uint8_t>& data,Block* result=nullptr) {
             else verified[i]=verified[i]&&!evmPool.count(txHash);
         }
     }
+    if (!VerifyBlockTransactions(block,verified)) return false;
     for (size_t i=0;i<block.txNum;i++) {
         const auto& tx=block.txs[i];
-        auto payload=block.evm.find(i);
-        if (!verified[i]&&!VerifyTransaction(tx,payload==block.evm.end()?span<const uint8_t>{}:span<const uint8_t>{payload->second})) return false;
         auto txHash=GetTransactionHash(tx);
         if (!unique.insert(txHash).second) return false;
         hashes.push_back(txHash);
@@ -189,13 +229,14 @@ void GenerateGenesisBlock() {
     DBAddBlock(batch,block.hash,data);
     batch.Put("CurrentBlock",rocksdb::Slice(reinterpret_cast<const char*>(block.hash.data()),32));
     batch.Put("BlockHeight","1");
-    batch.Put("SchemaVersion","4");
+    batch.Put("SchemaVersion","5");
     batch.Put("ChainTx","0");
     batch.Put(DBHashKey("score/",block.hash),"0");
     batch.Put("GenesisConfig",GetGenesisConfig().dump());
     batch.Put("UserBurned","0");
     for (const auto& [key,user]:genesisUsers) DBAddUser(batch,key,user);
     DBWriteBatch(batch);
+    InvalidateExecutionCache();
     users.clear();
     users.reserve(genesisUsers.size());
     for (const auto& [key,user]:genesisUsers) users.emplace(key,user);
@@ -207,7 +248,8 @@ void GenerateGenesisBlock() {
     spdlog::info("Genesis Block Generated. Height:1");
 }
 // 维护三个高度的候选窗口，按交易数量和哈希比较。
-bool QueueForkBlock(Block block,vector<uint8_t> data);
+bool QueueForkBlock(Block block,vector<uint8_t> data,bool notify);
+bool HasForkBlock(const array<uint8_t,32>& hash,const vector<uint8_t>& data);
 bool ProcessBlock(vector<uint8_t> data) {
     if (data.size()<112) return false;
     auto height=ReadU64(data.data()+64);
@@ -225,12 +267,14 @@ bool ProcessBlock(vector<uint8_t> data) {
         lock_guard lock(blockBufferLock);
         if (height>=epoch&&height-epoch<3&&BlockBuffer[height-epoch].second==data) { duplicateBlocks++; return false; }
     }
+    array<uint8_t,32> hash;memcpy(hash.data(),data.data()+80,32);
+    if (HasForkBlock(hash,data)) { duplicateBlocks++; return false; }
     Block block;
     if (!VerifyBlock(data,&block)) return false;
     if (height!=current+1||block.previousHash!=head) {
         auto canonical=DBReadBlockByHeight(to_string(height));
         if (canonical==data) return false;
-        return QueueForkBlock(std::move(block),std::move(data));
+        return QueueForkBlock(std::move(block),std::move(data),true);
     }
     if (!DBCheckBlockUsers(data)) { invalidUserBlocks++; return false; }
     {

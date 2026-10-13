@@ -40,7 +40,8 @@ struct Peer:enable_shared_from_this<Peer> {
     uint64_t key=0,remoteHeight=0;
     uint16_t port=0;
     array<uint8_t,4> address{};
-    bool writing=false,closed=false,syncing=false;
+    array<uint8_t,32> requestedHead{};
+    bool writing=false,closed=false,syncing=false,compact=false;
     uint64_t clockToken=0,clockSentSteady=0;
     int64_t clockSentLogical=0;
     milliseconds lag{0};
@@ -101,9 +102,7 @@ awaitable<void> WriteLoop(shared_ptr<Peer> peer) {
     }
     peer->writing=false;
 }
-void SendData(const shared_ptr<Peer>& peer,shared_ptr<const vector<uint8_t>> data) {
-    if (!peer||!data||data->empty()) return;
-    post(peer->strand,[peer,data=std::move(data)] {
+void QueueData(const shared_ptr<Peer>& peer,shared_ptr<const vector<uint8_t>> data) {
         if (peer->closed) return;
         if (data->size()>maxSendBytes||peer->queuedBytes>maxSendBytes-data->size()) { ClosePeer(peer); return; }
         peer->queuedBytes+=data->size();
@@ -112,21 +111,30 @@ void SendData(const shared_ptr<Peer>& peer,shared_ptr<const vector<uint8_t>> dat
             peer->writing=true;
             co_spawn(peer->strand,WriteLoop(peer),[peer](exception_ptr error){if (error) PeerError(peer,error);});
         }
-    });
+}
+void SendData(const shared_ptr<Peer>& peer,shared_ptr<const vector<uint8_t>> data) {
+    if (!peer||!data||data->empty()) return;
+    post(peer->strand,[peer,data=std::move(data)] { QueueData(peer,data); });
 }
 void SendData(const shared_ptr<Peer>& peer,vector<uint8_t> data) {
     SendData(peer,make_shared<const vector<uint8_t>>(std::move(data)));
 }
 // 普通函数只负责投递，调用它就会安排广播；大缓冲区在节点间共享。
-void BroadcastData(vector<uint8_t> data) {
+void BroadcastData(vector<uint8_t> data,uint64_t source=0) {
     auto shared=make_shared<const vector<uint8_t>>(std::move(data));
     vector<shared_ptr<Peer>> peers;
     {
         lock_guard lock(peerMutex);
         for (const auto& [key,peer]:peerPool) peers.push_back(peer);
     }
-    for (const auto& peer:peers) SendData(peer,shared);
+    unordered_set<uint64_t> sent;
+    for (const auto& peer:peers) {
+        auto id=GetPeerKey(peer->address,peer->port);
+        if ((!source||id!=source)&&sent.insert(id).second) SendData(peer,shared);
+    }
 }
+awaitable<void> ProcessMessage(shared_ptr<Peer> peer,uint8_t type,vector<uint8_t> data);
+#include "Blocks.h"
 void QueryHeight(const shared_ptr<Peer>& peer) { SendData(peer,GenerateMessage(19,{})); }
 void QueryBlock(const shared_ptr<Peer>& peer,uint64_t height) {
     array<uint8_t,8> data;
@@ -152,13 +160,14 @@ awaitable<void> Connect(array<uint8_t,4> ipByte,uint16_t port) {
     peer->deadline.cancel();
     if (ec) co_return;
     peer->socket.set_option(tcp::no_delay(true),ec);
-    array<uint8_t,3> hello{1,uint8_t(listenPort),uint8_t(listenPort>>8)};
+    array<uint8_t,3> hello{3,uint8_t(listenPort),uint8_t(listenPort>>8)};
     co_await async_write(peer->socket,buffer(hello),redirect_error(use_awaitable,ec));
     if (ec) co_return;
     auto endpoint=peer->socket.remote_endpoint();
     peer->key=GetPeerKey(ipByte,endpoint.port());
     peer->port=port;
     peer->address=ipByte;
+    peer->compact=true;
     {
         lock_guard lock(peerMutex);
         if (peerPool.size()>=maxPeers||peerPool.count(peer->key)) co_return;
@@ -198,21 +207,35 @@ awaitable<void> ProcessDiscoverMessage(vector<uint8_t> data) {
 }
 awaitable<void> SyncBlock(shared_ptr<Peer> peer) {
     steady_timer timer(co_await this_coro::executor);
+    uint64_t requested=DBReadBlockHeight(),progress=requested;
+    auto lastProgress=steady_clock::now();
+    unsigned retries=0;
     while (!peer->closed&&DBReadBlockHeight()<peer->remoteHeight) {
-        auto height=DBReadBlockHeight()+1;
-        QueryBlock(peer,height);
-        auto end=steady_clock::now()+seconds(5);
-        while (!peer->closed&&DBReadBlockHeight()<height&&steady_clock::now()<end) {
-            timer.expires_after(milliseconds(10));
-            co_await timer.async_wait(use_awaitable);
+        auto height=DBReadBlockHeight();
+        if (height!=progress) { progress=height; lastProgress=steady_clock::now(); retries=0; }
+        if (steady_clock::now()-lastProgress>seconds(3)) {
+            if (++retries>3) break;
+            requested=height; lastProgress=steady_clock::now(); syncRetries++;
+            peer->requestedHead={}; QueryHeight(peer);
         }
-        if (DBReadBlockHeight()<height) break;
+        requested=max(requested,height);
+        auto limit=min(peer->remoteHeight,height+8);
+        while (requested<limit) {
+            auto count=uint16_t(min(uint64_t(4),limit-requested));
+            if (peer->compact) {
+                array<uint8_t,10> request; WriteU64(request.data(),requested+1); request[8]=uint8_t(count); request[9]=uint8_t(count>>8);
+                SendData(peer,GenerateMessage(42,request)); syncRequests++;
+            } else for (uint16_t i=1;i<=count;i++) QueryBlock(peer,requested+i);
+            requested+=count;
+        }
+        timer.expires_after(milliseconds(2)); co_await timer.async_wait(use_awaitable);
     }
     peer->syncing=false;
 }
 awaitable<void> OpenDiscoveryMode() {
     steady_timer timer(co_await this_coro::executor);
     while (nodeRunning) {
+        PruneCompactBlocks();
         vector<shared_ptr<Peer>> peers;
         {
             lock_guard lock(peerMutex);
@@ -273,7 +296,7 @@ void MainLoop() {
     try {
         int64_t lastRound=-1;
         while (true) {
-            if (ProcessForks()) BroadcastData(GenerateNewBlockMessage(DBReadBlockByHash(DBReadCurrentBlock())));
+            if (ProcessForks()) AnnounceBlock(DBReadBlockByHash(DBReadCurrentBlock()));
             {
                 unique_lock lock(txpoolMutex);
                 txpoolCondition.wait(lock,[]{return !nodeRunning||forkReady||blockReady||(produceBlocks&&readyPoolTx>0);});
@@ -291,7 +314,7 @@ void MainLoop() {
                 lastRound=round;
                 if (produceBlocks) {
                     auto data=GenerateBlock();
-                    if (!data.empty()&&ProcessBlock(data)) { localProposals++; BroadcastData(GenerateNewBlockMessage(data)); }
+                    if (!data.empty()&&ProcessBlock(data)) { localProposals++; AnnounceBlock(data); }
                 }
                 WaitLogicalTime(round*period+int64_t(nodeClock.candidateMs)*1000);
             } else if (produceBlocks&&!blockReady) {
@@ -311,7 +334,7 @@ void MainLoop() {
                 spdlog::warn("Rejected candidate at height {}",selected.first.height);
                 continue;
             }
-            BroadcastData(GenerateNewBlockMessage(selected.second));
+            AnnounceBlock(selected.second);
             forkReady=true;
             spdlog::debug("Local block committed. Height:{}, TxNum:{}",selected.first.height,selected.first.txNum);
         }
@@ -360,6 +383,16 @@ nlohmann::json GetNodeStats() {
         {"chain_transactions",DBReadNumber("ChainTx")},{"reorganizations",reorgCount.load()},{"max_reorg_depth",maxReorgDepth.load()},
         {"evm_accounts",evmState.get_accounts().size()}, {"peers",peers},{"failed",nodeFailed.load()},
         {"network_sent_bytes",networkSentBytes.load()},{"local_proposals",localProposals.load()},
+        {"compact_announcements",compactAnnouncements.load()},{"compact_reconstructed",compactReconstructed.load()},
+        {"missing_transactions",missingTransactions.load()},{"relay_suppressed",relaySuppressed.load()},
+        {"sync_requests",syncRequests.load()},{"sync_retries",syncRetries.load()},{"sync_blocks",syncBlocks.load()},
+        {"recent_transaction_hits",recentTransactionHits.load()},
+        {"execution_cache_hits",executionCacheHits.load()},{"execution_cache_misses",executionCacheMisses.load()},
+        {"candidate_execute_ms",candidateExecuteNs.load()/1e6},{"commit_execute_ms",commitExecuteNs.load()/1e6},
+        {"evm_account_writes",evmAccountWrites.load()},{"evm_slot_writes",evmSlotWrites.load()},{"evm_persist_ms",evmPersistNs.load()/1e6},
+        {"cold_signature_ms",coldSignatureNs.load()/1e6},{"parallel_signature_blocks",parallelSignatureBlocks.load()},
+        {"peak_block_verify_jobs",peakBlockVerifyJobs.load()},
+        {"commit_lock_wait_ms",commitLockWaitNs.load()/1e6},{"candidate_lock_wait_ms",candidateLockWaitNs.load()/1e6},
         {"clock",GetClockStats()},{"experiment_index",experimentIndex}};
     lock.unlock();
     stats.update(GetProcessResources());

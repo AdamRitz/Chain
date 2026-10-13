@@ -88,6 +88,7 @@ int main(int argc,char* argv[]) {
         changed.push_back(0);
         Require(!VerifyBlock(changed),"trailing bytes");
         auto block=UnSerializeBlock(data);
+        auto hitsBefore=executionCacheHits.load();
         Require(ProcessBlock(data),"candidate accepted");
         Require(!ProcessBlock(data),"duplicate candidate rejected");
         auto wrong=block;
@@ -95,6 +96,7 @@ int main(int argc,char* argv[]) {
         auto wrongData=SerializeBlockALL(wrong);
         Require(!CommitBlock(wrong,wrongData)&&txpool.size()==2&&DBReadBlockHeight()==1,"wrong parent preserves pool");
         Require(CommitBlock(block,data),"atomic block commit");
+        Require(executionCacheHits==hitsBefore+1,"commit reuses execution for identical parent state and full bytes");
         Require(txpool.empty()&&DBReadBlockHeight()==2,"commit removes pool transactions");
         checksBefore=signatureChecks.load();
         Require(VerifyBlock(data)&&signatureChecks==checksBefore,"signature result survives pool removal");
@@ -115,15 +117,21 @@ int main(int argc,char* argv[]) {
         ProcessTx(tx3);
         auto data3=GenerateBlock();
         auto block3=UnSerializeBlock(data3);
+        Require(DBCheckBlockUsers(data3),"cache before write failure");
+        auto usersBefore=users;
         db.reset();
         rocksdb::DB* readOnly=nullptr;
         CheckDBStatus(rocksdb::DB::OpenForReadOnly(options,path,&readOnly));
         db.reset(readOnly);
         RequireThrow([&]{CommitBlock(block3,data3);},"write failure reported");
+        Require(users==usersBefore,"failed cached execution preserves memory state");
         Require(DBReadBlockHeight()==2&&txpool.size()==1&&epoch==3,"failed commit preserves metadata and pool");
         db.reset();
         InitDB(path,true);
+        Require(DBCheckBlockUsers(data3),"cache for stale-state check");
+        auto missesBefore=executionCacheMisses.load(); InvalidateExecutionCache();
         Require(CommitBlock(block3,data3),"retry after write failure");
+        Require(executionCacheMisses==missesBefore+1,"same head with a new state version reexecutes");
         auto hash=DBReadCurrentBlock();
         CheckDBStatus(db->Put(rocksdb::WriteOptions(),"CurrentBlock","bad"));
         RequireThrow([]{DBReadCurrentBlock();},"invalid stored hash rejected");

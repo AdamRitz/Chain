@@ -32,7 +32,7 @@ void AddConfiguredPeer(const string& value) {
 }
 int main(int argc,char* argv[]) {
     try {
-        string configPath,dataPath="data/accounts-v4",metricsPath,genesisPath;
+        string configPath,dataPath="data/accounts-v5",metricsPath,genesisPath;
         int ioNum=4,verifyNum=8,runSeconds=0;
         bool sync=true,observeClock=false;
         for (int i=1;i<argc;i++) {
@@ -100,6 +100,8 @@ int main(int argc,char* argv[]) {
         io_context io;
         nodeIO=&io;
         verifyThreads=make_unique<thread_pool>(verifyNum);
+        blockVerifyNum=min(size_t(4),size_t(verifyNum));
+        blockVerifyThreads=make_unique<thread_pool>(blockVerifyNum);
         auto guard=make_work_guard(io);
         auto stop=[&] { io.stop(); };
         signal_set signals(io,SIGINT,SIGTERM);
@@ -130,6 +132,8 @@ int main(int argc,char* argv[]) {
         nodeRunning=false;
         WakeMainLoop();
         blockThread.join();
+        blockVerifyThreads->join();
+        blockVerifyThreads.reset();
         // 所有工作线程结束后，在 io_context 析构前释放全局节点连接。
         vector<shared_ptr<Peer>> peers;
         {

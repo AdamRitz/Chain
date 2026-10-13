@@ -6,6 +6,7 @@
 #include <mutex>
 #include <shared_mutex>
 #include <vector>
+#include <deque>
 #include <rocksdb/db.h>
 #include <rocksdb/options.h>
 #include <rocksdb/write_batch.h>
@@ -34,6 +35,32 @@ atomic<uint64_t> userCheckNs{0},userWriteCount{0},invalidUserBlocks{0};
 thread_local rocksdb::WriteBatchWithIndex* branchBatch=nullptr;
 atomic<uint64_t> reorgCount{0};
 atomic<uint64_t> maxReorgDepth{0};
+uint64_t dbStateVersion=0;
+struct CachedExecution {
+    vector<uint8_t> data;
+    array<uint8_t,32> parent{};
+    uint64_t version=0,height=0;
+    UserMap users;
+    EvmExecution evm;
+    size_t bytes=0;
+};
+mutex executionMutex;
+deque<unique_ptr<CachedExecution>> executionCache;
+size_t executionBytes=0;
+constexpr size_t maxExecutionBytes=32*1024*1024;
+atomic<uint64_t> executionCacheHits{0},executionCacheMisses{0},candidateExecuteNs{0},commitExecuteNs{0};
+atomic<uint64_t> evmAccountWrites{0},evmSlotWrites{0},evmPersistNs{0};
+atomic<uint64_t> commitLockWaitNs{0},candidateLockWaitNs{0};
+void InvalidateExecutionCache() {
+    dbStateVersion++;
+    lock_guard lock(executionMutex); executionCache.clear(); executionBytes=0;
+}
+string DBEvmKey(const char* prefix,const evmc::address& address) {
+    string key(prefix); key.append(reinterpret_cast<const char*>(address.bytes),20); return key;
+}
+string DBEvmSlotKey(const evmc::address& address,const evmc::bytes32& slot) {
+    auto key=DBEvmKey("evm-slot/",address); key.append(reinterpret_cast<const char*>(slot.bytes),32); return key;
+}
 
 void CheckDBStatus(const rocksdb::Status& status) {
     if (!status.ok()) throw runtime_error("RocksDB: "+status.ToString());
@@ -63,7 +90,7 @@ void InitDB(const string& path="test",bool sync=true) {
     db.reset(openedDB);
     string version;
     if (DBGet("SchemaVersion",version)) {
-        if (version!="4") throw runtime_error("EVM and fork recovery require schema 4. Use a NEW --data directory with --genesis.");
+        if (version!="5") throw runtime_error("Incremental EVM state requires schema 5. Use a NEW --data directory with --genesis.");
         string saved;
         if (!DBGet("GenesisConfig",saved)) throw runtime_error("Missing genesis account configuration");
         auto config=nlohmann::json::parse(saved);
@@ -101,6 +128,23 @@ void InitDB(const string& path="test",bool sync=true) {
         evmState.insert(address,std::move(account));
     }
     CheckDBStatus(it->status());
+    for (it->Seek("evm-code/");it->Valid()&&it->key().starts_with("evm-code/");it->Next()) {
+        if (it->key().size()!=29) throw runtime_error("Invalid EVM code key");
+        evmc::address address; memcpy(address.bytes,it->key().data()+9,20);
+        auto found=evmState.get_accounts().find(address);
+        if (found==evmState.get_accounts().end()) throw runtime_error("Orphan EVM code");
+        auto code=it->value(); found->second.code.assign(reinterpret_cast<const uint8_t*>(code.data()),code.size());
+    }
+    CheckDBStatus(it->status());
+    for (it->Seek("evm-slot/");it->Valid()&&it->key().starts_with("evm-slot/");it->Next()) {
+        if (it->key().size()!=61||it->value().size()!=32) throw runtime_error("Invalid EVM slot");
+        evmc::address address; evmc::bytes32 key,value;
+        memcpy(address.bytes,it->key().data()+9,20); memcpy(key.bytes,it->key().data()+29,32); memcpy(value.bytes,it->value().data(),32);
+        auto found=evmState.get_accounts().find(address);
+        if (found==evmState.get_accounts().end()||value==evmc::bytes32{}) throw runtime_error("Orphan or zero EVM slot");
+        found->second.storage[key]={value,value,EVMC_ACCESS_COLD};
+    }
+    CheckDBStatus(it->status());
     if (!version.empty()) {
         string burned;
         if (!DBGet("UserBurned",burned)) throw runtime_error("Missing fee total");
@@ -108,6 +152,7 @@ void InitDB(const string& path="test",bool sync=true) {
         if (result.ec!=errc()||result.ptr!=burned.data()+burned.size()||userBurned>genesisSupply||balanceTotal!=genesisSupply-userBurned) throw runtime_error("Account supply mismatch");
     }
     spdlog::info("RocksDB Started. Path:{}, Sync:{}",path,sync);
+    InvalidateExecutionCache();
 }
 void DBWriteBatch(rocksdb::WriteBatch& batch) {
     if (branchBatch) {
@@ -227,15 +272,35 @@ void DBWriteCurrentBlock(const array<uint8_t,32>& hash) {
     CheckDBStatus(db->Put(rocksdb::WriteOptions(),"CurrentBlock",rocksdb::Slice(reinterpret_cast<const char*>(hash.data()),32)));
 }
 bool DBCheckBlockUsers(const vector<uint8_t>& data) {
+    if (data.size()<112) return false;
+    auto waitStart=GetSteadyTime();
     shared_lock lock(dbCommitMutex);
+    candidateLockWaitNs+=GetSteadyTime()-waitStart;
     auto current=DBReadBlockHeight();
     auto height=ReadU64(data.data()+64);
     // 未来高度先缓存内容；轮到提交时，使用它实际父块的状态完整执行。
     if (current<UINT64_MAX&&height>current+1) return true;
     auto previous=DBReadCurrentBlock();
     if (current==UINT64_MAX||height!=current+1||memcmp(data.data(),previous.data(),32)!=0) return false;
-    UserMap changed;
-    return DBApplyBlockUsers(data,changed);
+    auto result=make_unique<CachedExecution>(); result->data=data; result->parent=previous;
+    result->version=dbStateVersion; result->height=height;
+    auto start=GetSteadyTime();
+    if (!DBApplyBlockUsers(data,result->users,&result->evm)) return false;
+    candidateExecuteNs+=GetSteadyTime()-start;
+    result->bytes=data.size()+result->users.size()*96;
+    for (const auto& [address,account]:result->evm.state.get_accounts()) result->bytes+=256+account.code.size()+account.storage.size()*128;
+    for (const auto& [hash,receipt]:result->evm.receipts) result->bytes+=96+receipt.size();
+    if (result->bytes<=maxExecutionBytes) {
+        lock_guard cacheLock(executionMutex);
+        for (auto it=executionCache.begin();it!=executionCache.end();) {
+            if ((*it)->data==data) { executionBytes-=(*it)->bytes; it=executionCache.erase(it); } else ++it;
+        }
+        while (!executionCache.empty()&&(executionCache.size()>=8||executionBytes+result->bytes>maxExecutionBytes)) {
+            executionBytes-=executionCache.front()->bytes; executionCache.pop_front();
+        }
+        executionBytes+=result->bytes; executionCache.push_back(std::move(result));
+    }
+    return true;
 }
 // 一块的块体、交易、索引、当前高度和链头在同一个 batch 中提交。
 bool DBCommitBlockLocked(const array<uint8_t,32>& hash,const vector<uint8_t>& data) {
@@ -249,7 +314,21 @@ bool DBCommitBlockLocked(const array<uint8_t,32>& hash,const vector<uint8_t>& da
     if (currentHeight==UINT64_MAX||height!=currentHeight+1||memcmp(data.data(),previousHash.data(),32)!=0) return false;
     UserMap changed;
     EvmExecution execution;
-    if (!DBApplyBlockUsers(data,changed,&execution)) { invalidUserBlocks++; return false; }
+    unique_ptr<CachedExecution> cached;
+    if (!branchBatch) {
+        lock_guard cacheLock(executionMutex);
+        for (auto it=executionCache.begin();it!=executionCache.end();++it) {
+            if ((*it)->version==dbStateVersion&&(*it)->parent==previousHash&&(*it)->height==height&&(*it)->data==data) {
+                executionBytes-=(*it)->bytes; cached=std::move(*it); executionCache.erase(it); break;
+            }
+        }
+    }
+    if (cached) { changed=std::move(cached->users); execution=std::move(cached->evm); executionCacheHits++; }
+    else {
+        executionCacheMisses++; auto start=GetSteadyTime();
+        auto valid=DBApplyBlockUsers(data,changed,&execution); commitExecuteNs+=GetSteadyTime()-start;
+        if (!valid) { invalidUserBlocks++; return false; }
+    }
     if (baseFee&&num>(genesisSupply-userBurned)/baseFee) return false;
     auto burned=userBurned+num*baseFee;
     if (execution.gasUsed>genesisSupply-burned) return false;
@@ -267,18 +346,42 @@ bool DBCommitBlockLocked(const array<uint8_t,32>& hash,const vector<uint8_t>& da
         if (auto found=payloads.find(i);found!=payloads.end()) batch.Put(DBHashKey("input/",txHash),rocksdb::Slice(reinterpret_cast<const char*>(found->second.data()),found->second.size()));
     }
     for (const auto& [key,user]:changed) DBAddUser(batch,key,user);
+    uint64_t accountWrites=0,slotWrites=0; auto persistStart=GetSteadyTime();
     if (execution.active) {
-        for (const auto& [address,account]:execution.state.get_accounts()) {
-            string key="evm/"; key.append(reinterpret_cast<const char*>(address.bytes),20);
-            auto value=SerializeEvmAccount(account);
+        for (const auto& address:execution.state.GetCleared()) {
             auto old=evmState.get_accounts().find(address);
-            if (old==evmState.get_accounts().end()||SerializeEvmAccount(old->second)!=value) batch.Put(key,value);
+            if (old!=evmState.get_accounts().end()) {
+                for (const auto& [slot,value]:old->second.storage) if (value.current!=evmc::bytes32{}) {
+                    batch.Delete(DBEvmSlotKey(address,slot)); slotWrites++;
+                }
+            }
         }
-        for (const auto& [address,account]:evmState.get_accounts()) if (!execution.state.get_accounts().count(address)) {
-            string key="evm/"; key.append(reinterpret_cast<const char*>(address.bytes),20); batch.Delete(key);
+        for (const auto& address:execution.state.GetDeleted()) {
+            batch.Delete(DBEvmKey("evm/",address)); batch.Delete(DBEvmKey("evm-code/",address)); accountWrites++;
+        }
+        for (const auto& [address,account]:execution.state.get_accounts()) {
+            auto old=evmState.get_accounts().find(address);
+            bool fresh=old==evmState.get_accounts().end(),cleared=execution.state.GetCleared().count(address);
+            if (fresh||old->second.balance!=account.balance||old->second.nonce!=account.nonce) {
+                batch.Put(DBEvmKey("evm/",address),SerializeEvmHeader(account)); accountWrites++;
+            }
+            if (fresh||old->second.code!=account.code) {
+                auto key=DBEvmKey("evm-code/",address);
+                if (account.code.empty()) batch.Delete(key);
+                else batch.Put(key,rocksdb::Slice(reinterpret_cast<const char*>(account.code.data()),account.code.size()));
+            }
+            for (const auto& [slot,value]:account.storage) {
+                auto previous=cleared?evmc::bytes32{}:evmState.ReadStorage(address,slot);
+                if (previous==value.current) continue;
+                auto key=DBEvmSlotKey(address,slot);
+                if (value.current==evmc::bytes32{}) batch.Delete(key);
+                else batch.Put(key,rocksdb::Slice(reinterpret_cast<const char*>(value.current.bytes),32));
+                slotWrites++;
+            }
         }
         for (const auto& [key,value]:execution.receipts) batch.Put(DBHashKey("receipt/",key),value);
     }
+    evmPersistNs+=GetSteadyTime()-persistStart;
     batch.Put("UserBurned",to_string(burned));
     batch.Put("CurrentBlock",rocksdb::Slice(reinterpret_cast<const char*>(hash.data()),32));
     batch.Put("BlockHeight",to_string(height));
@@ -296,12 +399,6 @@ bool DBCommitBlockLocked(const array<uint8_t,32>& hash,const vector<uint8_t>& da
                 array<uint8_t,32> address; memcpy(address.data(),key.data()+5,32);
                 auto found=users.find(address);
                 if (found==users.end()) saved.Delete(key); else DBAddUser(saved,address,found->second);
-                return;
-            }
-            if (key.starts_with("evm/")&&key.size()==24) {
-                evmc::address address; memcpy(address.bytes,key.data()+4,20);
-                auto found=evmState.get_accounts().find(address);
-                if (found==evmState.get_accounts().end()) saved.Delete(key); else saved.Put(key,SerializeEvmAccount(found->second));
                 return;
             }
             string value;
@@ -322,12 +419,16 @@ bool DBCommitBlockLocked(const array<uint8_t,32>& hash,const vector<uint8_t>& da
     }
     users.merge(changed);
     userBurned=burned;
-    if (execution.active) evmState=std::move(execution.state);
+    if (execution.active) ApplyEvmChanges(execution.state);
+    evmAccountWrites+=accountWrites; evmSlotWrites+=slotWrites;
+    InvalidateExecutionCache();
     userWriteCount+=writeCount;
     return true;
 }
 bool DBCommitBlock(const array<uint8_t,32>& hash,const vector<uint8_t>& data) {
+    auto waitStart=GetSteadyTime();
     lock_guard lock(dbCommitMutex);
+    commitLockWaitNs+=GetSteadyTime()-waitStart;
     return DBCommitBlockLocked(hash,data);
 }
 #endif

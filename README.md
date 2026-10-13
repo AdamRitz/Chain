@@ -2,7 +2,7 @@
 
 C++20 区块链原型，使用 Boost.Asio、libsodium、默克尔树、RocksDB 和 evmone。支持账户转账、并发验签、原子状态落库、分叉恢复与以太坊虚拟机（Ethereum Virtual Machine，EVM）合约部署和执行。
 
-修改前阅读 [MODULE_GUIDE.md](MODULE_GUIDE.md)。合约操作与分叉规则见 [EVM_GUIDE.md](EVM_GUIDE.md)，最新性能测试见 [十节点吞吐量优化与复测](reports/2026-09-30-tps-opt/REPORT.md)，合约接入测试见 [分叉与 EVM 报告](reports/2026-09-16-fork-evm/REPORT.md)。
+修改前阅读 [MODULE_GUIDE.md](MODULE_GUIDE.md)。合约操作与分叉规则见 [EVM_GUIDE.md](EVM_GUIDE.md)，最新性能测试见 [传播、同步与执行优化](reports/2026-10-13-throughput/REPORT.md)，合约接入测试见 [分叉与 EVM 报告](reports/2026-09-16-fork-evm/REPORT.md)。
 
 同父块候选按交易数、哈希排序。分支按累计有效交易数、高度和链头哈希比较，在 256 块窗口内通过原子回滚与重放收敛。每秒交易数（Transactions Per Second，TPS）统计完成执行与同步落盘的交易。
 
@@ -21,7 +21,7 @@ cmake --build build -j 4
 ctest --test-dir build --output-on-failure
 ```
 
-八项测试覆盖原生交易、账户状态、网络复制、钱包、分叉恢复、EVM 合约及实验测量接口。全部使用新数据库。运行前安装 `Experiments/requirements.txt`，其中进程采样使用 `psutil`，图表使用 `matplotlib`。再次运行网络测试时，通过 `CHAIN_TEST_DATA_ROOT` 设置新的测试目录。
+九项测试覆盖原生交易、账户状态、网络复制、钱包、分叉恢复、EVM 合约及实验测量接口。全部使用新数据库。运行前安装 `Experiments/requirements.txt`，其中进程采样使用 `psutil`，图表使用 `matplotlib`。再次运行网络测试时，通过 `CHAIN_TEST_DATA_ROOT` 设置新的测试目录。
 
 Ubuntu 24.04 构建与回归入口：
 
@@ -108,7 +108,7 @@ build/sender.exe --wallet secrets/alice.wallet.json --receiver <Bob公钥> --amo
 
 | 参数 | 默认 | 作用 |
 |---|---:|---|
-| `--data` | `data/accounts-v4` | 账户和合约数据库目录 |
+| `--data` | `data/accounts-v5` | 账户和合约数据库目录 |
 | `--genesis` | 已有库读取保存的配置；新库空分配 | 初始资金和基础费 |
 | `--io-threads` | 4 | 网络输入输出（Input/Output，I/O）线程 |
 | `--verify-threads` | 8 | 签名验证线程 |
@@ -145,8 +145,8 @@ python Test/CompareAccounts.py --before-bin <旧版本构建目录> --after-bin 
 
 ## 数据格式与升级
 
-当前使用 `SchemaVersion=4`。普通交易保持 176 字节。EVM 输入附加在区块交易区之后并参与交易哈希与签名，单块最多 2 MiB。原生账户、合约账户、回执和区块回滚记录共同保存。
+当前使用 `SchemaVersion=5`。普通交易保持 176 字节。EVM 输入附加在区块交易区之后并参与交易哈希与签名，单块最多 2 MiB。原生账户、合约账户、回执和区块回滚记录共同保存。合约账户元数据、代码与存储槽独立保存，提交只写变化项。
 
-本版本使用新的数据目录和创世配置，保留版本 2、3 的已有账本。历史性能资料按原日期保留。
+本版本使用新的数据目录和创世配置，保留版本 2、3、4 的已有账本。历史性能资料按原日期保留。
 
 后续重点：萤火虫同步与共同轮次、最终确认条件、原生交易的链标识签名、候选公平性、合约执行优化和多机测试。Git 提交和同步流程见 [GIT_SYNC.md](GIT_SYNC.md)。

@@ -3,10 +3,14 @@
 using ForkEntry=pair<Block,vector<uint8_t>>;
 map<array<uint8_t,32>,shared_ptr<const ForkEntry>> forkBlocks;
 mutex forkMutex;
+bool HasForkBlock(const array<uint8_t,32>& hash,const vector<uint8_t>& data) {
+    lock_guard lock(forkMutex);auto found=forkBlocks.find(hash);
+    return found!=forkBlocks.end()&&found->second->second==data;
+}
 size_t forkBytes=0;
 atomic<bool> forkReady{false};
-constexpr size_t maxForkBytes=64*1024*1024,maxForkBlocks=256;
-bool QueueForkBlock(Block block,vector<uint8_t> data) {
+constexpr size_t maxForkBytes=512*1024*1024,maxForkBlocks=256;
+bool QueueForkBlock(Block block,vector<uint8_t> data,bool notify=true) {
     {
         lock_guard lock(forkMutex);
         if (forkBlocks.count(block.hash)) return false;
@@ -17,9 +21,10 @@ bool QueueForkBlock(Block block,vector<uint8_t> data) {
         }
         auto hash=block.hash; forkBytes+=data.size();
         forkBlocks.emplace(hash,make_shared<ForkEntry>(std::move(block),std::move(data)));
-        forkReady=true;
+        if (notify) forkReady=true;
     }
-    WakeMainLoop(); return true;
+    if (notify) WakeMainLoop();
+    return true;
 }
 vector<uint8_t> FindForkBlock(const array<uint8_t,32>& hash) {
     auto saved=DBReadBlockByHash(hash);
@@ -61,13 +66,28 @@ void UndoForkBlock(const array<uint8_t,32>& hash) {
             } else if (key.starts_with("evm/")&&key.size()==24) {
                 evmc::address address; memcpy(address.bytes,key.data()+4,20);
                 if (!value) evmState.get_accounts().erase(address);
-                else evmState.get_accounts()[address]=UnserializeEvmAccount(value->ToString());
+                else {
+                    auto header=UnserializeEvmAccount(value->ToString()); auto& account=evmState.get_accounts()[address];
+                    account.nonce=header.nonce; account.balance=header.balance;
+                }
+            } else if (key.starts_with("evm-code/")&&key.size()==29) {
+                evmc::address address; memcpy(address.bytes,key.data()+9,20);
+                if (value) evmState.get_accounts()[address].code.assign(reinterpret_cast<const uint8_t*>(value->data()),value->size());
+                else if (auto it=evmState.get_accounts().find(address);it!=evmState.get_accounts().end()) it->second.code.clear();
+            } else if (key.starts_with("evm-slot/")&&key.size()==61) {
+                evmc::address address; evmc::bytes32 slot,word;
+                memcpy(address.bytes,key.data()+9,20); memcpy(slot.bytes,key.data()+29,32);
+                if (value) {
+                    if (value->size()!=32) throw runtime_error("Invalid EVM slot undo");
+                    memcpy(word.bytes,value->data(),32); evmState.get_accounts()[address].storage[slot]={word,word,EVMC_ACCESS_COLD};
+                } else if (auto it=evmState.get_accounts().find(address);it!=evmState.get_accounts().end()) it->second.storage.erase(slot);
             }
         }
         void Put(const rocksdb::Slice& key,const rocksdb::Slice& value) override { branchBatch->Put(key,value); Update(key,&value); }
         void Delete(const rocksdb::Slice& key) override { branchBatch->Delete(key); Update(key,nullptr); }
     } restore;
     CheckDBStatus(undo.Iterate(&restore));
+    InvalidateExecutionCache();
     userBurned=DBReadNumber("UserBurned");
 }
 // 更高的累计有效交易数优先；同数比较高度，最后选择链头哈希较小者。
@@ -96,6 +116,7 @@ int AdoptFork(const ForkEntry& candidate,vector<vector<uint8_t>>& detached) {
     auto score=prefix+transactions,oldScore=DBReadNumber("ChainTx");
     auto head=DBReadCurrentBlock();
     if (score<oldScore||(score==oldScore&&(candidate.first.height<oldHeight||(candidate.first.height==oldHeight&&candidate.first.hash>=head)))) return 0;
+    InvalidateExecutionCache();
     auto savedUsers=users;
     auto savedEvm=CopyEvmState(evmState);
     auto savedBurned=userBurned;
@@ -129,6 +150,11 @@ bool ProcessForks() {
     if (!forkReady.exchange(false)) return false;
     vector<shared_ptr<const ForkEntry>> candidates;
     { lock_guard lock(forkMutex); for (const auto& [hash,entry]:forkBlocks) candidates.push_back(entry); }
+    sort(candidates.begin(),candidates.end(),[](const auto& left,const auto& right) {
+        if (left->first.height!=right->first.height) return left->first.height>right->first.height;
+        if (left->first.txNum!=right->first.txNum) return left->first.txNum>right->first.txNum;
+        return left->first.hash<right->first.hash;
+    });
     bool adopted=false;
     for (const auto& entry:candidates) {
         vector<vector<uint8_t>> detached;
@@ -140,11 +166,20 @@ bool ProcessForks() {
         RefreshTxPool();
         for (const auto& data:detached) {
             Block block=UnSerializeBlock(data);
-            for (size_t i=0;i<block.txs.size();i++) {
-                vector<uint8_t> tx(block.txs[i].begin(),block.txs[i].end());
-                if (block.evm.count(i)) tx.insert(tx.end(),block.evm.at(i).begin(),block.evm.at(i).end());
-                if (tx.size()==176) ProcessTxPackage(tx); else ProcessEvmTx(tx);
+            vector<uint8_t> native;
+            vector<vector<uint8_t>> contracts;
+            {
+                shared_lock lock(dbCommitMutex);
+                for (size_t i=0;i<block.txs.size();i++) {
+                    const auto& tx=block.txs[i]; array<uint8_t,32> key; memcpy(key.data(),tx.data(),32);
+                    if (ReadU64(tx.data()+72)<=GetUser(users,key).nonce) continue;
+                    if (auto payload=block.evm.find(i);payload!=block.evm.end()) {
+                        contracts.emplace_back(tx.begin(),tx.end()); contracts.back().insert(contracts.back().end(),payload->second.begin(),payload->second.end());
+                    } else native.insert(native.end(),tx.begin(),tx.end());
+                }
             }
+            if (!native.empty()) ProcessTxPackage(native);
+            for (const auto& tx:contracts) ProcessEvmTx(tx);
         }
         {
             lock_guard lock(blockBufferLock);

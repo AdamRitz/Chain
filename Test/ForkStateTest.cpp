@@ -83,6 +83,31 @@ int main(int argc,char** argv) {
         Require(supply+userBurned==genesisSupply,"supply after reorganization");
         db.reset(); InitDB(root.string()); GenerateGenesisBlock();
         Require(DBReadCurrentBlock()==better.first.hash&&EvmHex({evmState.get(address).code.data(),evmState.get(address).code.size()})=="5f00","restart after reorganization");
-        db.reset(); cout<<"Fork state and write-failure checks passed\n"; return 0;
+        db.reset();
+        // 70 个满块超过旧的 64 MiB 缓存，验证长分支的父块保留及整体回放。
+        SetGenesisUsers({{"base_fee",0},{"accounts",nlohmann::json::array({{{"public_key",U32ToHex(owner.public_key)},{"balance",2000000}}})}});
+        InitDB((root/"large-fork").string()); GenerateGenesisBlock(); auto parent=DBReadCurrentBlock();
+        Block old;old.height=2;old.previousHash=parent;old.txs={GenerateTx(owner.public_key,third.public_key,1,1,owner)};
+        old.merkleRoot=MerkleCompute(vector<array<uint8_t,32>>{GetTransactionHash(old.txs[0])});auto oldData=SerializeBlockALL(old);
+        Require(CommitBlock(old,oldData),"large-fork initial state");
+        blockVerifyNum=4;blockVerifyThreads=make_unique<boost::asio::thread_pool>(4);
+        array<uint8_t,32> target{};
+        for (uint64_t i=0;i<70;i++) {
+            Block incoming;incoming.previousHash=parent;incoming.height=i+2;vector<array<uint8_t,32>> hashes;
+            for (uint64_t j=1;j<=6000;j++) {
+                incoming.txs.push_back(GenerateTx(owner.public_key,third.public_key,2,i*6000+j,owner));
+                hashes.push_back(GetTransactionHash(incoming.txs.back()));
+            }
+            incoming.merkleRoot=MerkleCompute(hashes);auto bytes=SerializeBlockALL(incoming);Require(VerifyBlock(bytes),"large branch signatures");
+            parent=incoming.hash;target=parent;Require(QueueForkBlock(std::move(incoming),std::move(bytes),false),"retain large branch parent");
+        }
+        blockVerifyThreads->join();blockVerifyThreads.reset();
+        Require(forkBytes>64*1024*1024&&forkBlocks.size()==70,"complete branch exceeds former byte budget");
+        detached.clear();Require(AdoptFork(*forkBlocks.at(target),detached)==1,"large branch adopts atomically");
+        Require(DBReadCurrentBlock()==target&&DBReadNumber("ChainTx")==420000&&GetUser(users,owner.public_key).nonce==420000,
+                "large branch head and ordered execution");
+        Require(GetUser(users,owner.public_key).balance==1160000&&GetUser(users,third.public_key).balance==840000,"large branch balances");
+        db.reset();InitDB((root/"large-fork").string());Require(DBReadCurrentBlock()==target,"large branch restart");
+        db.reset(); cout<<"Fork state, large-branch and write-failure checks passed\n"; return 0;
     } catch (const exception& e) { cerr<<e.what()<<endl; return 1; }
 }

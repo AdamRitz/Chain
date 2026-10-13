@@ -97,6 +97,22 @@ def TestEvm(binary,work):
         assert Receipt(a['port'],callHash)==Receipt(b['port'],callHash)
         assert GetAccount(a['port'],key)==GetAccount(b['port'],key)
         checks.append('follower independently replays code storage fees and receipts')
+        calls=[]
+        for nonce in [13,14]:
+            prepared=work/f'call-{nonce}.bin'
+            Run([binary/ExeName('evm_sender'),'--wallet',wallet,'--genesis',genesis,'--nonce',nonce,
+                      '--call',solidityAddress,'--input',counterMethods['Increment()'],'--prepare',prepared])
+            raw=prepared.read_bytes()
+            calls.append((raw[4+80:4+112].hex(),raw))
+        SendFrame(a['port'],18,b''.join(raw for _,raw in calls))
+        for value,(tx,_) in zip([3,4],calls):
+            assert int(WaitReceipt(a['port'],tx)['output'],16)==value
+        head=GetStats(a['port'])['head']
+        follower=WaitStats(b['port'],lambda s:s['head']==head)
+        assert follower['compact_reconstructed']>0 and follower['missing_transactions']>0
+        assert Contract(a['port'],solidityAddress)==Contract(b['port'],solidityAddress)
+        assert GetStats(a['port'])['execution_cache_hits']>0
+        checks.append('compact announcement fetches missing EVM transactions and replays consecutive calls')
         balance=GetAccount(a['port'],key)
         StopNode(a); nodes.remove(a)
         a=StartNode(binary,work,'producer',genesis=genesis); nodes.append(a)
@@ -106,8 +122,8 @@ def TestEvm(binary,work):
         # Partition two producers at an identical contract state, then write different values.
         StopNode(b); nodes.remove(b)
         b=StartNode(binary,work,'follower',genesis=genesis); nodes.append(b)
-        leftHash,left=Submit(a,13,call=solidityAddress,input=counterMethods['Set(uint256)']+f'{7:064x}')
-        rightHash,right=Submit(b,13,call=solidityAddress,input=counterMethods['Set(uint256)']+f'{9:064x}')
+        leftHash,left=Submit(a,15,call=solidityAddress,input=counterMethods['Set(uint256)']+f'{7:064x}')
+        rightHash,right=Submit(b,15,call=solidityAddress,input=counterMethods['Set(uint256)']+f'{9:064x}')
         leftHead=GetStats(a['port'])['head']; rightHead=GetStats(b['port'])['head']
         assert leftHead!=rightHead
         expectedHead=min(leftHead,rightHead)

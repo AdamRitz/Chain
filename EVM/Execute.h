@@ -42,15 +42,31 @@ EvmAccount UnserializeEvmAccount(const string& value) {
     EvmAccount account;
     account.balance=intx::from_string<intx::uint256>(saved.at("balance").get<string>().c_str());
     account.nonce=saved.at("nonce").get<uint64_t>();
-    auto code=EvmBytes(saved.at("code").get<string>());
+    auto code=EvmBytes(saved.value("code",string{}));
     account.code.assign(code.data(),code.size());
-    for (const auto& [key,text]:saved.at("storage").items()) {
+    auto storage=saved.value("storage",nlohmann::json::object());
+    for (const auto& [key,text]:storage.items()) {
         auto k=HexToU32(key),v=HexToU32(text.get<string>());
         evmc::bytes32 index,word;
         memcpy(index.bytes,k.data(),32); memcpy(word.bytes,v.data(),32);
         account.storage[index]={word,word,EVMC_ACCESS_COLD};
     }
     return account;
+}
+string SerializeEvmHeader(const EvmAccount& account) {
+    return nlohmann::json({{"balance",intx::to_string(account.balance)},{"nonce",account.nonce}}).dump();
+}
+void ApplyEvmChanges(EvmState& changes) {
+    for (const auto& address:changes.GetDeleted()) evmState.get_accounts().erase(address);
+    for (auto& [address,account]:changes.get_accounts()) {
+        auto& target=evmState.get_accounts()[address];
+        if (changes.GetCleared().count(address)) target.storage.clear();
+        target.balance=account.balance; target.nonce=account.nonce; target.code=std::move(account.code);
+        for (const auto& [key,value]:account.storage) {
+            if (value.current==evmc::bytes32{}) target.storage.erase(key);
+            else target.storage[key]={value.current,value.current,EVMC_ACCESS_COLD};
+        }
+    }
 }
 bool CheckEvmUserTx(const User& user,span<const uint8_t> tx,span<const uint8_t> payload,bool pending=false) {
     if (!ValidEvmPayload(payload)||memcmp(payload.data()+13,genesisRoot.data(),32)) return false;
@@ -76,7 +92,7 @@ bool ExecuteEvmTx(UserMap& changed,span<const uint8_t> tx,span<const uint8_t> pa
     memcpy(key.data(),tx.data(),32); memcpy(hash.data(),tx.data()+80,32);
     auto user=GetUser(users,changed,key);
     if (!CheckEvmUserTx(user,tx,payload)) return false;
-    if (!execution.active) { execution.state=CopyEvmState(evmState); execution.active=true; }
+    if (!execution.active) { execution.state.SetBase(evmState); execution.active=true; }
     auto origin=GetEvmAddress(key);
     auto& sender=execution.state.get_or_insert(origin);
     if (sender.balance>UINT64_MAX-user.balance) return false;

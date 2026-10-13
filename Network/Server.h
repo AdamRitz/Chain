@@ -24,8 +24,11 @@ bool ReserveVerify(size_t num) {
     while (peak<current+num&&!peakPendingVerify.compare_exchange_weak(peak,current+num)) {}
     return true;
 }
-awaitable<void> ProcessMessage(const shared_ptr<Peer>& peer,uint8_t type,vector<uint8_t> data) {
-    auto num=(type==1||type==10)?data.size()/176:(type==17||type==18)?1:max(size_t(1),min(size_t(6000),(data.size()-112)/176));
+awaitable<void> ProcessMessage(shared_ptr<Peer> peer,uint8_t type,vector<uint8_t> data) {
+    vector<vector<uint8_t>> blocks;
+    if (type==43&&!ReadBlockBatch(data,blocks)) { ClosePeer(peer); co_return; }
+    auto num=(type==1||type==10)?data.size()/176:(type==17||type==18||type==43)?1:max(size_t(1),min(size_t(6000),(data.size()-112)/176));
+    if (type==43) for (const auto& block:blocks) num+=min(uint64_t(6000),ReadU64(block.data()+72));
     if (type==18) {
         num=0; size_t offset=0;
         while (offset<data.size()) {
@@ -53,30 +56,46 @@ awaitable<void> ProcessMessage(const shared_ptr<Peer>& peer,uint8_t type,vector<
         co_await timer.async_wait(use_awaitable);
     }
     auto messageBytes=data.size();
-    post(*verifyThreads,[peer,type,num,messageBytes,queuedAt,data=std::move(data)]() mutable {
+    post(*verifyThreads,[peer,type,num,messageBytes,queuedAt,data=std::move(data),blocks=std::move(blocks)]() mutable {
         queueWaitNs+=GetSteadyTime()-queuedAt;
         try {
             if (type==1||type==10) {
                 auto added=ProcessTxPackage(data);
-                if (added&&(!produceBlocks||relayTransactions)) BroadcastData(GenerateMessage(10,data));
+                if (added&&(!produceBlocks||relayTransactions)) BroadcastData(GenerateMessage(10,data),PeerId(peer));
             } else if (type==17) {
-                if (ProcessEvmTx(data)&&(!produceBlocks||relayTransactions)) BroadcastData(GenerateMessage(17,data));
+                if (ProcessEvmTx(data)&&(!produceBlocks||relayTransactions)) BroadcastData(GenerateMessage(17,data),PeerId(peer));
             } else if (type==18) {
                 size_t offset=0;
                 while (data.size()-offset>=4) {
                     auto size=ReadU32(data.data()+offset); offset+=4;
                     if (size<221||size>176+45+maxEvmInput||size>data.size()-offset) break;
                     auto tx=span<const uint8_t>(data).subspan(offset,size);
-                    if (ProcessEvmTx(tx)&&(!produceBlocks||relayTransactions)) BroadcastData(GenerateMessage(17,tx));
+                    if (ProcessEvmTx(tx)&&(!produceBlocks||relayTransactions)) BroadcastData(GenerateMessage(17,tx),PeerId(peer));
                     offset+=size;
                 }
             } else {
-                array<uint8_t,32> hash; memcpy(hash.data(),data.data()+80,32);
-                auto accepted=ProcessBlock(std::move(data));
-                if (peer->port&&(accepted||!FindForkBlock(hash).empty())) {
-                    auto missing=FindMissingParent(hash);
-                    if (missing!=array<uint8_t,32>{}) SendData(peer,GenerateMessage(21,missing));
+                if (type!=43) blocks.push_back(std::move(data));
+                bool queuedBatch=false;
+                for (auto& block:blocks) {
+                    array<uint8_t,32> hash; memcpy(hash.data(),block.data()+80,32);
+                    bool accepted=false;
+                    if (type==43) {
+                        Block parsed; auto height=ReadU64(block.data()+64);
+                        uint64_t current; bool known;
+                        { shared_lock lock(dbCommitMutex);current=DBReadBlockHeight();known=DBReadBlockByHeight(to_string(height))==block; }
+                        if (!known&&height>=2&&height<=current+256&&current<=height+256&&VerifyBlock(block,&parsed)) {
+                            accepted=QueueForkBlock(std::move(parsed),std::move(block),false); queuedBatch|=accepted;
+                        }
+                    } else accepted=ProcessBlock(std::move(block));
+                    CompleteBlockReceive(hash);
+                    if (peer->port&&(accepted||!FindForkBlock(hash).empty())) {
+                        RememberBlockSource(hash,PeerId(peer));
+                        if (type==43) syncBlocks++;
+                        auto missing=FindMissingParent(hash);
+                        if (missing!=array<uint8_t,32>{}) SendData(peer,GenerateMessage(21,missing));
+                    }
                 }
+                if (queuedBatch) { forkReady=true; WakeMainLoop(); }
             }
         } catch (const exception& e) {
             spdlog::error("Verification worker: {}",e.what());
@@ -101,6 +120,16 @@ awaitable<void> session(uint64_t key,shared_ptr<Peer> peer) {
         if (size&&!co_await ReadData(peer,buffer(data))) co_return;
         networkBytes+=size+5;
         if (type==1||type==10||type==2||type==7||type==17||type==18||type==22) {
+            co_await ProcessMessage(peer,type,std::move(data));
+        } else if (type==39&&peer->port) {
+            ReceiveCompactBlock(peer,data);
+        } else if (type==40&&peer->port) {
+            co_await SendMissingTransactions(peer,data);
+        } else if (type==41&&peer->port) {
+            ReceiveMissingTransactions(peer,data);
+        } else if (type==42&&peer->port) {
+            co_await SendBlockBatch(peer,data);
+        } else if (type==43&&peer->compact) {
             co_await ProcessMessage(peer,type,std::move(data));
         } else if (type==27) {
             auto received=GetLogicalTimeUs();
@@ -216,7 +245,9 @@ awaitable<void> session(uint64_t key,shared_ptr<Peer> peer) {
             peer->remoteHeight=ReadU64(data.data()+64);
             uint64_t height; array<uint8_t,32> local;
             { shared_lock lock(dbCommitMutex); height=DBReadBlockHeight(); local=DBReadCurrentBlock(); }
-            if (local!=remote&&peer->remoteHeight<=height+256) SendData(peer,GenerateMessage(21,remote));
+            if (local!=remote&&(peer->remoteHeight<=height||peer->remoteHeight-height<=256)&&peer->requestedHead!=remote) {
+                peer->requestedHead=remote; SendData(peer,GenerateMessage(21,remote));
+            }
             if (!peer->syncing&&peer->remoteHeight>height) {
                 peer->syncing=true;
                 co_spawn(peer->strand,SyncBlock(peer),[peer](exception_ptr error){if (error) PeerError(peer,error);});
@@ -250,8 +281,9 @@ awaitable<void> session(uint64_t key,shared_ptr<Peer> peer) {
 awaitable<void> AcceptPeer(shared_ptr<Peer> peer) {
     array<uint8_t,1> type;
     if (!co_await ReadData(peer,buffer(type),3)) co_return;
-    if (type[0]!=1&&type[0]!=2) { ClosePeer(peer); co_return; }
-    if (type[0]==1) {
+    if (type[0]!=1&&type[0]!=2&&type[0]!=3) { ClosePeer(peer); co_return; }
+    if (type[0]==1||type[0]==3) {
+        peer->compact=type[0]==3;
         array<uint8_t,2> port;
         if (!co_await ReadData(peer,buffer(port),3)) co_return;
         peer->port=uint16_t(port[0])|(uint16_t(port[1])<<8);

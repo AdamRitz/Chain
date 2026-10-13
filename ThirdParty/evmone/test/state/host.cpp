@@ -18,10 +18,7 @@ bool Host::account_exists(const address& addr) const noexcept
 
 bytes32 Host::get_storage(const address& addr, const bytes32& key) const noexcept
 {
-    const auto& acc = m_state.get(addr);
-    if (const auto it = acc.storage.find(key); it != acc.storage.end())
-        return it->second.current;
-    return {};
+    return m_state.GetStorage(addr, key).current;
 }
 
 evmc_storage_status Host::set_storage(
@@ -30,7 +27,7 @@ evmc_storage_status Host::set_storage(
     // Follow EVMC documentation https://evmc.ethereum.org/storagestatus.html#autotoc_md3
     // and EIP-2200 specification https://eips.ethereum.org/EIPS/eip-2200.
 
-    auto& storage_slot = m_state.get(addr).storage[key];
+    auto& storage_slot = m_state.GetStorage(addr, key);
     const auto& [current, original, _] = storage_slot;
 
     const auto dirty = original != current;
@@ -283,7 +280,7 @@ evmc::Result Host::create(const evmc_message& msg) noexcept
     const bool new_acc_exists = new_acc != nullptr;
     if (!new_acc_exists)
         new_acc = &m_state.insert(msg.recipient);
-    else if (is_create_collision(*new_acc))
+    else if (is_create_collision(*new_acc) || m_state.HasStorage(msg.recipient))
         return evmc::Result{EVMC_FAILURE};  // TODO: Add EVMC errors for creation failures.
     m_state.journal_create(msg.recipient, new_acc_exists);
 
@@ -486,7 +483,7 @@ evmc_access_status Host::access_account(const address& addr) noexcept
 
 evmc_access_status Host::access_storage(const address& addr, const bytes32& key) noexcept
 {
-    auto& storage_slot = m_state.get(addr).storage[key];
+    auto& storage_slot = m_state.GetStorage(addr, key);
     m_state.journal_storage_change(addr, key, storage_slot);
     return std::exchange(storage_slot.access_status, EVMC_ACCESS_WARM);
 }
