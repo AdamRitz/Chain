@@ -47,6 +47,7 @@ atomic<uint64_t> receivedTx{0},validTx{0},invalidTx{0},duplicateTx{0},rejectedTx
 atomic<uint64_t> invalidUserTx{0},conflictTx{0};
 atomic<uint64_t> txCommitWaitNs{0},txReadNs{0},txPoolWaitNs{0};
 atomic<uint64_t> verifyNs{0},poolNs{0},committedTx{0},firstTxTime{0},lastCommitTime{0};
+atomic<uint64_t> gapAcceptedTx{0},poolBusyTx{0};
 atomic<uint64_t> signatureChecks{0},signatureCacheHits{0},poolRefreshNs{0};
 struct VerifiedTransactions {
     mutex lock;
@@ -88,6 +89,17 @@ void DropUserPoolFrom(const array<uint8_t,32>& key,uint64_t nonce) {
     if (item.txs.empty()) txUserPool.erase(found);
 }
 
+bool HasPoolCapacity(const array<uint8_t,32>& key,uint64_t nonce,uint64_t confirmed,size_t payloadBytes=0) {
+    if (txpool.size()>=maxPoolTx||payloadBytes>64*1024*1024-evmPoolBytes) return false;
+    auto found=txUserPool.find(key);
+    auto ready=found==txUserPool.end()?confirmed:max(confirmed,found->second.readyNonce);
+    bool gap=ready<UINT64_MAX&&nonce==ready+1;
+    auto normal=maxPoolTx-max(size_t(1),maxPoolTx/10);
+    if (!gap&&txpool.size()>=normal) return false;
+    if (gap&&txpool.size()>=normal) gapAcceptedTx++;
+    return true;
+}
+enum TxStatus:uint8_t { TxAccepted=0,TxKnown=1,TxBusy=2,TxInvalid=3,TxConflict=4 };
 // ------------------------------------------------序列化------------------------------------------------
 array<uint8_t,80> SerializeTxForHash(const Transaction& tx) {
     array<uint8_t,80> data;
@@ -162,36 +174,38 @@ bool VerifyTransaction(const array<uint8_t,176>& data,span<const uint8_t> payloa
 
 // ------------------------------------------------交易处理入口------------------------------------------------
 // 锁外批量验签，锁内检查账户状态并更新交易池。
-size_t ProcessTxPackage(span<const uint8_t> data) {
+size_t ProcessTxPackage(span<const uint8_t> data,vector<uint8_t>* results=nullptr) {
     if (data.empty()||data.size()%176!=0||data.size()/176>6000) return 0;
+    if (results) results->assign(data.size()/176,TxInvalid);
     uint64_t expected=0;
     firstTxTime.compare_exchange_strong(expected,GetSteadyTime());
     receivedTx+=data.size()/176;
-    vector<pair<array<uint8_t,32>,array<uint8_t,176>>> checked;
+    struct CheckedTx { array<uint8_t,32> hash; array<uint8_t,176> tx; size_t index; };
+    vector<CheckedTx> checked;
     checked.reserve(data.size()/176);
     auto start=GetSteadyTime();
     for (size_t offset=0;offset<data.size();offset+=176) {
         array<uint8_t,176> tx;
         memcpy(tx.data(),data.data()+offset,176);
         if (!VerifyTransaction(tx)) { invalidTx++; continue; }
-        checked.emplace_back(GetTransactionHash(tx),tx);
+        checked.push_back({GetTransactionHash(tx),tx,offset/176});
     }
     verifyNs+=GetSteadyTime()-start;
     start=GetSteadyTime();
     size_t added=0;
     // 查询可并发；提交拿独占锁，防止确认与重新入池之间出现竞态。
-    shared_lock commitLock(dbCommitMutex);
+    shared_lock commitLock(poolUsersMutex);
     auto readStart=GetSteadyTime();
     txCommitWaitNs+=readStart-start;
-    vector<pair<array<uint8_t,32>,array<uint8_t,176>>> fresh;
+    vector<CheckedTx> fresh;
     fresh.reserve(checked.size());
     for (auto& item:checked) {
         array<uint8_t,32> key;
-        memcpy(key.data(),item.second.data(),32);
-        auto user=GetUser(users,key);
-        auto amount=ReadU64(item.second.data()+64),nonce=ReadU64(item.second.data()+72);
-        // 正常新交易用内存账户序号判断；只有过期序号需要查历史哈希。
-        if (nonce<=user.nonce&&DBHasTx(item.first)) duplicateTx++;
+        memcpy(key.data(),item.tx.data(),32);
+        auto user=GetUser(poolUsers,key);
+        auto amount=ReadU64(item.tx.data()+64),nonce=ReadU64(item.tx.data()+72);
+        // 接收使用已发布账户镜像，写盘期间继续验证并更新池。
+        if (nonce<=user.nonce&&DBHasTx(item.hash)) { duplicateTx++; if (results) (*results)[item.index]=TxKnown; }
         else if (!CheckUserTx(user,amount,nonce,true)) { invalidUserTx++; invalidTx++; }
         else fresh.push_back(std::move(item));
     }
@@ -200,21 +214,22 @@ size_t ProcessTxPackage(span<const uint8_t> data) {
     {
         lock_guard lock(txpoolMutex);
         txPoolWaitNs+=GetSteadyTime()-poolStart;
-        for (auto& [hash,tx]:fresh) {
-            if (txpool.count(hash)!=0) { duplicateTx++; continue; }
-            if (txpool.size()>=maxPoolTx) { rejectedTx++; continue; }
+        for (auto& [hash,tx,index]:fresh) {
+            if (txpool.count(hash)!=0) { duplicateTx++; if (results) (*results)[index]=TxKnown; continue; }
             array<uint8_t,32> key;
             memcpy(key.data(),tx.data(),32);
             auto nonce=ReadU64(tx.data()+72);
-            auto confirmed=GetUser(users,key).nonce;
+            auto confirmed=GetUser(poolUsers,key).nonce;
             PruneUserPool(key,confirmed);
+            auto found=txUserPool.find(key);
+            if (found!=txUserPool.end()&&found->second.txs.count(nonce)) { conflictTx++; if (results) (*results)[index]=TxConflict; continue; }
+            if (!HasPoolCapacity(key,nonce,confirmed)) { rejectedTx++; poolBusyTx++; if (results) (*results)[index]=TxBusy; continue; }
             auto& pending=txUserPool[key];
-            if (pending.txs.count(nonce)) { conflictTx++; continue; }
             pending.txs.emplace(nonce,hash);
             pending.readyNonce=max(pending.readyNonce,confirmed);
             while (pending.readyNonce<UINT64_MAX&&pending.txs.count(pending.readyNonce+1)) { pending.readyNonce++; readyPoolTx++; }
             txpool.emplace(hash,std::move(tx));
-            added++;
+            added++; if (results) (*results)[index]=TxAccepted;
         }
     }
     validTx+=added;
@@ -233,17 +248,18 @@ bool ProcessEvmTx(span<const uint8_t> data) {
     verifyNs+=GetSteadyTime()-start;
     auto hash=GetTransactionHash(tx);
     array<uint8_t,32> key; memcpy(key.data(),tx.data(),32);
-    shared_lock commitLock(dbCommitMutex);
-    auto user=GetUser(users,key);
+    shared_lock commitLock(poolUsersMutex);
+    auto user=GetUser(poolUsers,key);
     if (!CheckEvmUserTx(user,tx,payload,true)) { invalidUserTx++; invalidTx++; return false; }
     {
         lock_guard lock(txpoolMutex);
         if (txpool.count(hash)) { duplicateTx++; return false; }
-        if (txpool.size()>=maxPoolTx||evmPoolBytes+payload.size()>64*1024*1024) { rejectedTx++; return false; }
         auto nonce=ReadU64(tx.data()+72);
         PruneUserPool(key,user.nonce);
+        auto found=txUserPool.find(key);
+        if (found!=txUserPool.end()&&found->second.txs.count(nonce)) { conflictTx++; return false; }
+        if (!HasPoolCapacity(key,nonce,user.nonce,payload.size())) { rejectedTx++; poolBusyTx++; return false; }
         auto& pending=txUserPool[key];
-        if (pending.txs.count(nonce)) { conflictTx++; return false; }
         pending.txs.emplace(nonce,hash);
         pending.readyNonce=max(pending.readyNonce,user.nonce);
         while (pending.readyNonce<UINT64_MAX&&pending.txs.count(pending.readyNonce+1)) { pending.readyNonce++; readyPoolTx++; }

@@ -44,6 +44,8 @@ bool VerifyMessageSize(uint8_t type,uint32_t size) {
         case 41:return size>=216;
         case 42:return size==10;
         case 43:return size>=118;
+        case 44:return size>0&&size%176==0&&size<=6000*176;
+        case 45:return size>0&&size<=6000;
         default:return false;
     }
 }

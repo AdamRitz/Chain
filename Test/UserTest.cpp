@@ -108,6 +108,7 @@ int main(int argc,char* argv[]) {
         db.reset(readOnly);
         RequireThrow([&]{CommitBlock(UnSerializeBlock(fifthBlock),fifthBlock);},"read-only database rejects write");
         Require(users==before&&userBurned==burned,"failed write preserves account cache and fees");
+        Require(poolUsers==before,"failed write preserves published admission accounts");
         db.reset();
         genesisConfigured=false;
         InitDB(path,true);

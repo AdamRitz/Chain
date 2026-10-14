@@ -15,19 +15,25 @@ awaitable<bool> ReadData(const shared_ptr<Peer>& peer,mutable_buffer data,int ti
     if (ec) { ClosePeer(peer); co_return false; }
     co_return true;
 }
-bool ReserveVerify(size_t num) {
-    auto current=pendingVerify.load();
+bool ReserveVerify(size_t num,bool block=false) {
+    auto& pending=block?pendingBlockVerify:pendingTxVerify;
+    auto limit=block?size_t(24000):maxPendingVerify;
+    auto current=pending.load();
     do {
-        if (num>maxPendingVerify||current>maxPendingVerify-num) return false;
-    } while (!pendingVerify.compare_exchange_weak(current,current+num));
+        if (num>limit||current>limit-num) return false;
+    } while (!pending.compare_exchange_weak(current,current+num));
+    auto total=pendingVerify.fetch_add(num)+num;
     auto peak=peakPendingVerify.load();
-    while (peak<current+num&&!peakPendingVerify.compare_exchange_weak(peak,current+num)) {}
+    while (peak<total&&!peakPendingVerify.compare_exchange_weak(peak,total)) {}
     return true;
+}
+void ReleaseVerify(size_t num,bool block=false) {
+    (block?pendingBlockVerify:pendingTxVerify)-=num; pendingVerify-=num;
 }
 awaitable<void> ProcessMessage(shared_ptr<Peer> peer,uint8_t type,vector<uint8_t> data) {
     vector<vector<uint8_t>> blocks;
     if (type==43&&!ReadBlockBatch(data,blocks)) { ClosePeer(peer); co_return; }
-    auto num=(type==1||type==10)?data.size()/176:(type==17||type==18||type==43)?1:max(size_t(1),min(size_t(6000),(data.size()-112)/176));
+    auto num=(type==1||type==10||type==44)?data.size()/176:(type==17||type==18||type==43)?1:max(size_t(1),min(size_t(6000),(data.size()-112)/176));
     if (type==43) for (const auto& block:blocks) num+=min(uint64_t(6000),ReadU64(block.data()+72));
     if (type==18) {
         num=0; size_t offset=0;
@@ -38,6 +44,9 @@ awaitable<void> ProcessMessage(shared_ptr<Peer> peer,uint8_t type,vector<uint8_t
             offset+=length;
         }
     }
+    bool blockMessage=type!=1&&type!=10&&type!=17&&type!=18&&type!=44;
+    auto& byteCounter=blockMessage?pendingBlockBytes:pendingTxBytes;
+    auto byteLimit=blockMessage?size_t(16*1024*1024):size_t(48*1024*1024);
     steady_timer timer(co_await this_coro::executor);
     auto queuedAt=GetSteadyTime();
     uint64_t expected=0;
@@ -45,10 +54,11 @@ awaitable<void> ProcessMessage(shared_ptr<Peer> peer,uint8_t type,vector<uint8_t
     // 队列满时暂停该连接读取，利用 TCP 背压，不无限堆积异步任务。
     bool reserved=false;
     while (!reserved) {
-        auto bytes=pendingVerifyBytes.load();
-        if (bytes<=64*1024*1024-data.size()&&pendingVerifyBytes.compare_exchange_weak(bytes,bytes+data.size())) {
-            reserved=ReserveVerify(num);
-            if (!reserved) pendingVerifyBytes-=data.size();
+        auto bytes=byteCounter.load();
+        if (data.size()<=byteLimit&&bytes<=byteLimit-data.size()&&byteCounter.compare_exchange_weak(bytes,bytes+data.size())) {
+            reserved=ReserveVerify(num,blockMessage);
+            if (!reserved) byteCounter-=data.size();
+            else pendingVerifyBytes+=data.size();
         }
         if (reserved) break;
         if (peer->closed||!nodeRunning) co_return;
@@ -56,11 +66,15 @@ awaitable<void> ProcessMessage(shared_ptr<Peer> peer,uint8_t type,vector<uint8_t
         co_await timer.async_wait(use_awaitable);
     }
     auto messageBytes=data.size();
-    post(*verifyThreads,[peer,type,num,messageBytes,queuedAt,data=std::move(data),blocks=std::move(blocks)]() mutable {
-        queueWaitNs+=GetSteadyTime()-queuedAt;
+    auto& workers=blockMessage&&candidateThreads?*candidateThreads:*verifyThreads;
+    post(workers,[peer,type,num,messageBytes,queuedAt,blockMessage,data=std::move(data),blocks=std::move(blocks)]() mutable {
+        auto wait=GetSteadyTime()-queuedAt; queueWaitNs+=wait;
+        (blockMessage?blockQueueWaitNs:txQueueWaitNs)+=wait;
         try {
-            if (type==1||type==10) {
-                auto added=ProcessTxPackage(data);
+            if (type==1||type==10||type==44) {
+                vector<uint8_t> results;
+                auto added=ProcessTxPackage(data,type==44?&results:nullptr);
+                if (type==44) SendData(peer,GenerateMessage(45,results));
                 if (added&&(!produceBlocks||relayTransactions)) BroadcastData(GenerateMessage(10,data),PeerId(peer));
             } else if (type==17) {
                 if (ProcessEvmTx(data)&&(!produceBlocks||relayTransactions)) BroadcastData(GenerateMessage(17,data),PeerId(peer));
@@ -88,7 +102,7 @@ awaitable<void> ProcessMessage(shared_ptr<Peer> peer,uint8_t type,vector<uint8_t
                         }
                     } else accepted=ProcessBlock(std::move(block));
                     CompleteBlockReceive(hash);
-                    if (peer->port&&(accepted||!FindForkBlock(hash).empty())) {
+                    if (peer->port&&(accepted||KnowsForkBlock(hash))) {
                         RememberBlockSource(hash,PeerId(peer));
                         if (type==43) syncBlocks++;
                         auto missing=FindMissingParent(hash);
@@ -103,7 +117,8 @@ awaitable<void> ProcessMessage(shared_ptr<Peer> peer,uint8_t type,vector<uint8_t
             nodeRunning=false;
             if (nodeIO) nodeIO->stop();
         }
-        pendingVerify-=num;
+        ReleaseVerify(num,blockMessage);
+        (blockMessage?pendingBlockBytes:pendingTxBytes)-=messageBytes;
         pendingVerifyBytes-=messageBytes;
         WakeMainLoop();
     });
@@ -119,7 +134,7 @@ awaitable<void> session(uint64_t key,shared_ptr<Peer> peer) {
         vector<uint8_t> data(size);
         if (size&&!co_await ReadData(peer,buffer(data))) co_return;
         networkBytes+=size+5;
-        if (type==1||type==10||type==2||type==7||type==17||type==18||type==22) {
+        if (type==1||type==10||type==44||type==2||type==7||type==17||type==18||type==22) {
             co_await ProcessMessage(peer,type,std::move(data));
         } else if (type==39&&peer->port) {
             ReceiveCompactBlock(peer,data);

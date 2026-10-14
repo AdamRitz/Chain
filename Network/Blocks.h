@@ -137,8 +137,8 @@ void ReceiveCompactBlock(const shared_ptr<Peer>& peer,const vector<uint8_t>& dat
     if (hash!=calculated) return;
     { shared_lock lock(dbCommitMutex);
       auto current=DBReadBlockHeight();
-      if ((height>current&&height-current>256)||(current>height&&current-height>256)||!DBReadBlockByHash(hash).empty()) return; }
-    if (!FindForkBlock(hash).empty()) return;
+      if ((height>current&&height-current>256)||(current>height&&current-height>256)||!DBReadBlockHeader(hash).empty()) return; }
+    if (KnowsForkBlock(hash)) return;
     { lock_guard lock(blockBufferLock); for (const auto& slot:BlockBuffer) if (!slot.second.empty()&&slot.first.hash==hash) { relaySuppressed++; return; } }
     {
         lock_guard lock(relayMutex);

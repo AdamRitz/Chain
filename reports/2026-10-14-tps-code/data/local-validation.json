@@ -1,0 +1,85 @@
+{
+  "date": "2026-10-14",
+  "platform": "Windows",
+  "baseline_commit": "673ecab",
+  "build": "Release",
+  "compiler": "MinGW GCC 15.2.0",
+  "checks": [
+    {
+      "name": "ChainCorrectness",
+      "passed": true,
+      "seconds": 0.22
+    },
+    {
+      "name": "AccountCorrectness",
+      "passed": true,
+      "seconds": 0.15
+    },
+    {
+      "name": "ForkStateCorrectness",
+      "passed": true,
+      "seconds": 12.41
+    },
+    {
+      "name": "ThroughputCorrectness",
+      "passed": true,
+      "seconds": 0.03
+    },
+    {
+      "name": "FlowCorrectness",
+      "passed": true,
+      "seconds": 0.08
+    },
+    {
+      "name": "ChainNetwork",
+      "passed": true,
+      "seconds": 22.62
+    },
+    {
+      "name": "AccountNetwork",
+      "passed": true,
+      "seconds": 2.04
+    },
+    {
+      "name": "ForkNetwork",
+      "passed": true,
+      "seconds": 2.93
+    },
+    {
+      "name": "EvmNetwork",
+      "passed": true,
+      "seconds": 3.84
+    },
+    {
+      "name": "ExperimentNetwork",
+      "passed": true,
+      "seconds": 5.53
+    },
+    {
+      "name": "AdmissionNetwork",
+      "passed": true,
+      "seconds": 2.09
+    }
+  ],
+  "total_seconds": 51.96,
+  "formal_plan": {
+    "nodes": 10,
+    "node_counts": [
+      10
+    ],
+    "warmup": 5,
+    "duration": 30,
+    "repeats": 3,
+    "drain_seconds": 20,
+    "throughput_rates": [
+      15000,
+      30000,
+      40000,
+      50000,
+      60000
+    ]
+  },
+  "dry_run_ten_nodes": true,
+  "server_experiments_run": false,
+  "binary_sha256": "3c62cea8d0c0f60c1f0c74c87348f2ca8ce372f36927362c4a3b8f7893002d71"
+}

@@ -159,7 +159,7 @@ int main(int argc,char* argv[]) {
         RequireThrow([]{GenerateMessage(1,vector<uint8_t>(maxMessageSize+1));},"outbound bound");
         maxPendingVerify=6000;
         Require(ReserveVerify(6000)&&!ReserveVerify(1)&&pendingVerify==6000,"bounded validation queue");
-        pendingVerify-=6000;
+        ReleaseVerify(6000);
         Require(!ReserveVerify(6001)&&pendingVerify==0,"oversized queue reservation");
 
         InitVRFWallet();

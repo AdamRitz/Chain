@@ -19,7 +19,7 @@ tcp::socket ConnectNode(io_context& io,const string& host,uint16_t port) {
     return socket;
 }
 vector<uint8_t> GenerateTxMessage(const array<uint8_t,176>& tx) { return GenerateMessage(1,tx); }
-void Sender(span<const array<uint8_t,176>> txs,span<const size_t> indices,const string& host,uint16_t port,size_t batch) {
+void Sender(span<const array<uint8_t,176>> txs,span<const size_t> indices,const string& host,uint16_t port,size_t batch,bool reliable=false) {
     if (indices.empty()) return;
     io_context io;
     auto socket=ConnectNode(io,host,port);
@@ -29,7 +29,32 @@ void Sender(span<const array<uint8_t,176>> txs,span<const size_t> indices,const 
         message[0]=num==1?1:10;
         WriteU32(message.data()+1,uint32_t(num*176));
         for (size_t j=0;j<num;j++) memcpy(message.data()+5+j*176,txs[indices[i+j]].data(),176);
-        write(socket,buffer(message));
+        if (!reliable) { write(socket,buffer(message)); continue; }
+        vector<size_t> pending(indices.begin()+i,indices.begin()+i+num);
+        auto started=steady_clock::now();
+        while (!pending.empty()) {
+            message.resize(5+pending.size()*176); message[0]=44; WriteU32(message.data()+1,uint32_t(pending.size()*176));
+            for (size_t j=0;j<pending.size();j++) memcpy(message.data()+5+j*176,txs[pending[j]].data(),176);
+            write(socket,buffer(message));
+            vector<uint8_t> reply(5+pending.size()); boost::system::error_code error;
+            steady_timer deadline(io); deadline.expires_after(seconds(30));
+            deadline.async_wait([&](boost::system::error_code ec){if (!ec) socket.close();});
+            async_read(socket,buffer(reply),[&](boost::system::error_code ec,size_t){error=ec; deadline.cancel();});
+            io.restart(); io.run();
+            if (error) throw runtime_error("Admission response: "+error.message());
+            if (reply[0]!=45||ReadU32(reply.data()+1)!=pending.size()) throw runtime_error("Invalid admission response");
+            vector<size_t> retry;
+            for (size_t j=0;j<pending.size();j++) {
+                auto status=reply[5+j];
+                if (status==TxBusy) retry.push_back(pending[j]);
+                else if (status!=TxAccepted&&status!=TxKnown) throw runtime_error("Transaction rejected: "+to_string(status));
+            }
+            pending=std::move(retry);
+            if (!pending.empty()) {
+                if (steady_clock::now()-started>seconds(30)) throw runtime_error("Transaction pool remained busy for 30 seconds");
+                this_thread::sleep_for(milliseconds(2));
+            }
+        }
     }
     boost::system::error_code ec;
     socket.shutdown(tcp::socket::shutdown_send,ec);
@@ -40,7 +65,7 @@ int main(int argc,char* argv[]) {
         string host="127.0.0.1",file,prepare,genesisPath,createWallet,walletPath,receiverText,accountText;
         uint16_t port=8089;
         size_t count=100000,batch=128,connections=8,walletNum=1024,offset=0;
-        bool stats=false,countSet=false;
+        bool stats=false,countSet=false,reliable=false;
         uint64_t amount=1,nonce=1,initialBalance=1000000000,fee=0;
         for (int i=1;i<argc;i++) {
             string name=argv[i];
@@ -54,6 +79,7 @@ int main(int argc,char* argv[]) {
             else if (name=="--count") { count=stoull(value); countSet=true; }
             else if (name=="--batch") batch=stoull(value);
             else if (name=="--connections") connections=stoull(value);
+            else if (name=="--reliable") { if (value!="0"&&value!="1") throw invalid_argument("Invalid reliable mode"); reliable=value=="1"; }
             else if (name=="--wallets") walletNum=stoull(value);
             else if (name=="--offset") offset=stoull(value);
             else if (name=="--genesis") genesisPath=value;
@@ -175,7 +201,7 @@ int main(int argc,char* argv[]) {
         vector<thread> threads;
         for (size_t i=0;i<connections;i++) {
             threads.emplace_back([&,i] {
-                try { Sender(txs,groups[i],host,port,batch); }
+                try { Sender(txs,groups[i],host,port,batch,reliable); }
                 catch (const exception& e) { failed=true; lock_guard lock(errorMutex); errorMessage=e.what(); }
             });
         }

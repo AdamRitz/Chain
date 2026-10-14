@@ -9,6 +9,8 @@ bool HasForkBlock(const array<uint8_t,32>& hash,const vector<uint8_t>& data) {
 }
 size_t forkBytes=0;
 atomic<bool> forkReady{false};
+atomic<uint64_t> forkAttempts{0},forkWalkNs{0},forkLockWaitNs{0},forkBackupKeys{0},forkBackupBytes{0},replayedTx{0};
+vector<array<uint8_t,32>> lastBranchUsers;
 constexpr size_t maxForkBytes=512*1024*1024,maxForkBlocks=256;
 bool QueueForkBlock(Block block,vector<uint8_t> data,bool notify=true) {
     {
@@ -26,12 +28,19 @@ bool QueueForkBlock(Block block,vector<uint8_t> data,bool notify=true) {
     if (notify) WakeMainLoop();
     return true;
 }
+shared_ptr<const ForkEntry> FindForkEntry(const array<uint8_t,32>& hash) {
+    { lock_guard lock(forkMutex); auto found=forkBlocks.find(hash); if (found!=forkBlocks.end()) return found->second; }
+    auto data=DBReadBlockByHash(hash); if (data.empty()) return {};
+    Block block;
+    if (!UnSerializeBlock(data,block)||block.hash!=hash) throw runtime_error("Invalid saved fork block");
+    return make_shared<ForkEntry>(std::move(block),std::move(data));
+}
+bool KnowsForkBlock(const array<uint8_t,32>& hash) {
+    { lock_guard lock(forkMutex); if (forkBlocks.count(hash)) return true; }
+    return !DBReadBlockHeader(hash).empty();
+}
 vector<uint8_t> FindForkBlock(const array<uint8_t,32>& hash) {
-    auto saved=DBReadBlockByHash(hash);
-    if (!saved.empty()) return saved;
-    lock_guard lock(forkMutex);
-    auto found=forkBlocks.find(hash);
-    return found==forkBlocks.end()?vector<uint8_t>{}:found->second->second;
+    auto entry=FindForkEntry(hash); return entry?entry->second:vector<uint8_t>{};
 }
 void RemoveForkBlock(const array<uint8_t,32>& hash) {
     lock_guard lock(forkMutex);
@@ -39,12 +48,15 @@ void RemoveForkBlock(const array<uint8_t,32>& hash) {
     if (found!=forkBlocks.end()) { forkBytes-=found->second->second.size(); forkBlocks.erase(found); }
 }
 array<uint8_t,32> FindMissingParent(array<uint8_t,32> hash) {
+    shared_lock lock(dbCommitMutex);
     for (size_t i=0;i<256;i++) {
-        auto data=FindForkBlock(hash);
-        if (data.empty()) return hash;
-        auto height=ReadU64(data.data()+64);
-        if (height<=1||DBReadBlockByHeight(to_string(height))==data) return {};
-        memcpy(hash.data(),data.data(),32);
+        shared_ptr<const ForkEntry> entry;
+        { lock_guard forkLock(forkMutex); auto found=forkBlocks.find(hash); if (found!=forkBlocks.end()) entry=found->second; }
+        auto header=entry?vector<uint8_t>{}:DBReadBlockHeader(hash);
+        if (!entry&&header.empty()) return hash;
+        auto height=entry?entry->first.height:ReadU64(header.data()+64);
+        if (height<=1||DBReadBlockHashByHeight(height)==hash) return {};
+        if (entry) hash=entry->first.previousHash; else memcpy(hash.data(),header.data(),32);
     }
     return {};
 }
@@ -54,38 +66,10 @@ void UndoForkBlock(const array<uint8_t,32>& hash) {
     if (!DBGet(DBHashKey("undo/",hash),saved)) throw runtime_error("Missing block undo data");
     rocksdb::WriteBatch undo(saved);
     struct Restore:rocksdb::WriteBatch::Handler {
-        void Update(const rocksdb::Slice& key,const rocksdb::Slice* value) {
-            if (key.starts_with("user/")&&key.size()==37) {
-                array<uint8_t,32> address; memcpy(address.data(),key.data()+5,32);
-                if (!value) users.erase(address);
-                else {
-                    if (value->size()!=16) throw runtime_error("Invalid account undo");
-                    auto data=reinterpret_cast<const uint8_t*>(value->data());
-                    users[address]={ReadU64(data),ReadU64(data+8)};
-                }
-            } else if (key.starts_with("evm/")&&key.size()==24) {
-                evmc::address address; memcpy(address.bytes,key.data()+4,20);
-                if (!value) evmState.get_accounts().erase(address);
-                else {
-                    auto header=UnserializeEvmAccount(value->ToString()); auto& account=evmState.get_accounts()[address];
-                    account.nonce=header.nonce; account.balance=header.balance;
-                }
-            } else if (key.starts_with("evm-code/")&&key.size()==29) {
-                evmc::address address; memcpy(address.bytes,key.data()+9,20);
-                if (value) evmState.get_accounts()[address].code.assign(reinterpret_cast<const uint8_t*>(value->data()),value->size());
-                else if (auto it=evmState.get_accounts().find(address);it!=evmState.get_accounts().end()) it->second.code.clear();
-            } else if (key.starts_with("evm-slot/")&&key.size()==61) {
-                evmc::address address; evmc::bytes32 slot,word;
-                memcpy(address.bytes,key.data()+9,20); memcpy(slot.bytes,key.data()+29,32);
-                if (value) {
-                    if (value->size()!=32) throw runtime_error("Invalid EVM slot undo");
-                    memcpy(word.bytes,value->data(),32); evmState.get_accounts()[address].storage[slot]={word,word,EVMC_ACCESS_COLD};
-                } else if (auto it=evmState.get_accounts().find(address);it!=evmState.get_accounts().end()) it->second.storage.erase(slot);
-            }
-        }
-        void Put(const rocksdb::Slice& key,const rocksdb::Slice& value) override { branchBatch->Put(key,value); Update(key,&value); }
-        void Delete(const rocksdb::Slice& key) override { branchBatch->Delete(key); Update(key,nullptr); }
+        void Put(const rocksdb::Slice& key,const rocksdb::Slice& value) override { branchBatch->Put(key,value); ApplyMemoryKey(key,&value); }
+        void Delete(const rocksdb::Slice& key) override { branchBatch->Delete(key); ApplyMemoryKey(key,nullptr); }
     } restore;
+    SaveBranchMemory(undo);
     CheckDBStatus(undo.Iterate(&restore));
     InvalidateExecutionCache();
     userBurned=DBReadNumber("UserBurned");
@@ -93,58 +77,67 @@ void UndoForkBlock(const array<uint8_t,32>& hash) {
 // 更高的累计有效交易数优先；同数比较高度，最后选择链头哈希较小者。
 // 返回 1 表示切换成功，0 表示等待父块/排名较低，-1 表示分支无效。
 int AdoptFork(const ForkEntry& candidate,vector<vector<uint8_t>>& detached) {
-    unique_lock lock(dbCommitMutex);
-    vector<ForkEntry> branch;
-    auto current=candidate;
-    uint64_t transactions=0;
-    while (true) {
-        auto canonical=DBReadBlockByHeight(to_string(current.first.height));
-        if (canonical==current.second) break;
-        if (branch.size()>=256||current.first.height<=1||UINT64_MAX-transactions<current.first.txNum) return -1;
-        transactions+=current.first.txNum; branch.push_back(std::move(current));
-        auto parent=FindForkBlock(branch.back().first.previousHash);
-        if (parent.empty()) return 0;
-        Block parsed;
-        if (!UnSerializeBlock(parent,parsed)||parsed.height+1!=branch.back().first.height||parsed.hash!=branch.back().first.previousHash) return -1;
-        current={std::move(parsed),std::move(parent)};
+    forkAttempts++;
+    vector<shared_ptr<const ForkEntry>> branch;
+    uint64_t transactions=0,common=0,score=0,version=0;
+    array<uint8_t,32> commonHash{};
+    {
+        struct WalkTime { uint64_t start=GetSteadyTime(); ~WalkTime() { forkWalkNs+=GetSteadyTime()-start; } } measured;
+        shared_lock lock(dbCommitMutex);
+        version=dbStateVersion;
+        // 调用期间 candidate 始终存活；父块复用缓存已有的不可变内容。
+        shared_ptr<const ForkEntry> current(&candidate,[](const ForkEntry*){});
+        while (true) {
+            if (DBReadBlockHashByHeight(current->first.height)==current->first.hash) {
+                common=current->first.height; commonHash=current->first.hash; break;
+            }
+            if (branch.size()>=256||current->first.height<=1||UINT64_MAX-transactions<current->first.txNum) return -1;
+            transactions+=current->first.txNum; branch.push_back(current);
+            auto parent=FindForkEntry(current->first.previousHash);
+            if (!parent) return 0;
+            if (parent->first.height+1!=current->first.height) return -1;
+            current=std::move(parent);
+        }
+        if (branch.empty()) return -1;
+        auto oldHeight=DBReadBlockHeight(); if (oldHeight<common||oldHeight-common>256) return -1;
+        auto prefix=DBReadNumber(DBHashKey("score/",commonHash));
+        if (UINT64_MAX-prefix<transactions) return -1;
+        score=prefix+transactions; auto oldScore=DBReadNumber("ChainTx"); auto head=DBReadCurrentBlock();
+        if (score<oldScore||(score==oldScore&&(candidate.first.height<oldHeight||(candidate.first.height==oldHeight&&candidate.first.hash>=head)))) return 0;
     }
-    if (branch.empty()) return -1;
-    auto common=current.first.height,oldHeight=DBReadBlockHeight();
-    if (oldHeight-common>256) return -1;
-    auto prefix=DBReadNumber(DBHashKey("score/",current.first.hash));
-    if (UINT64_MAX-prefix<transactions) return -1;
-    auto score=prefix+transactions,oldScore=DBReadNumber("ChainTx");
-    auto head=DBReadCurrentBlock();
-    if (score<oldScore||(score==oldScore&&(candidate.first.height<oldHeight||(candidate.first.height==oldHeight&&candidate.first.hash>=head)))) return 0;
+    auto waitStart=GetSteadyTime(); unique_lock lock(dbCommitMutex); forkLockWaitNs+=GetSteadyTime()-waitStart;
+    if (version!=dbStateVersion) { forkReady=true; return 0; }
+    auto oldHeight=DBReadBlockHeight(),oldScore=DBReadNumber("ChainTx");
     InvalidateExecutionCache();
-    auto savedUsers=users;
-    auto savedEvm=CopyEvmState(evmState);
-    auto savedBurned=userBurned;
+    BranchMemory backup; auto savedBurned=userBurned;
     rocksdb::WriteBatchWithIndex changes(rocksdb::BytewiseComparator(),0,true);
-    branchBatch=&changes;
+    branchBatch=&changes; branchMemory=&backup;
     bool valid=true;
     try {
         while (DBReadBlockHeight()>common) {
-            auto old=DBReadCurrentBlock();
-            detached.push_back(DBReadBlockByHash(old));
-            UndoForkBlock(old);
+            auto old=DBReadCurrentBlock(); detached.push_back(DBReadBlockByHash(old)); UndoForkBlock(old);
         }
-        for (auto it=branch.rbegin();it!=branch.rend();++it) if (!DBCommitBlockLocked(it->first.hash,it->second)) { valid=false; break; }
-        branchBatch=nullptr;
+        for (auto it=branch.rbegin();it!=branch.rend();++it) {
+            replayedTx+=(*it)->first.txNum;
+            if (!DBCommitBlockLocked((*it)->first.hash,(*it)->second)) { valid=false; break; }
+        }
+        branchBatch=nullptr; branchMemory=nullptr;
+        forkBackupKeys+=backup.keys.size(); forkBackupBytes+=backup.saved.Data().size();
         if (valid) DBWriteBatch(*changes.GetWriteBatch());
     } catch (...) {
-        branchBatch=nullptr; users=std::move(savedUsers); evmState=std::move(savedEvm); userBurned=savedBurned; detached.clear(); throw;
+        branchBatch=nullptr; branchMemory=nullptr; backup.Restore(); userBurned=savedBurned; detached.clear(); throw;
     }
-    if (!valid) {
-        users=std::move(savedUsers); evmState=std::move(savedEvm); userBurned=savedBurned; detached.clear(); return -1;
+    if (!valid) { backup.Restore(); userBurned=savedBurned; detached.clear(); return -1; }
+    PublishPoolUsers(nullptr,&backup.keys);
+    lastBranchUsers.clear();
+    for (const auto& key:backup.keys) if (key.starts_with("user/")&&key.size()==37) {
+        array<uint8_t,32> address; memcpy(address.data(),key.data()+5,32); lastBranchUsers.push_back(address);
     }
     if (oldHeight>common) {
-        reorgCount++;
-        auto depth=oldHeight-common,previous=maxReorgDepth.load();
+        reorgCount++; auto depth=oldHeight-common,previous=maxReorgDepth.load();
         while (previous<depth&&!maxReorgDepth.compare_exchange_weak(previous,depth)) {}
     }
-    committedTx+=score-oldScore; lastCommitTime=GetSteadyTime();
-    return 1;
+    committedTx+=score-oldScore; lastCommitTime=GetSteadyTime(); return 1;
 }
 bool ProcessForks() {
     if (!forkReady.exchange(false)) return false;
@@ -155,15 +148,22 @@ bool ProcessForks() {
         if (left->first.txNum!=right->first.txNum) return left->first.txNum>right->first.txNum;
         return left->first.hash<right->first.hash;
     });
+    unordered_set<array<uint8_t,32>,GetMapHash> parents;
+    for (const auto& entry:candidates) parents.insert(entry->first.previousHash);
     bool adopted=false;
     for (const auto& entry:candidates) {
+        if (parents.count(entry->first.hash)) continue;
         vector<vector<uint8_t>> detached;
         auto result=AdoptFork(*entry,detached);
-        if (result<0) { RemoveForkBlock(entry->first.hash); continue; }
+        if (result<0) { RemoveForkBlock(entry->first.hash); forkReady=true; continue; }
         if (!result) continue;
         adopted=true;
         RemoveForkBlock(entry->first.hash);
-        RefreshTxPool();
+        if (!detached.empty()) RefreshTxPool();
+        else {
+            shared_lock stateLock(dbCommitMutex); lock_guard poolLock(txpoolMutex);
+            for (const auto& key:lastBranchUsers) PruneUserPool(key,GetUser(users,key).nonce);
+        }
         for (const auto& data:detached) {
             Block block=UnSerializeBlock(data);
             vector<uint8_t> native;

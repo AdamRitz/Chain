@@ -358,6 +358,8 @@ def MakeCases(plan, suite, count):
 
 
 def ValidatePlan(plan):
+    if 'nodes' in plan and (not isinstance(plan['nodes'], int) or isinstance(plan['nodes'], bool) or not 2 <= plan['nodes'] <= 512):
+        raise ValueError('Plan nodes must be 2..512')
     for name in ['duration', 'sync_duration', 'poll_seconds', 'sample_hz', 'deadline_ms', 'drain_seconds', 'sync_threshold_ms']:
         value = plan.get(name, plan['duration'])
         if not isinstance(value, (int, float)) or not math.isfinite(value) or value <= 0:
@@ -400,6 +402,10 @@ def Main(args):
         nodes = LocalInventory(args.bin, args.work/'nodes', args.local)
     else:
         _, nodes = ReadInventory(args.inventory)
+    if 'nodes' in plan:
+        if len(nodes) < plan['nodes']:
+            raise ValueError(f"Plan requires {plan['nodes']} nodes; inventory has {len(nodes)}")
+        nodes = nodes[:plan['nodes']]
     cases = MakeCases(plan, args.suite, len(nodes))
     if not re.fullmatch(r'[A-Za-z0-9_-]{1,60}', args.work.name):
         raise ValueError('Use a work directory name with 1..60 letters, numbers, _ or -')

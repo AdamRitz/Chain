@@ -229,7 +229,7 @@ void GenerateGenesisBlock() {
     DBAddBlock(batch,block.hash,data);
     batch.Put("CurrentBlock",rocksdb::Slice(reinterpret_cast<const char*>(block.hash.data()),32));
     batch.Put("BlockHeight","1");
-    batch.Put("SchemaVersion","5");
+    batch.Put("SchemaVersion","6");
     batch.Put("ChainTx","0");
     batch.Put(DBHashKey("score/",block.hash),"0");
     batch.Put("GenesisConfig",GetGenesisConfig().dump());
@@ -240,6 +240,7 @@ void GenerateGenesisBlock() {
     users.clear();
     users.reserve(genesisUsers.size());
     for (const auto& [key,user]:genesisUsers) users.emplace(key,user);
+    PublishPoolUsers();
     dbLegacyKeys=false;
     {
         lock_guard lock(blockBufferLock);
@@ -295,11 +296,9 @@ bool CommitBlock(const Block& block,const vector<uint8_t>& data) {
     {
         shared_lock commitLock(dbCommitMutex);
         lock_guard lock(txpoolMutex);
-        for (const auto& tx:block.txs) {
-            array<uint8_t,32> key;
-            memcpy(key.data(),tx.data(),32);
-            PruneUserPool(key,GetUser(users,key).nonce);
-        }
+        unordered_set<array<uint8_t,32>,GetMapHash> senders;
+        for (const auto& tx:block.txs) { array<uint8_t,32> key; memcpy(key.data(),tx.data(),32); senders.insert(key); }
+        for (const auto& key:senders) PruneUserPool(key,GetUser(users,key).nonce);
     }
     {
         lock_guard lock(blockBufferLock);

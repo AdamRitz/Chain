@@ -19,11 +19,11 @@
 - 本项目为 C++20/CMake 原型，数据库由 `--data` 指定。测试应在隔离目录进行，避免启动节点修改已有数据库。构建和测试命令见 `README.md`。
 - 修改前先阅读 `MODULE_GUIDE.md` 的模块职责、锁顺序和账户状态约束。当前账户模型与性能记录见 `ACCOUNT_MODEL_REPORT_2026-09-09.md`；2026-09-08 的审查和性能文档保留为历史资料。
 - 保持现有 PascalCase 函数命名、按目录组织的头文件和直接的数据流，不为小改动引入框架或多层抽象。
-- 当前数据库为 schema 5，支持账户模型、evmone Shanghai 合约和 256 块窗口内的分叉恢复。每块的原生账户、合约状态、回执、费用、交易、链头及回滚记录应原子提交。同父块按交易数和哈希选择；分支按累计有效交易数、高度、链头哈希选择。性能报告说明本地执行与同步落盘的计时口径。
-- 测试使用全新数据库和明确的创世分配。旧 schema 2、3、4 数据库保留原样，采用新目录运行。两个版本比较时固定数据集、发送端、核心亲和性、线程、区块参数和同步写入方式。
-- 嵌套取锁顺序为 dbCommitMutex → txpoolMutex；blockBufferLock 单独持有。保持 txpool、txUserPool 和 readyPoolTx 同步，满块触发依据 readyPoolTx。
+- 当前数据库为 schema 6，支持账户模型、evmone Shanghai 合约和 256 块窗口内的分叉恢复。每块的原生账户、合约状态、回执、费用、交易、链头及回滚记录应原子提交。同父块按交易数和哈希选择；分支按累计有效交易数、高度、链头哈希选择。性能报告说明本地执行与同步落盘的计时口径。
+- 测试使用全新数据库和明确的创世分配。旧 schema 2、3、4、5 数据库保留原样，采用新目录运行。两个版本比较时固定数据集、发送端、核心亲和性、线程、区块参数和同步写入方式。
+- 嵌套取锁顺序为 dbCommitMutex → poolUsersMutex → txpoolMutex；blockBufferLock 单独持有。保持 txpool、txUserPool 和 readyPoolTx 同步，满块触发依据 readyPoolTx。
 - 验签缓存只保存通过验证的完整交易与合约输入摘要，分桶有界；账户余额与序号仍按当前分支检查。重复区块路径比较完整字节，分叉后使用 `RefreshTxPool` 重建索引。修改这些路径时保留签名篡改、合约输入绑定和分叉账户变化的回归覆盖。
-- 账户、交易池、EVM 或分叉变更应运行全部九项 CTest。网络测试目录每次使用新路径。包含 ForkStateCorrectness、ForkNetwork、EvmNetwork 的状态约束、写盘失败和分区重连覆盖，以及 ExperimentNetwork 的测量索引回滚、重启和逻辑轮次覆盖。
+- 账户、交易池、EVM 或分叉变更应运行全部十一项 CTest。网络测试目录每次使用新路径。包含 ForkStateCorrectness、ForkNetwork、EvmNetwork 的状态约束、写盘失败和分区重连覆盖，以及 ExperimentNetwork 的测量索引回滚、重启和逻辑轮次覆盖；FlowCorrectness 和 AdmissionNetwork 覆盖账户发布镜像、序号缺口预留、紧凑索引、状态反馈及重试。
 - 多节点实验入口为 Test/Experiments.py，参数与测量口径见 EXPERIMENTS.md。时间模块的四时间戳/中位数同步器作为研究基线，萤火虫相位响应公式仍需接入。正式数据记录全部节点共同链与独立状态核对，保持实际发送速率和目标负载分别可见。
 - EVM 接入方式、执行环境和费用规则见 EVM_GUIDE.md；依赖版本及上游补丁见 ThirdParty/VERSIONS.md。实际编译不链接上游预编译输入输出占位表。
 - 更改 Git 配置只作用于本仓库，不修改其他仓库或用户的全局 Git 配置。

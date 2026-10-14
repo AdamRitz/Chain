@@ -64,6 +64,7 @@ int main(int argc,char** argv) {
         db.reset(readOnly);
         bool failed=false; try { AdoptFork(better,detached); } catch (const exception&) { failed=true; }
         Require(failed,"write failure surfaced");
+        Require(poolUsers==beforeUsers,"failed branch write preserves published admission accounts");
         Require(DBReadCurrentBlock()==first.first.hash&&users==beforeUsers&&userBurned==beforeBurned&&SerializeEvmAccount(evmState.get(address))==before,"failed switch restores native and EVM caches");
         db.reset(); InitDB(root.string());
         Require(AdoptFork(better,detached)==1,"better branch adopted");

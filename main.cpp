@@ -32,7 +32,7 @@ void AddConfiguredPeer(const string& value) {
 }
 int main(int argc,char* argv[]) {
     try {
-        string configPath,dataPath="data/accounts-v5",metricsPath,genesisPath;
+        string configPath,dataPath="data/accounts-v6",metricsPath,genesisPath;
         int ioNum=4,verifyNum=8,runSeconds=0;
         bool sync=true,observeClock=false;
         for (int i=1;i<argc;i++) {
@@ -100,6 +100,7 @@ int main(int argc,char* argv[]) {
         io_context io;
         nodeIO=&io;
         verifyThreads=make_unique<thread_pool>(verifyNum);
+        candidateThreads=make_unique<thread_pool>(1);
         blockVerifyNum=min(size_t(4),size_t(verifyNum));
         blockVerifyThreads=make_unique<thread_pool>(blockVerifyNum);
         auto guard=make_work_guard(io);
@@ -129,6 +130,8 @@ int main(int argc,char* argv[]) {
         for (auto& t:threads) t.join();
         // 先停止网络接收，再完成已经入队的验证，最后提交剩余交易。
         verifyThreads->join();
+        candidateThreads->join();
+        candidateThreads.reset();
         nodeRunning=false;
         WakeMainLoop();
         blockThread.join();

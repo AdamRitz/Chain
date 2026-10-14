@@ -7,6 +7,7 @@
 #include <shared_mutex>
 #include <vector>
 #include <deque>
+#include <unordered_set>
 #include <rocksdb/db.h>
 #include <rocksdb/options.h>
 #include <rocksdb/write_batch.h>
@@ -30,6 +31,20 @@ bool experimentIndex=false;
 atomic<uint64_t> dbWriteNs{0},dbWriteCount{0};
 UserMap users;
 uint64_t userBurned=0;
+UserMap poolUsers;
+shared_mutex poolUsersMutex;
+void PublishPoolUsers(const UserMap* changed=nullptr,const unordered_set<string>* keys=nullptr) {
+    unique_lock lock(poolUsersMutex);
+    if (changed) {
+        for (const auto& [key,user]:*changed) poolUsers[key]=user;
+    } else if (keys) {
+        for (const auto& encoded:*keys) if (encoded.starts_with("user/")&&encoded.size()==37) {
+            array<uint8_t,32> key; memcpy(key.data(),encoded.data()+5,32);
+            if (auto found=users.find(key);found!=users.end()) poolUsers[key]=found->second;
+            else poolUsers.erase(key);
+        }
+    } else poolUsers=users;
+}
 atomic<uint64_t> userCheckNs{0},userWriteCount{0},invalidUserBlocks{0};
 // 分支切换使用临时批次；所有读取看到同一批次中的回滚和重放结果。
 thread_local rocksdb::WriteBatchWithIndex* branchBatch=nullptr;
@@ -90,7 +105,7 @@ void InitDB(const string& path="test",bool sync=true) {
     db.reset(openedDB);
     string version;
     if (DBGet("SchemaVersion",version)) {
-        if (version!="5") throw runtime_error("Incremental EVM state requires schema 5. Use a NEW --data directory with --genesis.");
+        if (version!="6") throw runtime_error("Compact transaction indexes require schema 6. Use a NEW --data directory with --genesis.");
         string saved;
         if (!DBGet("GenesisConfig",saved)) throw runtime_error("Missing genesis account configuration");
         auto config=nlohmann::json::parse(saved);
@@ -153,6 +168,7 @@ void InitDB(const string& path="test",bool sync=true) {
     }
     spdlog::info("RocksDB Started. Path:{}, Sync:{}",path,sync);
     InvalidateExecutionCache();
+    PublishPoolUsers();
 }
 void DBWriteBatch(rocksdb::WriteBatch& batch) {
     if (branchBatch) {
@@ -185,24 +201,107 @@ void DBAddUser(rocksdb::WriteBatch& batch,const array<uint8_t,32>& key,const Use
     WriteU64(value.data()+8,user.nonce);
     batch.Put(DBHashKey("user/",key),rocksdb::Slice(reinterpret_cast<const char*>(value.data()),value.size()));
 }
+void ApplyMemoryKey(const rocksdb::Slice& key,const rocksdb::Slice* value) {
+    if (key.starts_with("user/")&&key.size()==37) {
+        array<uint8_t,32> address; memcpy(address.data(),key.data()+5,32);
+        if (!value) users.erase(address);
+        else {
+            if (value->size()!=16) throw runtime_error("Invalid account undo");
+            auto data=reinterpret_cast<const uint8_t*>(value->data());
+            users[address]={ReadU64(data),ReadU64(data+8)};
+        }
+    } else if (key.starts_with("evm/")&&key.size()==24) {
+        evmc::address address; memcpy(address.bytes,key.data()+4,20);
+        if (!value) evmState.get_accounts().erase(address);
+        else {
+            auto header=UnserializeEvmAccount(value->ToString()); auto& account=evmState.get_accounts()[address];
+            account.nonce=header.nonce; account.balance=header.balance;
+        }
+    } else if (key.starts_with("evm-code/")&&key.size()==29) {
+        evmc::address address; memcpy(address.bytes,key.data()+9,20);
+        if (value) evmState.get_accounts()[address].code.assign(reinterpret_cast<const uint8_t*>(value->data()),value->size());
+        else if (auto it=evmState.get_accounts().find(address);it!=evmState.get_accounts().end()) it->second.code.clear();
+    } else if (key.starts_with("evm-slot/")&&key.size()==61) {
+        evmc::address address; evmc::bytes32 slot,word;
+        memcpy(address.bytes,key.data()+9,20); memcpy(slot.bytes,key.data()+29,32);
+        if (value) {
+            if (value->size()!=32) throw runtime_error("Invalid EVM slot undo");
+            memcpy(word.bytes,value->data(),32); evmState.get_accounts()[address].storage[slot]={word,word,EVMC_ACCESS_COLD};
+        } else if (auto it=evmState.get_accounts().find(address);it!=evmState.get_accounts().end()) it->second.storage.erase(slot);
+    }
+}
+
+struct BranchMemory {
+    rocksdb::WriteBatch saved;
+    unordered_set<string> keys;
+    void Save(const rocksdb::Slice& key) {
+        if (!(key.starts_with("user/")||key.starts_with("evm/")||key.starts_with("evm-code/")||key.starts_with("evm-slot/"))) return;
+        if (!keys.insert(key.ToString()).second) return;
+        if (key.starts_with("user/")&&key.size()==37) {
+            array<uint8_t,32> address; memcpy(address.data(),key.data()+5,32);
+            if (auto found=users.find(address);found!=users.end()) DBAddUser(saved,address,found->second);
+            else saved.Delete(key);
+            return;
+        }
+        auto prefix=key.starts_with("evm/")?size_t(4):size_t(9);
+        if (key.size()!=(key.starts_with("evm-slot/")?size_t(61):prefix+20)) throw runtime_error("Invalid branch state key");
+        evmc::address address; memcpy(address.bytes,key.data()+prefix,20);
+        auto found=evmState.get_accounts().find(address);
+        if (found==evmState.get_accounts().end()) { saved.Delete(key); return; }
+        if (key.starts_with("evm/")) saved.Put(key,SerializeEvmHeader(found->second));
+        else if (key.starts_with("evm-code/")) {
+            const auto& code=found->second.code;
+            if (code.empty()) saved.Delete(key);
+            else saved.Put(key,rocksdb::Slice(reinterpret_cast<const char*>(code.data()),code.size()));
+        } else {
+            evmc::bytes32 slot; memcpy(slot.bytes,key.data()+29,32); auto word=evmState.ReadStorage(address,slot);
+            if (word==evmc::bytes32{}) saved.Delete(key);
+            else saved.Put(key,rocksdb::Slice(reinterpret_cast<const char*>(word.bytes),32));
+        }
+    }
+    void Restore() {
+        struct Apply:rocksdb::WriteBatch::Handler {
+            void Put(const rocksdb::Slice& key,const rocksdb::Slice& value) override { ApplyMemoryKey(key,&value); }
+            void Delete(const rocksdb::Slice& key) override { ApplyMemoryKey(key,nullptr); }
+        } apply;
+        CheckDBStatus(saved.Iterate(&apply));
+    }
+};
+thread_local BranchMemory* branchMemory=nullptr;
+void SaveBranchMemory(rocksdb::WriteBatch& batch) {
+    if (!branchMemory) return;
+    struct Save:rocksdb::WriteBatch::Handler {
+        void Put(const rocksdb::Slice& key,const rocksdb::Slice&) override { branchMemory->Save(key); }
+        void Delete(const rocksdb::Slice& key) override { branchMemory->Save(key); }
+    } save;
+    CheckDBStatus(batch.Iterate(&save));
+}
+
 bool DBApplyBlockUsers(const vector<uint8_t>& data,UserMap& changed,EvmExecution* output=nullptr) {
     if (data.size()<112) return false;
     auto num=ReadU64(data.data()+72);
     EvmPayloads payloads;
     if (!ReadEvmPayloads(data,payloads)) return false;
     EvmExecution local;
+    thread_local uint64_t knownVersion=UINT64_MAX;
+    thread_local decltype(evmone::state::BlockInfo{}.known_block_hashes) knownHashes;
     auto& execution=output?*output:local;
     evmone::state::BlockInfo context{};
     context.number=ReadU64(data.data()+64); context.timestamp=context.number;
     context.gas_limit=maxBlockGas; context.base_fee=1;
     if (!payloads.empty()) {
         // 区块时间采用确定的逻辑轮次，所有节点取得相同环境。
-        for (int64_t height=max(int64_t(1),context.number-256);height<context.number;height++) {
-            string hash;
-            if (DBGet("height/"+to_string(height),hash)&&hash.size()==32) {
-                evmc::bytes32 value; memcpy(value.bytes,hash.data(),32); context.known_block_hashes.emplace(height,value);
+        if (branchBatch||knownVersion!=dbStateVersion) {
+            knownHashes.clear();
+            for (int64_t height=max(int64_t(1),context.number-256);height<context.number;height++) {
+                string hash;
+                if (DBGet("height/"+to_string(height),hash)&&hash.size()==32) {
+                    evmc::bytes32 value; memcpy(value.bytes,hash.data(),32); knownHashes.emplace(height,value);
+                }
             }
+            knownVersion=branchBatch?UINT64_MAX:dbStateVersion;
         }
+        context.known_block_hashes=knownHashes;
     }
     changed.reserve(min(size_t(num*2),users.size()+size_t(num)));
     auto start=GetSteadyTime();
@@ -219,21 +318,48 @@ bool DBApplyBlockUsers(const vector<uint8_t>& data,UserMap& changed,EvmExecution
     return true;
 }
 
-void DBReadTx(const array<uint8_t,32>& key) {
+bool DBReadTx(const array<uint8_t,32>& key,array<uint8_t,176>& tx) {
     string value;
-    if (!DBGet(DBHashKey("tx/",key),value)) DBGet(DBHashKey("",key),value);
-    PrintHexForString(value);
+    if (!DBGet(DBHashKey("tx/",key),value)) return false;
+    if (value.size()==176) { memcpy(tx.data(),value.data(),176); return true; }
+    if (value.size()!=36) throw runtime_error("Invalid transaction position");
+    array<uint8_t,32> block; memcpy(block.data(),value.data(),32);
+    string data;
+    if (!DBGet(DBHashKey("block/",block),data)||data.size()<112) throw runtime_error("Missing indexed block");
+    auto index=ReadU32(reinterpret_cast<const uint8_t*>(value.data()+32));
+    auto count=ReadU64(reinterpret_cast<const uint8_t*>(data.data()+72));
+    if (index>=count||count>(data.size()-112)/176) throw runtime_error("Invalid transaction offset");
+    memcpy(tx.data(),data.data()+112+size_t(index)*176,176);
+    if (memcmp(tx.data()+80,key.data(),32)) throw runtime_error("Transaction position hash mismatch");
+    return true;
+}
+void DBReadTx(const array<uint8_t,32>& key) {
+    array<uint8_t,176> tx{};
+    if (DBReadTx(key,tx)) PrintHexForString(string(reinterpret_cast<const char*>(tx.data()),tx.size()));
 }
 void DBAddBlock(rocksdb::WriteBatch& batch,const array<uint8_t,32>& key,const vector<uint8_t>& value) {
     if (value.size()<112) throw invalid_argument("Short block");
     auto height=ReadU64(value.data()+64);
     batch.Put(DBHashKey("block/",key),rocksdb::Slice(reinterpret_cast<const char*>(value.data()),value.size()));
+    batch.Put(DBHashKey("header/",key),rocksdb::Slice(reinterpret_cast<const char*>(value.data()),112));
     batch.Put("height/"+to_string(height),rocksdb::Slice(reinterpret_cast<const char*>(key.data()),key.size()));
 }
 void DBWriteBlockALL(const array<uint8_t,32>& key,const vector<uint8_t>& value) {
     rocksdb::WriteBatch batch;
     DBAddBlock(batch,key,value);
     DBWriteBatch(batch);
+}
+array<uint8_t,32> DBReadBlockHashByHeight(uint64_t height) {
+    string value; array<uint8_t,32> hash{};
+    if (!DBGet("height/"+to_string(height),value)) return hash;
+    if (value.size()!=32) throw runtime_error("Invalid height index");
+    memcpy(hash.data(),value.data(),32); return hash;
+}
+vector<uint8_t> DBReadBlockHeader(const array<uint8_t,32>& hash) {
+    string value;
+    if (!DBGet(DBHashKey("header/",hash),value)) return {};
+    if (value.size()!=112||memcmp(value.data()+80,hash.data(),32)) throw runtime_error("Invalid saved block header");
+    return {value.begin(),value.end()};
 }
 vector<uint8_t> DBReadBlockByHash(const array<uint8_t,32>& key) {
     string value;
@@ -341,7 +467,8 @@ bool DBCommitBlockLocked(const array<uint8_t,32>& hash,const vector<uint8_t>& da
         array<uint8_t,32> txHash;
         memcpy(txHash.data(),tx+80,32);
         // 连续账户序号已排除历史重放和块内重复，直接写交易索引。
-        batch.Put(DBHashKey("tx/",txHash),rocksdb::Slice(reinterpret_cast<const char*>(tx),176));
+        array<uint8_t,36> position; memcpy(position.data(),hash.data(),32); WriteU32(position.data()+32,uint32_t(i));
+        batch.Put(DBHashKey("tx/",txHash),rocksdb::Slice(reinterpret_cast<const char*>(position.data()),position.size()));
         if (experimentIndex) batch.Put(DBHashKey("txheight/",txHash),to_string(height));
         if (auto found=payloads.find(i);found!=payloads.end()) batch.Put(DBHashKey("input/",txHash),rocksdb::Slice(reinterpret_cast<const char*>(found->second.data()),found->second.size()));
     }
@@ -411,7 +538,10 @@ bool DBCommitBlockLocked(const array<uint8_t,32>& hash,const vector<uint8_t>& da
     batch.Put(DBHashKey("undo/",hash),undo.saved.Data());
     batch.Put(DBHashKey("score/",hash),to_string(total+num));
     batch.Put(DBHashKey("block/",hash),rocksdb::Slice(reinterpret_cast<const char*>(data.data()),data.size()));
+    batch.Put(DBHashKey("header/",hash),rocksdb::Slice(reinterpret_cast<const char*>(data.data()),112));
+    SaveBranchMemory(batch);
     DBWriteBatch(batch);
+    if (!branchBatch) PublishPoolUsers(&changed);
     auto writeCount=changed.size();
     for (const auto& [key,user]:changed) {
         auto found=users.find(key);

@@ -15,6 +15,9 @@ using tcp=ip::tcp;
 
 io_context* nodeIO=nullptr;
 unique_ptr<thread_pool> verifyThreads;
+unique_ptr<thread_pool> candidateThreads;
+atomic<size_t> pendingTxVerify{0},pendingBlockVerify{0},pendingTxBytes{0},pendingBlockBytes{0};
+atomic<uint64_t> txQueueWaitNs{0},blockQueueWaitNs{0};
 atomic<size_t> pendingVerify{0},peakPendingVerify{0},connectionCount{0};
 atomic<size_t> pendingVerifyBytes{0};
 atomic<uint64_t> queueWaitNs{0},networkBytes{0};
@@ -393,6 +396,12 @@ nlohmann::json GetNodeStats() {
         {"cold_signature_ms",coldSignatureNs.load()/1e6},{"parallel_signature_blocks",parallelSignatureBlocks.load()},
         {"peak_block_verify_jobs",peakBlockVerifyJobs.load()},
         {"commit_lock_wait_ms",commitLockWaitNs.load()/1e6},{"candidate_lock_wait_ms",candidateLockWaitNs.load()/1e6},
+        {"gap_accepted",gapAcceptedTx.load()},{"pool_busy",poolBusyTx.load()},
+        {"pending_tx_verify",pendingTxVerify.load()},{"pending_block_verify",pendingBlockVerify.load()},
+        {"tx_queue_wait_ms",txQueueWaitNs.load()/1e6},{"block_queue_wait_ms",blockQueueWaitNs.load()/1e6},
+        {"fork_attempts",forkAttempts.load()},{"fork_walk_ms",forkWalkNs.load()/1e6},
+        {"fork_lock_wait_ms",forkLockWaitNs.load()/1e6},{"fork_backup_keys",forkBackupKeys.load()},
+        {"fork_backup_bytes",forkBackupBytes.load()},{"replayed_transactions",replayedTx.load()},
         {"clock",GetClockStats()},{"experiment_index",experimentIndex}};
     lock.unlock();
     stats.update(GetProcessResources());
