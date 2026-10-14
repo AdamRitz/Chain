@@ -1,0 +1,67 @@
+{
+  "date": "2026-10-14",
+  "baseline_code": "3850727",
+  "schema": 7,
+  "ctest": [
+    {
+      "name": "ChainCorrectness",
+      "seconds": 0.535131,
+      "passed": true
+    },
+    {
+      "name": "AccountCorrectness",
+      "seconds": 0.356866,
+      "passed": true
+    },
+    {
+      "name": "ForkStateCorrectness",
+      "seconds": 40.2945,
+      "passed": true
+    },
+    {
+      "name": "ThroughputCorrectness",
+      "seconds": 0.0741541,
+      "passed": true
+    },
+    {
+      "name": "FlowCorrectness",
+      "seconds": 0.190565,
+      "passed": true
+    },
+    {
+      "name": "ChainNetwork",
+      "seconds": 28.5608,
+      "passed": true
+    },
+    {
+      "name": "AccountNetwork",
+      "seconds": 2.71338,
+      "passed": true
+    },
+    {
+      "name": "ForkNetwork",
+      "seconds": 3.29646,
+      "passed": true
+    },
+    {
+      "name": "EvmNetwork",
+      "seconds": 5.25713,
+      "passed": true
+    },
+    {
+      "name": "ExperimentNetwork",
+      "seconds": 6.16505,
+      "passed": true
+    },
+    {
+      "name": "AdmissionNetwork",
+      "seconds": 10.8904,
+      "passed": true
+    }
+  ],
+  "passed": true,
+  "build_type": "Release",
+  "node_sha256": "abef64e054a37d3443e0a67422f126b7df1a32dc774f1137e239cfe02ded18ca",
+  "server_deployment": false,
+  "performance_tests": "Stopped at user request; ten-server test deferred"
+}

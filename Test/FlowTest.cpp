@@ -36,7 +36,8 @@ int main(int argc,char** argv) {
         auto bytes=GenerateBlock(); auto block=UnSerializeBlock(bytes);
         Require(ProcessBlock(bytes)&&CommitBlock(block,bytes),"gap-filled block commits");
         string position; auto hash=GetTransactionHash(first); array<uint8_t,176> loaded{};
-        Require(DBGet(DBHashKey("tx/",hash),position)&&position.size()==36&&ReadU32(reinterpret_cast<const uint8_t*>(position.data()+32))==0,"compact transaction position");
+        Require(DBGet(DBHashKey("tx/",hash),position)&&position.size()==12&&ReadU64(reinterpret_cast<const uint8_t*>(position.data()))==2&&ReadU32(reinterpret_cast<const uint8_t*>(position.data()+8))==0,"height transaction position");
+        string extra; Require(!DBGet(DBHashKey("txheight/",hash),extra),"inclusion queries reuse the transaction position");
         Require(DBReadTx(hash,loaded)&&loaded==first,"indexed transaction lookup");
         Require(poolUsers==users&&poolUsers.at(wallet.public_key).nonce==10,"published accounts follow commit");
         evmc::address unrelated{}; unrelated.bytes[19]=70;
@@ -72,6 +73,45 @@ int main(int argc,char** argv) {
         Require(ReserveVerify(1)&&!ReserveVerify(1)&&ReserveVerify(6000,true),"block validation retains its own capacity");
         ReleaseVerify(1); ReleaseVerify(6000,true);
         Require(pendingVerify==0&&pendingTxVerify==0&&pendingBlockVerify==0,"both validation lanes release reservations");
+        maxPendingVerify=32768; maxPoolTx=200000;
+        db.reset(); SetGenesisUsers({{"base_fee",0},{"accounts",nlohmann::json::array({
+            {{"public_key",U32ToHex(wallet.public_key)},{"balance",10000}},
+            {{"public_key",U32ToHex(receiver.public_key)},{"balance",10000}}})}});
+        InitDB((root/"deterministic").string()); GenerateGenesisBlock();
+        txpool.clear(); txUserPool.clear(); readyPoolTx=0; maxBlockTx=5;
+        vector<array<uint8_t,176>> incoming;
+        for (uint64_t nonce=1;nonce<=8;nonce++) {
+            incoming.push_back(GenerateTx(wallet.public_key,receiver.public_key,1,nonce,wallet));
+            incoming.push_back(GenerateTx(receiver.public_key,wallet.public_key,1,nonce,receiver));
+        }
+        for (const auto& tx:incoming) ProcessTx(tx);
+        auto ordered=GenerateBlock(); auto chosen=UnSerializeBlock(ordered);
+        size_t left=0,right=0;
+        for (const auto& tx:chosen.txs) if (memcmp(tx.data(),wallet.public_key.data(),32)==0) left++; else right++;
+        Require(chosen.txNum==5&&min(left,right)==2,"round-robin packing advances both accounts");
+        txpool.clear(); txUserPool.clear(); readyPoolTx=0; txUserPool.rehash(193);
+        for (auto it=incoming.rbegin();it!=incoming.rend();++it) ProcessTx(*it);
+        Require(GenerateBlock()==ordered,"same parent and ready transactions produce identical blocks after reversed arrivals");
+        maxBlockTx=10000; Require(UnSerializeBlock(GenerateBlock()).txNum==16,"larger block setting retains all ready transactions");
+        auto local=UnSerializeBlock(GenerateBlock()); auto localBytes=SerializeBlockALL(local);
+        Require(ProcessBlock(localBytes),"cache the first execution before contiguous append");
+        Block successor; successor.height=3; successor.previousHash=local.hash;
+        successor.txs.push_back(GenerateTx(wallet.public_key,receiver.public_key,1,9,wallet));
+        successor.merkleRoot=MerkleCompute(vector<array<uint8_t,32>>{GetTransactionHash(successor.txs[0])});
+        auto successorBytes=SerializeBlockALL(successor); auto writes=dbWriteCount.load(),hits=executionCacheHits.load();
+        Require(QueueForkBlock(local,localBytes)&&QueueForkBlock(successor,successorBytes)&&ProcessForks(),"prepared contiguous blocks commit together");
+        Require(dbWriteCount-writes==1&&executionCacheHits-hits==1&&groupedCommitBlocks>=2,"grouped append reuses the first execution and writes once");
+        Require(DBReadBlockHeight()==3&&GetUser(users,wallet.public_key).nonce==9,"grouped state published after persistence");
+        auto losing=Candidate(wallet,receiver,local.previousHash,1,1);
+        QueueForkBlock(losing.first,losing.second); ProcessForks(); auto attempts=forkAttempts.load();
+        forkReady=true; ProcessForks();
+        Require(forkAttempts==attempts&&forkRankSkips>0,"lower immutable branch rank skips repeated ancestor walks");
+        Block absent; absent.height=4; absent.previousHash.fill(77); absent.txs={incoming[0]};
+        absent.merkleRoot=MerkleCompute(vector<array<uint8_t,32>>{GetTransactionHash(incoming[0])});
+        auto absentBytes=SerializeBlockALL(absent); QueueForkBlock(absent,absentBytes); ProcessForks(); attempts=forkAttempts.load();
+        forkReady=true; ProcessForks();
+        Require(forkAttempts==attempts&&forkParentSkips>0,"missing ancestors retry after parent or head changes");
+        maxBlockTx=6000;
         db.reset(); cout<<"Admission, compact indexes and changed-state fork checks passed\n"; return 0;
     } catch (const exception& e) { cerr<<e.what()<<'\n'; return 1; }
 }

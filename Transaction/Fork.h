@@ -3,6 +3,12 @@
 using ForkEntry=pair<Block,vector<uint8_t>>;
 map<array<uint8_t,32>,shared_ptr<const ForkEntry>> forkBlocks;
 mutex forkMutex;
+struct ForkCheck {
+    uint64_t score=0,version=0;
+    array<uint8_t,32> missing{};
+    bool ranked=false;
+};
+unordered_map<array<uint8_t,32>,ForkCheck,GetMapHash> forkChecks;
 bool HasForkBlock(const array<uint8_t,32>& hash,const vector<uint8_t>& data) {
     lock_guard lock(forkMutex);auto found=forkBlocks.find(hash);
     return found!=forkBlocks.end()&&found->second->second==data;
@@ -10,6 +16,7 @@ bool HasForkBlock(const array<uint8_t,32>& hash,const vector<uint8_t>& data) {
 size_t forkBytes=0;
 atomic<bool> forkReady{false};
 atomic<uint64_t> forkAttempts{0},forkWalkNs{0},forkLockWaitNs{0},forkBackupKeys{0},forkBackupBytes{0},replayedTx{0};
+atomic<uint64_t> forkRankSkips{0},forkParentSkips{0},branchAppendTx{0},forkReexecuteTx{0},groupedCommitBlocks{0};
 vector<array<uint8_t,32>> lastBranchUsers;
 constexpr size_t maxForkBytes=512*1024*1024,maxForkBlocks=256;
 bool QueueForkBlock(Block block,vector<uint8_t> data,bool notify=true) {
@@ -19,7 +26,7 @@ bool QueueForkBlock(Block block,vector<uint8_t> data,bool notify=true) {
         while (!forkBlocks.empty()&&(forkBlocks.size()>=maxForkBlocks||forkBytes+data.size()>maxForkBytes)) {
             auto oldest=min_element(forkBlocks.begin(),forkBlocks.end(),[](const auto& a,const auto& b) { return a.second->first.height<b.second->first.height; });
             if (oldest->second->first.height>block.height) return false;
-            forkBytes-=oldest->second->second.size(); forkBlocks.erase(oldest);
+            forkBytes-=oldest->second->second.size(); forkChecks.erase(oldest->first); forkBlocks.erase(oldest);
         }
         auto hash=block.hash; forkBytes+=data.size();
         forkBlocks.emplace(hash,make_shared<ForkEntry>(std::move(block),std::move(data)));
@@ -46,6 +53,12 @@ void RemoveForkBlock(const array<uint8_t,32>& hash) {
     lock_guard lock(forkMutex);
     auto found=forkBlocks.find(hash);
     if (found!=forkBlocks.end()) { forkBytes-=found->second->second.size(); forkBlocks.erase(found); }
+    forkChecks.erase(hash);
+}
+bool HasForkChild(const array<uint8_t,32>& hash) {
+    lock_guard lock(forkMutex);
+    for (const auto& [key,entry]:forkBlocks) if (entry->first.previousHash==hash) return true;
+    return false;
 }
 array<uint8_t,32> FindMissingParent(array<uint8_t,32> hash) {
     shared_lock lock(dbCommitMutex);
@@ -93,8 +106,17 @@ int AdoptFork(const ForkEntry& candidate,vector<vector<uint8_t>>& detached) {
             }
             if (branch.size()>=256||current->first.height<=1||UINT64_MAX-transactions<current->first.txNum) return -1;
             transactions+=current->first.txNum; branch.push_back(current);
+            // 先识别主链父块，查询共同祖先只需高度索引和小块头。
+            auto parentHeight=current->first.height-1;
+            if (DBReadBlockHashByHeight(parentHeight)==current->first.previousHash) {
+                common=parentHeight; commonHash=current->first.previousHash; break;
+            }
             auto parent=FindForkEntry(current->first.previousHash);
-            if (!parent) return 0;
+            if (!parent) {
+                lock_guard forkLock(forkMutex);
+                if (forkBlocks.count(candidate.first.hash)) forkChecks[candidate.first.hash]={0,version,current->first.previousHash,false};
+                return 0;
+            }
             if (parent->first.height+1!=current->first.height) return -1;
             current=std::move(parent);
         }
@@ -103,12 +125,14 @@ int AdoptFork(const ForkEntry& candidate,vector<vector<uint8_t>>& detached) {
         auto prefix=DBReadNumber(DBHashKey("score/",commonHash));
         if (UINT64_MAX-prefix<transactions) return -1;
         score=prefix+transactions; auto oldScore=DBReadNumber("ChainTx"); auto head=DBReadCurrentBlock();
+        { lock_guard forkLock(forkMutex);
+          if (forkBlocks.count(candidate.first.hash)) forkChecks[candidate.first.hash]={score,version,{},true}; }
         if (score<oldScore||(score==oldScore&&(candidate.first.height<oldHeight||(candidate.first.height==oldHeight&&candidate.first.hash>=head)))) return 0;
     }
     auto waitStart=GetSteadyTime(); unique_lock lock(dbCommitMutex); forkLockWaitNs+=GetSteadyTime()-waitStart;
     if (version!=dbStateVersion) { forkReady=true; return 0; }
     auto oldHeight=DBReadBlockHeight(),oldScore=DBReadNumber("ChainTx");
-    InvalidateExecutionCache();
+    if (oldHeight>common) InvalidateExecutionCache();
     BranchMemory backup; auto savedBurned=userBurned;
     rocksdb::WriteBatchWithIndex changes(rocksdb::BytewiseComparator(),0,true);
     branchBatch=&changes; branchMemory=&backup;
@@ -125,17 +149,21 @@ int AdoptFork(const ForkEntry& candidate,vector<vector<uint8_t>>& detached) {
         forkBackupKeys+=backup.keys.size(); forkBackupBytes+=backup.saved.Data().size();
         if (valid) DBWriteBatch(*changes.GetWriteBatch());
     } catch (...) {
-        branchBatch=nullptr; branchMemory=nullptr; backup.Restore(); userBurned=savedBurned; detached.clear(); throw;
+        branchBatch=nullptr; branchMemory=nullptr; backup.Restore(); userBurned=savedBurned; detached.clear(); InvalidateExecutionCache(); throw;
     }
-    if (!valid) { backup.Restore(); userBurned=savedBurned; detached.clear(); return -1; }
+    if (!valid) { backup.Restore(); userBurned=savedBurned; detached.clear(); InvalidateExecutionCache(); return -1; }
     PublishPoolUsers(nullptr,&backup.keys);
     lastBranchUsers.clear();
     for (const auto& key:backup.keys) if (key.starts_with("user/")&&key.size()==37) {
         array<uint8_t,32> address; memcpy(address.data(),key.data()+5,32); lastBranchUsers.push_back(address);
     }
     if (oldHeight>common) {
+        forkReexecuteTx+=transactions;
         reorgCount++; auto depth=oldHeight-common,previous=maxReorgDepth.load();
         while (previous<depth&&!maxReorgDepth.compare_exchange_weak(previous,depth)) {}
+    } else {
+        branchAppendTx+=transactions;
+        if (branch.size()>1) groupedCommitBlocks+=branch.size();
     }
     committedTx+=score-oldScore; lastCommitTime=GetSteadyTime(); return 1;
 }
@@ -151,8 +179,26 @@ bool ProcessForks() {
     unordered_set<array<uint8_t,32>,GetMapHash> parents;
     for (const auto& entry:candidates) parents.insert(entry->first.previousHash);
     bool adopted=false;
+    uint64_t height,score,version; array<uint8_t,32> head;
+    auto readHead=[&] {
+        shared_lock stateLock(dbCommitMutex);
+        height=DBReadBlockHeight(); score=DBReadNumber("ChainTx"); version=dbStateVersion; head=DBReadCurrentBlock();
+    };
+    readHead();
     for (const auto& entry:candidates) {
         if (parents.count(entry->first.hash)) continue;
+        {
+            lock_guard forkLock(forkMutex); auto found=forkChecks.find(entry->first.hash);
+            if (found!=forkChecks.end()) {
+                const auto& checked=found->second;
+                // 累计交易数属于不可变父链；链的排名只会提高，较低排名可直接复用。
+                if (checked.ranked&&(checked.score<score||(checked.score==score&&
+                    (entry->first.height<height||(entry->first.height==height&&entry->first.hash>=head))))) {
+                    forkRankSkips++; continue;
+                }
+                if (!checked.ranked&&checked.version==version&&!forkBlocks.count(checked.missing)) { forkParentSkips++; continue; }
+            }
+        }
         vector<vector<uint8_t>> detached;
         auto result=AdoptFork(*entry,detached);
         if (result<0) { RemoveForkBlock(entry->first.hash); forkReady=true; continue; }
@@ -187,6 +233,7 @@ bool ProcessForks() {
             epoch=DBReadBlockHeight()+1; blockReady=false;
         }
         forkReady=true;
+        readHead();
     }
     return adopted;
 }

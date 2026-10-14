@@ -19,42 +19,50 @@ tcp::socket ConnectNode(io_context& io,const string& host,uint16_t port) {
     return socket;
 }
 vector<uint8_t> GenerateTxMessage(const array<uint8_t,176>& tx) { return GenerateMessage(1,tx); }
-void Sender(span<const array<uint8_t,176>> txs,span<const size_t> indices,const string& host,uint16_t port,size_t batch,bool reliable=false) {
+void Sender(span<const array<uint8_t,176>> txs,span<const size_t> indices,const string& host,uint16_t port,size_t batch,bool reliable=false,size_t window=4) {
     if (indices.empty()) return;
     io_context io;
     auto socket=ConnectNode(io,host,port);
-    for (size_t i=0;i<indices.size();i+=batch) {
-        auto num=min(batch,indices.size()-i);
-        vector<uint8_t> message(5+num*176);
-        message[0]=num==1?1:10;
-        WriteU32(message.data()+1,uint32_t(num*176));
-        for (size_t j=0;j<num;j++) memcpy(message.data()+5+j*176,txs[indices[i+j]].data(),176);
-        if (!reliable) { write(socket,buffer(message)); continue; }
-        vector<size_t> pending(indices.begin()+i,indices.begin()+i+num);
-        auto started=steady_clock::now();
-        while (!pending.empty()) {
-            message.resize(5+pending.size()*176); message[0]=44; WriteU32(message.data()+1,uint32_t(pending.size()*176));
-            for (size_t j=0;j<pending.size();j++) memcpy(message.data()+5+j*176,txs[pending[j]].data(),176);
-            write(socket,buffer(message));
-            vector<uint8_t> reply(5+pending.size()); boost::system::error_code error;
+    if (reliable) {
+        struct Pending { vector<size_t> indices; steady_clock::time_point started; };
+        deque<Pending> outstanding,retries; size_t next=0;
+        while (next<indices.size()||!outstanding.empty()||!retries.empty()) {
+            while (outstanding.size()<window&&(!retries.empty()||next<indices.size())) {
+                Pending pending;
+                if (!retries.empty()) { pending=std::move(retries.front()); retries.pop_front(); }
+                else {
+                    auto num=min(batch,indices.size()-next);
+                    pending={vector<size_t>(indices.begin()+next,indices.begin()+next+num),steady_clock::now()}; next+=num;
+                }
+                if (steady_clock::now()-pending.started>seconds(30)) throw runtime_error("Transaction pool remained busy for 30 seconds");
+                vector<uint8_t> message(5+pending.indices.size()*176); message[0]=44;
+                WriteU32(message.data()+1,uint32_t(pending.indices.size()*176));
+                for (size_t j=0;j<pending.indices.size();j++) memcpy(message.data()+5+j*176,txs[pending.indices[j]].data(),176);
+                write(socket,buffer(message)); outstanding.push_back(std::move(pending));
+            }
+            auto pending=std::move(outstanding.front()); outstanding.pop_front();
+            vector<uint8_t> reply(5+pending.indices.size()); boost::system::error_code error;
             steady_timer deadline(io); deadline.expires_after(seconds(30));
             deadline.async_wait([&](boost::system::error_code ec){if (!ec) socket.close();});
             async_read(socket,buffer(reply),[&](boost::system::error_code ec,size_t){error=ec; deadline.cancel();});
             io.restart(); io.run();
             if (error) throw runtime_error("Admission response: "+error.message());
-            if (reply[0]!=45||ReadU32(reply.data()+1)!=pending.size()) throw runtime_error("Invalid admission response");
-            vector<size_t> retry;
-            for (size_t j=0;j<pending.size();j++) {
+            if (reply[0]!=45||ReadU32(reply.data()+1)!=pending.indices.size()) throw runtime_error("Invalid admission response");
+            Pending retry{{},pending.started};
+            for (size_t j=0;j<pending.indices.size();j++) {
                 auto status=reply[5+j];
-                if (status==TxBusy) retry.push_back(pending[j]);
+                if (status==TxBusy) retry.indices.push_back(pending.indices[j]);
                 else if (status!=TxAccepted&&status!=TxKnown) throw runtime_error("Transaction rejected: "+to_string(status));
             }
-            pending=std::move(retry);
-            if (!pending.empty()) {
-                if (steady_clock::now()-started>seconds(30)) throw runtime_error("Transaction pool remained busy for 30 seconds");
-                this_thread::sleep_for(milliseconds(2));
-            }
+            if (!retry.indices.empty()) { retries.push_back(std::move(retry)); this_thread::sleep_for(milliseconds(2)); }
         }
+    } else for (size_t i=0;i<indices.size();i+=batch) {
+        auto num=min(batch,indices.size()-i);
+        vector<uint8_t> message(5+num*176);
+        message[0]=num==1?1:10;
+        WriteU32(message.data()+1,uint32_t(num*176));
+        for (size_t j=0;j<num;j++) memcpy(message.data()+5+j*176,txs[indices[i+j]].data(),176);
+        write(socket,buffer(message));
     }
     boost::system::error_code ec;
     socket.shutdown(tcp::socket::shutdown_send,ec);
@@ -64,7 +72,7 @@ int main(int argc,char* argv[]) {
         if (sodium_init()<0) throw runtime_error("Sodium Init Error");
         string host="127.0.0.1",file,prepare,genesisPath,createWallet,walletPath,receiverText,accountText;
         uint16_t port=8089;
-        size_t count=100000,batch=128,connections=8,walletNum=1024,offset=0;
+        size_t count=100000,batch=128,connections=8,walletNum=1024,offset=0,window=4;
         bool stats=false,countSet=false,reliable=false;
         uint64_t amount=1,nonce=1,initialBalance=1000000000,fee=0;
         for (int i=1;i<argc;i++) {
@@ -79,6 +87,7 @@ int main(int argc,char* argv[]) {
             else if (name=="--count") { count=stoull(value); countSet=true; }
             else if (name=="--batch") batch=stoull(value);
             else if (name=="--connections") connections=stoull(value);
+            else if (name=="--window") window=stoull(value);
             else if (name=="--reliable") { if (value!="0"&&value!="1") throw invalid_argument("Invalid reliable mode"); reliable=value=="1"; }
             else if (name=="--wallets") walletNum=stoull(value);
             else if (name=="--offset") offset=stoull(value);
@@ -93,7 +102,7 @@ int main(int argc,char* argv[]) {
             else if (name=="--nonce") nonce=ReadUserNumber(nlohmann::json::parse(value));
             else throw invalid_argument("Unknown argument: "+name);
         }
-        if (!count||count>(prepare.empty()?2000000:size_t(100000000))||!batch||batch>6000||!connections||connections>64||!walletNum||walletNum>100000) throw invalid_argument("Invalid sender limits");
+        if (!count||count>(prepare.empty()?2000000:size_t(100000000))||!batch||batch>maxProtocolTx||!connections||connections>64||!window||window>64||!walletNum||walletNum>100000) throw invalid_argument("Invalid sender limits");
         if (!createWallet.empty()) {
             if (filesystem::exists(createWallet)) throw invalid_argument("Wallet file already exists");
             auto wallet=GenerateWallet();
@@ -201,7 +210,7 @@ int main(int argc,char* argv[]) {
         vector<thread> threads;
         for (size_t i=0;i<connections;i++) {
             threads.emplace_back([&,i] {
-                try { Sender(txs,groups[i],host,port,batch,reliable); }
+                try { Sender(txs,groups[i],host,port,batch,reliable,window); }
                 catch (const exception& e) { failed=true; lock_guard lock(errorMutex); errorMessage=e.what(); }
             });
         }

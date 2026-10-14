@@ -22,7 +22,7 @@ bool VerifyMessageSize(uint8_t type,uint32_t size) {
         case 4:case 8:case 13:return size==0;
         case 5:case 6:case 12:return size==8;
         case 9:return size%6==0&&size<=1024*6;
-        case 10:return size>0&&size%176==0&&size<=6000*176;
+        case 10:return size>0&&size%176==0&&size<=maxProtocolTx*176;
         case 11:return size==16;
         case 14:return size<=16384;
         case 15:return size==32;
@@ -39,13 +39,13 @@ bool VerifyMessageSize(uint8_t type,uint32_t size) {
         case 30:case 32:case 34:case 36:case 38:return size<=16384;
         case 31:case 37:return size>0&&size%32==0&&size<=128*32;
         case 33:case 35:return size==0;
-        case 39:return size>=145&&size<=112+6000*33;
-        case 40:return size>32&&(size-32)%4==0&&size<=32+6000*4;
+        case 39:return size>=145&&size<=112+maxProtocolTx*33;
+        case 40:return size>32&&(size-32)%4==0&&size<=32+maxProtocolTx*4;
         case 41:return size>=216;
         case 42:return size==10;
         case 43:return size>=118;
-        case 44:return size>0&&size%176==0&&size<=6000*176;
-        case 45:return size>0&&size<=6000;
+        case 44:return size>0&&size%176==0&&size<=maxProtocolTx*176;
+        case 45:return size>0&&size<=maxProtocolTx;
         default:return false;
     }
 }

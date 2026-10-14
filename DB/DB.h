@@ -29,6 +29,7 @@ bool dbSync=true;
 bool dbLegacyKeys=false;
 bool experimentIndex=false;
 atomic<uint64_t> dbWriteNs{0},dbWriteCount{0};
+atomic<uint64_t> dbPrepareNs{0},dbBatchBytes{0};
 UserMap users;
 uint64_t userBurned=0;
 UserMap poolUsers;
@@ -105,7 +106,7 @@ void InitDB(const string& path="test",bool sync=true) {
     db.reset(openedDB);
     string version;
     if (DBGet("SchemaVersion",version)) {
-        if (version!="6") throw runtime_error("Compact transaction indexes require schema 6. Use a NEW --data directory with --genesis.");
+        if (version!="7") throw runtime_error("Height transaction indexes require schema 7. Use a NEW --data directory with --genesis.");
         string saved;
         if (!DBGet("GenesisConfig",saved)) throw runtime_error("Missing genesis account configuration");
         auto config=nlohmann::json::parse(saved);
@@ -184,6 +185,7 @@ void DBWriteBatch(rocksdb::WriteBatch& batch) {
     writeOptions.sync=dbSync;
     CheckDBStatus(db->Write(writeOptions,&batch));
     dbWriteNs+=GetSteadyTime()-start;
+    dbBatchBytes+=batch.Data().size();
     dbWriteCount++;
 }
 void DBWriteTx(const array<uint8_t,32>& key,const array<uint8_t,176>& value) {
@@ -318,15 +320,30 @@ bool DBApplyBlockUsers(const vector<uint8_t>& data,UserMap& changed,EvmExecution
     return true;
 }
 
+bool DBReadTxPosition(const array<uint8_t,32>& key,uint64_t& height,array<uint8_t,32>& block,uint32_t& index) {
+    string value;
+    if (!DBGet(DBHashKey("tx/",key),value)) return false;
+    if (value.size()!=12) throw runtime_error("Invalid transaction position");
+    auto encoded=reinterpret_cast<const uint8_t*>(value.data());
+    height=ReadU64(encoded); index=ReadU32(encoded+8);
+    string hash;
+    if (!height||!DBGet("height/"+to_string(height),hash)||hash.size()!=32) throw runtime_error("Missing transaction height");
+    memcpy(block.data(),hash.data(),32); return true;
+}
 bool DBReadTx(const array<uint8_t,32>& key,array<uint8_t,176>& tx) {
     string value;
     if (!DBGet(DBHashKey("tx/",key),value)) return false;
+    // 原始写入微基准仍可读取完整交易；业务格式 7 保存高度和位置。
     if (value.size()==176) { memcpy(tx.data(),value.data(),176); return true; }
-    if (value.size()!=36) throw runtime_error("Invalid transaction position");
-    array<uint8_t,32> block; memcpy(block.data(),value.data(),32);
+    if (value.size()!=12) throw runtime_error("Invalid transaction position");
+    auto encoded=reinterpret_cast<const uint8_t*>(value.data());
+    auto height=ReadU64(encoded); auto index=ReadU32(encoded+8);
+    string hash;
+    if (!height||!DBGet("height/"+to_string(height),hash)||hash.size()!=32) throw runtime_error("Missing indexed height");
+    array<uint8_t,32> block; memcpy(block.data(),hash.data(),32);
     string data;
     if (!DBGet(DBHashKey("block/",block),data)||data.size()<112) throw runtime_error("Missing indexed block");
-    auto index=ReadU32(reinterpret_cast<const uint8_t*>(value.data()+32));
+    if (ReadU64(reinterpret_cast<const uint8_t*>(data.data()+64))!=height||memcmp(data.data()+80,block.data(),32)) throw runtime_error("Indexed block height mismatch");
     auto count=ReadU64(reinterpret_cast<const uint8_t*>(data.data()+72));
     if (index>=count||count>(data.size()-112)/176) throw runtime_error("Invalid transaction offset");
     memcpy(tx.data(),data.data()+112+size_t(index)*176,176);
@@ -441,7 +458,7 @@ bool DBCommitBlockLocked(const array<uint8_t,32>& hash,const vector<uint8_t>& da
     UserMap changed;
     EvmExecution execution;
     unique_ptr<CachedExecution> cached;
-    if (!branchBatch) {
+    {
         lock_guard cacheLock(executionMutex);
         for (auto it=executionCache.begin();it!=executionCache.end();++it) {
             if ((*it)->version==dbStateVersion&&(*it)->parent==previousHash&&(*it)->height==height&&(*it)->data==data) {
@@ -459,6 +476,7 @@ bool DBCommitBlockLocked(const array<uint8_t,32>& hash,const vector<uint8_t>& da
     auto burned=userBurned+num*baseFee;
     if (execution.gasUsed>genesisSupply-burned) return false;
     burned+=execution.gasUsed;
+    auto prepareStart=GetSteadyTime();
     // 写盘前准备哈希桶；提交后直接转移新增账户节点，减少状态发布时的分配。
     if (users.size()+changed.size()>users.bucket_count()*users.max_load_factor()) users.reserve(max(users.size()*2,users.size()+changed.size()));
     rocksdb::WriteBatch batch;
@@ -467,9 +485,8 @@ bool DBCommitBlockLocked(const array<uint8_t,32>& hash,const vector<uint8_t>& da
         array<uint8_t,32> txHash;
         memcpy(txHash.data(),tx+80,32);
         // 连续账户序号已排除历史重放和块内重复，直接写交易索引。
-        array<uint8_t,36> position; memcpy(position.data(),hash.data(),32); WriteU32(position.data()+32,uint32_t(i));
+        array<uint8_t,12> position; WriteU64(position.data(),height); WriteU32(position.data()+8,uint32_t(i));
         batch.Put(DBHashKey("tx/",txHash),rocksdb::Slice(reinterpret_cast<const char*>(position.data()),position.size()));
-        if (experimentIndex) batch.Put(DBHashKey("txheight/",txHash),to_string(height));
         if (auto found=payloads.find(i);found!=payloads.end()) batch.Put(DBHashKey("input/",txHash),rocksdb::Slice(reinterpret_cast<const char*>(found->second.data()),found->second.size()));
     }
     for (const auto& [key,user]:changed) DBAddUser(batch,key,user);
@@ -540,6 +557,7 @@ bool DBCommitBlockLocked(const array<uint8_t,32>& hash,const vector<uint8_t>& da
     batch.Put(DBHashKey("block/",hash),rocksdb::Slice(reinterpret_cast<const char*>(data.data()),data.size()));
     batch.Put(DBHashKey("header/",hash),rocksdb::Slice(reinterpret_cast<const char*>(data.data()),112));
     SaveBranchMemory(batch);
+    dbPrepareNs+=GetSteadyTime()-prepareStart;
     DBWriteBatch(batch);
     if (!branchBatch) PublishPoolUsers(&changed);
     auto writeCount=changed.size();

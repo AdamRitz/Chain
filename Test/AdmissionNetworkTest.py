@@ -9,20 +9,20 @@ def Reply(connection,payload):
     assert kind==45 and count==len(payload)//176
     return ReadAll(connection,count)
 
-def FullBlockBatch(binary,work):
+def FullBlockBatch(binary,work,count=6000):
     work.mkdir(parents=True)
     dataset=work/'transactions.bin'
-    Run([binary/ExeName('sender'),'--prepare',dataset,'--count',24000,'--wallets',64])
+    Run([binary/ExeName('sender'),'--prepare',dataset,'--count',4*count,'--wallets',64])
     txs=dataset.read_bytes();node=StartNode(binary,work,'full-batch',produce=0)
     try:
         parent=bytes.fromhex(GetStats(node['port'])['head']);blocks=[]
         for index in range(4):
-            payload=txs[index*6000*176:(index+1)*6000*176]
+            payload=txs[index*count*176:(index+1)*count*176]
             leaves=[payload[offset+80:offset+112] for offset in range(0,len(payload),176)]
             while len(leaves)>1:
                 if len(leaves)%2:leaves.append(leaves[-1])
                 leaves=[hashlib.blake2b(leaves[i]+leaves[i+1],digest_size=32).digest() for i in range(0,len(leaves),2)]
-            header=parent+leaves[0]+struct.pack('<QQ',index+2,6000)
+            header=parent+leaves[0]+struct.pack('<QQ',index+2,count)
             parent=hashlib.blake2b(header,digest_size=32).digest();blocks.append(header+parent+payload)
         with socket.socket() as probe:
             probe.bind(('127.0.0.1',0));peer_port=probe.getsockname()[1]
@@ -37,9 +37,9 @@ def FullBlockBatch(binary,work):
                     assert not json.loads(response)['failed'];break
             for block in blocks:
                 connection.sendall(Frame(43,struct.pack('<H',1)+struct.pack('<I',len(block))+block))
-            stats=WaitStats(node['port'],lambda s:s['height']==5 and s['chain_transactions']==24000 and s['pending']==0,timeout=10)
+            stats=WaitStats(node['port'],lambda s:s['height']==5 and s['chain_transactions']==4*count and s['pending']==0,timeout=15)
             assert stats['head']==parent.hex() and stats['invalid']==0 and stats['rejected']==0
-            VerifyAccounts(node['port'],dataset,24000,str(dataset)+'.genesis.json')
+            VerifyAccounts(node['port'],dataset,4*count,str(dataset)+'.genesis.json')
     finally:StopNode(node)
 
 def Check(binary,work):
@@ -58,14 +58,21 @@ def Check(binary,work):
             assert Reply(connection,txs[:16*176])==b'\x01'*16
             altered=bytearray(txs[5417*176:5418*176]); altered[112]^=1
             assert Reply(connection,altered)==b'\x03'
+        # 同一连接的反馈按请求顺序返回，批量验证完成次序可不同。
+        with socket.create_connection(('127.0.0.1',node['port']),timeout=10) as connection:
+            connection.sendall(b'\x02'+Frame(44,txs[:512*176])+Frame(44,altered)+Frame(44,txs[:176]))
+            for count,expected in [(512,{1}),(1,{3}),(1,{1})]:
+                kind,size=struct.unpack('<BI',ReadAll(connection,5))
+                assert kind==45 and size==count and set(ReadAll(connection,size))==expected
         stats=WaitStats(node['port'],lambda s:s['ready_pool']==5416)
         assert stats['gap_accepted']>0 and stats['pool_busy']>0
     finally:StopNode(node)
     FullBlockBatch(binary,work/'full-block-batch')
+    FullBlockBatch(binary,work/'large-block-batch',10000)
     node=StartNode(binary,work,'reliable',**{'max-pool':6000})
     try:
         result=Run([binary/ExeName('sender'),'--host','127.0.0.1','--port',node['port'],'--file',dataset,
-                    '--count',20000,'--batch',512,'--connections',4,'--reliable',1],timeout=60)
+                    '--count',20000,'--batch',512,'--connections',4,'--reliable',1,'--window',4],timeout=60)
         assert result['sent']==20000
         stats=WaitStats(node['port'],lambda s:s['chain_transactions']==20000 and s['pool']==0)
         assert not stats['failed']

@@ -1,4 +1,6 @@
 #include <iostream>
+#include <future>
+#include <barrier>
 #include "../Network/Server.h"
 using namespace std;
 void Require(bool ok,const char* name) { if (!ok) throw runtime_error(name); }
@@ -6,6 +8,13 @@ int main() {
     try {
         if (sodium_init()<0) return 1;
         auto wallet=GenerateWallet(),receiver=GenerateWallet();
+        auto shared=GenerateTx(wallet.public_key,receiver.public_key,1,50000,wallet);
+        auto before=signatureChecks.load(); barrier start(16); vector<future<bool>> tasks;
+        for (size_t i=0;i<16;i++) tasks.push_back(async(launch::async,[&] { start.arrive_and_wait(); return VerifyTransaction(shared); }));
+        for (auto& task:tasks) Require(task.get(),"concurrent signature verification");
+        Require(signatureChecks-before==1,"concurrent identical content performs one signature check");
+        auto altered=shared; altered[112]^=1;
+        Require(!VerifyTransaction(altered),"shared verification still binds the entire signature");
         Block block; block.height=2;
         vector<array<uint8_t,32>> hashes;
         for (uint64_t i=1;i<=512;i++) {
@@ -51,6 +60,12 @@ int main() {
         batch[2+4+first.size()+4]^=1; decoded.clear();
         Require(!ReadBlockBatch(batch,decoded),"batch rejects disconnected parent");
         Require(!VerifyMessageSize(40,33)&&!VerifyMessageSize(42,9)&&!VerifyMessageSize(43,117),"compact and batch framing bounds");
+        Require(VerifyMessageSize(39,112+maxProtocolTx*33)&&VerifyMessageSize(44,maxProtocolTx*176)&&
+                !VerifyMessageSize(44,(maxProtocolTx+1)*176),"ten-thousand-transaction protocol bounds");
+        Block large; large.height=2; large.txs.assign(maxProtocolTx,block.txs[0]);
+        auto largeBytes=SerializeBlockALL(large); EvmPayloads empty;
+        Require(ReadEvmPayloads(largeBytes,empty)&&largeBytes.size()<maxBlockBytes,"ten-thousand transactions fit the encoded byte budget");
+        large.txs.push_back(block.txs[0]); Require(!ReadEvmPayloads(SerializeBlockALL(large),empty),"protocol count bound checked independently of bytes");
         boost::asio::io_context io;
         AnnounceBlock(first);
         Require(recentBlockTransactions.empty(),"local-only node avoids relay cache allocations");
@@ -59,6 +74,18 @@ int main() {
         AnnounceBlock(first);
         Require(recentBlockTransactions.size()==block.txs.size()&&recentBlockTransactions.at(hashes[0])==vector<uint8_t>(block.txs[0].begin(),block.txs[0].end()),"recent verified transactions remain available after pool removal");
         Require(relayTransactionBytes<=maxRelayTransactionBytes&&recentBlockTransactions.size()<=maxRecentBlockTransactions,"recent relay cache budget");
+        recentBlockTransactions.clear(); relayTransactionOrder.clear(); relayTransactionBytes=0;
+        auto relayBudget=maxRelayTransactionBytes; maxRelayTransactionBytes=176;
+        Block limited; limited.height=2; limited.txs={GenerateTx(wallet.public_key,receiver.public_key,1,50001,wallet)};
+        limited.evm[0]=vector<uint8_t>(45,0); memcpy(limited.evm[0].data(),"EVM1",4);
+        WriteU64(limited.evm[0].data()+5,100000); memcpy(limited.evm[0].data()+13,genesisRoot.data(),32);
+        auto inputHash=EvmTransactionHash(limited.txs[0],limited.evm[0]); memcpy(limited.txs[0].data()+80,inputHash.data(),32);
+        crypto_sign_detached(limited.txs[0].data()+112,nullptr,inputHash.data(),32,wallet.private_key.data());
+        limited.merkleRoot=MerkleCompute(vector<array<uint8_t,32>>{inputHash});
+        auto limitedBytes=SerializeBlockALL(limited); Require(VerifyBlock(limitedBytes),"signed contract input for limited relay cache");
+        AnnounceBlock(limitedBytes);
+        Require(recentBlockTransactions.empty()&&relayTransactionBytes==0,"input larger than configured relay byte budget is fetched from the full block");
+        maxRelayTransactionBytes=relayBudget;
         peerPool.clear();neighbor.reset();
         weak_ptr<Peer> alive;
         {

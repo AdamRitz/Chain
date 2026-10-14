@@ -32,8 +32,8 @@ void AddConfiguredPeer(const string& value) {
 }
 int main(int argc,char* argv[]) {
     try {
-        string configPath,dataPath="data/accounts-v6",metricsPath,genesisPath;
-        int ioNum=4,verifyNum=8,runSeconds=0;
+        string configPath,dataPath="data/accounts-v7",metricsPath,genesisPath;
+        int ioNum=4,verifyNum=8,candidateNum=0,blockVerifyCount=0,queryNum=1,runSeconds=0;
         bool sync=true,observeClock=false;
         for (int i=1;i<argc;i++) {
             if (string(argv[i])=="--config"&&i+1<argc) configPath=argv[++i];
@@ -48,6 +48,9 @@ int main(int argc,char* argv[]) {
             if (node["genesis"]) genesisPath=node["genesis"].as<string>();
             if (node["io_threads"]) ioNum=node["io_threads"].as<int>();
             if (node["verify_threads"]) verifyNum=node["verify_threads"].as<int>();
+            if (node["candidate_threads"]) candidateNum=node["candidate_threads"].as<int>();
+            if (node["block_verify_threads"]) blockVerifyCount=node["block_verify_threads"].as<int>();
+            if (node["query_threads"]) queryNum=node["query_threads"].as<int>();
             if (node["block_ms"]) blockInterval=node["block_ms"].as<int>();
             if (node["sync"]) sync=node["sync"].as<bool>();
             if (node["produce"]) produceBlocks=node["produce"].as<bool>();
@@ -64,8 +67,18 @@ int main(int argc,char* argv[]) {
             else if (name=="--port") listenPort=uint16_t(ParseNumber(value,1,65535));
             else if (name=="--io-threads") ioNum=int(ParseNumber(value,1,64));
             else if (name=="--verify-threads") verifyNum=int(ParseNumber(value,1,64));
+            else if (name=="--candidate-threads") candidateNum=int(ParseNumber(value,1,64));
+            else if (name=="--block-verify-threads") blockVerifyCount=int(ParseNumber(value,1,64));
+            else if (name=="--query-threads") queryNum=int(ParseNumber(value,1,4));
+            else if (name=="--signature-cache") maxVerifiedPerBucket=(ParseNumber(value,16,4194304)+15)/16;
+            else if (name=="--recent-tx-cache") {
+                maxRecentBlockTransactions=ParseNumber(value,16,2097152);
+                maxRelayTransactionBytes=max(size_t(32*1024*1024),maxRecentBlockTransactions*176);
+            }
+            else if (name=="--recent-tx-bytes") maxRelayTransactionBytes=ParseNumber(value,176,512*1024*1024);
+            else if (name=="--sync-window") syncWindow=ParseNumber(value,4,64);
             else if (name=="--block-ms") blockInterval=int(ParseNumber(value,1,5000));
-            else if (name=="--max-block-txs") maxBlockTx=ParseNumber(value,1,6000);
+            else if (name=="--max-block-txs") maxBlockTx=ParseNumber(value,1,maxProtocolTx);
             else if (name=="--max-pool") maxPoolTx=ParseNumber(value,6000,2000000);
             else if (name=="--max-pending") maxPendingVerify=ParseNumber(value,6000,1000000);
             else if (name=="--sync") sync=ParseNumber(value,0,1)!=0;
@@ -88,6 +101,9 @@ int main(int argc,char* argv[]) {
             else throw invalid_argument("Unknown argument: "+name);
         }
         if (ioNum<1||ioNum>64||verifyNum<1||verifyNum>64||blockInterval<1||blockInterval>5000||listenPort==0) throw invalid_argument("Invalid node configuration");
+        if (!candidateNum) candidateNum=min(4,verifyNum);
+        if (!blockVerifyCount) blockVerifyCount=min(4,verifyNum);
+        if (candidateNum<1||candidateNum>64||blockVerifyCount<1||blockVerifyCount>64||queryNum<1||queryNum>4) throw invalid_argument("Invalid worker configuration");
         if (nodeClock.roundMs&&!nodeClock.candidateMs) nodeClock.candidateMs=max(1,nodeClock.roundMs/4);
         if (nodeClock.candidateMs>=nodeClock.roundMs&&nodeClock.candidateMs) throw invalid_argument("Candidate window must be shorter than round");
         InitTime();
@@ -97,11 +113,13 @@ int main(int argc,char* argv[]) {
         InitWallet();
         GenerateGenesisBlock();
         txpool.reserve(maxPoolTx);
+        for (auto& cache:verifiedTransactions) { cache.hashes.reserve(maxVerifiedPerBucket); cache.pending.reserve(32); }
         io_context io;
         nodeIO=&io;
         verifyThreads=make_unique<thread_pool>(verifyNum);
-        candidateThreads=make_unique<thread_pool>(min(4,verifyNum));
-        blockVerifyNum=min(size_t(4),size_t(verifyNum));
+        candidateThreads=make_unique<thread_pool>(candidateNum);
+        queryThreads=make_unique<thread_pool>(queryNum);
+        blockVerifyNum=size_t(blockVerifyCount);
         blockVerifyThreads=make_unique<thread_pool>(blockVerifyNum);
         auto guard=make_work_guard(io);
         auto stop=[&] { io.stop(); };
@@ -131,6 +149,8 @@ int main(int argc,char* argv[]) {
         // 先停止网络接收，再完成已经入队的验证，最后提交剩余交易。
         verifyThreads->join();
         candidateThreads->join();
+        queryThreads->join();
+        queryThreads.reset();
         candidateThreads.reset();
         nodeRunning=false;
         WakeMainLoop();
@@ -149,7 +169,9 @@ int main(int argc,char* argv[]) {
         auto stats=GetNodeStats();
         stats["io_threads"]=ioNum;
         stats["verify_threads"]=verifyNum;
-        stats["candidate_threads"]=min(4,verifyNum);
+        stats["candidate_threads"]=candidateNum;
+        stats["block_verify_threads"]=blockVerifyCount;
+        stats["query_threads"]=queryNum;
         stats["hardware_threads"]=thread::hardware_concurrency();
         stats["block_ms"]=blockInterval;
         stats["max_block_txs"]=maxBlockTx;

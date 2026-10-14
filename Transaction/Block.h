@@ -118,29 +118,41 @@ vector<uint8_t> GenerateBlock() {
         lock_guard lock(txpoolMutex);
         selected.reserve(min(maxBlockTx,txpool.size()));
         vector<pair<array<uint8_t,32>,uint64_t>> dropped;
+        struct ReadyUser {
+            array<uint8_t,32> key; User available;
+            map<uint64_t,array<uint8_t,32>>::const_iterator next,end;
+        };
+        vector<ReadyUser> ready;
+        ready.reserve(txUserPool.size());
         for (const auto& [key,entry]:txUserPool) {
-            if (selected.size()==maxBlockTx) break;
-            const auto& pending=entry.txs;
-            auto available=GetUser(users,key);
-            for (auto it=pending.upper_bound(available.nonce);it!=pending.end()&&selected.size()<maxBlockTx;++it) {
-                const auto& tx=txpool.at(it->second);
+            auto user=GetUser(users,key); auto next=entry.txs.upper_bound(user.nonce);
+            if (next!=entry.txs.end()) ready.push_back({key,user,next,entry.txs.end()});
+        }
+        sort(ready.begin(),ready.end(),[](const auto& a,const auto& b) { return a.key<b.key; });
+        // 公钥顺序固定，每轮每账户取一笔，连续序号在块满之前公平推进。
+        while (!ready.empty()&&selected.size()<maxBlockTx) {
+            for (auto& item:ready) {
+                if (selected.size()==maxBlockTx) break;
+                auto& available=item.available; const auto& key=item.key;
+                const auto& tx=txpool.at(item.next->second);
                 auto amount=ReadU64(tx.data()+64),nonce=ReadU64(tx.data()+72);
-                auto evm=evmPool.find(it->second);
+                auto evm=evmPool.find(item.next->second);
                 bool contract=evm!=evmPool.end();
                 auto extra=contract?evm->second.size()+8:0;
                 auto gas=contract?ReadU64(evm->second.data()+5):0;
-                if (blockBytes+176+extra>maxBlockBytes||gas>maxBlockGas-gasBudget) break;
+                if (blockBytes+176+extra>maxBlockBytes||gas>maxBlockGas-gasBudget) { item.next=item.end; continue; }
                 if (!(contract?CheckEvmUserTx(available,tx,evm->second):CheckUserTx(available,amount,nonce))) {
                     if (available.nonce<UINT64_MAX&&nonce==available.nonce+1) dropped.emplace_back(key,nonce);
-                    break;
+                    item.next=item.end; continue;
                 }
                 available.nonce=nonce;
                 available.balance-=baseFee;
                 if (contract||memcmp(tx.data(),tx.data()+32,32)!=0) available.balance-=amount;
-                if (contract) { available.balance-=gas; payloads.emplace(it->second,evm->second); }
+                if (contract) { available.balance-=gas; payloads.emplace(item.next->second,evm->second); }
                 gasBudget+=gas; blockBytes+=176+extra;
-                selected.emplace_back(it->second,tx);
+                selected.emplace_back(item.next->second,tx); ++item.next;
             }
+            erase_if(ready,[](const auto& item) { return item.next==item.end; });
         }
         for (const auto& [key,nonce]:dropped) DropUserPoolFrom(key,nonce);
     }
@@ -229,7 +241,7 @@ void GenerateGenesisBlock() {
     DBAddBlock(batch,block.hash,data);
     batch.Put("CurrentBlock",rocksdb::Slice(reinterpret_cast<const char*>(block.hash.data()),32));
     batch.Put("BlockHeight","1");
-    batch.Put("SchemaVersion","6");
+    batch.Put("SchemaVersion","7");
     batch.Put("ChainTx","0");
     batch.Put(DBHashKey("score/",block.hash),"0");
     batch.Put("GenesisConfig",GetGenesisConfig().dump());

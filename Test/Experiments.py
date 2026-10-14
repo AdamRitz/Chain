@@ -364,10 +364,19 @@ def ValidatePlan(plan):
         value = plan.get(name, plan['duration'])
         if not isinstance(value, (int, float)) or not math.isfinite(value) or value <= 0:
             raise ValueError(f'{name} must be positive')
-    if not math.isfinite(plan['warmup']) or plan['warmup'] < 0 or not isinstance(plan['repeats'], int) or not 1 <= plan['repeats'] <= 100 or not isinstance(plan['batch'], int) or not 1 <= plan['batch'] <= 6000:
+    if not math.isfinite(plan['warmup']) or plan['warmup'] < 0 or not isinstance(plan['repeats'], int) or not 1 <= plan['repeats'] <= 100 or not isinstance(plan['batch'], int) or not 1 <= plan['batch'] <= 10000:
         raise ValueError('Invalid warmup, repeat count or batch size')
-    if not isinstance(plan.get('latency_batch', plan['batch']), int) or not 1 <= plan.get('latency_batch', plan['batch']) <= 6000:
-        raise ValueError('latency_batch must be 1..6000')
+    if not isinstance(plan.get('latency_batch', plan['batch']), int) or not 1 <= plan.get('latency_batch', plan['batch']) <= 10000:
+        raise ValueError('latency_batch must be 1..10000')
+    limits={'candidate-threads':(1,64),'block-verify-threads':(1,64),'query-threads':(1,4),
+            'signature-cache':(16,4194304),'recent-tx-cache':(16,2097152),
+            'recent-tx-bytes':(176,512*1024*1024),'sync-window':(4,64)}
+    for name,value in plan.get('node_settings',{}).items():
+        if name not in limits or not isinstance(value,int) or isinstance(value,bool) or not limits[name][0]<=value<=limits[name][1]:
+            raise ValueError(f'Invalid node setting: {name}')
+    for mode,settings in plan.get('modes',MODES).items():
+        if mode not in MODES or set(settings)!={'block-ms','max-block-txs'} or not 1<=settings['block-ms']<=5000 or not 1<=settings['max-block-txs']<=10000:
+            raise ValueError('Invalid block mode settings')
     for name in ['io_threads', 'verify_threads']:
         if not isinstance(plan[name], int) or not 1 <= plan[name] <= 64:
             raise ValueError(f'{name} must be 1..64')
@@ -444,7 +453,8 @@ def Main(args):
                     'sync-period-ms': plan['sync_period_ms'], 'sync-gain': plan['sync_gain'],
                     'round-ms': plan['round_ms'], 'relay-transactions': plan['ingress'] == 'shard',
                     'run-seconds': min(86400, int(plan['warmup']+max(plan['duration'], plan.get('sync_duration', 0))+plan['drain_seconds']+180))}
-        settings.update(MODES[case.get('mode', 'latency')])
+        settings.update({**MODES,**plan.get('modes',{})}[case.get('mode', 'latency')])
+        settings.update(plan.get('node_settings',{}))
         if case['suite'] == 'sync':
             settings.update({'clock-sync': int(case['sync']), 'clock-observe': 1,
                              'offsets_ms': plan['offsets_ms'], 'drifts_ppm': plan['drifts_ppm']})

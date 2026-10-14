@@ -169,4 +169,21 @@ printf '%s' '{"action":"clear-fault","root":"/var/tmp/chain-experiments","run":"
 
 `Experiments.py` 负责负载、采样、核对和实验矩阵；`Cluster.py` 负责节点清单、连接和生命周期；`ClusterWorker.py` 负责本地或远程进程操作；`Netem.py` 负责有范围的内核扰动；`PlotExperiments.py` 负责出图。模块之间直接传递字典与文件路径。
 
-交易确认观测通过可选 `--experiment-index 1` 写入 `txheight/<hash>`。索引和区块一起原子提交，随分叉回滚恢复。所有对比组使用相同设置。已有数据库开启该开关后，只为新提交交易建立索引，正式测量始终使用新数据库。批量观测协议和锁规则见 `MODULE_GUIDE.md`。
+交易确认观测通过可选 `--experiment-index 1` 开启查询。格式 7 直接复用 `tx/<hash>` 的高度与位置，索引和区块一起原子提交，随分叉回滚恢复。所有对比组使用相同设置，正式测量始终使用新数据库。批量观测协议和锁规则见 `MODULE_GUIDE.md`。
+
+## 十台服务器参数对照
+
+正式吞吐量实验使用十台服务器，每台一个节点。通过 `--inventory` 提供清单，固定相同签名数据、创世配置、同步落盘和测量窗口。完整账户、供应总量和共同链检查复用既有实验入口，所有失败轮次保留。本地运行正确性回归。
+
+正式计划可使用 `modes` 覆盖 `latency` 或 `throughput` 的 `block-ms`、`max-block-txs`，单块笔数为 1..10000；`node_settings` 支持候选、冷验签、查询线程和两种缓存、同步窗口参数。旧计划默认值保持原定义。跨版本对照固定双方支持的参数，较大区块与线程参数对照单独列组。
+
+```json
+{
+  "modes": {"throughput": {"block-ms": 50, "max-block-txs": 10000}},
+  "node_settings": {"candidate-threads": 4, "block-verify-threads": 4,
+                    "signature-cache": 1048576, "recent-tx-cache": 262144,
+                    "sync-window": 8}
+}
+```
+
+以上为加入完整实验计划的可选字段。首次十台部署需要全部使用同一新版程序与全新格式 7 数据目录。账户创世配置、区块字节上限和燃料规则继续核对。

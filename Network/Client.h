@@ -16,6 +16,10 @@ using tcp=ip::tcp;
 io_context* nodeIO=nullptr;
 unique_ptr<thread_pool> verifyThreads;
 unique_ptr<thread_pool> candidateThreads;
+unique_ptr<thread_pool> queryThreads;
+atomic<size_t> pendingQueries{0};
+atomic<uint64_t> queryWaitNs{0},ingressWaitNs{0},syncOwner{0},syncOwnerSkips{0};
+size_t syncWindow=8;
 atomic<size_t> pendingTxVerify{0},pendingBlockVerify{0},pendingTxBytes{0},pendingBlockBytes{0};
 atomic<uint64_t> txQueueWaitNs{0},blockQueueWaitNs{0};
 atomic<size_t> pendingVerify{0},peakPendingVerify{0},connectionCount{0};
@@ -44,6 +48,8 @@ struct Peer:enable_shared_from_this<Peer> {
     uint16_t port=0;
     array<uint8_t,4> address{};
     array<uint8_t,32> requestedHead{};
+    uint64_t admissionRead=0,admissionWrite=0;
+    map<uint64_t,vector<uint8_t>> admissionReplies;
     bool writing=false,closed=false,syncing=false,compact=false;
     uint64_t clockToken=0,clockSentSteady=0;
     int64_t clockSentLogical=0;
@@ -83,6 +89,7 @@ void ClosePeer(const shared_ptr<Peer>& peer) {
     peer->deadline.cancel();
     peer->socket.close(ignored);
     peer->messageQueue.clear();
+    peer->admissionReplies.clear();
     peer->queuedBytes=0;
     if (peer->key) RemovePeer(peer->key);
 }
@@ -121,6 +128,20 @@ void SendData(const shared_ptr<Peer>& peer,shared_ptr<const vector<uint8_t>> dat
 }
 void SendData(const shared_ptr<Peer>& peer,vector<uint8_t> data) {
     SendData(peer,make_shared<const vector<uint8_t>>(std::move(data)));
+}
+void SendAdmission(const shared_ptr<Peer>& peer,uint64_t order,vector<uint8_t> results) {
+    post(peer->strand,[peer,order,results=std::move(results)]() mutable {
+        if (peer->closed) return;
+        if (peer->admissionReplies.size()>=128) { ClosePeer(peer); return; }
+        peer->admissionReplies.emplace(order,std::move(results));
+        while (true) {
+            auto found=peer->admissionReplies.find(peer->admissionWrite);
+            if (found==peer->admissionReplies.end()) break;
+            QueueData(peer,make_shared<const vector<uint8_t>>(GenerateMessage(45,found->second)));
+            if (peer->closed) return;
+            peer->admissionReplies.erase(found); peer->admissionWrite++;
+        }
+    });
 }
 // 普通函数只负责投递，调用它就会安排广播；大缓冲区在节点间共享。
 void BroadcastData(vector<uint8_t> data,uint64_t source=0) {
@@ -208,7 +229,12 @@ awaitable<void> ProcessDiscoverMessage(vector<uint8_t> data) {
         });
     }
 }
+struct SyncCompletion {
+    shared_ptr<Peer> peer;
+    ~SyncCompletion() { peer->syncing=false; auto owner=peer->key; syncOwner.compare_exchange_strong(owner,0); }
+};
 awaitable<void> SyncBlock(shared_ptr<Peer> peer) {
+    SyncCompletion complete{peer};
     steady_timer timer(co_await this_coro::executor);
     uint64_t requested=DBReadBlockHeight(),progress=requested;
     auto lastProgress=steady_clock::now();
@@ -222,7 +248,7 @@ awaitable<void> SyncBlock(shared_ptr<Peer> peer) {
             peer->requestedHead={}; QueryHeight(peer);
         }
         requested=max(requested,height);
-        auto limit=min(peer->remoteHeight,height+8);
+        auto limit=min(peer->remoteHeight,height+syncWindow);
         while (requested<limit) {
             auto count=uint16_t(min(uint64_t(4),limit-requested));
             if (peer->compact) {
@@ -233,7 +259,14 @@ awaitable<void> SyncBlock(shared_ptr<Peer> peer) {
         }
         timer.expires_after(milliseconds(2)); co_await timer.async_wait(use_awaitable);
     }
-    peer->syncing=false;
+}
+void StartSync(const shared_ptr<Peer>& peer) {
+    if (peer->syncing||peer->closed||!peer->key) return;
+    uint64_t owner=0;
+    if (!syncOwner.compare_exchange_strong(owner,peer->key)) { syncOwnerSkips++; return; }
+    peer->syncing=true;
+    try { co_spawn(peer->strand,SyncBlock(peer),[peer](exception_ptr error){if (error) PeerError(peer,error);}); }
+    catch (...) { peer->syncing=false; owner=peer->key; syncOwner.compare_exchange_strong(owner,0); throw; }
 }
 awaitable<void> OpenDiscoveryMode() {
     steady_timer timer(co_await this_coro::executor);
@@ -333,6 +366,11 @@ void MainLoop() {
                 blockReady=false;
             }
             if (selected.second.empty()) continue;
+            // 已收到连续后继时复用分支批次，一次同步写盘发布整段状态。
+            if (HasForkChild(selected.first.hash)) {
+                QueueForkBlock(selected.first,selected.second,false); forkReady=true;
+                if (ProcessForks()) { AnnounceBlock(DBReadBlockByHash(DBReadCurrentBlock())); continue; }
+            }
             if (!CommitBlock(selected.first,selected.second)) {
                 spdlog::warn("Rejected candidate at height {}",selected.first.height);
                 continue;
@@ -364,11 +402,15 @@ nlohmann::json GetNodeStats() {
     auto first=firstTxTime.load();
     auto last=lastCommitTime.load();
     double elapsed=last>first&&first?double(last-first)/1e9:0;
-    shared_lock lock(dbCommitMutex);
+    uint64_t height,chainTx,burned;
+    size_t userCount,evmCount; array<uint8_t,32> head;
+    { shared_lock lock(dbCommitMutex);
+      height=DBReadBlockHeight(); head=DBReadCurrentBlock(); chainTx=DBReadNumber("ChainTx");
+      burned=userBurned; userCount=users.size(); evmCount=evmState.get_accounts().size(); }
     nlohmann::json stats={{"received",receivedTx.load()},{"valid",validTx.load()},{"invalid",invalidTx.load()},
         {"duplicate",duplicateTx.load()},{"rejected",rejectedTx.load()},{"committed",committedTx.load()},
         {"pool",poolSize},{"ready_pool",readySize},{"pending",pendingVerify.load()},{"peak_pending",peakPendingVerify.load()},
-        {"blocks",blockCount.load()},{"height",DBReadBlockHeight()},{"head",U32ToHex(DBReadCurrentBlock())},
+        {"blocks",blockCount.load()},{"height",height},{"head",U32ToHex(head)},
         {"elapsed_seconds",elapsed},{"local_commit_tps",elapsed>0?committedTx.load()/elapsed:0},
         {"verify_worker_ms",verifyNs.load()/1e6},{"pool_worker_ms",poolNs.load()/1e6},
         {"signature_checks",signatureChecks.load()},{"signature_cache_hits",signatureCacheHits.load()},
@@ -378,13 +420,14 @@ nlohmann::json GetNodeStats() {
         {"queue_wait_ms",queueWaitNs.load()/1e6},{"block_build_ms",blockBuildNs.load()/1e6},
         {"block_verify_ms",blockVerifyNs.load()/1e6},{"db_write_ms",dbWriteNs.load()/1e6},
         {"db_writes",dbWriteCount.load()},{"network_bytes",networkBytes.load()},{"sync",dbSync},
+        {"db_prepare_ms",dbPrepareNs.load()/1e6},{"db_batch_bytes",dbBatchBytes.load()},
         {"bloom_useful",options.statistics->getTickerCount(rocksdb::BLOOM_FILTER_USEFUL)},
-        {"users",users.size()},{"base_fee",baseFee},{"user_burned",userBurned},
-        {"user_supply",genesisSupply-userBurned},{"invalid_user_tx",invalidUserTx.load()},
+        {"users",userCount},{"base_fee",baseFee},{"user_burned",burned},
+        {"user_supply",genesisSupply-burned},{"invalid_user_tx",invalidUserTx.load()},
         {"conflict_tx",conflictTx.load()},{"invalid_user_blocks",invalidUserBlocks.load()},
         {"user_check_ms",userCheckNs.load()/1e6},{"user_writes",userWriteCount.load()},
-        {"chain_transactions",DBReadNumber("ChainTx")},{"reorganizations",reorgCount.load()},{"max_reorg_depth",maxReorgDepth.load()},
-        {"evm_accounts",evmState.get_accounts().size()}, {"peers",peers},{"failed",nodeFailed.load()},
+        {"chain_transactions",chainTx},{"reorganizations",reorgCount.load()},{"max_reorg_depth",maxReorgDepth.load()},
+        {"evm_accounts",evmCount}, {"peers",peers},{"failed",nodeFailed.load()},
         {"network_sent_bytes",networkSentBytes.load()},{"local_proposals",localProposals.load()},
         {"compact_announcements",compactAnnouncements.load()},{"compact_reconstructed",compactReconstructed.load()},
         {"missing_transactions",missingTransactions.load()},{"relay_suppressed",relaySuppressed.load()},
@@ -402,8 +445,15 @@ nlohmann::json GetNodeStats() {
         {"fork_attempts",forkAttempts.load()},{"fork_walk_ms",forkWalkNs.load()/1e6},
         {"fork_lock_wait_ms",forkLockWaitNs.load()/1e6},{"fork_backup_keys",forkBackupKeys.load()},
         {"fork_backup_bytes",forkBackupBytes.load()},{"replayed_transactions",replayedTx.load()},
-        {"clock",GetClockStats()},{"experiment_index",experimentIndex}};
-    lock.unlock();
+        {"fork_rank_skips",forkRankSkips.load()},{"fork_parent_skips",forkParentSkips.load()},
+        {"branch_append_transactions",branchAppendTx.load()},{"fork_reexecute_transactions",forkReexecuteTx.load()},
+        {"grouped_commit_blocks",groupedCommitBlocks.load()},
+        {"signature_cache_evictions",signatureCacheEvictions.load()},{"signature_shared_checks",signatureSharedChecks.load()},
+        {"signature_wait_ms",signatureWaitNs.load()/1e6},{"signature_cache_capacity",maxVerifiedPerBucket*verifiedTransactions.size()},
+        {"recent_tx_capacity",maxRecentBlockTransactions},{"recent_tx_bytes_limit",maxRelayTransactionBytes},
+        {"sync_owner_skips",syncOwnerSkips.load()},{"sync_window",syncWindow},
+        {"pending_queries",pendingQueries.load()},{"query_wait_ms",queryWaitNs.load()/1e6},
+        {"ingress_wait_ms",ingressWaitNs.load()/1e6},{"clock",GetClockStats()},{"experiment_index",experimentIndex}};
     stats.update(GetProcessResources());
     return stats;
 }

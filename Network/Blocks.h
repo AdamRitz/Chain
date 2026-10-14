@@ -18,7 +18,7 @@ deque<array<uint8_t,32>> relayOrder,sourceOrder,announceOrder;
 unordered_map<array<uint8_t,32>,vector<uint8_t>,GetMapHash> recentBlockTransactions;
 deque<array<uint8_t,32>> relayTransactionOrder;
 size_t relayTransactionBytes=0;
-constexpr size_t maxRelayTransactionBytes=16*1024*1024,maxRecentBlockTransactions=32768;
+size_t maxRelayTransactionBytes=32*1024*1024,maxRecentBlockTransactions=131072;
 size_t compactBytes=0,relayBytes=0;
 constexpr size_t maxCompactBytes=32*1024*1024,maxCompactBlocks=16,maxRelayBytes=32*1024*1024;
 atomic<uint64_t> compactAnnouncements{0},compactReconstructed{0},missingTransactions{0},relaySuppressed{0};
@@ -86,6 +86,7 @@ void AnnounceBlock(const vector<uint8_t>& data) {
             array<uint8_t,32> txHash; memcpy(txHash.data(),data.data()+112+i*176+80,32);
             if (recentBlockTransactions.count(txHash)) continue;
             auto input=payloads.find(i); auto size=size_t(176)+(input==payloads.end()?0:input->second.size());
+            if (size>maxRelayTransactionBytes) continue;
             while (!relayTransactionOrder.empty()&&(recentBlockTransactions.size()>=maxRecentBlockTransactions||relayTransactionBytes+size>maxRelayTransactionBytes)) {
                 auto found=recentBlockTransactions.find(relayTransactionOrder.front());relayTransactionBytes-=found->second.size();
                 recentBlockTransactions.erase(found);relayTransactionOrder.pop_front();
@@ -131,7 +132,7 @@ void SubmitCompactBlock(const array<uint8_t,32>& hash,const shared_ptr<CompactBl
 void ReceiveCompactBlock(const shared_ptr<Peer>& peer,const vector<uint8_t>& data) {
     if (!peer->compact||data.size()<112) return;
     auto num=ReadU64(data.data()+72),height=ReadU64(data.data()+64);
-    if (!num||num>6000||data.size()!=112+num*33||height<2) return;
+    if (!num||num>maxProtocolTx||data.size()!=112+num*33||height<2) return;
     array<uint8_t,32> hash,calculated; memcpy(hash.data(),data.data()+80,32);
     crypto_generichash(calculated.data(),32,data.data(),80,nullptr,0);
     if (hash!=calculated) return;
@@ -176,7 +177,7 @@ void ReceiveCompactBlock(const shared_ptr<Peer>& peer,const vector<uint8_t>& dat
                 auto offset=request.size(); request.resize(offset+4); WriteU32(request.data()+offset,uint32_t(i)); block->missing++;
             }
         }
-        if (compactBlocks.count(hash)||inflightBlocks.count(hash)||block->bytes>maxCompactBytes-compactBytes) return;
+        if (compactBlocks.count(hash)||inflightBlocks.count(hash)||compactBlocks.size()>=maxCompactBlocks||block->bytes>maxCompactBytes-compactBytes) return;
         if (block->missing) { compactBytes+=block->bytes; compactBlocks.emplace(hash,block); }
         else inflightBlocks[hash]=GetSteadyTime();
     }

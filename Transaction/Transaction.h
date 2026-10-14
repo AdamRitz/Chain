@@ -49,13 +49,17 @@ atomic<uint64_t> txCommitWaitNs{0},txReadNs{0},txPoolWaitNs{0};
 atomic<uint64_t> verifyNs{0},poolNs{0},committedTx{0},firstTxTime{0},lastCommitTime{0};
 atomic<uint64_t> gapAcceptedTx{0},poolBusyTx{0};
 atomic<uint64_t> signatureChecks{0},signatureCacheHits{0},poolRefreshNs{0};
+atomic<uint64_t> signatureCacheEvictions{0},signatureWaitNs{0},signatureSharedChecks{0};
 struct VerifiedTransactions {
     mutex lock;
+    condition_variable condition;
     unordered_set<array<uint8_t,32>,GetMapHash> hashes;
+    unordered_set<array<uint8_t,32>,GetMapHash> pending;
+    size_t waiters=0;
     deque<array<uint8_t,32>> order;
 };
 array<VerifiedTransactions,16> verifiedTransactions;
-constexpr size_t maxVerifiedPerBucket=8192;
+size_t maxVerifiedPerBucket=32768;
 atomic<bool> nodeRunning{true},nodeFailed{false};
 
 // 调用方持有交易池锁。提交某个序号后，一起清理该账户已过期的候选交易。
@@ -151,9 +155,21 @@ bool VerifyTransaction(const array<uint8_t,176>& data,span<const uint8_t> payloa
     crypto_generichash_final(&state,fingerprint.data(),fingerprint.size());
     auto& cache=verifiedTransactions[fingerprint[0]%verifiedTransactions.size()];
     {
-        lock_guard lock(cache.lock);
+        unique_lock lock(cache.lock);
+        if (cache.pending.count(fingerprint)) {
+            auto start=GetSteadyTime(); signatureSharedChecks++;
+            cache.waiters++;
+            cache.condition.wait(lock,[&] { return !cache.pending.count(fingerprint); });
+            cache.waiters--;
+            signatureWaitNs+=GetSteadyTime()-start;
+        }
         if (cache.hashes.count(fingerprint)) { signatureCacheHits++; return true; }
+        cache.pending.insert(fingerprint);
     }
+    struct Complete {
+        VerifiedTransactions& cache; const array<uint8_t,32>& fingerprint;
+        ~Complete() { lock_guard lock(cache.lock); cache.pending.erase(fingerprint); if (cache.waiters) cache.condition.notify_all(); }
+    } complete{cache,fingerprint};
     array<uint8_t,32> hash;
     if (payload.empty()) crypto_generichash(hash.data(),32,data.data(),80,nullptr,0);
     else {
@@ -165,7 +181,9 @@ bool VerifyTransaction(const array<uint8_t,176>& data,span<const uint8_t> payloa
     {
         lock_guard lock(cache.lock);
         if (!cache.hashes.count(fingerprint)) {
-            if (cache.order.size()==maxVerifiedPerBucket) { cache.hashes.erase(cache.order.front()); cache.order.pop_front(); }
+            while (cache.order.size()>=maxVerifiedPerBucket) {
+                cache.hashes.erase(cache.order.front()); cache.order.pop_front(); signatureCacheEvictions++;
+            }
             cache.hashes.insert(fingerprint); cache.order.push_back(fingerprint);
         }
     }
@@ -175,7 +193,7 @@ bool VerifyTransaction(const array<uint8_t,176>& data,span<const uint8_t> payloa
 // ------------------------------------------------交易处理入口------------------------------------------------
 // 锁外批量验签，锁内检查账户状态并更新交易池。
 size_t ProcessTxPackage(span<const uint8_t> data,vector<uint8_t>* results=nullptr) {
-    if (data.empty()||data.size()%176!=0||data.size()/176>6000) return 0;
+    if (data.empty()||data.size()%176!=0||data.size()/176>maxProtocolTx) return 0;
     if (results) results->assign(data.size()/176,TxInvalid);
     uint64_t expected=0;
     firstTxTime.compare_exchange_strong(expected,GetSteadyTime());
@@ -193,7 +211,7 @@ size_t ProcessTxPackage(span<const uint8_t> data,vector<uint8_t>* results=nullpt
     verifyNs+=GetSteadyTime()-start;
     start=GetSteadyTime();
     size_t added=0;
-    // 查询可并发；提交拿独占锁，防止确认与重新入池之间出现竞态。
+    // 账户镜像保持到本批交易入池完成，再允许提交发布新序号。
     shared_lock commitLock(poolUsersMutex);
     auto readStart=GetSteadyTime();
     txCommitWaitNs+=readStart-start;
@@ -232,6 +250,7 @@ size_t ProcessTxPackage(span<const uint8_t> data,vector<uint8_t>* results=nullpt
             added++; if (results) (*results)[index]=TxAccepted;
         }
     }
+    commitLock.unlock();
     validTx+=added;
     poolNs+=GetSteadyTime()-start;
     if (added) WakeMainLoop();

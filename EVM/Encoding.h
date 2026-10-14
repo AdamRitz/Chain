@@ -7,6 +7,7 @@
 #include "../Tool/Tool.h"
 using namespace std;
 constexpr size_t maxBlockBytes=2*1024*1024;
+constexpr size_t maxProtocolTx=10000;
 constexpr size_t maxEvmInput=49152;
 constexpr uint64_t maxEvmGas=10000000,maxBlockGas=30000000;
 using EvmPayloads=map<size_t,vector<uint8_t>>;
@@ -14,7 +15,7 @@ bool ReadEvmPayloads(span<const uint8_t> block,EvmPayloads& result) {
     result.clear();
     if (block.size()<112||block.size()>maxBlockBytes) return false;
     auto count=ReadU64(block.data()+72);
-    if (count>6000||count>(block.size()-112)/176) return false;
+    if (count>maxProtocolTx||count>(block.size()-112)/176) return false;
     size_t offset=112+count*176;
     if (offset==block.size()) return true;
     if (block.size()-offset<8||memcmp(block.data()+offset,"EVT1",4)) return false;
