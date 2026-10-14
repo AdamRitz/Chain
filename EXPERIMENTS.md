@@ -1,6 +1,6 @@
 # 五组多节点实验
 
-统一入口是 `Test/Experiments.py`，实验参数在 `Experiments/plan.json`。节点从清单读取，当前正式性能计划固定十个节点，每轮测量 30 秒、重复三轮。正确性回归使用本机临时节点。十台服务器及更大规模的运行结果由部署后的实验生成。
+统一入口是 `Test/Experiments.py`，实验参数在 `Experiments/plan.json`。节点从清单读取，当前正式性能计划固定十个节点，默认从每秒 20,000 笔起步，共五个档位，每轮测量 10 秒、各一次。正确性回归使用本机临时节点。十台服务器及更大规模的运行结果由部署后的实验生成。
 
 ## 实验内容
 
@@ -22,13 +22,13 @@
 
 ```powershell
 python -m pip install -r Experiments/requirements.txt
-python Test/Experiments.py --local 3 --bin build --plan Experiments/smoke.json --work experiment-results/smoke-001
+python Test/Experiments.py --local 3 --bin build --plan Experiments/smoke.json --suite all --work experiment-results/smoke-001
 python Test/PlotExperiments.py --work experiment-results/smoke-001
 ```
 
 在本机已有多个 Python 时，使用装有 `psutil`、`matplotlib` 的解释器完整路径。Windows 节点运行时，将对应 MinGW 动态库目录加入 `PATH`。
 
-快速配置包含 11 个用例，覆盖五组实验的主流程；故障用例执行进程离线和重启。Linux 网络故障另用正式配置执行。`--work` 必须是新目录，末级目录名使用英文字母、数字、短横线、下划线，长度最多 60 个字符。原始结果和数据库均保留在该目录或远端清单指定的 `root` 下。
+快速配置包含 11 个用例，覆盖五组实验的主流程；故障用例执行进程离线和重启。Linux 网络故障另用正式配置执行。`--work` 必须是新目录，末级目录名使用英文字母、数字、短横线、下划线，长度最多 60 个字符。参数、统计和日志保留在结果目录。每轮结束后停止节点并删除该轮数据库，失败用例使用新数据库复跑。
 
 ## Ubuntu 24.04 构建
 
@@ -90,11 +90,11 @@ bash scripts/Build-Linux.sh --install
 .venv/bin/python Test/PlotExperiments.py --work experiment-results/throughput-001
 ```
 
-将 `--suite` 改为 `sync`、`latency`、`scale`、`fault` 或 `all` 即可切换。`--dry-run` 校验配置并输出节点和用例；正式运行会保存配置副本和随机排列后的用例顺序。失败默认停止，`--keep-going` 保留失败记录并继续其他用例。
+将 `--suite` 改为 `sync`、`latency`、`scale`、`fault` 或 `all` 即可切换。`--dry-run` 校验配置并输出节点和用例；正式运行保存配置副本和用例顺序。单次吞吐量组按输入速率升序执行，其他矩阵按固定随机种子排列。失败默认停止，`--keep-going` 保留失败记录并继续其他用例。
 
-正式计划重复三次、预热 5 秒、测量 30 秒，最多等待 20 秒清空积压。时间同步测量 15 秒。`nodes=10` 和 `node_counts=[10]` 固定使用十个节点；清单规模更大时使用前十个节点。建议先逐组运行，再根据饱和位置细化发送速率。每一轮完整运行使用新的目录名。
+默认计划为每秒 20,000、30,000、40,000、50,000、60,000 笔五个档位，各运行一次；预热 2 秒、测量 10 秒，最多等待 5 秒清空积压。吞吐量组只使用大吞吐模式。时间同步测量 5 秒。`nodes=10` 和 `node_counts=[10]` 固定使用十个节点；清单规模更大时使用前十个节点。建议先逐组运行，再根据饱和位置细化发送速率。每一轮完整运行使用新的目录名。
 
-默认最大数据集为 350 万笔，每笔 176 字节，约 616 MB。数据集由控制机逐笔生成并通过内存映射发送。各节点数据库另外占用磁盘，清单中的远端目录保留所有用例数据，长批次要预留相应空间。
+默认最大数据集为 72 万笔，每笔 176 字节，约 126.72 MB。数据集由控制机逐笔生成并通过内存映射发送。各节点数据库另外占用磁盘，每轮停止和收集结果后删除该轮数据库；参数、统计和日志保留。本次短测复用了既有 350 万笔签名文件，各档只发送所需前缀。
 
 结果文件：
 
@@ -108,6 +108,7 @@ bash scripts/Build-Linux.sh --install
 | `clock.json` | 时钟差及探测往返时间 |
 | `latency-samples.json`、`events.json` | 交易抽样时间及故障时刻 |
 | `node*.json` | 远端进程记录、退出统计和日志末尾 |
+| `node*-database-cleanup.json` | 每个节点的数据库删除结果 |
 | `cleanup-errors.json` | 需要继续处理的退出或网络清理失败 |
 | `figures/` | PNG 位图、SVG 矢量图和图表口径 |
 
@@ -145,7 +146,7 @@ bash scripts/Build-Linux.sh --install
 | `--round-ms` | 按逻辑时钟对齐候选生成时刻，0 为原有凑块流程 |
 | `--candidate-ms` | 候选收集时间，默认轮长的四分之一且至少 1 毫秒 |
 
-正式计划默认 `round_ms=0`，吞吐量和实时性组复用当前出块方式。研究同步对出块的影响时，保存两份计划，固定 `round_ms` 为相同值，例如 50，分别设置 `clock_sync=false/true`。偏差和漂移注入目前用于 `sync` 组；带负载的偏差实验可通过各节点 `options` 配置，但清单自动生成的 `clock-offset-ms`、`clock-drift-ppm` 会以 `offsets_ms`、`drifts_ppm` 数组为准。例如 `"options":{"offsets_ms":[-40,40],"drifts_ppm":[-20,20]}`。
+默认短测计划采用 `clock_sync=true`、`round_ms=50`，通过 `node_settings` 设置 `candidate-ms=12`，与本次十台吞吐量测试一致。研究同步对出块的影响时，保存两份计划，固定相同 `round_ms`，分别设置 `clock_sync=false/true`。偏差和漂移注入目前用于 `sync` 组；带负载的偏差实验可通过各节点 `options` 配置，但清单自动生成的 `clock-offset-ms`、`clock-drift-ppm` 会以 `offsets_ms`、`drifts_ppm` 数组为准。例如 `"options":{"offsets_ms":[-40,40],"drifts_ppm":[-20,20]}`。
 
 轮次开关控制候选生成和收集，分支选择仍按现有累计有效交易数、高度及哈希比较。当前结果用于衡量同步和调度效果，最终确认协议、身份权重与恶意时钟处理属于后续协议研究。
 
@@ -163,7 +164,7 @@ printf '%s' '{"action":"clear-fault","root":"/var/tmp/chain-experiments","run":"
 
 同样可把 `action` 改为 `stop` 停止对应节点。程序按进程编号、创建时间和可执行文件共同验证归属。清理失败记录保留以便继续处理。若控制机被强制结束，远端节点仍会根据 `--run-seconds` 到期退出，网络扰动租约需要执行上述清理。
 
-故障施加和撤销在节点之间逐个执行，时间线记录操作完成时刻。恢复时间从开始执行恢复操作，计到连续三次观测到全部节点链头一致的首个时刻，包含节点启动或撤销网络规则的时间；开始时刻另存为 `recovery_started_seconds`。默认分区持续 3 秒；当前分叉恢复窗口为 256 块，扩大隔离时长时一并核对分叉深度。
+故障施加和撤销在节点之间逐个执行，时间线记录操作完成时刻。恢复时间从开始执行恢复操作，计到连续三次观测到全部节点链头一致的首个时刻，包含节点启动或撤销网络规则的时间；开始时刻另存为 `recovery_started_seconds`。默认分区持续 2 秒；当前分叉恢复窗口为 256 块，扩大隔离时长时一并核对分叉深度。
 
 ## 后续修改入口
 
@@ -173,9 +174,9 @@ printf '%s' '{"action":"clear-fault","root":"/var/tmp/chain-experiments","run":"
 
 ## 十台服务器参数对照
 
-正式吞吐量实验使用十台服务器，每台一个节点。通过 `--inventory` 提供清单，固定相同签名数据、创世配置、同步落盘和测量窗口。完整账户、供应总量和共同链检查复用既有实验入口，所有失败轮次保留。本地运行正确性回归。
+正式吞吐量实验使用十台服务器，每台一个节点。通过 `--inventory` 提供清单，固定相同签名数据、创世配置、同步落盘和测量窗口。完整账户、供应总量和共同链检查复用既有实验入口，所有失败轮次的参数、统计和日志保留，数据库在节点停止后删除。本地运行正确性回归。
 
-正式计划可使用 `modes` 覆盖 `latency` 或 `throughput` 的 `block-ms`、`max-block-txs`，单块笔数为 1..10000；`node_settings` 支持候选、冷验签、查询线程和两种缓存、同步窗口参数。旧计划默认值保持原定义。跨版本对照固定双方支持的参数，较大区块与线程参数对照单独列组。
+正式计划可使用 `modes` 覆盖 `latency` 或 `throughput` 的 `block-ms`、`max-block-txs`，单块笔数为 1..10000；`node_settings` 支持候选、冷验签、查询线程和两种缓存、同步窗口参数。历史结果按当时计划解释。跨版本对照固定双方支持的参数，较大区块与线程参数对照单独列组。
 
 ```json
 {
@@ -187,3 +188,9 @@ printf '%s' '{"action":"clear-fault","root":"/var/tmp/chain-experiments","run":"
 ```
 
 以上为加入完整实验计划的可选字段。首次十台部署需要全部使用同一新版程序与全新格式 7 数据目录。账户创世配置、区块字节上限和燃料规则继续核对。
+
+## 测试数据生命周期
+
+每轮结束依次停止节点、保存进程与退出统计、收集日志、删除该轮 `db` 目录。`ClusterWorker.py` 的 `delete-db` 校验实际目录、记录的 `--data` 参数和进程身份；`Cluster.Close` 并行处理全部已启动节点。通过和失败轮次均清理，结果目录保留。问题用同一程序、签名数据、创世配置和参数，在新数据库上复跑。
+
+默认入口运行 `throughput`。需要完整五组时显式使用 `--suite all`；需要两种区块模式时，在 `throughput_modes` 中填写 `["latency", "throughput"]`。增加测量时长、档位或重复数时先遵循 `AGENTS.md` 中的用户偏好。

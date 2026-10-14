@@ -339,7 +339,7 @@ def MakeCases(plan, suite, count):
         for name in ['latency', 'throughput']:
             if suite in ['all', name]:
                 for rate in plan[name+'_rates']:
-                    for mode in MODES:
+                    for mode in plan.get(name+'_modes', list(MODES)):
                         for pattern in (plan['patterns'] if name == 'latency' else ['steady']):
                             cases.append({'suite': name, 'mode': mode, 'rate': rate, 'pattern': pattern,
                                           'repeat': repeat, 'nodes': count})
@@ -353,7 +353,10 @@ def MakeCases(plan, suite, count):
             for fault in plan['faults']:
                 cases.append({'suite': 'fault', 'mode': 'latency', 'rate': plan['fault_rate'],
                               'repeat': repeat, 'nodes': count, 'fault': fault})
-    random.Random(plan['seed']).shuffle(cases)
+    if suite == 'throughput' and plan['repeats'] == 1:
+        cases.sort(key=lambda case: case['rate'])
+    else:
+        random.Random(plan['seed']).shuffle(cases)
     return cases
 
 
@@ -368,7 +371,7 @@ def ValidatePlan(plan):
         raise ValueError('Invalid warmup, repeat count or batch size')
     if not isinstance(plan.get('latency_batch', plan['batch']), int) or not 1 <= plan.get('latency_batch', plan['batch']) <= 10000:
         raise ValueError('latency_batch must be 1..10000')
-    limits={'candidate-threads':(1,64),'block-verify-threads':(1,64),'query-threads':(1,4),
+    limits={'candidate-threads':(1,64),'candidate-ms':(0,5000),'block-verify-threads':(1,64),'query-threads':(1,4),
             'signature-cache':(16,4194304),'recent-tx-cache':(16,2097152),
             'recent-tx-bytes':(176,512*1024*1024),'sync-window':(4,64)}
     for name,value in plan.get('node_settings',{}).items():
@@ -389,6 +392,10 @@ def ValidatePlan(plan):
         raise ValueError('Node counts must be 2..512')
     if not plan['offsets_ms'] or not plan['drifts_ppm'] or not plan['patterns'] or any(p not in ['steady', 'burst'] for p in plan['patterns']):
         raise ValueError('Offsets, drifts and traffic patterns must be supplied')
+    for name in ['latency_modes', 'throughput_modes']:
+        modes = plan.get(name, list(MODES))
+        if not isinstance(modes, list) or not modes or any(not isinstance(mode, str) or mode not in MODES for mode in modes) or len(set(modes)) != len(modes):
+            raise ValueError('Block modes must be a nonempty list of supported modes')
     for fault in plan['faults']:
         if fault['kind'] not in ['offline', 'partition', 'delay', 'loss'] or fault['start'] < 0 or fault['duration'] <= 0:
             raise ValueError('Invalid fault plan')
@@ -503,7 +510,7 @@ if __name__ == '__main__':
     parser.add_argument('--bin', type=Path, required=True, help='Controller-side sender binary directory')
     parser.add_argument('--plan', type=Path, default=Path(__file__).resolve().parents[1]/'Experiments/plan.json')
     parser.add_argument('--work', type=Path, required=True, help='A NEW directory with a simple unique name')
-    parser.add_argument('--suite', choices=['all', 'sync', 'latency', 'throughput', 'scale', 'fault'], default='all')
+    parser.add_argument('--suite', choices=['all', 'sync', 'latency', 'throughput', 'scale', 'fault'], default='throughput')
     parser.add_argument('--dry-run', action='store_true')
     parser.add_argument('--keep-going', action='store_true')
     arguments = parser.parse_args(); arguments.bin = arguments.bin.resolve(); arguments.work = arguments.work.resolve()

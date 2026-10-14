@@ -1,0 +1,262 @@
+{
+  "new-20000-r1": [
+    {
+      "host": "10.206.0.16",
+      "removed": 0,
+      "paths": []
+    },
+    {
+      "host": "10.206.0.4",
+      "removed": 0,
+      "paths": []
+    },
+    {
+      "host": "10.206.0.14",
+      "removed": 0,
+      "paths": []
+    },
+    {
+      "host": "10.206.0.17",
+      "removed": 0,
+      "paths": []
+    },
+    {
+      "host": "10.206.0.15",
+      "removed": 0,
+      "paths": []
+    },
+    {
+      "host": "10.206.0.12",
+      "removed": 0,
+      "paths": []
+    },
+    {
+      "host": "10.206.0.2",
+      "removed": 0,
+      "paths": []
+    },
+    {
+      "host": "10.206.0.6",
+      "removed": 0,
+      "paths": []
+    },
+    {
+      "host": "10.206.0.11",
+      "removed": 0,
+      "paths": []
+    },
+    {
+      "host": "10.206.0.8",
+      "removed": 0,
+      "paths": []
+    }
+  ],
+  "new-30000-r1": [
+    {
+      "host": "10.206.0.16",
+      "removed": 0,
+      "paths": []
+    },
+    {
+      "host": "10.206.0.4",
+      "removed": 0,
+      "paths": []
+    },
+    {
+      "host": "10.206.0.14",
+      "removed": 0,
+      "paths": []
+    },
+    {
+      "host": "10.206.0.17",
+      "removed": 0,
+      "paths": []
+    },
+    {
+      "host": "10.206.0.15",
+      "removed": 0,
+      "paths": []
+    },
+    {
+      "host": "10.206.0.12",
+      "removed": 0,
+      "paths": []
+    },
+    {
+      "host": "10.206.0.2",
+      "removed": 0,
+      "paths": []
+    },
+    {
+      "host": "10.206.0.6",
+      "removed": 0,
+      "paths": []
+    },
+    {
+      "host": "10.206.0.11",
+      "removed": 0,
+      "paths": []
+    },
+    {
+      "host": "10.206.0.8",
+      "removed": 0,
+      "paths": []
+    }
+  ],
+  "new-40000-r1": [
+    {
+      "host": "10.206.0.16",
+      "removed": 0,
+      "paths": []
+    },
+    {
+      "host": "10.206.0.4",
+      "removed": 0,
+      "paths": []
+    },
+    {
+      "host": "10.206.0.14",
+      "removed": 0,
+      "paths": []
+    },
+    {
+      "host": "10.206.0.17",
+      "removed": 0,
+      "paths": []
+    },
+    {
+      "host": "10.206.0.15",
+      "removed": 0,
+      "paths": []
+    },
+    {
+      "host": "10.206.0.12",
+      "removed": 0,
+      "paths": []
+    },
+    {
+      "host": "10.206.0.2",
+      "removed": 0,
+      "paths": []
+    },
+    {
+      "host": "10.206.0.6",
+      "removed": 0,
+      "paths": []
+    },
+    {
+      "host": "10.206.0.11",
+      "removed": 0,
+      "paths": []
+    },
+    {
+      "host": "10.206.0.8",
+      "removed": 0,
+      "paths": []
+    }
+  ],
+  "new-50000-r1": [
+    {
+      "host": "10.206.0.16",
+      "removed": 0,
+      "paths": []
+    },
+    {
+      "host": "10.206.0.4",
+      "removed": 0,
+      "paths": []
+    },
+    {
+      "host": "10.206.0.14",
+      "removed": 0,
+      "paths": []
+    },
+    {
+      "host": "10.206.0.17",
+      "removed": 0,
+      "paths": []
+    },
+    {
+      "host": "10.206.0.15",
+      "removed": 0,
+      "paths": []
+    },
+    {
+      "host": "10.206.0.12",
+      "removed": 0,
+      "paths": []
+    },
+    {
+      "host": "10.206.0.2",
+      "removed": 0,
+      "paths": []
+    },
+    {
+      "host": "10.206.0.6",
+      "removed": 0,
+      "paths": []
+    },
+    {
+      "host": "10.206.0.11",
+      "removed": 0,
+      "paths": []
+    },
+    {
+      "host": "10.206.0.8",
+      "removed": 0,
+      "paths": []
+    }
+  ],
+  "new-60000-r1": [
+    {
+      "host": "10.206.0.16",
+      "removed": 0,
+      "paths": []
+    },
+    {
+      "host": "10.206.0.4",
+      "removed": 0,
+      "paths": []
+    },
+    {
+      "host": "10.206.0.14",
+      "removed": 0,
+      "paths": []
+    },
+    {
+      "host": "10.206.0.17",
+      "removed": 0,
+      "paths": []
+    },
+    {
+      "host": "10.206.0.15",
+      "removed": 0,
+      "paths": []
+    },
+    {
+      "host": "10.206.0.12",
+      "removed": 0,
+      "paths": []
+    },
+    {
+      "host": "10.206.0.2",
+      "removed": 0,
+      "paths": []
+    },
+    {
+      "host": "10.206.0.6",
+      "removed": 0,
+      "paths": []
+    },
+    {
+      "host": "10.206.0.11",
+      "removed": 0,
+      "paths": []
+    },
+    {
+      "host": "10.206.0.8",
+      "removed": 0,
+      "paths": []
+    }
+  ]
+}

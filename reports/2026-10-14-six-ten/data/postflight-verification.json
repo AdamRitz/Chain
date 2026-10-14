@@ -1,0 +1,18 @@
+{
+  "method": "FinalSixCloud.py; read-only parallel checks on all ten hosts; remote exit 0",
+  "stopped_nodes": 10,
+  "remaining_test_databases": 0,
+  "minimum_free_gib": 10.147918701171875,
+  "binary_sha256": "882d7e8607b121113cd13558914940b8c9651b07d13bc242889a4844959cd4f5",
+  "test_roots": [
+    "scratch-six-c4a8724",
+    "scratch-quick-c4a8724"
+  ],
+  "checks": [
+    "no build/boost processes",
+    "port 8089 has no listener",
+    "test database directories absent",
+    "all binary checksums match"
+  ],
+  "record": "summary captured from verified command stdout; detailed per-host JSON remains on controller"
+}

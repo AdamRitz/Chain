@@ -8,7 +8,7 @@ import time
 from types import SimpleNamespace
 from unittest.mock import patch
 from Cluster import Cluster, LocalInventory, NodeClient, ReadInventory
-from ClusterWorker import CaseDirectory
+from ClusterWorker import CaseDirectory, Handle
 from Experiments import LoadCase, MakeCases, ValidatePlan
 from ForkNetworkTest import MakeBlock
 from Netem import NetemCommands, ClearNetem
@@ -127,6 +127,11 @@ def TestRounds(binary, work):
                       'offsets_ms': [-40, 40], 'io-threads': 2, 'verify-threads': 2, 'run-seconds': 60}, work)
     try:
         cluster.Start()
+        try:
+            Handle({'action': 'delete-db', 'root': nodes[0]['root'], 'run': 'rounds', 'node': nodes[0]['id']})
+            raise AssertionError('Running node database was deleted')
+        except RuntimeError:
+            pass
         time.sleep(1)
         result = LoadCase(cluster, case, plan, dataset, genesis, work)
         assert result['drained'] and result['sent_unique'] == 300 and result['unresolved_samples'] == 0, result
@@ -134,6 +139,10 @@ def TestRounds(binary, work):
     finally:
         cluster.Close()
     assert not cluster.cleanup_errors, cluster.cleanup_errors
+    for node in nodes:
+        directory = CaseDirectory({'root': node['root'], 'run': 'rounds', 'node': node['id']})
+        assert not (directory/'db').exists()
+        assert (directory/'process.json').exists() and (directory/'node.log').exists()
 
 
 if __name__ == '__main__':

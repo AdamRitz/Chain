@@ -214,7 +214,7 @@ class Cluster:
                 self.faulted.remove(index)
             except Exception as error:
                 self.cleanup_errors.append(str(error))
-        for index in sorted(self.started):
+        def CloseOne(index):
             self.clients[index].Close()
             try:
                 Worker(self.nodes[index], {'action': 'stop', 'run': self.run})
@@ -222,6 +222,12 @@ class Cluster:
                 (self.output/(self.nodes[index]['id']+'.json')).write_text(json.dumps(data, indent=2), encoding='utf-8')
             except Exception as error:
                 self.cleanup_errors.append(str(error))
+            try:
+                data = Worker(self.nodes[index], {'action': 'delete-db', 'run': self.run})
+                (self.output/(self.nodes[index]['id']+'-database-cleanup.json')).write_text(json.dumps(data, indent=2), encoding='utf-8')
+            except Exception as error:
+                self.cleanup_errors.append(str(error))
+        self.All(CloseOne, sorted(self.started))
         self.pool.shutdown(wait=True)
         if self.cleanup_errors:
             (self.output/'cleanup-errors.json').write_text(json.dumps(self.cleanup_errors, indent=2))

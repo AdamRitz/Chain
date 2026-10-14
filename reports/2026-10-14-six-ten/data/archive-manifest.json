@@ -1,0 +1,23 @@
+{
+  "short": {
+    "file": "quick-c4a8724-results.tar.gz",
+    "bytes": 1623792,
+    "sha256": "b06cc3275b0d4e82cce6181d48f12bcf1b733377e5f3cd61b440a88b0de8810d",
+    "location": "local work directory; contains all five raw cases; database and signed dataset excluded"
+  },
+  "long": {
+    "file": "six-c4a8724-complete-results.tar.gz",
+    "bytes": 23310546,
+    "sha256": "78c1857c37002ae5eb6ea39d81f44126afda57ada6fd0aae7373ac61c0c8a1bb4",
+    "location": "/home/ubuntu/chain/six-c4a8724-complete-results.tar.gz; 33 cases; full archive retained on controller"
+  },
+  "source": {
+    "commit": "c4a8724b5ffd2803c2804be94693351e5a9dff53",
+    "archive_sha256": "50a4b9e6f497449ecbbdd1851690e47ee633774c1710b8c03fc65658f207482d",
+    "binary_sha256": "882d7e8607b121113cd13558914940b8c9651b07d13bc242889a4844959cd4f5"
+  },
+  "baseline": {
+    "commit": "3850727",
+    "binary_sha256": "a8fc85bf5b059504276eb4d93f77d305a922f811c5fcd882f3bd8544a584dcd7"
+  }
+}

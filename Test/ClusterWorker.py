@@ -4,6 +4,7 @@ import hashlib
 import os
 import platform
 import re
+import shutil
 import subprocess
 import sys
 from pathlib import Path
@@ -98,6 +99,20 @@ def Handle(request):
                 source.seek(max(0, path.stat().st_size - 65536))
                 output['log_tail'] = source.read().decode('utf-8', errors='replace')
         return output
+    if action == 'delete-db':
+        database = directory/'db'
+        if not database.exists():
+            return {'removed': False}
+        if database.is_symlink() or database.resolve().parent != directory:
+            raise ValueError('Database cleanup escapes the experiment directory')
+        record = json.loads(record_file.read_text())
+        if FindProcess(record):
+            raise RuntimeError('Stop the experiment node before deleting its database')
+        command = record['command']
+        if '--data' not in command or Path(command[command.index('--data')+1]).resolve() != database.resolve():
+            raise ValueError('Database path does not match the recorded node')
+        shutil.rmtree(database.resolve())
+        return {'removed': True, 'path': str(database)}
     if action == 'fault':
         return InstallNetem(directory/'netem.json', request['interface'], request['port'],
                             request['peers'], request['settings'], request.get('sudo', False))

@@ -1,0 +1,82 @@
+[
+  {
+    "host": "10.206.0.16",
+    "records": 85,
+    "archive_sha256": "b89e041f763cb7dc4116645212462aff1ca5299a77f11a69b05db66d490b387b",
+    "free_gib_before": 5.17742919921875,
+    "bytes_to_remove": 7472014213,
+    "free_gib_after": 12.136871337890625
+  },
+  {
+    "host": "10.206.0.4",
+    "records": 85,
+    "archive_sha256": "ca7762572e7b3aee4e3c0b248cc5839ba7cae0cae7fadd6ad775370d9462f08b",
+    "free_gib_before": 7.532386779785156,
+    "bytes_to_remove": 6887396521,
+    "free_gib_after": 13.947334289550781
+  },
+  {
+    "host": "10.206.0.14",
+    "records": 85,
+    "archive_sha256": "6612a11d3ef76f9e12ebe09daef6efc276984b5cc66366a496090f49425009b9",
+    "free_gib_before": 7.02117919921875,
+    "bytes_to_remove": 7400136188,
+    "free_gib_after": 13.913650512695312
+  },
+  {
+    "host": "10.206.0.17",
+    "records": 85,
+    "archive_sha256": "e890deea8f21117c3555ebd4ed5217587b1e6fb499a714e5d10832765fe6bd55",
+    "free_gib_before": 6.2404022216796875,
+    "bytes_to_remove": 7736562637,
+    "free_gib_after": 13.446273803710938
+  },
+  {
+    "host": "10.206.0.15",
+    "records": 85,
+    "archive_sha256": "3e29ddcd2cdf94d5a42aed11a84e85a36004d89e6ba641160cde16d858312a09",
+    "free_gib_before": 6.562030792236328,
+    "bytes_to_remove": 6936686960,
+    "free_gib_after": 13.022899627685547
+  },
+  {
+    "host": "10.206.0.12",
+    "records": 85,
+    "archive_sha256": "42440b777e16362a10f1d39fbfa6ddea4561dd9dec26fcd4ed23181f54dbc311",
+    "free_gib_before": 6.108921051025391,
+    "bytes_to_remove": 7355167141,
+    "free_gib_after": 12.959529876708984
+  },
+  {
+    "host": "10.206.0.2",
+    "records": 85,
+    "archive_sha256": "38dd195000f76e827ca2eec5794ece9ae73bd14968ee5935948adffe88ee0715",
+    "free_gib_before": 0.7507705688476562,
+    "bytes_to_remove": 6946809863,
+    "free_gib_after": 7.221061706542969
+  },
+  {
+    "host": "10.206.0.6",
+    "records": 85,
+    "archive_sha256": "5a520d7b1bae35a44163c84870b1ac9bd47a1b794c085fcfc07002245db23b2d",
+    "free_gib_before": 6.068264007568359,
+    "bytes_to_remove": 7498911355,
+    "free_gib_after": 13.052753448486328
+  },
+  {
+    "host": "10.206.0.11",
+    "records": 85,
+    "archive_sha256": "fc42f5a9841c37af873a69d55ed0e1115f1dedc0a27e784c02e226c29e5c5ffc",
+    "free_gib_before": 7.255878448486328,
+    "bytes_to_remove": 7056923178,
+    "free_gib_after": 13.828727722167969
+  },
+  {
+    "host": "10.206.0.8",
+    "records": 85,
+    "archive_sha256": "9c5f4938211d0f0f6ab9b1daaad8dfc5d968bb1cb164ea81f5b8d07a9ea3c69a",
+    "free_gib_before": 5.751064300537109,
+    "bytes_to_remove": 7187952107,
+    "free_gib_after": 12.445930480957031
+  }
+]
