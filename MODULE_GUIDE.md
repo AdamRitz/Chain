@@ -10,7 +10,7 @@
 
 五组多节点实验、远程节点清单、Linux 构建和指标定义见 `EXPERIMENTS.md`。时间同步器当前采用四时间戳测偏差和邻居中位数校正，供后续接入萤火虫相位响应公式。
 
-当前数据库格式为 7，版本 2、3、4、5、6 的数据库保留，使用新目录运行。最新接入说明为 `EVM_GUIDE.md`，最新本地实施记录为 `reports/2026-10-14-tps-local/REPORT.md`，最新十节点性能记录为 `reports/2026-10-14-six-ten/REPORT.md`，瓶颈审阅与方案为 `reports/2026-10-14-tps-review/REPORT.md`，前次性能记录为 `reports/2026-10-14-ten-node/REPORT.md`，合约接入性能记录为 `reports/2026-09-16-fork-evm/REPORT.md`。历史报告按原版本解释。
+当前数据库格式为 7，版本 2、3、4、5、6 的数据库保留，使用新目录运行。最新接入说明为 `EVM_GUIDE.md`，最新本地实施记录为 `reports/2026-10-14-tps-local/REPORT.md`，最新十节点性能记录为 `reports/2026-10-14-a5-ten/REPORT.md`，上轮短测为 `reports/2026-10-14-six-ten/REPORT.md`，瓶颈审阅与方案为 `reports/2026-10-14-tps-review/REPORT.md`，前次性能记录为 `reports/2026-10-14-ten-node/REPORT.md`，合约接入性能记录为 `reports/2026-09-16-fork-evm/REPORT.md`。历史报告按原版本解释。
 
 ## 模块地图
 
@@ -314,7 +314,7 @@ EVM 交易沿用 176 字节基础字段，附带部署/调用类型、Gas 上限
 
 ## 2026-10-14 瓶颈方案的本地实施
 
-代码审阅与已有时间线聚合见 [TPS 瓶颈与方案](reports/2026-10-14-tps-review/REPORT.md)，本次实现及十一项本地回归见 [实施记录](reports/2026-10-14-tps-local/REPORT.md)。本版本的十节点吞吐量待复测。
+代码审阅与已有时间线聚合见 [TPS 瓶颈与方案](reports/2026-10-14-tps-review/REPORT.md)，本次实现及十一项本地回归见 [实施记录](reports/2026-10-14-tps-local/REPORT.md)。本版本的十台五档复测及轮次等待分析见 [最新实测](reports/2026-10-14-a5-ten/REPORT.md)。
 
 1. `RankFork` 保存共同祖先、不可变父链、累计排名和状态版本。`ProcessForks` 按累计交易数、高度、哈希排序；最优分支无效时重新准备下一候选，成功后立即结束本次调度。原有低排名和缺父缓存继续使用。
 2. `ReserveVerify` 对摘要 39、补传 41 各按一条消息计数，最多 64 条，与完整块交易预算独立，共享 16 MiB 正文预算。`BlockWork` 对完整块 2/7/22 和整个批次 43 按全部字节指纹及字节比较合并在途工作，最多 64 项、32 MiB；批次格式独立标记。`VerifyReservation` 与工作引用在完成、关闭或异常时释放。
@@ -326,3 +326,11 @@ EVM 交易沿用 176 字节基础字段，附带部署/调用类型、Gas 上限
 观测还增加 `fork_schedules`、`fork_selections`、`fork_invalid_candidates`、`pending_metadata`、`metadata_queue_wait_ms`、`metadata_tasks`、`block_tasks`、`duplicate_block_work`、`pool_refresh_users`、`pool_refresh_transactions`、`pending_block_replies`、`block_reply_wait_ms`、`block_reply_read_ms`、`block_reply_tasks` 和已发布 `state_version`。
 
 实验可选 `parallel_ingress=true`，默认关闭；每节点最多一批发送在途，批次之间保持顺序。结果分列业务交易、完整候选、元数据和唯一交易落后量，保留原有持续负载公式，并增加业务队列条件 `tx_sustainable`；字段口径见 `EXPERIMENTS.md`。默认线程、区块、缓存和同步写盘参数沿用既有设置，后续根据计数选择少量参数对照。
+
+## a5cf8a2 十台复测后的入口
+
+5 万档最高短测为 48,562 TPS；4 万档相对上轮提升 17.6%，5 万档变化 -3.0%，6 万档为 47,224 TPS。五档状态核对均通过，50 个节点轮次数据库均清理，十台节点已停止。
+
+`MainLoop` 按 `max(lastRound+1, GetLogicalTimeUs()/period+1)` 选择未来轮次，候选收集与同步提交位于同一主循环。6 万档写调用平均约 40 毫秒、候选窗口 12 毫秒，提交跨过 50 毫秒轮次起点时，存在再等待未来整轮的路径。本地候选从 5 万档每节点每秒 18.41 次降至 6 万档 7.39 次。后续先加入跳轮和提交完成阶段计数，再验证窗口内补入当前轮的方式，保持每轮一次、截止窗口及父状态版本约束。
+
+6 万档每节点每秒重组重放约 45,343 笔，执行缓存命中约 29.0%，完整块在途预算峰值为 39,104 笔。继续记录候选父状态与分歧来源；数据库阶段计时使用现有抽样开关，状态与回执的原子同步持久化继续核对。资源、原始归档校验、全部参数和计量口径位于最新实测报告。

@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="(empty)"
+	tests="11"
+	failures="0"
+	disabled="0"
+	skipped="0"
+	hostname=""
+	time="14"
+	timestamp="2026-10-14T20:31:30"
+	>
+	<testcase name="ChainCorrectness" classname="ChainCorrectness" time="0.190731" status="run">
+		<properties/>
+		<system-out>PASS 2248 assertions. Database: /home/ubuntu/chain/releases/2026-10-14-tps-a5cf8a2/build/check-a5cf8a2/test-data/379150087191
+</system-out>
+	</testcase>
+	<testcase name="AccountCorrectness" classname="AccountCorrectness" time="0.109601" status="run">
+		<properties/>
+		<system-out>PASS 54 account checks. Database: /home/ubuntu/chain/releases/2026-10-14-tps-a5cf8a2/build/check-a5cf8a2/user-test-data/379153853990/chain
+</system-out>
+	</testcase>
+	<testcase name="ForkStateCorrectness" classname="ForkStateCorrectness" time="14.1948" status="run">
+		<properties/>
+		<system-out>[2026-10-14 20:31:30.198] [info] RocksDB Started. Path:/home/ubuntu/chain/releases/2026-10-14-tps-a5cf8a2/build/check-a5cf8a2/fork-state-data/379261326195, Sync:true
+[2026-10-14 20:31:30.201] [info] Genesis Block Generated. Height:1
+[2026-10-14 20:31:30.224] [info] RocksDB Started. Path:/home/ubuntu/chain/releases/2026-10-14-tps-a5cf8a2/build/check-a5cf8a2/fork-state-data/379261326195, Sync:true
+[2026-10-14 20:31:30.242] [info] RocksDB Started. Path:/home/ubuntu/chain/releases/2026-10-14-tps-a5cf8a2/build/check-a5cf8a2/fork-state-data/379261326195, Sync:true
+[2026-10-14 20:31:30.242] [info] Existing chain restored. Height:2
+[2026-10-14 20:31:30.261] [info] RocksDB Started. Path:/home/ubuntu/chain/releases/2026-10-14-tps-a5cf8a2/build/check-a5cf8a2/fork-state-data/379261326195/large-fork, Sync:true
+[2026-10-14 20:31:30.263] [info] Genesis Block Generated. Height:1
+[2026-10-14 20:31:44.303] [info] RocksDB Started. Path:/home/ubuntu/chain/releases/2026-10-14-tps-a5cf8a2/build/check-a5cf8a2/fork-state-data/379261...
+[This part of the test output was removed since it exceeds the threshold of 1024 bytes.]
+</system-out>
+	</testcase>
+	<testcase name="ThroughputCorrectness" classname="ThroughputCorrectness" time="0.0177556" status="run">
+		<properties/>
+		<system-out>Overlay, execution bounds and batch checks passed
+</system-out>
+	</testcase>
+	<testcase name="FlowCorrectness" classname="FlowCorrectness" time="0.102952" status="run">
+		<properties/>
+		<system-out>[2026-10-14 20:31:30.282] [info] RocksDB Started. Path:/home/ubuntu/chain/releases/2026-10-14-tps-a5cf8a2/build/check-a5cf8a2/flow-test-data/379355415017, Sync:true
+[2026-10-14 20:31:30.284] [info] Genesis Block Generated. Height:1
+[2026-10-14 20:31:30.312] [info] RocksDB Started. Path:/home/ubuntu/chain/releases/2026-10-14-tps-a5cf8a2/build/check-a5cf8a2/flow-test-data/379355415017, Sync:true
+[2026-10-14 20:31:30.312] [info] Existing chain restored. Height:2
+[2026-10-14 20:31:30.334] [info] RocksDB Started. Path:/home/ubuntu/chain/releases/2026-10-14-tps-a5cf8a2/build/check-a5cf8a2/flow-test-data/379355415017/deterministic, Sync:true
+[2026-10-14 20:31:30.336] [info] Genesis Block Generated. Height:1
+[2026-10-14 20:31:30.356] [info] RocksDB Started. Path:/home/ubuntu/chain/releases/2026-10-14-tps-a5cf8a2/build/check-a5cf8a2/flow-test-data/379355415017/ranked, Sync:true
+[2026-10-14 20:31:30.358] [info] Genesis Block Generated. Height:1
+Admission, compact indexes and changed-state fork checks passed
+</system-out>
+	</testcase>
+	<testcase name="ChainNetwork" classname="ChainNetwork" time="2.89505" status="run">
+		<properties/>
+		<system-out>{
+  "passed": 10,
+  "checks": [
+    "slow handshake does not block accept loop",
+    "bad type, oversized and malformed length rejected before payload allocation",
+    "invalid signatures rejected in transaction and sync block paths",
+    "fragmented frame and complete batch handled; replay does not commit twice",
+    "4096 unique network transactions committed without loss",
+    "late follower verifies history and reaches same height/head",
+    "live block broadcast and bidirectional peer connection remain active",
+    "producer and follower balances and nonces match independent execution",
+    "process termination/restart restores committed head and rejects replay",
+    "timed graceful shutdown with an active peer exits cleanly and writes metrics"
+  ],
+  "work": "/home/ubuntu/chain/releases/2026-10-14-tps-a5cf8a2/build/check-a5cf8a2/network-test-data/1791981090387101765"
+}
+</system-out>
+	</testcase>
+	<testcase name="AccountNetwork" classname="AccountNetwork" time="0.272793" status="run">
+		<properties/>
+		<system-out>{
+  "passed": 7,
+  "checks": [
+    "explicit genesis funding and zero balance for a new public key",
+    "out-of-order transfers execute in nonce order with exact balances and fees",
+    "account query CLI returns committed state",
+    "self transfer charges one nonrecoverable base fee",
+    "insufficient balance transaction is rejected over the network",
+    "historical synchronization replays balances, nonces and burned fees",
+    "restart restores genesis policy and account state without the external genesis file argument"
+  ]
+}
+</system-out>
+	</testcase>
+	<testcase name="ForkNetwork" classname="ForkNetwork" time="0.372628" status="run">
+		<properties/>
+		<system-out>{"checks": ["equal height chooses branch with more valid transactions; native state rolled back", "multi-block branch replay and parent-by-hash retrieval", "restart preserves selected head and rollback state", "invalid larger future candidate preserves valid alternative"]}
+</system-out>
+	</testcase>
+	<testcase name="EvmNetwork" classname="EvmNetwork" time="0.665216" status="run">
+		<properties/>
+		<system-out>{"checks": ["deploy and execute persistent storage with return value", "REVERT restores storage and consumes nonce and actual gas", "out of gas restores contract state", "SHA256 precompile returns the expected digest", "signature binds full contract input", "Solidity 0.8.28 Shanghai bytecode events nested CALL and revert", "modular exponentiation precompile", "follower independently replays code storage fees and receipts", "compact announcement fetches missing EVM transactions and replays consecutive calls", "restart recovers contract state and supply", "same height tie converges by hash; EVM storage receipts native balances and fees follow selected branch"]}
+</system-out>
+	</testcase>
+	<testcase name="ExperimentNetwork" classname="ExperimentNetwork" time="4.51489" status="run">
+		<properties/>
+		<system-out>{"checks": ["parallel directories", "network impairment scope/cleanup retry", "dynamic inventory", "canonical transaction index rollback/restart", "synchronized round execution"]}
+</system-out>
+	</testcase>
+	<testcase name="AdmissionNetwork" classname="AdmissionNetwork" time="2.86642" status="run">
+		<properties/>
+		<system-out>{"checks": ["gap capacity", "known/busy/invalid feedback", "malformed batch releases the connection", "four full blocks across bounded synchronization frames", "reliable sender", "complete balances and nonces"]}
+</system-out>
+	</testcase>
+</testsuite>

@@ -1,0 +1,14 @@
+{
+  "commit": "a5cf8a2dc2585cccf321dd08691b1f09ceef4628",
+  "source_sha256": "1771b1ddab273ba79fbb8d09b76918c4fbd803037a518d46aac02f54769ed498",
+  "sha256": "b63fbe51ed1502fecb28adfecdbf07da1fa647cd66080c99b69db1180fd541be",
+  "binaries": {
+    "boost": "b63fbe51ed1502fecb28adfecdbf07da1fa647cd66080c99b69db1180fd541be",
+    "sender": "e9e9074e2ebff9b65c68ab9f161f763a959cd48ab2b1b3b1fff446d8eb6eb002",
+    "evm_sender": "f5b2b87d495cda551f539afe463ed2cd3a0595f552b59eebe0fcab9ddea33f72"
+  },
+  "ctest_passed": true,
+  "tests": 11,
+  "started_utc": 1791981029.513619,
+  "completed_utc": 1791981104.3893578
+}

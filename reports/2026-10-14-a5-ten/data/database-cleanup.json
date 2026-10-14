@@ -1,0 +1,302 @@
+[
+  {
+    "rate": 20000,
+    "node": "node01",
+    "removed": true,
+    "path": "/home/ubuntu/chain/scratch-tps-a5cf8a2/a5cf8a2-20000-r1/node01/db"
+  },
+  {
+    "rate": 20000,
+    "node": "node02",
+    "removed": true,
+    "path": "/home/ubuntu/chain/scratch-tps-a5cf8a2/a5cf8a2-20000-r1/node02/db"
+  },
+  {
+    "rate": 20000,
+    "node": "node03",
+    "removed": true,
+    "path": "/home/ubuntu/chain/scratch-tps-a5cf8a2/a5cf8a2-20000-r1/node03/db"
+  },
+  {
+    "rate": 20000,
+    "node": "node04",
+    "removed": true,
+    "path": "/home/ubuntu/chain/scratch-tps-a5cf8a2/a5cf8a2-20000-r1/node04/db"
+  },
+  {
+    "rate": 20000,
+    "node": "node05",
+    "removed": true,
+    "path": "/home/ubuntu/chain/scratch-tps-a5cf8a2/a5cf8a2-20000-r1/node05/db"
+  },
+  {
+    "rate": 20000,
+    "node": "node06",
+    "removed": true,
+    "path": "/home/ubuntu/chain/scratch-tps-a5cf8a2/a5cf8a2-20000-r1/node06/db"
+  },
+  {
+    "rate": 20000,
+    "node": "node07",
+    "removed": true,
+    "path": "/home/ubuntu/chain/scratch-tps-a5cf8a2/a5cf8a2-20000-r1/node07/db"
+  },
+  {
+    "rate": 20000,
+    "node": "node08",
+    "removed": true,
+    "path": "/home/ubuntu/chain/scratch-tps-a5cf8a2/a5cf8a2-20000-r1/node08/db"
+  },
+  {
+    "rate": 20000,
+    "node": "node09",
+    "removed": true,
+    "path": "/home/ubuntu/chain/scratch-tps-a5cf8a2/a5cf8a2-20000-r1/node09/db"
+  },
+  {
+    "rate": 20000,
+    "node": "node10",
+    "removed": true,
+    "path": "/home/ubuntu/chain/scratch-tps-a5cf8a2/a5cf8a2-20000-r1/node10/db"
+  },
+  {
+    "rate": 30000,
+    "node": "node01",
+    "removed": true,
+    "path": "/home/ubuntu/chain/scratch-tps-a5cf8a2/a5cf8a2-30000-r1/node01/db"
+  },
+  {
+    "rate": 30000,
+    "node": "node02",
+    "removed": true,
+    "path": "/home/ubuntu/chain/scratch-tps-a5cf8a2/a5cf8a2-30000-r1/node02/db"
+  },
+  {
+    "rate": 30000,
+    "node": "node03",
+    "removed": true,
+    "path": "/home/ubuntu/chain/scratch-tps-a5cf8a2/a5cf8a2-30000-r1/node03/db"
+  },
+  {
+    "rate": 30000,
+    "node": "node04",
+    "removed": true,
+    "path": "/home/ubuntu/chain/scratch-tps-a5cf8a2/a5cf8a2-30000-r1/node04/db"
+  },
+  {
+    "rate": 30000,
+    "node": "node05",
+    "removed": true,
+    "path": "/home/ubuntu/chain/scratch-tps-a5cf8a2/a5cf8a2-30000-r1/node05/db"
+  },
+  {
+    "rate": 30000,
+    "node": "node06",
+    "removed": true,
+    "path": "/home/ubuntu/chain/scratch-tps-a5cf8a2/a5cf8a2-30000-r1/node06/db"
+  },
+  {
+    "rate": 30000,
+    "node": "node07",
+    "removed": true,
+    "path": "/home/ubuntu/chain/scratch-tps-a5cf8a2/a5cf8a2-30000-r1/node07/db"
+  },
+  {
+    "rate": 30000,
+    "node": "node08",
+    "removed": true,
+    "path": "/home/ubuntu/chain/scratch-tps-a5cf8a2/a5cf8a2-30000-r1/node08/db"
+  },
+  {
+    "rate": 30000,
+    "node": "node09",
+    "removed": true,
+    "path": "/home/ubuntu/chain/scratch-tps-a5cf8a2/a5cf8a2-30000-r1/node09/db"
+  },
+  {
+    "rate": 30000,
+    "node": "node10",
+    "removed": true,
+    "path": "/home/ubuntu/chain/scratch-tps-a5cf8a2/a5cf8a2-30000-r1/node10/db"
+  },
+  {
+    "rate": 40000,
+    "node": "node01",
+    "removed": true,
+    "path": "/home/ubuntu/chain/scratch-tps-a5cf8a2/a5cf8a2-40000-r1/node01/db"
+  },
+  {
+    "rate": 40000,
+    "node": "node02",
+    "removed": true,
+    "path": "/home/ubuntu/chain/scratch-tps-a5cf8a2/a5cf8a2-40000-r1/node02/db"
+  },
+  {
+    "rate": 40000,
+    "node": "node03",
+    "removed": true,
+    "path": "/home/ubuntu/chain/scratch-tps-a5cf8a2/a5cf8a2-40000-r1/node03/db"
+  },
+  {
+    "rate": 40000,
+    "node": "node04",
+    "removed": true,
+    "path": "/home/ubuntu/chain/scratch-tps-a5cf8a2/a5cf8a2-40000-r1/node04/db"
+  },
+  {
+    "rate": 40000,
+    "node": "node05",
+    "removed": true,
+    "path": "/home/ubuntu/chain/scratch-tps-a5cf8a2/a5cf8a2-40000-r1/node05/db"
+  },
+  {
+    "rate": 40000,
+    "node": "node06",
+    "removed": true,
+    "path": "/home/ubuntu/chain/scratch-tps-a5cf8a2/a5cf8a2-40000-r1/node06/db"
+  },
+  {
+    "rate": 40000,
+    "node": "node07",
+    "removed": true,
+    "path": "/home/ubuntu/chain/scratch-tps-a5cf8a2/a5cf8a2-40000-r1/node07/db"
+  },
+  {
+    "rate": 40000,
+    "node": "node08",
+    "removed": true,
+    "path": "/home/ubuntu/chain/scratch-tps-a5cf8a2/a5cf8a2-40000-r1/node08/db"
+  },
+  {
+    "rate": 40000,
+    "node": "node09",
+    "removed": true,
+    "path": "/home/ubuntu/chain/scratch-tps-a5cf8a2/a5cf8a2-40000-r1/node09/db"
+  },
+  {
+    "rate": 40000,
+    "node": "node10",
+    "removed": true,
+    "path": "/home/ubuntu/chain/scratch-tps-a5cf8a2/a5cf8a2-40000-r1/node10/db"
+  },
+  {
+    "rate": 50000,
+    "node": "node01",
+    "removed": true,
+    "path": "/home/ubuntu/chain/scratch-tps-a5cf8a2/a5cf8a2-50000-r1/node01/db"
+  },
+  {
+    "rate": 50000,
+    "node": "node02",
+    "removed": true,
+    "path": "/home/ubuntu/chain/scratch-tps-a5cf8a2/a5cf8a2-50000-r1/node02/db"
+  },
+  {
+    "rate": 50000,
+    "node": "node03",
+    "removed": true,
+    "path": "/home/ubuntu/chain/scratch-tps-a5cf8a2/a5cf8a2-50000-r1/node03/db"
+  },
+  {
+    "rate": 50000,
+    "node": "node04",
+    "removed": true,
+    "path": "/home/ubuntu/chain/scratch-tps-a5cf8a2/a5cf8a2-50000-r1/node04/db"
+  },
+  {
+    "rate": 50000,
+    "node": "node05",
+    "removed": true,
+    "path": "/home/ubuntu/chain/scratch-tps-a5cf8a2/a5cf8a2-50000-r1/node05/db"
+  },
+  {
+    "rate": 50000,
+    "node": "node06",
+    "removed": true,
+    "path": "/home/ubuntu/chain/scratch-tps-a5cf8a2/a5cf8a2-50000-r1/node06/db"
+  },
+  {
+    "rate": 50000,
+    "node": "node07",
+    "removed": true,
+    "path": "/home/ubuntu/chain/scratch-tps-a5cf8a2/a5cf8a2-50000-r1/node07/db"
+  },
+  {
+    "rate": 50000,
+    "node": "node08",
+    "removed": true,
+    "path": "/home/ubuntu/chain/scratch-tps-a5cf8a2/a5cf8a2-50000-r1/node08/db"
+  },
+  {
+    "rate": 50000,
+    "node": "node09",
+    "removed": true,
+    "path": "/home/ubuntu/chain/scratch-tps-a5cf8a2/a5cf8a2-50000-r1/node09/db"
+  },
+  {
+    "rate": 50000,
+    "node": "node10",
+    "removed": true,
+    "path": "/home/ubuntu/chain/scratch-tps-a5cf8a2/a5cf8a2-50000-r1/node10/db"
+  },
+  {
+    "rate": 60000,
+    "node": "node01",
+    "removed": true,
+    "path": "/home/ubuntu/chain/scratch-tps-a5cf8a2/a5cf8a2-60000-r1/node01/db"
+  },
+  {
+    "rate": 60000,
+    "node": "node02",
+    "removed": true,
+    "path": "/home/ubuntu/chain/scratch-tps-a5cf8a2/a5cf8a2-60000-r1/node02/db"
+  },
+  {
+    "rate": 60000,
+    "node": "node03",
+    "removed": true,
+    "path": "/home/ubuntu/chain/scratch-tps-a5cf8a2/a5cf8a2-60000-r1/node03/db"
+  },
+  {
+    "rate": 60000,
+    "node": "node04",
+    "removed": true,
+    "path": "/home/ubuntu/chain/scratch-tps-a5cf8a2/a5cf8a2-60000-r1/node04/db"
+  },
+  {
+    "rate": 60000,
+    "node": "node05",
+    "removed": true,
+    "path": "/home/ubuntu/chain/scratch-tps-a5cf8a2/a5cf8a2-60000-r1/node05/db"
+  },
+  {
+    "rate": 60000,
+    "node": "node06",
+    "removed": true,
+    "path": "/home/ubuntu/chain/scratch-tps-a5cf8a2/a5cf8a2-60000-r1/node06/db"
+  },
+  {
+    "rate": 60000,
+    "node": "node07",
+    "removed": true,
+    "path": "/home/ubuntu/chain/scratch-tps-a5cf8a2/a5cf8a2-60000-r1/node07/db"
+  },
+  {
+    "rate": 60000,
+    "node": "node08",
+    "removed": true,
+    "path": "/home/ubuntu/chain/scratch-tps-a5cf8a2/a5cf8a2-60000-r1/node08/db"
+  },
+  {
+    "rate": 60000,
+    "node": "node09",
+    "removed": true,
+    "path": "/home/ubuntu/chain/scratch-tps-a5cf8a2/a5cf8a2-60000-r1/node09/db"
+  },
+  {
+    "rate": 60000,
+    "node": "node10",
+    "removed": true,
+    "path": "/home/ubuntu/chain/scratch-tps-a5cf8a2/a5cf8a2-60000-r1/node10/db"
+  }
+]

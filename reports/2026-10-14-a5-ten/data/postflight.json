@@ -1,0 +1,72 @@
+[
+  {
+    "host": "10.206.0.16",
+    "active": [],
+    "remaining_databases": [],
+    "port8089": "",
+    "free_gib": 15.119682312011719
+  },
+  {
+    "host": "10.206.0.4",
+    "active": [],
+    "remaining_databases": [],
+    "port8089": "",
+    "free_gib": 16.987777709960938
+  },
+  {
+    "host": "10.206.0.14",
+    "active": [],
+    "remaining_databases": [],
+    "port8089": "",
+    "free_gib": 16.965702056884766
+  },
+  {
+    "host": "10.206.0.17",
+    "active": [],
+    "remaining_databases": [],
+    "port8089": "",
+    "free_gib": 16.426589965820312
+  },
+  {
+    "host": "10.206.0.15",
+    "active": [],
+    "remaining_databases": [],
+    "port8089": "",
+    "free_gib": 16.108783721923828
+  },
+  {
+    "host": "10.206.0.12",
+    "active": [],
+    "remaining_databases": [],
+    "port8089": "",
+    "free_gib": 16.049026489257812
+  },
+  {
+    "host": "10.206.0.2",
+    "active": [],
+    "remaining_databases": [],
+    "port8089": "",
+    "free_gib": 9.813922882080078
+  },
+  {
+    "host": "10.206.0.6",
+    "active": [],
+    "remaining_databases": [],
+    "port8089": "",
+    "free_gib": 16.094921112060547
+  },
+  {
+    "host": "10.206.0.11",
+    "active": [],
+    "remaining_databases": [],
+    "port8089": "",
+    "free_gib": 16.954689025878906
+  },
+  {
+    "host": "10.206.0.8",
+    "active": [],
+    "remaining_databases": [],
+    "port8089": "",
+    "free_gib": 15.496410369873047
+  }
+]

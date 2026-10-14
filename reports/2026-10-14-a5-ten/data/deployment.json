@@ -1,0 +1,112 @@
+[
+  {
+    "host": "10.206.0.16",
+    "free_gib": 15.165794372558594,
+    "binaries": {
+      "boost": "b63fbe51ed1502fecb28adfecdbf07da1fa647cd66080c99b69db1180fd541be",
+      "sender": "e9e9074e2ebff9b65c68ab9f161f763a959cd48ab2b1b3b1fff446d8eb6eb002",
+      "evm_sender": "f5b2b87d495cda551f539afe463ed2cd3a0595f552b59eebe0fcab9ddea33f72"
+    },
+    "commit": "a5cf8a2dc2585cccf321dd08691b1f09ceef4628",
+    "bundle_sha256": "9e4563d549241e7061607a039e86a276ab7b301c9b198484125f1b8c6077db67"
+  },
+  {
+    "host": "10.206.0.4",
+    "free_gib": 17.033905029296875,
+    "binaries": {
+      "boost": "b63fbe51ed1502fecb28adfecdbf07da1fa647cd66080c99b69db1180fd541be",
+      "sender": "e9e9074e2ebff9b65c68ab9f161f763a959cd48ab2b1b3b1fff446d8eb6eb002",
+      "evm_sender": "f5b2b87d495cda551f539afe463ed2cd3a0595f552b59eebe0fcab9ddea33f72"
+    },
+    "commit": "a5cf8a2dc2585cccf321dd08691b1f09ceef4628",
+    "bundle_sha256": "9e4563d549241e7061607a039e86a276ab7b301c9b198484125f1b8c6077db67"
+  },
+  {
+    "host": "10.206.0.14",
+    "free_gib": 17.011821746826172,
+    "binaries": {
+      "boost": "b63fbe51ed1502fecb28adfecdbf07da1fa647cd66080c99b69db1180fd541be",
+      "sender": "e9e9074e2ebff9b65c68ab9f161f763a959cd48ab2b1b3b1fff446d8eb6eb002",
+      "evm_sender": "f5b2b87d495cda551f539afe463ed2cd3a0595f552b59eebe0fcab9ddea33f72"
+    },
+    "commit": "a5cf8a2dc2585cccf321dd08691b1f09ceef4628",
+    "bundle_sha256": "9e4563d549241e7061607a039e86a276ab7b301c9b198484125f1b8c6077db67"
+  },
+  {
+    "host": "10.206.0.17",
+    "free_gib": 16.47270965576172,
+    "binaries": {
+      "boost": "b63fbe51ed1502fecb28adfecdbf07da1fa647cd66080c99b69db1180fd541be",
+      "sender": "e9e9074e2ebff9b65c68ab9f161f763a959cd48ab2b1b3b1fff446d8eb6eb002",
+      "evm_sender": "f5b2b87d495cda551f539afe463ed2cd3a0595f552b59eebe0fcab9ddea33f72"
+    },
+    "commit": "a5cf8a2dc2585cccf321dd08691b1f09ceef4628",
+    "bundle_sha256": "9e4563d549241e7061607a039e86a276ab7b301c9b198484125f1b8c6077db67"
+  },
+  {
+    "host": "10.206.0.15",
+    "free_gib": 16.15491485595703,
+    "binaries": {
+      "boost": "b63fbe51ed1502fecb28adfecdbf07da1fa647cd66080c99b69db1180fd541be",
+      "sender": "e9e9074e2ebff9b65c68ab9f161f763a959cd48ab2b1b3b1fff446d8eb6eb002",
+      "evm_sender": "f5b2b87d495cda551f539afe463ed2cd3a0595f552b59eebe0fcab9ddea33f72"
+    },
+    "commit": "a5cf8a2dc2585cccf321dd08691b1f09ceef4628",
+    "bundle_sha256": "9e4563d549241e7061607a039e86a276ab7b301c9b198484125f1b8c6077db67"
+  },
+  {
+    "host": "10.206.0.12",
+    "free_gib": 16.09518051147461,
+    "binaries": {
+      "boost": "b63fbe51ed1502fecb28adfecdbf07da1fa647cd66080c99b69db1180fd541be",
+      "sender": "e9e9074e2ebff9b65c68ab9f161f763a959cd48ab2b1b3b1fff446d8eb6eb002",
+      "evm_sender": "f5b2b87d495cda551f539afe463ed2cd3a0595f552b59eebe0fcab9ddea33f72"
+    },
+    "commit": "a5cf8a2dc2585cccf321dd08691b1f09ceef4628",
+    "bundle_sha256": "9e4563d549241e7061607a039e86a276ab7b301c9b198484125f1b8c6077db67"
+  },
+  {
+    "host": "10.206.0.2",
+    "free_gib": 9.846912384033203,
+    "binaries": {
+      "boost": "b63fbe51ed1502fecb28adfecdbf07da1fa647cd66080c99b69db1180fd541be",
+      "sender": "e9e9074e2ebff9b65c68ab9f161f763a959cd48ab2b1b3b1fff446d8eb6eb002",
+      "evm_sender": "f5b2b87d495cda551f539afe463ed2cd3a0595f552b59eebe0fcab9ddea33f72"
+    },
+    "commit": "a5cf8a2dc2585cccf321dd08691b1f09ceef4628",
+    "bundle_sha256": "9e4563d549241e7061607a039e86a276ab7b301c9b198484125f1b8c6077db67"
+  },
+  {
+    "host": "10.206.0.6",
+    "free_gib": 16.14105224609375,
+    "binaries": {
+      "boost": "b63fbe51ed1502fecb28adfecdbf07da1fa647cd66080c99b69db1180fd541be",
+      "sender": "e9e9074e2ebff9b65c68ab9f161f763a959cd48ab2b1b3b1fff446d8eb6eb002",
+      "evm_sender": "f5b2b87d495cda551f539afe463ed2cd3a0595f552b59eebe0fcab9ddea33f72"
+    },
+    "commit": "a5cf8a2dc2585cccf321dd08691b1f09ceef4628",
+    "bundle_sha256": "9e4563d549241e7061607a039e86a276ab7b301c9b198484125f1b8c6077db67"
+  },
+  {
+    "host": "10.206.0.11",
+    "free_gib": 17.000812530517578,
+    "binaries": {
+      "boost": "b63fbe51ed1502fecb28adfecdbf07da1fa647cd66080c99b69db1180fd541be",
+      "sender": "e9e9074e2ebff9b65c68ab9f161f763a959cd48ab2b1b3b1fff446d8eb6eb002",
+      "evm_sender": "f5b2b87d495cda551f539afe463ed2cd3a0595f552b59eebe0fcab9ddea33f72"
+    },
+    "commit": "a5cf8a2dc2585cccf321dd08691b1f09ceef4628",
+    "bundle_sha256": "9e4563d549241e7061607a039e86a276ab7b301c9b198484125f1b8c6077db67"
+  },
+  {
+    "host": "10.206.0.8",
+    "free_gib": 15.542526245117188,
+    "binaries": {
+      "boost": "b63fbe51ed1502fecb28adfecdbf07da1fa647cd66080c99b69db1180fd541be",
+      "sender": "e9e9074e2ebff9b65c68ab9f161f763a959cd48ab2b1b3b1fff446d8eb6eb002",
+      "evm_sender": "f5b2b87d495cda551f539afe463ed2cd3a0595f552b59eebe0fcab9ddea33f72"
+    },
+    "commit": "a5cf8a2dc2585cccf321dd08691b1f09ceef4628",
+    "bundle_sha256": "9e4563d549241e7061607a039e86a276ab7b301c9b198484125f1b8c6077db67"
+  }
+]

@@ -1,0 +1,7 @@
+{
+  "databases_removed": 22,
+  "bytes_removed": 109524859,
+  "records_archive": "/home/ubuntu/chain/releases/2026-10-14-tps-a5cf8a2/ctest-records.zip",
+  "scope": "/home/ubuntu/chain/releases/2026-10-14-tps-a5cf8a2/build/check-a5cf8a2",
+  "remaining_databases": 0
+}

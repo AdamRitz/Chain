@@ -1,0 +1,610 @@
+[
+  {
+    "host": "10.206.0.16",
+    "ok": true,
+    "host_name": "VM-0-16-ubuntu",
+    "cpu_count": 8,
+    "memory_gib": 15.120925903320312,
+    "free_gib": 15.166332244873047,
+    "processes": [],
+    "port8089": "",
+    "releases": [
+      {
+        "name": "2026-09-30-d4106d1",
+        "sha256": "dadf9e2f88f86b322613234c688b0d75c2919fa21a1d82c620e0b068bce6c798"
+      },
+      {
+        "name": "2026-09-30-tps-opt-01",
+        "sha256": "ea022a600750511a1ee7cb8290a7979df0e56732e30b4b59e2e031e0c62f6d44"
+      },
+      {
+        "name": "2026-10-13-throughput",
+        "sha256": "16d2a98cd5758877456401491d692c4a660b97a114b5a8bb8daefa20369c4ccc"
+      },
+      {
+        "name": "2026-10-14-six-c4a8724",
+        "sha256": "882d7e8607b121113cd13558914940b8c9651b07d13bc242889a4844959cd4f5"
+      },
+      {
+        "name": "2026-10-14-tps",
+        "sha256": "9b63991584a014d037fbacf4b264727092acab89a1479bb0208037a0594489b4"
+      },
+      {
+        "name": "2026-10-14-tps-v2",
+        "sha256": "a8fc85bf5b059504276eb4d93f77d305a922f811c5fcd882f3bd8544a584dcd7"
+      }
+    ],
+    "datasets": [],
+    "root_files": [
+      "throughput-runtime-20261014.tar.gz",
+      "throughput-runtime-20261014-v2.tar.gz",
+      "throughput-runtime-20261013.tar.gz",
+      "six-runtime-c4a8724.tar.gz"
+    ]
+  },
+  {
+    "host": "10.206.0.4",
+    "ok": true,
+    "host_name": "VM-0-4-ubuntu",
+    "cpu_count": 8,
+    "memory_gib": 15.120922088623047,
+    "free_gib": 17.03443145751953,
+    "processes": [],
+    "port8089": "",
+    "releases": [
+      {
+        "name": "2026-09-30-d4106d1",
+        "sha256": "dadf9e2f88f86b322613234c688b0d75c2919fa21a1d82c620e0b068bce6c798"
+      },
+      {
+        "name": "2026-09-30-tps-opt-01",
+        "sha256": "ea022a600750511a1ee7cb8290a7979df0e56732e30b4b59e2e031e0c62f6d44"
+      },
+      {
+        "name": "2026-10-13-throughput",
+        "sha256": "16d2a98cd5758877456401491d692c4a660b97a114b5a8bb8daefa20369c4ccc"
+      },
+      {
+        "name": "2026-10-14-six-c4a8724",
+        "sha256": "882d7e8607b121113cd13558914940b8c9651b07d13bc242889a4844959cd4f5"
+      },
+      {
+        "name": "2026-10-14-tps",
+        "sha256": "9b63991584a014d037fbacf4b264727092acab89a1479bb0208037a0594489b4"
+      },
+      {
+        "name": "2026-10-14-tps-v2",
+        "sha256": "a8fc85bf5b059504276eb4d93f77d305a922f811c5fcd882f3bd8544a584dcd7"
+      }
+    ],
+    "datasets": [],
+    "root_files": [
+      "throughput-runtime-20261014.tar.gz",
+      "throughput-runtime-20261014-v2.tar.gz",
+      "throughput-runtime-20261013.tar.gz",
+      "six-runtime-c4a8724.tar.gz"
+    ]
+  },
+  {
+    "host": "10.206.0.14",
+    "ok": true,
+    "host_name": "VM-0-14-ubuntu",
+    "cpu_count": 8,
+    "memory_gib": 15.120922088623047,
+    "free_gib": 17.012393951416016,
+    "processes": [],
+    "port8089": "",
+    "releases": [
+      {
+        "name": "2026-09-30-d4106d1",
+        "sha256": "dadf9e2f88f86b322613234c688b0d75c2919fa21a1d82c620e0b068bce6c798"
+      },
+      {
+        "name": "2026-09-30-tps-opt-01",
+        "sha256": "ea022a600750511a1ee7cb8290a7979df0e56732e30b4b59e2e031e0c62f6d44"
+      },
+      {
+        "name": "2026-10-13-throughput",
+        "sha256": "16d2a98cd5758877456401491d692c4a660b97a114b5a8bb8daefa20369c4ccc"
+      },
+      {
+        "name": "2026-10-14-six-c4a8724",
+        "sha256": "882d7e8607b121113cd13558914940b8c9651b07d13bc242889a4844959cd4f5"
+      },
+      {
+        "name": "2026-10-14-tps",
+        "sha256": "9b63991584a014d037fbacf4b264727092acab89a1479bb0208037a0594489b4"
+      },
+      {
+        "name": "2026-10-14-tps-v2",
+        "sha256": "a8fc85bf5b059504276eb4d93f77d305a922f811c5fcd882f3bd8544a584dcd7"
+      }
+    ],
+    "datasets": [],
+    "root_files": [
+      "throughput-runtime-20261014.tar.gz",
+      "throughput-runtime-20261014-v2.tar.gz",
+      "throughput-runtime-20261013.tar.gz",
+      "six-runtime-c4a8724.tar.gz"
+    ]
+  },
+  {
+    "host": "10.206.0.17",
+    "ok": true,
+    "host_name": "VM-0-17-ubuntu",
+    "cpu_count": 8,
+    "memory_gib": 15.120918273925781,
+    "free_gib": 16.473243713378906,
+    "processes": [],
+    "port8089": "",
+    "releases": [
+      {
+        "name": "2026-09-30-d4106d1",
+        "sha256": "dadf9e2f88f86b322613234c688b0d75c2919fa21a1d82c620e0b068bce6c798"
+      },
+      {
+        "name": "2026-09-30-tps-opt-01",
+        "sha256": "ea022a600750511a1ee7cb8290a7979df0e56732e30b4b59e2e031e0c62f6d44"
+      },
+      {
+        "name": "2026-10-13-throughput",
+        "sha256": "16d2a98cd5758877456401491d692c4a660b97a114b5a8bb8daefa20369c4ccc"
+      },
+      {
+        "name": "2026-10-14-six-c4a8724",
+        "sha256": "882d7e8607b121113cd13558914940b8c9651b07d13bc242889a4844959cd4f5"
+      },
+      {
+        "name": "2026-10-14-tps",
+        "sha256": "9b63991584a014d037fbacf4b264727092acab89a1479bb0208037a0594489b4"
+      },
+      {
+        "name": "2026-10-14-tps-v2",
+        "sha256": "a8fc85bf5b059504276eb4d93f77d305a922f811c5fcd882f3bd8544a584dcd7"
+      }
+    ],
+    "datasets": [],
+    "root_files": [
+      "throughput-runtime-20261014.tar.gz",
+      "throughput-runtime-20261014-v2.tar.gz",
+      "throughput-runtime-20261013.tar.gz",
+      "six-runtime-c4a8724.tar.gz"
+    ]
+  },
+  {
+    "host": "10.206.0.15",
+    "ok": true,
+    "host_name": "VM-0-15-ubuntu",
+    "cpu_count": 8,
+    "memory_gib": 15.120918273925781,
+    "free_gib": 16.155437469482422,
+    "processes": [],
+    "port8089": "",
+    "releases": [
+      {
+        "name": "2026-09-30-d4106d1",
+        "sha256": "dadf9e2f88f86b322613234c688b0d75c2919fa21a1d82c620e0b068bce6c798"
+      },
+      {
+        "name": "2026-09-30-tps-opt-01",
+        "sha256": "ea022a600750511a1ee7cb8290a7979df0e56732e30b4b59e2e031e0c62f6d44"
+      },
+      {
+        "name": "2026-10-13-throughput",
+        "sha256": "16d2a98cd5758877456401491d692c4a660b97a114b5a8bb8daefa20369c4ccc"
+      },
+      {
+        "name": "2026-10-14-six-c4a8724",
+        "sha256": "882d7e8607b121113cd13558914940b8c9651b07d13bc242889a4844959cd4f5"
+      },
+      {
+        "name": "2026-10-14-tps",
+        "sha256": "9b63991584a014d037fbacf4b264727092acab89a1479bb0208037a0594489b4"
+      },
+      {
+        "name": "2026-10-14-tps-v2",
+        "sha256": "a8fc85bf5b059504276eb4d93f77d305a922f811c5fcd882f3bd8544a584dcd7"
+      }
+    ],
+    "datasets": [],
+    "root_files": [
+      "throughput-runtime-20261014.tar.gz",
+      "throughput-runtime-20261014-v2.tar.gz",
+      "throughput-runtime-20261013.tar.gz",
+      "six-runtime-c4a8724.tar.gz"
+    ]
+  },
+  {
+    "host": "10.206.0.12",
+    "ok": true,
+    "host_name": "VM-0-12-ubuntu",
+    "cpu_count": 8,
+    "memory_gib": 15.120922088623047,
+    "free_gib": 16.095714569091797,
+    "processes": [],
+    "port8089": "",
+    "releases": [
+      {
+        "name": "2026-09-30-d4106d1",
+        "sha256": "dadf9e2f88f86b322613234c688b0d75c2919fa21a1d82c620e0b068bce6c798"
+      },
+      {
+        "name": "2026-09-30-tps-opt-01",
+        "sha256": "ea022a600750511a1ee7cb8290a7979df0e56732e30b4b59e2e031e0c62f6d44"
+      },
+      {
+        "name": "2026-10-13-throughput",
+        "sha256": "16d2a98cd5758877456401491d692c4a660b97a114b5a8bb8daefa20369c4ccc"
+      },
+      {
+        "name": "2026-10-14-six-c4a8724",
+        "sha256": "882d7e8607b121113cd13558914940b8c9651b07d13bc242889a4844959cd4f5"
+      },
+      {
+        "name": "2026-10-14-tps",
+        "sha256": "9b63991584a014d037fbacf4b264727092acab89a1479bb0208037a0594489b4"
+      },
+      {
+        "name": "2026-10-14-tps-v2",
+        "sha256": "a8fc85bf5b059504276eb4d93f77d305a922f811c5fcd882f3bd8544a584dcd7"
+      }
+    ],
+    "datasets": [
+      {
+        "path": "/home/ubuntu/chain/results/throughput-20261013-final/transactions.bin",
+        "bytes": 220000000
+      },
+      {
+        "path": "/home/ubuntu/chain/results/throughput-20261013-confirm/transactions.bin",
+        "bytes": 220000000
+      },
+      {
+        "path": "/home/ubuntu/chain/results/throughput-20261013-v3/transactions.bin",
+        "bytes": 220000000
+      },
+      {
+        "path": "/home/ubuntu/chain/results/throughput-20261013-peak/transactions.bin",
+        "bytes": 220000000
+      }
+    ],
+    "root_files": [
+      "cleanup-records-20261014.tar.gz",
+      "HostProfile.py",
+      "CloudConfirm.py",
+      "CleanOldTests.py",
+      "throughput-runtime-20261014.tar.gz",
+      "CloudPeak.py",
+      "CloudThroughputV3.py",
+      "throughput-runtime-20261014-v2.tar.gz",
+      "throughput-runtime-final.tar.gz",
+      "throughput-python-deps.log",
+      "throughput-peak-results.tar.gz",
+      "throughput-final-results.tar.gz",
+      "CloudPostflight.py",
+      "CloudThroughput.py",
+      "PreflightNext.py",
+      "throughput-runtime-20261013.tar.gz",
+      "throughput-confirm-results.tar.gz",
+      "throughput-shared-20261013.bin",
+      "throughput-failed-node07-db.tar.gz",
+      "throughput-v3-results.tar.gz",
+      "throughput-host-profile.tar.gz",
+      "throughput-shared-20261013.bin.genesis.json",
+      "six-runtime-c4a8724.tar.gz"
+    ]
+  },
+  {
+    "host": "10.206.0.2",
+    "ok": true,
+    "host_name": "VM-0-2-ubuntu",
+    "cpu_count": 8,
+    "memory_gib": 15.120922088623047,
+    "free_gib": 10.135810852050781,
+    "processes": [],
+    "port8089": "",
+    "releases": [
+      {
+        "name": "2026-09-30-d4106d1",
+        "sha256": "dadf9e2f88f86b322613234c688b0d75c2919fa21a1d82c620e0b068bce6c798"
+      },
+      {
+        "name": "2026-09-30-tps-opt-01",
+        "sha256": "ea022a600750511a1ee7cb8290a7979df0e56732e30b4b59e2e031e0c62f6d44"
+      },
+      {
+        "name": "2026-10-13-throughput",
+        "sha256": "16d2a98cd5758877456401491d692c4a660b97a114b5a8bb8daefa20369c4ccc"
+      },
+      {
+        "name": "2026-10-14-six-c4a8724",
+        "sha256": "882d7e8607b121113cd13558914940b8c9651b07d13bc242889a4844959cd4f5"
+      },
+      {
+        "name": "2026-10-14-tps",
+        "sha256": "9b63991584a014d037fbacf4b264727092acab89a1479bb0208037a0594489b4"
+      },
+      {
+        "name": "2026-10-14-tps-v2",
+        "sha256": "a8fc85bf5b059504276eb4d93f77d305a922f811c5fcd882f3bd8544a584dcd7"
+      }
+    ],
+    "datasets": [
+      {
+        "path": "/home/ubuntu/chain/results/20260930-opt-ceiling-01/transactions.bin",
+        "bytes": 422400000
+      },
+      {
+        "path": "/home/ubuntu/chain/results/throughput-20261014-round100/transactions.bin",
+        "bytes": 616000000
+      },
+      {
+        "path": "/home/ubuntu/chain/results/20260930-opt-compare-01/transactions.bin",
+        "bytes": 49280000
+      },
+      {
+        "path": "/home/ubuntu/chain/results/throughput-20261014-round/transactions.bin",
+        "bytes": 616000000
+      },
+      {
+        "path": "/home/ubuntu/chain/results/20260930-opt-confirm-01/transactions.bin",
+        "bytes": 422400000
+      },
+      {
+        "path": "/home/ubuntu/chain/results/six-20261014-c4a8724/transactions.bin",
+        "bytes": 616000000
+      },
+      {
+        "path": "/home/ubuntu/chain/results/20260930-pilot-01/transactions.bin",
+        "bytes": 52800000
+      },
+      {
+        "path": "/home/ubuntu/chain/results/20260930-baseline-01/transactions.bin",
+        "bytes": 49280000
+      },
+      {
+        "path": "/home/ubuntu/chain/results/throughput-20261014-next/transactions.bin",
+        "bytes": 616000000
+      },
+      {
+        "path": "/home/ubuntu/chain/results/20260930-opt-pilot-01/transactions.bin",
+        "bytes": 105600000
+      },
+      {
+        "path": "/home/ubuntu/chain/results/20260930-opt-repeat-01/transactions.bin",
+        "bytes": 422400000
+      },
+      {
+        "path": "/home/ubuntu/chain/results/throughput-20261014-next-v2/transactions.bin",
+        "bytes": 616000000
+      },
+      {
+        "path": "/home/ubuntu/chain/results/20260930-smoke-01/transactions.bin",
+        "bytes": 422400
+      },
+      {
+        "path": "/home/ubuntu/chain/results/20260930-opt-fault-01/transactions.bin",
+        "bytes": 49280000
+      },
+      {
+        "path": "/home/ubuntu/chain/results/20260930-opt-round-01/transactions.bin",
+        "bytes": 422400000
+      }
+    ],
+    "root_files": [
+      "final-opt-state.json",
+      "bench_single_opt.py",
+      "HostProfileNextV2.py",
+      "cluster.local.json",
+      "opt-round.json",
+      "throughput-next-v2-results-20261014.tar.gz",
+      "throughput-initial-next-results-20261014.tar.gz",
+      "six-c4a8724-results.tar.gz",
+      "CaptureFirstNext.py",
+      "opt-ceiling.json",
+      "PostflightNext.py",
+      "LaunchNext.py",
+      "throughput-build-20261013.log",
+      "opt-tools.tar.gz",
+      "deployment-tps-opt-01.json",
+      "InspectNext.py",
+      "Round100NextV2.py",
+      "quick-tools-20261014.tar.gz",
+      "PreflightSixCloud.py",
+      "cleanup-20260930.json",
+      "CloudThroughputNextV2.py",
+      "baseline-core-source.tar.gz",
+      "RoundNextV2.py",
+      "tps-opt-01.tar.gz",
+      "throughput-round-results-20261014.tar.gz",
+      "LaunchSixCloud.py",
+      "OffloadPeakDatabases.py",
+      "chain-source-six-c4a8724.tar.gz",
+      "opt-pilot.json",
+      "host-baseline.jsonl",
+      "throughput-runtime-20261014.tar.gz",
+      "verify-stopped.py",
+      "LaunchSixContinuation.py",
+      "run_cloud_opt.py",
+      "opt-repeat.json",
+      "pilot-cloud.json",
+      "throughput-runtime-20261014-v2.tar.gz",
+      "throughput-runtime-final.tar.gz",
+      "sample-host.pid",
+      "HostProfileNext.py",
+      "verify_opt_cleanup.py",
+      "release-tps-opt-01-ubuntu.tar.gz",
+      "CloudSixC4.py",
+      "cleanup_opt.py",
+      "six-c4a8724-complete-results.tar.gz",
+      "preliminary-results.tar.gz",
+      "throughput-round100-results-20261014.tar.gz",
+      "opt-high.json",
+      "ShipRuntime.py",
+      "PostflightSixCloud.py",
+      "BuildNextV2.py",
+      "BuildSixCloud.py",
+      "QuickSixCloud.py",
+      "collect-results.py",
+      "tps-opt-results.tar.gz",
+      "BuildNext.py",
+      "collect_opt.py",
+      "deployment-20260930.json",
+      "throughput-initial-results.tar.gz",
+      "OffloadOwnDatabases.py",
+      "SummarizeSixCloud.py",
+      "ContinueSixCloud.py",
+      "throughput-source-20261013.tar.gz",
+      "release-d4106d1-ubuntu.tar.gz",
+      "CloudThroughput.py",
+      "opt-confirm.json",
+      "throughput-runtime-20261013.tar.gz",
+      "ArchiveScratch.py",
+      "smoke-cloud.json",
+      "baseline-results.tar.gz",
+      "opt-compare.json",
+      "CleanPriorSixCloud.py",
+      "quick-c4a8724-results.tar.gz",
+      "CloudThroughputNext.py",
+      "throughput-profile-v2-20261014.tar.gz",
+      "run_cloud_cluster.py",
+      "six-runtime-c4a8724.tar.gz",
+      "throughput-v3-patch.tar.gz",
+      "sample-host.py",
+      "FinalSixCloud.py",
+      "baseline-results.tar.xz",
+      "baseline-cloud.json",
+      "PreflightA5Cloud.py",
+      "chain-source-next-v2.tar.gz",
+      "chain-source-efec4b6.tar.gz"
+    ]
+  },
+  {
+    "host": "10.206.0.6",
+    "ok": true,
+    "host_name": "VM-0-6-ubuntu",
+    "cpu_count": 8,
+    "memory_gib": 15.120922088623047,
+    "free_gib": 16.141582489013672,
+    "processes": [],
+    "port8089": "",
+    "releases": [
+      {
+        "name": "2026-09-30-d4106d1",
+        "sha256": "dadf9e2f88f86b322613234c688b0d75c2919fa21a1d82c620e0b068bce6c798"
+      },
+      {
+        "name": "2026-09-30-tps-opt-01",
+        "sha256": "ea022a600750511a1ee7cb8290a7979df0e56732e30b4b59e2e031e0c62f6d44"
+      },
+      {
+        "name": "2026-10-13-throughput",
+        "sha256": "16d2a98cd5758877456401491d692c4a660b97a114b5a8bb8daefa20369c4ccc"
+      },
+      {
+        "name": "2026-10-14-six-c4a8724",
+        "sha256": "882d7e8607b121113cd13558914940b8c9651b07d13bc242889a4844959cd4f5"
+      },
+      {
+        "name": "2026-10-14-tps",
+        "sha256": "9b63991584a014d037fbacf4b264727092acab89a1479bb0208037a0594489b4"
+      },
+      {
+        "name": "2026-10-14-tps-v2",
+        "sha256": "a8fc85bf5b059504276eb4d93f77d305a922f811c5fcd882f3bd8544a584dcd7"
+      }
+    ],
+    "datasets": [],
+    "root_files": [
+      "throughput-runtime-20261014.tar.gz",
+      "throughput-runtime-20261014-v2.tar.gz",
+      "throughput-runtime-20261013.tar.gz",
+      "six-runtime-c4a8724.tar.gz"
+    ]
+  },
+  {
+    "host": "10.206.0.11",
+    "ok": true,
+    "host_name": "VM-0-11-ubuntu",
+    "cpu_count": 8,
+    "memory_gib": 15.120918273925781,
+    "free_gib": 17.00133514404297,
+    "processes": [],
+    "port8089": "",
+    "releases": [
+      {
+        "name": "2026-09-30-d4106d1",
+        "sha256": "dadf9e2f88f86b322613234c688b0d75c2919fa21a1d82c620e0b068bce6c798"
+      },
+      {
+        "name": "2026-09-30-tps-opt-01",
+        "sha256": "ea022a600750511a1ee7cb8290a7979df0e56732e30b4b59e2e031e0c62f6d44"
+      },
+      {
+        "name": "2026-10-13-throughput",
+        "sha256": "16d2a98cd5758877456401491d692c4a660b97a114b5a8bb8daefa20369c4ccc"
+      },
+      {
+        "name": "2026-10-14-six-c4a8724",
+        "sha256": "882d7e8607b121113cd13558914940b8c9651b07d13bc242889a4844959cd4f5"
+      },
+      {
+        "name": "2026-10-14-tps",
+        "sha256": "9b63991584a014d037fbacf4b264727092acab89a1479bb0208037a0594489b4"
+      },
+      {
+        "name": "2026-10-14-tps-v2",
+        "sha256": "a8fc85bf5b059504276eb4d93f77d305a922f811c5fcd882f3bd8544a584dcd7"
+      }
+    ],
+    "datasets": [],
+    "root_files": [
+      "throughput-runtime-20261014.tar.gz",
+      "throughput-runtime-20261014-v2.tar.gz",
+      "throughput-runtime-20261013.tar.gz",
+      "six-runtime-c4a8724.tar.gz"
+    ]
+  },
+  {
+    "host": "10.206.0.8",
+    "ok": true,
+    "host_name": "VM-0-8-ubuntu",
+    "cpu_count": 8,
+    "memory_gib": 15.120922088623047,
+    "free_gib": 15.543060302734375,
+    "processes": [],
+    "port8089": "",
+    "releases": [
+      {
+        "name": "2026-09-30-d4106d1",
+        "sha256": "dadf9e2f88f86b322613234c688b0d75c2919fa21a1d82c620e0b068bce6c798"
+      },
+      {
+        "name": "2026-09-30-tps-opt-01",
+        "sha256": "ea022a600750511a1ee7cb8290a7979df0e56732e30b4b59e2e031e0c62f6d44"
+      },
+      {
+        "name": "2026-10-13-throughput",
+        "sha256": "16d2a98cd5758877456401491d692c4a660b97a114b5a8bb8daefa20369c4ccc"
+      },
+      {
+        "name": "2026-10-14-six-c4a8724",
+        "sha256": "882d7e8607b121113cd13558914940b8c9651b07d13bc242889a4844959cd4f5"
+      },
+      {
+        "name": "2026-10-14-tps",
+        "sha256": "9b63991584a014d037fbacf4b264727092acab89a1479bb0208037a0594489b4"
+      },
+      {
+        "name": "2026-10-14-tps-v2",
+        "sha256": "a8fc85bf5b059504276eb4d93f77d305a922f811c5fcd882f3bd8544a584dcd7"
+      }
+    ],
+    "datasets": [],
+    "root_files": [
+      "throughput-runtime-20261014.tar.gz",
+      "throughput-runtime-20261014-v2.tar.gz",
+      "throughput-runtime-20261013.tar.gz",
+      "six-runtime-c4a8724.tar.gz"
+    ]
+  }
+]
