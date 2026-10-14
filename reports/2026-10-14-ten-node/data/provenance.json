@@ -1,0 +1,27 @@
+{
+  "code_commit": "38507270f0667cd46bc51f47ee750767874e7c5a",
+  "previous_code": "2026-10-13-throughput",
+  "previous_sha256": "16d2a98cd5758877456401491d692c4a660b97a114b5a8bb8daefa20369c4ccc",
+  "new_sha256": "a8fc85bf5b059504276eb4d93f77d305a922f811c5fcd882f3bd8544a584dcd7",
+  "cleanup_archive_sha256": "f277dc93e8a35b5e0a075d1830d37d15fc5ad508e1cd28a5caf08bc3b3e8def0",
+  "github_push": "credential_store_unavailable",
+  "github_master_verified": "1ac05a2c1d27c4d8a2a0c60ad6a637e776545da5",
+  "initial_failure": {
+    "common_height": 16,
+    "common_transactions": 55008,
+    "head_heights": [
+      292,
+      294,
+      290,
+      291,
+      291,
+      284,
+      289,
+      291,
+      286,
+      285
+    ],
+    "max_distance": 278,
+    "recovery_window": 256
+  }
+}

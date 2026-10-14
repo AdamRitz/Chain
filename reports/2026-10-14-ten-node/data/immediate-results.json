@@ -1,0 +1,3704 @@
+[
+  {
+    "case": {
+      "suite": "throughput",
+      "mode": "throughput",
+      "rate": 15000,
+      "repeat": 1,
+      "nodes": 10,
+      "version": "old"
+    },
+    "status": "complete",
+    "controller_clock_origin_utc": 1791948923.9186063,
+    "case_started_utc": 1791951864.2045627,
+    "metrics": {
+      "offered_tps": 15000,
+      "achieved_send_tps": 14999.641692268271,
+      "common_commit_tps": 14925.060262385685,
+      "sent_unique": 525000,
+      "sent_wire_copies": 5250000,
+      "p50_ms": 106.05955799974254,
+      "p95_ms": 393.44793400005074,
+      "p99_ms": 870.999163000306,
+      "p99_after_send_ms": 865.7115200003318,
+      "samples": 600,
+      "unresolved_samples": 0,
+      "deadline_ms": 100,
+      "deadline_success_fraction": 0.435,
+      "send_lateness_p99_ms": 0.8896470003492141,
+      "backlog_growth_per_second": 129.02530325945037,
+      "max_backlog_sum": 28032,
+      "reorganizations_sum": 1848,
+      "max_reorg_depth": 1,
+      "invalid_or_rejected_sum": 0,
+      "drained": true,
+      "recovery_seconds": null,
+      "checks": {
+        "accounts_checked_per_node": 1024,
+        "state": {
+          "burned": 0,
+          "head": "127fa03e2eab936bdcee4c2befa103aec084037c1adf66a2dd09edaa8442c360",
+          "state_hash": "8f5830e3e9d7b6c941e31c8d18fb7f1f77d5294dc4788e8ca8b69f1de9f61bbe",
+          "supply": 1024000000000,
+          "transactions": 525000
+        }
+      },
+      "events": [],
+      "sample_poll_seconds": 0.05,
+      "measurement_seconds": 29.176163603000077,
+      "resources": [
+        {
+          "node": "node01",
+          "cpu_core_equivalents": 1.0076134546002165,
+          "peak_resident_bytes": 227504128,
+          "received_bytes_per_second": 8862698.074993355,
+          "sent_bytes_per_second": 10138907.877853498,
+          "process_write_bytes_per_second": 25526573.614476796,
+          "db_write_ms_per_second": 222.78301247706307
+        },
+        {
+          "node": "node02",
+          "cpu_core_equivalents": 1.0555525880322818,
+          "peak_resident_bytes": 222359552,
+          "received_bytes_per_second": 10040303.412950369,
+          "sent_bytes_per_second": 6844765.395388213,
+          "process_write_bytes_per_second": 27066215.104401156,
+          "db_write_ms_per_second": 265.9434350101515
+        },
+        {
+          "node": "node03",
+          "cpu_core_equivalents": 1.0193879635683751,
+          "peak_resident_bytes": 216735744,
+          "received_bytes_per_second": 9483652.74355496,
+          "sent_bytes_per_second": 8605613.212772857,
+          "process_write_bytes_per_second": 25684931.925832197,
+          "db_write_ms_per_second": 240.1065119226183
+        },
+        {
+          "node": "node04",
+          "cpu_core_equivalents": 1.0554786235443745,
+          "peak_resident_bytes": 221892608,
+          "received_bytes_per_second": 10218769.679826682,
+          "sent_bytes_per_second": 6660425.738084983,
+          "process_write_bytes_per_second": 26123084.664963584,
+          "db_write_ms_per_second": 266.8784173255508
+        },
+        {
+          "node": "node05",
+          "cpu_core_equivalents": 1.0358484895832012,
+          "peak_resident_bytes": 220459008,
+          "received_bytes_per_second": 10469737.356716424,
+          "sent_bytes_per_second": 6755361.4889838835,
+          "process_write_bytes_per_second": 29719137.985325813,
+          "db_write_ms_per_second": 300.7036781935876
+        },
+        {
+          "node": "node06",
+          "cpu_core_equivalents": 1.0615289049453824,
+          "peak_resident_bytes": 222822400,
+          "received_bytes_per_second": 9809386.761547055,
+          "sent_bytes_per_second": 7326413.811924889,
+          "process_write_bytes_per_second": 25590590.80417366,
+          "db_write_ms_per_second": 235.8720100298713
+        },
+        {
+          "node": "node07",
+          "cpu_core_equivalents": 1.0690728371427385,
+          "peak_resident_bytes": 218984448,
+          "received_bytes_per_second": 10321169.606035376,
+          "sent_bytes_per_second": 6824450.832854739,
+          "process_write_bytes_per_second": 31915096.05821693,
+          "db_write_ms_per_second": 300.6413759654834
+        },
+        {
+          "node": "node08",
+          "cpu_core_equivalents": 1.0371454044385904,
+          "peak_resident_bytes": 223068160,
+          "received_bytes_per_second": 10225377.916695088,
+          "sent_bytes_per_second": 6944215.756288356,
+          "process_write_bytes_per_second": 25728873.54946184,
+          "db_write_ms_per_second": 259.3005518457567
+        },
+        {
+          "node": "node09",
+          "cpu_core_equivalents": 1.054215366301184,
+          "peak_resident_bytes": 225972224,
+          "received_bytes_per_second": 10166857.78282031,
+          "sent_bytes_per_second": 6972471.4931020625,
+          "process_write_bytes_per_second": 25695320.68030055,
+          "db_write_ms_per_second": 262.8766860633915
+        },
+        {
+          "node": "node10",
+          "cpu_core_equivalents": 1.0505691706790474,
+          "peak_resident_bytes": 222310400,
+          "received_bytes_per_second": 10438507.788209813,
+          "sent_bytes_per_second": 6986055.732805162,
+          "process_write_bytes_per_second": 25823495.44826817,
+          "db_write_ms_per_second": 270.17581983223636
+        }
+      ],
+      "controller_cpu_core_equivalents": 0.06515082451595096,
+      "sustainable": false
+    }
+  },
+  {
+    "case": {
+      "suite": "throughput",
+      "mode": "throughput",
+      "rate": 15000,
+      "repeat": 1,
+      "nodes": 10,
+      "version": "new"
+    },
+    "status": "complete",
+    "controller_clock_origin_utc": 1791948923.9186063,
+    "case_started_utc": 1791951902.4914117,
+    "metrics": {
+      "offered_tps": 15000,
+      "achieved_send_tps": 14999.791657394246,
+      "common_commit_tps": 14995.512116265176,
+      "sent_unique": 525000,
+      "sent_wire_copies": 5250000,
+      "p50_ms": 87.0380460000888,
+      "p95_ms": 300.45256400035214,
+      "p99_ms": 584.6715789998598,
+      "p99_after_send_ms": 577.019541000027,
+      "samples": 600,
+      "unresolved_samples": 0,
+      "deadline_ms": 100,
+      "deadline_success_fraction": 0.6233333333333333,
+      "send_lateness_p99_ms": 0.9249686668226786,
+      "backlog_growth_per_second": 50.025201172123346,
+      "max_backlog_sum": 18944,
+      "reorganizations_sum": 1975,
+      "max_reorg_depth": 1,
+      "invalid_or_rejected_sum": 0,
+      "drained": true,
+      "recovery_seconds": null,
+      "checks": {
+        "accounts_checked_per_node": 1024,
+        "state": {
+          "burned": 0,
+          "head": "49cd34178d99fd9feb07031d59e9a547b5a05fd42ac5f95eb80123b6353ac4f2",
+          "state_hash": "8f5830e3e9d7b6c941e31c8d18fb7f1f77d5294dc4788e8ca8b69f1de9f61bbe",
+          "supply": 1024000000000,
+          "transactions": 525000
+        }
+      },
+      "events": [],
+      "sample_poll_seconds": 0.05,
+      "measurement_seconds": 29.909748764999676,
+      "resources": [
+        {
+          "node": "node01",
+          "cpu_core_equivalents": 0.9081019440652695,
+          "peak_resident_bytes": 199102464,
+          "received_bytes_per_second": 9060756.682688335,
+          "sent_bytes_per_second": 9272734.257284993,
+          "process_write_bytes_per_second": 22474095.830139525,
+          "db_write_ms_per_second": 183.23252321708557
+        },
+        {
+          "node": "node02",
+          "cpu_core_equivalents": 0.9502472328774275,
+          "peak_resident_bytes": 194846720,
+          "received_bytes_per_second": 9785696.874274736,
+          "sent_bytes_per_second": 6946688.77470266,
+          "process_write_bytes_per_second": 22510112.448281787,
+          "db_write_ms_per_second": 227.76419870740676
+        },
+        {
+          "node": "node03",
+          "cpu_core_equivalents": 0.9183746147725389,
+          "peak_resident_bytes": 203894784,
+          "received_bytes_per_second": 9484241.851337498,
+          "sent_bytes_per_second": 7481032.9487567805,
+          "process_write_bytes_per_second": 22344956.397028673,
+          "db_write_ms_per_second": 207.43398487720685
+        },
+        {
+          "node": "node04",
+          "cpu_core_equivalents": 0.9532142922364767,
+          "peak_resident_bytes": 191741952,
+          "received_bytes_per_second": 9976642.242785593,
+          "sent_bytes_per_second": 6964798.421970371,
+          "process_write_bytes_per_second": 22521478.9095206,
+          "db_write_ms_per_second": 234.67997488544188
+        },
+        {
+          "node": "node05",
+          "cpu_core_equivalents": 0.9400070933695222,
+          "peak_resident_bytes": 192417792,
+          "received_bytes_per_second": 10148905.40823315,
+          "sent_bytes_per_second": 6898717.224982422,
+          "process_write_bytes_per_second": 22648290.272257235,
+          "db_write_ms_per_second": 252.34639154950725
+        },
+        {
+          "node": "node06",
+          "cpu_core_equivalents": 0.9583120950029922,
+          "peak_resident_bytes": 197668864,
+          "received_bytes_per_second": 9778801.329894861,
+          "sent_bytes_per_second": 7045375.227176446,
+          "process_write_bytes_per_second": 22513809.971817303,
+          "db_write_ms_per_second": 205.13957015178784
+        },
+        {
+          "node": "node07",
+          "cpu_core_equivalents": 0.9739939719617474,
+          "peak_resident_bytes": 194514944,
+          "received_bytes_per_second": 10402339.49955759,
+          "sent_bytes_per_second": 6622360.306542753,
+          "process_write_bytes_per_second": 22719775.727277238,
+          "db_write_ms_per_second": 270.6778027327936
+        },
+        {
+          "node": "node08",
+          "cpu_core_equivalents": 0.92326272002373,
+          "peak_resident_bytes": 195596288,
+          "received_bytes_per_second": 9673094.089595344,
+          "sent_bytes_per_second": 7504512.283388363,
+          "process_write_bytes_per_second": 22505182.416901097,
+          "db_write_ms_per_second": 209.9067411207012
+        },
+        {
+          "node": "node09",
+          "cpu_core_equivalents": 0.9590235352817853,
+          "peak_resident_bytes": 199802880,
+          "received_bytes_per_second": 10182600.174709402,
+          "sent_bytes_per_second": 6944027.435063018,
+          "process_write_bytes_per_second": 22375358.257209595,
+          "db_write_ms_per_second": 229.961711883342
+        },
+        {
+          "node": "node10",
+          "cpu_core_equivalents": 0.9607295676661063,
+          "peak_resident_bytes": 188809216,
+          "received_bytes_per_second": 10143391.821298813,
+          "sent_bytes_per_second": 6891078.845877501,
+          "process_write_bytes_per_second": 22572970.348385584,
+          "db_write_ms_per_second": 239.4843219941061
+        }
+      ],
+      "controller_cpu_core_equivalents": 0.06682345260558742,
+      "sustainable": false
+    }
+  },
+  {
+    "case": {
+      "suite": "throughput",
+      "mode": "throughput",
+      "rate": 15000,
+      "repeat": 2,
+      "nodes": 10,
+      "version": "new"
+    },
+    "status": "complete",
+    "controller_clock_origin_utc": 1791948923.9186065,
+    "case_started_utc": 1791951940.4421,
+    "metrics": {
+      "offered_tps": 15000,
+      "achieved_send_tps": 15000.626727907418,
+      "common_commit_tps": 15000.626727907418,
+      "sent_unique": 525000,
+      "sent_wire_copies": 5250000,
+      "p50_ms": 88.42934199992669,
+      "p95_ms": 295.5463839998629,
+      "p99_ms": 595.5463840000448,
+      "p99_after_send_ms": 592.6912559998527,
+      "samples": 600,
+      "unresolved_samples": 0,
+      "deadline_ms": 100,
+      "deadline_success_fraction": 0.6233333333333333,
+      "send_lateness_p99_ms": 0.9218769996550691,
+      "backlog_growth_per_second": 33.40173627045256,
+      "max_backlog_sum": 19712,
+      "reorganizations_sum": 2026,
+      "max_reorg_depth": 1,
+      "invalid_or_rejected_sum": 0,
+      "drained": true,
+      "recovery_seconds": null,
+      "checks": {
+        "accounts_checked_per_node": 1024,
+        "state": {
+          "burned": 0,
+          "head": "58e8e8b7a1bbdba62bdfc8f48f799597df4eed216b13fe4d00bc6a4ee47e7d38",
+          "state_hash": "8f5830e3e9d7b6c941e31c8d18fb7f1f77d5294dc4788e8ca8b69f1de9f61bbe",
+          "supply": 1024000000000,
+          "transactions": 525000
+        }
+      },
+      "events": [],
+      "sample_poll_seconds": 0.05,
+      "measurement_seconds": 29.950748602000203,
+      "resources": [
+        {
+          "node": "node01",
+          "cpu_core_equivalents": 0.9033067373211902,
+          "peak_resident_bytes": 194285568,
+          "received_bytes_per_second": 8944898.057810428,
+          "sent_bytes_per_second": 9262788.375896305,
+          "process_write_bytes_per_second": 22512256.8039909,
+          "db_write_ms_per_second": 178.21882203784136
+        },
+        {
+          "node": "node02",
+          "cpu_core_equivalents": 0.956795049793387,
+          "peak_resident_bytes": 192872448,
+          "received_bytes_per_second": 9938999.821197122,
+          "sent_bytes_per_second": 6644077.904173337,
+          "process_write_bytes_per_second": 22432937.250694614,
+          "db_write_ms_per_second": 235.13547562980384
+        },
+        {
+          "node": "node03",
+          "cpu_core_equivalents": 0.9190667774548273,
+          "peak_resident_bytes": 196276224,
+          "received_bytes_per_second": 9506181.490935612,
+          "sent_bytes_per_second": 7679977.85486532,
+          "process_write_bytes_per_second": 22429791.820132867,
+          "db_write_ms_per_second": 206.42519928824441
+        },
+        {
+          "node": "node04",
+          "cpu_core_equivalents": 0.9516971471656777,
+          "peak_resident_bytes": 193896448,
+          "received_bytes_per_second": 9946211.627582008,
+          "sent_bytes_per_second": 7093985.490092577,
+          "process_write_bytes_per_second": 22393414.23189698,
+          "db_write_ms_per_second": 231.01128495793026
+        },
+        {
+          "node": "node05",
+          "cpu_core_equivalents": 0.9356921048086398,
+          "peak_resident_bytes": 190304256,
+          "received_bytes_per_second": 10270410.402344905,
+          "sent_bytes_per_second": 7159331.769947141,
+          "process_write_bytes_per_second": 22032510.264398884,
+          "db_write_ms_per_second": 252.30351659708904
+        },
+        {
+          "node": "node06",
+          "cpu_core_equivalents": 0.9568546476359557,
+          "peak_resident_bytes": 197603328,
+          "received_bytes_per_second": 9783568.14695546,
+          "sent_bytes_per_second": 7156838.042628586,
+          "process_write_bytes_per_second": 22436356.196957383,
+          "db_write_ms_per_second": 198.73090937040877
+        },
+        {
+          "node": "node07",
+          "cpu_core_equivalents": 0.9682335618837699,
+          "peak_resident_bytes": 181452800,
+          "received_bytes_per_second": 10322721.949572654,
+          "sent_bytes_per_second": 6928165.628091922,
+          "process_write_bytes_per_second": 23057783.869678628,
+          "db_write_ms_per_second": 271.5569674093833
+        },
+        {
+          "node": "node08",
+          "cpu_core_equivalents": 0.9172876900367438,
+          "peak_resident_bytes": 204091392,
+          "received_bytes_per_second": 9859431.65975755,
+          "sent_bytes_per_second": 7293200.009879289,
+          "process_write_bytes_per_second": 22479845.193419833,
+          "db_write_ms_per_second": 210.8456405185901
+        },
+        {
+          "node": "node09",
+          "cpu_core_equivalents": 0.9630947253877192,
+          "peak_resident_bytes": 188882944,
+          "received_bytes_per_second": 10430982.849595148,
+          "sent_bytes_per_second": 6933727.459023549,
+          "process_write_bytes_per_second": 22554378.221948236,
+          "db_write_ms_per_second": 240.65623566813412
+        },
+        {
+          "node": "node10",
+          "cpu_core_equivalents": 0.954035486047642,
+          "peak_resident_bytes": 193146880,
+          "received_bytes_per_second": 10118826.478339186,
+          "sent_bytes_per_second": 6901987.417643198,
+          "process_write_bytes_per_second": 22554514.97979875,
+          "db_write_ms_per_second": 232.43877508741386
+        }
+      ],
+      "controller_cpu_core_equivalents": 0.06439697305553475,
+      "sustainable": false
+    }
+  },
+  {
+    "case": {
+      "suite": "throughput",
+      "mode": "throughput",
+      "rate": 15000,
+      "repeat": 2,
+      "nodes": 10,
+      "version": "old"
+    },
+    "status": "complete",
+    "controller_clock_origin_utc": 1791948923.9186068,
+    "case_started_utc": 1791951978.3200521,
+    "metrics": {
+      "offered_tps": 15000,
+      "achieved_send_tps": 15001.233355999457,
+      "common_commit_tps": 14829.348699958215,
+      "sent_unique": 525000,
+      "sent_wire_copies": 5250000,
+      "p50_ms": 106.47100300047896,
+      "p95_ms": 378.0345920004038,
+      "p99_ms": 528.0345920004947,
+      "p99_after_send_ms": 523.8264899999194,
+      "samples": 600,
+      "unresolved_samples": 0,
+      "deadline_ms": 100,
+      "deadline_success_fraction": 0.44666666666666666,
+      "send_lateness_p99_ms": 0.8540453336536302,
+      "backlog_growth_per_second": 141.2331654215602,
+      "max_backlog_sum": 31744,
+      "reorganizations_sum": 1884,
+      "max_reorg_depth": 1,
+      "invalid_or_rejected_sum": 0,
+      "drained": true,
+      "recovery_seconds": null,
+      "checks": {
+        "accounts_checked_per_node": 1024,
+        "state": {
+          "burned": 0,
+          "head": "169d0ef2ce9ebdfba5a63c89526455282ccf7702827628d5c1a6fd2d2fa17985",
+          "state_hash": "8f5830e3e9d7b6c941e31c8d18fb7f1f77d5294dc4788e8ca8b69f1de9f61bbe",
+          "supply": 1024000000000,
+          "transactions": 525000
+        }
+      },
+      "events": [],
+      "sample_poll_seconds": 0.05,
+      "measurement_seconds": 29.787417433999963,
+      "resources": [
+        {
+          "node": "node01",
+          "cpu_core_equivalents": 1.0331331028675723,
+          "peak_resident_bytes": 231342080,
+          "received_bytes_per_second": 9068960.664299002,
+          "sent_bytes_per_second": 9671464.323428407,
+          "process_write_bytes_per_second": 29194677.58246749,
+          "db_write_ms_per_second": 221.74107955598768
+        },
+        {
+          "node": "node02",
+          "cpu_core_equivalents": 1.05922549579563,
+          "peak_resident_bytes": 226734080,
+          "received_bytes_per_second": 10182769.139757186,
+          "sent_bytes_per_second": 7011936.817375595,
+          "process_write_bytes_per_second": 32065013.83063141,
+          "db_write_ms_per_second": 254.15679065747668
+        },
+        {
+          "node": "node03",
+          "cpu_core_equivalents": 1.0341664586483545,
+          "peak_resident_bytes": 224382976,
+          "received_bytes_per_second": 9848720.643540714,
+          "sent_bytes_per_second": 8174182.456048643,
+          "process_write_bytes_per_second": 26083702.81584583,
+          "db_write_ms_per_second": 240.18534583779348
+        },
+        {
+          "node": "node04",
+          "cpu_core_equivalents": 1.062720494992209,
+          "peak_resident_bytes": 224661504,
+          "received_bytes_per_second": 10332171.517786788,
+          "sent_bytes_per_second": 7024475.064466922,
+          "process_write_bytes_per_second": 32735088.97374259,
+          "db_write_ms_per_second": 266.6700484726557
+        },
+        {
+          "node": "node05",
+          "cpu_core_equivalents": 1.0604904930074053,
+          "peak_resident_bytes": 228380672,
+          "received_bytes_per_second": 10524010.135977214,
+          "sent_bytes_per_second": 6805861.516836332,
+          "process_write_bytes_per_second": 33716756.62132534,
+          "db_write_ms_per_second": 296.46690917622607
+        },
+        {
+          "node": "node06",
+          "cpu_core_equivalents": 1.0590596875307496,
+          "peak_resident_bytes": 226467840,
+          "received_bytes_per_second": 9824027.499140743,
+          "sent_bytes_per_second": 8536503.057487596,
+          "process_write_bytes_per_second": 25470143.34764101,
+          "db_write_ms_per_second": 225.0553668123013
+        },
+        {
+          "node": "node07",
+          "cpu_core_equivalents": 1.084427579919349,
+          "peak_resident_bytes": 223854592,
+          "received_bytes_per_second": 10815237.934399856,
+          "sent_bytes_per_second": 6892501.756988681,
+          "process_write_bytes_per_second": 34275863.03049629,
+          "db_write_ms_per_second": 304.33854687424156
+        },
+        {
+          "node": "node08",
+          "cpu_core_equivalents": 1.0301031993789609,
+          "peak_resident_bytes": 227934208,
+          "received_bytes_per_second": 9920095.579105731,
+          "sent_bytes_per_second": 7411593.586089343,
+          "process_write_bytes_per_second": 25419540.504902467,
+          "db_write_ms_per_second": 234.88825587188396
+        },
+        {
+          "node": "node09",
+          "cpu_core_equivalents": 1.0610615059204143,
+          "peak_resident_bytes": 233267200,
+          "received_bytes_per_second": 10466138.150135556,
+          "sent_bytes_per_second": 6943103.4918769,
+          "process_write_bytes_per_second": 26442185.454485446,
+          "db_write_ms_per_second": 249.95449204339403
+        },
+        {
+          "node": "node10",
+          "cpu_core_equivalents": 1.0741563638705625,
+          "peak_resident_bytes": 226537472,
+          "received_bytes_per_second": 10285009.59100637,
+          "sent_bytes_per_second": 6929124.770797015,
+          "process_write_bytes_per_second": 32215584.78932354,
+          "db_write_ms_per_second": 262.3885377548306
+        }
+      ],
+      "controller_cpu_core_equivalents": 0.06357942681466432,
+      "sustainable": false
+    }
+  },
+  {
+    "case": {
+      "suite": "throughput",
+      "mode": "throughput",
+      "rate": 15000,
+      "repeat": 3,
+      "nodes": 10,
+      "version": "old"
+    },
+    "status": "complete",
+    "controller_clock_origin_utc": 1791948923.9186072,
+    "case_started_utc": 1791952016.419186,
+    "metrics": {
+      "offered_tps": 15000,
+      "achieved_send_tps": 14998.096483776442,
+      "common_commit_tps": 14766.697280883891,
+      "sent_unique": 525000,
+      "sent_wire_copies": 5250000,
+      "p50_ms": 109.3671590001577,
+      "p95_ms": 384.6910429997479,
+      "p99_ms": 585.3501109995705,
+      "p99_after_send_ms": 578.3684009998069,
+      "samples": 600,
+      "unresolved_samples": 0,
+      "deadline_ms": 100,
+      "deadline_success_fraction": 0.42833333333333334,
+      "send_lateness_p99_ms": 0.9050406665664923,
+      "backlog_growth_per_second": 111.97423065618875,
+      "max_backlog_sum": 25856,
+      "reorganizations_sum": 1868,
+      "max_reorg_depth": 1,
+      "invalid_or_rejected_sum": 0,
+      "drained": true,
+      "recovery_seconds": null,
+      "checks": {
+        "accounts_checked_per_node": 1024,
+        "state": {
+          "burned": 0,
+          "head": "3b374e86f506bb75c27634051570871d8329a9ce422a085b552f9be6b66d8875",
+          "state_hash": "8f5830e3e9d7b6c941e31c8d18fb7f1f77d5294dc4788e8ca8b69f1de9f61bbe",
+          "supply": 1024000000000,
+          "transactions": 525000
+        }
+      },
+      "events": [],
+      "sample_poll_seconds": 0.05,
+      "measurement_seconds": 29.870457259999966,
+      "resources": [
+        {
+          "node": "node01",
+          "cpu_core_equivalents": 1.017127516179176,
+          "peak_resident_bytes": 233922560,
+          "received_bytes_per_second": 9104339.938048886,
+          "sent_bytes_per_second": 10202203.747583352,
+          "process_write_bytes_per_second": 25001946.8232272,
+          "db_write_ms_per_second": 208.37627358102273
+        },
+        {
+          "node": "node02",
+          "cpu_core_equivalents": 1.0233195204859757,
+          "peak_resident_bytes": 225271808,
+          "received_bytes_per_second": 9870486.02683494,
+          "sent_bytes_per_second": 7274195.473765581,
+          "process_write_bytes_per_second": 25053643.119221564,
+          "db_write_ms_per_second": 236.72627778849102
+        },
+        {
+          "node": "node03",
+          "cpu_core_equivalents": 1.0003416666812697,
+          "peak_resident_bytes": 227979264,
+          "received_bytes_per_second": 9630104.035441214,
+          "sent_bytes_per_second": 7923581.414903331,
+          "process_write_bytes_per_second": 25027726.408497598,
+          "db_write_ms_per_second": 229.92317530394607
+        },
+        {
+          "node": "node04",
+          "cpu_core_equivalents": 1.0481881053065618,
+          "peak_resident_bytes": 225546240,
+          "received_bytes_per_second": 10290417.32854947,
+          "sent_bytes_per_second": 6846880.388197988,
+          "process_write_bytes_per_second": 31073313.40531347,
+          "db_write_ms_per_second": 265.5707233388368
+        },
+        {
+          "node": "node05",
+          "cpu_core_equivalents": 1.0535393792629217,
+          "peak_resident_bytes": 223510528,
+          "received_bytes_per_second": 10428724.752638767,
+          "sent_bytes_per_second": 6708296.202359515,
+          "process_write_bytes_per_second": 34365832.67088564,
+          "db_write_ms_per_second": 304.92172639743546
+        },
+        {
+          "node": "node06",
+          "cpu_core_equivalents": 1.0459775264920077,
+          "peak_resident_bytes": 230170624,
+          "received_bytes_per_second": 9702506.074056676,
+          "sent_bytes_per_second": 8343568.959479674,
+          "process_write_bytes_per_second": 28980230.482082717,
+          "db_write_ms_per_second": 227.48532989816064
+        },
+        {
+          "node": "node07",
+          "cpu_core_equivalents": 1.0673575473748886,
+          "peak_resident_bytes": 221147136,
+          "received_bytes_per_second": 10579722.474593291,
+          "sent_bytes_per_second": 6852450.942359636,
+          "process_write_bytes_per_second": 35865710.88199007,
+          "db_write_ms_per_second": 306.99297507171843
+        },
+        {
+          "node": "node08",
+          "cpu_core_equivalents": 1.0146939745910015,
+          "peak_resident_bytes": 236105728,
+          "received_bytes_per_second": 10179365.396162681,
+          "sent_bytes_per_second": 6999047.191686688,
+          "process_write_bytes_per_second": 25284288.132119503,
+          "db_write_ms_per_second": 231.99480780228296
+        },
+        {
+          "node": "node09",
+          "cpu_core_equivalents": 1.054467152137598,
+          "peak_resident_bytes": 230858752,
+          "received_bytes_per_second": 10402502.388743157,
+          "sent_bytes_per_second": 6439314.180086984,
+          "process_write_bytes_per_second": 30715690.222413454,
+          "db_write_ms_per_second": 260.22211177894803
+        },
+        {
+          "node": "node10",
+          "cpu_core_equivalents": 1.0421444750256907,
+          "peak_resident_bytes": 226611200,
+          "received_bytes_per_second": 10068979.707343131,
+          "sent_bytes_per_second": 6921020.532110871,
+          "process_write_bytes_per_second": 25315004.233718276,
+          "db_write_ms_per_second": 239.5083816671378
+        }
+      ],
+      "controller_cpu_core_equivalents": 0.061282019133833736,
+      "sustainable": false
+    }
+  },
+  {
+    "case": {
+      "suite": "throughput",
+      "mode": "throughput",
+      "rate": 15000,
+      "repeat": 3,
+      "nodes": 10,
+      "version": "new"
+    },
+    "status": "complete",
+    "controller_clock_origin_utc": 1791948923.9186072,
+    "case_started_utc": 1791952054.6483986,
+    "metrics": {
+      "offered_tps": 15000,
+      "achieved_send_tps": 15001.107330052464,
+      "common_commit_tps": 15001.107330052464,
+      "sent_unique": 525000,
+      "sent_wire_copies": 5250000,
+      "p50_ms": 87.88432799974544,
+      "p95_ms": 242.49770599999465,
+      "p99_ms": 518.7263560001156,
+      "p99_after_send_ms": 514.6378630001891,
+      "samples": 600,
+      "unresolved_samples": 0,
+      "deadline_ms": 100,
+      "deadline_success_fraction": 0.6333333333333333,
+      "send_lateness_p99_ms": 0.9093399999073881,
+      "backlog_growth_per_second": 67.2816401018026,
+      "max_backlog_sum": 20224,
+      "reorganizations_sum": 2034,
+      "max_reorg_depth": 1,
+      "invalid_or_rejected_sum": 0,
+      "drained": true,
+      "recovery_seconds": null,
+      "checks": {
+        "accounts_checked_per_node": 1024,
+        "state": {
+          "burned": 0,
+          "head": "5c3af05393890cca586482b1b6086705173ebeaa660e612b38e0573324343323",
+          "state_hash": "8f5830e3e9d7b6c941e31c8d18fb7f1f77d5294dc4788e8ca8b69f1de9f61bbe",
+          "supply": 1024000000000,
+          "transactions": 525000
+        }
+      },
+      "events": [],
+      "sample_poll_seconds": 0.05,
+      "measurement_seconds": 29.958321750000323,
+      "resources": [
+        {
+          "node": "node01",
+          "cpu_core_equivalents": 0.9318026634786276,
+          "peak_resident_bytes": 196464640,
+          "received_bytes_per_second": 9360054.756738734,
+          "sent_bytes_per_second": 8535489.642372815,
+          "process_write_bytes_per_second": 22750616.996761262,
+          "db_write_ms_per_second": 192.64031226982658
+        },
+        {
+          "node": "node02",
+          "cpu_core_equivalents": 0.9506804899710276,
+          "peak_resident_bytes": 202362880,
+          "received_bytes_per_second": 9712878.793018399,
+          "sent_bytes_per_second": 7057000.64790838,
+          "process_write_bytes_per_second": 21684722.30925262,
+          "db_write_ms_per_second": 229.19877332580973
+        },
+        {
+          "node": "node03",
+          "cpu_core_equivalents": 0.9306824738939089,
+          "peak_resident_bytes": 204783616,
+          "received_bytes_per_second": 9833393.587876692,
+          "sent_bytes_per_second": 7181301.602784131,
+          "process_write_bytes_per_second": 22438751.196067676,
+          "db_write_ms_per_second": 215.79919269008886
+        },
+        {
+          "node": "node04",
+          "cpu_core_equivalents": 0.9648011073917946,
+          "peak_resident_bytes": 191651840,
+          "received_bytes_per_second": 10105318.33279335,
+          "sent_bytes_per_second": 7371728.458053483,
+          "process_write_bytes_per_second": 22581627.023215767,
+          "db_write_ms_per_second": 240.58472030396436
+        },
+        {
+          "node": "node05",
+          "cpu_core_equivalents": 0.9406330312878656,
+          "peak_resident_bytes": 189005824,
+          "received_bytes_per_second": 10122952.030849217,
+          "sent_bytes_per_second": 7058165.733198914,
+          "process_write_bytes_per_second": 22475393.03499178,
+          "db_write_ms_per_second": 247.867465072536
+        },
+        {
+          "node": "node06",
+          "cpu_core_equivalents": 0.975710229829536,
+          "peak_resident_bytes": 198111232,
+          "received_bytes_per_second": 9599364.92437187,
+          "sent_bytes_per_second": 7170128.7472819695,
+          "process_write_bytes_per_second": 22704951.4213857,
+          "db_write_ms_per_second": 210.70679344713062
+        },
+        {
+          "node": "node07",
+          "cpu_core_equivalents": 0.9712382503535828,
+          "peak_resident_bytes": 183971840,
+          "received_bytes_per_second": 10222262.63392063,
+          "sent_bytes_per_second": 7013569.209697059,
+          "process_write_bytes_per_second": 22608288.06273144,
+          "db_write_ms_per_second": 264.38683588809226
+        },
+        {
+          "node": "node08",
+          "cpu_core_equivalents": 0.945093661663464,
+          "peak_resident_bytes": 199987200,
+          "received_bytes_per_second": 9981481.42260328,
+          "sent_bytes_per_second": 7399433.648181498,
+          "process_write_bytes_per_second": 22590103.866548955,
+          "db_write_ms_per_second": 216.32263255867898
+        },
+        {
+          "node": "node09",
+          "cpu_core_equivalents": 0.9595067854560207,
+          "peak_resident_bytes": 195608576,
+          "received_bytes_per_second": 10007511.919455126,
+          "sent_bytes_per_second": 6666844.513745095,
+          "process_write_bytes_per_second": 22496174.973486047,
+          "db_write_ms_per_second": 230.90390555672317
+        },
+        {
+          "node": "node10",
+          "cpu_core_equivalents": 0.9635791764603664,
+          "peak_resident_bytes": 195911680,
+          "received_bytes_per_second": 9859758.3824934,
+          "sent_bytes_per_second": 7285514.049197286,
+          "process_write_bytes_per_second": 22455157.989615783,
+          "db_write_ms_per_second": 233.99061127314062
+        }
+      ],
+      "controller_cpu_core_equivalents": 0.06523837089487548,
+      "sustainable": false
+    }
+  },
+  {
+    "case": {
+      "suite": "throughput",
+      "mode": "throughput",
+      "rate": 30000,
+      "repeat": 1,
+      "nodes": 10,
+      "version": "old"
+    },
+    "status": "complete",
+    "controller_clock_origin_utc": 1791948923.918607,
+    "case_started_utc": 1791952092.5372288,
+    "metrics": {
+      "offered_tps": 30000,
+      "achieved_send_tps": 30001.01914865542,
+      "common_commit_tps": 29678.450514972214,
+      "sent_unique": 1050000,
+      "sent_wire_copies": 10500000,
+      "p50_ms": 473.0535250000685,
+      "p95_ms": 1360.0753860000623,
+      "p99_ms": 1944.823677000386,
+      "p99_after_send_ms": 1913.294163000046,
+      "samples": 600,
+      "unresolved_samples": 0,
+      "deadline_ms": 100,
+      "deadline_success_fraction": 0.01,
+      "send_lateness_p99_ms": 2.0691350000561215,
+      "backlog_growth_per_second": 2838.43747953507,
+      "max_backlog_sum": 177168,
+      "reorganizations_sum": 1117,
+      "max_reorg_depth": 3,
+      "invalid_or_rejected_sum": 0,
+      "drained": true,
+      "recovery_seconds": null,
+      "checks": {
+        "accounts_checked_per_node": 1024,
+        "state": {
+          "burned": 0,
+          "head": "a511c8a8861e06ea8f1ded1e64fdcdda7f8e115e24ccf91bfaee41967c0a5e91",
+          "state_hash": "0ee29f86869ff9018b5859445d5237e41a87e9e32dcd1444136018c3b965e198",
+          "supply": 1024000000000,
+          "transactions": 1050000
+        }
+      },
+      "events": [],
+      "sample_poll_seconds": 0.05,
+      "measurement_seconds": 29.95951556,
+      "resources": [
+        {
+          "node": "node01",
+          "cpu_core_equivalents": 2.4025519990751145,
+          "peak_resident_bytes": 566067200,
+          "received_bytes_per_second": 26636957.643783744,
+          "sent_bytes_per_second": 20427457.639438547,
+          "process_write_bytes_per_second": 59458448.199287236,
+          "db_write_ms_per_second": 303.19984065857176
+        },
+        {
+          "node": "node02",
+          "cpu_core_equivalents": 2.4271145123950064,
+          "peak_resident_bytes": 583249920,
+          "received_bytes_per_second": 26225926.73190741,
+          "sent_bytes_per_second": 22750336.95504788,
+          "process_write_bytes_per_second": 59510537.69308678,
+          "db_write_ms_per_second": 303.7004535596703
+        },
+        {
+          "node": "node03",
+          "cpu_core_equivalents": 2.3944614810720926,
+          "peak_resident_bytes": 590286848,
+          "received_bytes_per_second": 24968151.721342452,
+          "sent_bytes_per_second": 21637639.45721157,
+          "process_write_bytes_per_second": 59856570.5246003,
+          "db_write_ms_per_second": 329.9916298112532
+        },
+        {
+          "node": "node04",
+          "cpu_core_equivalents": 2.414481063791941,
+          "peak_resident_bytes": 548388864,
+          "received_bytes_per_second": 25680320.04586926,
+          "sent_bytes_per_second": 21720448.57323454,
+          "process_write_bytes_per_second": 60930352.373161,
+          "db_write_ms_per_second": 334.1683282211256
+        },
+        {
+          "node": "node05",
+          "cpu_core_equivalents": 2.4038390025289176,
+          "peak_resident_bytes": 569925632,
+          "received_bytes_per_second": 24931184.968733188,
+          "sent_bytes_per_second": 20559939.4878867,
+          "process_write_bytes_per_second": 59489072.99354209,
+          "db_write_ms_per_second": 318.4629643590939
+        },
+        {
+          "node": "node06",
+          "cpu_core_equivalents": 2.4526403590485826,
+          "peak_resident_bytes": 581238784,
+          "received_bytes_per_second": 25047651.838600025,
+          "sent_bytes_per_second": 22076364.475100346,
+          "process_write_bytes_per_second": 59569463.07846107,
+          "db_write_ms_per_second": 326.39853195944
+        },
+        {
+          "node": "node07",
+          "cpu_core_equivalents": 2.4132285402014024,
+          "peak_resident_bytes": 574496768,
+          "received_bytes_per_second": 26622835.1857903,
+          "sent_bytes_per_second": 21272126.470926154,
+          "process_write_bytes_per_second": 59746512.67024693,
+          "db_write_ms_per_second": 340.1076984904358
+        },
+        {
+          "node": "node08",
+          "cpu_core_equivalents": 2.4460186898963325,
+          "peak_resident_bytes": 544276480,
+          "received_bytes_per_second": 27134936.356761303,
+          "sent_bytes_per_second": 20193878.228383478,
+          "process_write_bytes_per_second": 61132284.61027893,
+          "db_write_ms_per_second": 342.41153203746927
+        },
+        {
+          "node": "node09",
+          "cpu_core_equivalents": 2.4745234899252155,
+          "peak_resident_bytes": 554516480,
+          "received_bytes_per_second": 27472510.87393751,
+          "sent_bytes_per_second": 17740658.28719962,
+          "process_write_bytes_per_second": 60837931.11907047,
+          "db_write_ms_per_second": 333.429006520291
+        },
+        {
+          "node": "node10",
+          "cpu_core_equivalents": 2.441840985495561,
+          "peak_resident_bytes": 558383104,
+          "received_bytes_per_second": 25570121.968954828,
+          "sent_bytes_per_second": 19344794.87291149,
+          "process_write_bytes_per_second": 59973054.11703393,
+          "db_write_ms_per_second": 334.8874777333015
+        }
+      ],
+      "controller_cpu_core_equivalents": 0.046789779746473296,
+      "sustainable": false
+    }
+  },
+  {
+    "case": {
+      "suite": "throughput",
+      "mode": "throughput",
+      "rate": 30000,
+      "repeat": 1,
+      "nodes": 10,
+      "version": "new"
+    },
+    "status": "complete",
+    "controller_clock_origin_utc": 1791948923.9186068,
+    "case_started_utc": 1791952130.8700278,
+    "metrics": {
+      "offered_tps": 30000,
+      "achieved_send_tps": 30002.34947677436,
+      "common_commit_tps": 29843.162360906437,
+      "sent_unique": 1050000,
+      "sent_wire_copies": 10500000,
+      "p50_ms": 291.0415940000348,
+      "p95_ms": 886.6385500000433,
+      "p99_ms": 1236.6385499999524,
+      "p99_after_send_ms": 1234.0290659999482,
+      "samples": 600,
+      "unresolved_samples": 0,
+      "deadline_ms": 100,
+      "deadline_success_fraction": 0.03333333333333333,
+      "send_lateness_p99_ms": 1.1429453334130812,
+      "backlog_growth_per_second": 307.2999872069234,
+      "max_backlog_sum": 94208,
+      "reorganizations_sum": 2022,
+      "max_reorg_depth": 2,
+      "invalid_or_rejected_sum": 0,
+      "drained": true,
+      "recovery_seconds": null,
+      "checks": {
+        "accounts_checked_per_node": 1024,
+        "state": {
+          "burned": 0,
+          "head": "066158b2df34e72b8a7754952f9a166b800750dec7612698b387911986e17649",
+          "state_hash": "0ee29f86869ff9018b5859445d5237e41a87e9e32dcd1444136018c3b965e198",
+          "supply": 1024000000000,
+          "transactions": 1050000
+        }
+      },
+      "events": [],
+      "sample_poll_seconds": 0.05,
+      "measurement_seconds": 28.947066317999997,
+      "resources": [
+        {
+          "node": "node01",
+          "cpu_core_equivalents": 2.046855987031632,
+          "peak_resident_bytes": 408670208,
+          "received_bytes_per_second": 22458694.56538826,
+          "sent_bytes_per_second": 20261583.732072067,
+          "process_write_bytes_per_second": 55199299.79938633,
+          "db_write_ms_per_second": 376.60111056646804
+        },
+        {
+          "node": "node02",
+          "cpu_core_equivalents": 2.0530461825433814,
+          "peak_resident_bytes": 412901376,
+          "received_bytes_per_second": 23848594.37623651,
+          "sent_bytes_per_second": 18196316.93289991,
+          "process_write_bytes_per_second": 49284472.5723684,
+          "db_write_ms_per_second": 392.48148092766604
+        },
+        {
+          "node": "node03",
+          "cpu_core_equivalents": 2.110626594378192,
+          "peak_resident_bytes": 389038080,
+          "received_bytes_per_second": 24296860.00901088,
+          "sent_bytes_per_second": 18014852.602722395,
+          "process_write_bytes_per_second": 56562083.01087432,
+          "db_write_ms_per_second": 421.0879695404718
+        },
+        {
+          "node": "node04",
+          "cpu_core_equivalents": 2.104235445860148,
+          "peak_resident_bytes": 418357248,
+          "received_bytes_per_second": 23302256.52540684,
+          "sent_bytes_per_second": 19417041.050909303,
+          "process_write_bytes_per_second": 49097127.02444917,
+          "db_write_ms_per_second": 382.8642430721363
+        },
+        {
+          "node": "node05",
+          "cpu_core_equivalents": 2.118569679092688,
+          "peak_resident_bytes": 405626880,
+          "received_bytes_per_second": 23425944.396248993,
+          "sent_bytes_per_second": 19054578.793603607,
+          "process_write_bytes_per_second": 49408284.773599006,
+          "db_write_ms_per_second": 411.0558451514306
+        },
+        {
+          "node": "node06",
+          "cpu_core_equivalents": 2.1861250913931043,
+          "peak_resident_bytes": 410431488,
+          "received_bytes_per_second": 23675736.68678946,
+          "sent_bytes_per_second": 21090078.293024763,
+          "process_write_bytes_per_second": 49588272.33927368,
+          "db_write_ms_per_second": 360.4105641445472
+        },
+        {
+          "node": "node07",
+          "cpu_core_equivalents": 2.2095328865926707,
+          "peak_resident_bytes": 403173376,
+          "received_bytes_per_second": 24281692.737993613,
+          "sent_bytes_per_second": 16901010.30016233,
+          "process_write_bytes_per_second": 55602149.327276096,
+          "db_write_ms_per_second": 438.6656393260833
+        },
+        {
+          "node": "node08",
+          "cpu_core_equivalents": 2.189656260972677,
+          "peak_resident_bytes": 425857024,
+          "received_bytes_per_second": 24342499.1071318,
+          "sent_bytes_per_second": 17820301.31596564,
+          "process_write_bytes_per_second": 55927457.04228086,
+          "db_write_ms_per_second": 392.0562712064189
+        },
+        {
+          "node": "node09",
+          "cpu_core_equivalents": 2.2629085199997507,
+          "peak_resident_bytes": 386654208,
+          "received_bytes_per_second": 25181024.287312377,
+          "sent_bytes_per_second": 18329357.11589093,
+          "process_write_bytes_per_second": 56442232.80008309,
+          "db_write_ms_per_second": 430.3854139530908
+        },
+        {
+          "node": "node10",
+          "cpu_core_equivalents": 2.21300760831041,
+          "peak_resident_bytes": 425914368,
+          "received_bytes_per_second": 24994414.46161681,
+          "sent_bytes_per_second": 18164919.243406422,
+          "process_write_bytes_per_second": 53415838.10303136,
+          "db_write_ms_per_second": 399.8044164773796
+        }
+      ],
+      "controller_cpu_core_equivalents": 0.04981469388011108,
+      "sustainable": false
+    }
+  },
+  {
+    "case": {
+      "suite": "throughput",
+      "mode": "throughput",
+      "rate": 30000,
+      "repeat": 2,
+      "nodes": 10,
+      "version": "new"
+    },
+    "status": "complete",
+    "controller_clock_origin_utc": 1791948923.9186068,
+    "case_started_utc": 1791952169.0196035,
+    "metrics": {
+      "offered_tps": 30000,
+      "achieved_send_tps": 30001.217687898334,
+      "common_commit_tps": 30066.684412559152,
+      "sent_unique": 1050000,
+      "sent_wire_copies": 10500000,
+      "p50_ms": 255.98253899988777,
+      "p95_ms": 839.0725009999187,
+      "p99_ms": 1135.2284519998648,
+      "p99_after_send_ms": 1132.620434999808,
+      "samples": 600,
+      "unresolved_samples": 0,
+      "deadline_ms": 100,
+      "deadline_success_fraction": 0.04,
+      "send_lateness_p99_ms": 2.232169666513073,
+      "backlog_growth_per_second": 459.84084739747686,
+      "max_backlog_sum": 94336,
+      "reorganizations_sum": 1995,
+      "max_reorg_depth": 1,
+      "invalid_or_rejected_sum": 0,
+      "drained": true,
+      "recovery_seconds": null,
+      "checks": {
+        "accounts_checked_per_node": 1024,
+        "state": {
+          "burned": 0,
+          "head": "a2b100c96da196726d25e70bdbf657305271b1e73a0a1b1e552dd1a081d2df61",
+          "state_hash": "0ee29f86869ff9018b5859445d5237e41a87e9e32dcd1444136018c3b965e198",
+          "supply": 1024000000000,
+          "transactions": 1050000
+        }
+      },
+      "events": [],
+      "sample_poll_seconds": 0.05,
+      "measurement_seconds": 29.32787625999981,
+      "resources": [
+        {
+          "node": "node01",
+          "cpu_core_equivalents": 2.058597065289186,
+          "peak_resident_bytes": 387670016,
+          "received_bytes_per_second": 22863299.239793107,
+          "sent_bytes_per_second": 20282395.244939696,
+          "process_write_bytes_per_second": 55953204.97986889,
+          "db_write_ms_per_second": 379.5903868833382
+        },
+        {
+          "node": "node02",
+          "cpu_core_equivalents": 2.0921201540830694,
+          "peak_resident_bytes": 390152192,
+          "received_bytes_per_second": 23162216.860771913,
+          "sent_bytes_per_second": 19250317.88851402,
+          "process_write_bytes_per_second": 55686170.57442571,
+          "db_write_ms_per_second": 403.3776791787403
+        },
+        {
+          "node": "node03",
+          "cpu_core_equivalents": 2.084357641789927,
+          "peak_resident_bytes": 386691072,
+          "received_bytes_per_second": 22879174.443161823,
+          "sent_bytes_per_second": 18117118.583342094,
+          "process_write_bytes_per_second": 49153045.35590022,
+          "db_write_ms_per_second": 388.0397505127797
+        },
+        {
+          "node": "node04",
+          "cpu_core_equivalents": 2.1187141015303914,
+          "peak_resident_bytes": 404836352,
+          "received_bytes_per_second": 24229842.307715893,
+          "sent_bytes_per_second": 18842538.037904404,
+          "process_write_bytes_per_second": 49459045.55586151,
+          "db_write_ms_per_second": 380.3231807552666
+        },
+        {
+          "node": "node05",
+          "cpu_core_equivalents": 2.1559768064842624,
+          "peak_resident_bytes": 394760192,
+          "received_bytes_per_second": 23704595.069783088,
+          "sent_bytes_per_second": 17865426.611698456,
+          "process_write_bytes_per_second": 54278094.80262756,
+          "db_write_ms_per_second": 428.1579757660939
+        },
+        {
+          "node": "node06",
+          "cpu_core_equivalents": 2.20170862109333,
+          "peak_resident_bytes": 387891200,
+          "received_bytes_per_second": 23682019.858604126,
+          "sent_bytes_per_second": 19323519.336207252,
+          "process_write_bytes_per_second": 49234468.50358503,
+          "db_write_ms_per_second": 379.19546312897836
+        },
+        {
+          "node": "node07",
+          "cpu_core_equivalents": 2.1992740090755016,
+          "peak_resident_bytes": 378429440,
+          "received_bytes_per_second": 24090693.705075137,
+          "sent_bytes_per_second": 17300975.103064053,
+          "process_write_bytes_per_second": 54276279.1921303,
+          "db_write_ms_per_second": 421.5643657724598
+        },
+        {
+          "node": "node08",
+          "cpu_core_equivalents": 2.1626923626416175,
+          "peak_resident_bytes": 392527872,
+          "received_bytes_per_second": 23912045.447235003,
+          "sent_bytes_per_second": 17985201.29189891,
+          "process_write_bytes_per_second": 50434307.717582054,
+          "db_write_ms_per_second": 376.94198267188375
+        },
+        {
+          "node": "node09",
+          "cpu_core_equivalents": 2.230784371155841,
+          "peak_resident_bytes": 374284288,
+          "received_bytes_per_second": 24448873.203204267,
+          "sent_bytes_per_second": 18202474.64451091,
+          "process_write_bytes_per_second": 55568993.866179466,
+          "db_write_ms_per_second": 414.17830378557653
+        },
+        {
+          "node": "node10",
+          "cpu_core_equivalents": 2.213792278186611,
+          "peak_resident_bytes": 392953856,
+          "received_bytes_per_second": 24263482.759252634,
+          "sent_bytes_per_second": 17117733.4679604,
+          "process_write_bytes_per_second": 55533659.29265587,
+          "db_write_ms_per_second": 408.76971471510416
+        }
+      ],
+      "controller_cpu_core_equivalents": 0.052661740376521896,
+      "sustainable": false
+    }
+  },
+  {
+    "case": {
+      "suite": "throughput",
+      "mode": "throughput",
+      "rate": 30000,
+      "repeat": 2,
+      "nodes": 10,
+      "version": "old"
+    },
+    "status": "complete",
+    "controller_clock_origin_utc": 1791948923.9186068,
+    "case_started_utc": 1791952207.1234539,
+    "metrics": {
+      "offered_tps": 30000,
+      "achieved_send_tps": 30002.749906535126,
+      "common_commit_tps": 29544.893428964737,
+      "sent_unique": 1050000,
+      "sent_wire_copies": 10500000,
+      "p50_ms": 384.7191509998993,
+      "p95_ms": 1328.9600899997822,
+      "p99_ms": 1728.9600899998732,
+      "p99_after_send_ms": 1728.2429510000838,
+      "samples": 600,
+      "unresolved_samples": 0,
+      "deadline_ms": 100,
+      "deadline_success_fraction": 0.006666666666666667,
+      "send_lateness_p99_ms": 1.3290226665958471,
+      "backlog_growth_per_second": 1938.0312960641193,
+      "max_backlog_sum": 205008,
+      "reorganizations_sum": 1206,
+      "max_reorg_depth": 2,
+      "invalid_or_rejected_sum": 0,
+      "drained": true,
+      "recovery_seconds": null,
+      "checks": {
+        "accounts_checked_per_node": 1024,
+        "state": {
+          "burned": 0,
+          "head": "bbf98c6aa9cc9906c57733b055d0fa92b2fdf9aa6aab1c9d69300e36555a7f81",
+          "state_hash": "0ee29f86869ff9018b5859445d5237e41a87e9e32dcd1444136018c3b965e198",
+          "supply": 1024000000000,
+          "transactions": 1050000
+        }
+      },
+      "events": [],
+      "sample_poll_seconds": 0.05,
+      "measurement_seconds": 29.80846765000024,
+      "resources": [
+        {
+          "node": "node01",
+          "cpu_core_equivalents": 2.3296156251762055,
+          "peak_resident_bytes": 520744960,
+          "received_bytes_per_second": 23434650.925439116,
+          "sent_bytes_per_second": 27032993.492370732,
+          "process_write_bytes_per_second": 61937561.82565746,
+          "db_write_ms_per_second": 324.1721991368423
+        },
+        {
+          "node": "node02",
+          "cpu_core_equivalents": 2.424609236832052,
+          "peak_resident_bytes": 550301696,
+          "received_bytes_per_second": 25631800.600122225,
+          "sent_bytes_per_second": 18617608.879334513,
+          "process_write_bytes_per_second": 61269059.16279079,
+          "db_write_ms_per_second": 337.75516619016537
+        },
+        {
+          "node": "node03",
+          "cpu_core_equivalents": 2.398689991030097,
+          "peak_resident_bytes": 571244544,
+          "received_bytes_per_second": 26690372.861215953,
+          "sent_bytes_per_second": 19338136.725723147,
+          "process_write_bytes_per_second": 62573910.40360926,
+          "db_write_ms_per_second": 346.3594172711497
+        },
+        {
+          "node": "node04",
+          "cpu_core_equivalents": 2.4020901658123117,
+          "peak_resident_bytes": 550277120,
+          "received_bytes_per_second": 25710153.50398241,
+          "sent_bytes_per_second": 21039344.30188648,
+          "process_write_bytes_per_second": 62024954.97952861,
+          "db_write_ms_per_second": 337.74457966811724
+        },
+        {
+          "node": "node05",
+          "cpu_core_equivalents": 2.40441779300921,
+          "peak_resident_bytes": 553418752,
+          "received_bytes_per_second": 26606117.67475386,
+          "sent_bytes_per_second": 18720263.803966306,
+          "process_write_bytes_per_second": 62086377.52635316,
+          "db_write_ms_per_second": 350.24531936984414
+        },
+        {
+          "node": "node06",
+          "cpu_core_equivalents": 2.426570357433299,
+          "peak_resident_bytes": 563666944,
+          "received_bytes_per_second": 26122629.0510104,
+          "sent_bytes_per_second": 20912149.772985563,
+          "process_write_bytes_per_second": 60229547.82782958,
+          "db_write_ms_per_second": 319.8606021265881
+        },
+        {
+          "node": "node07",
+          "cpu_core_equivalents": 2.3940134339646075,
+          "peak_resident_bytes": 535007232,
+          "received_bytes_per_second": 25551486.3743757,
+          "sent_bytes_per_second": 19879767.6874207,
+          "process_write_bytes_per_second": 60562218.93714102,
+          "db_write_ms_per_second": 347.76056296204536
+        },
+        {
+          "node": "node08",
+          "cpu_core_equivalents": 2.3935764440410416,
+          "peak_resident_bytes": 554835968,
+          "received_bytes_per_second": 24562553.654112246,
+          "sent_bytes_per_second": 21966351.698725943,
+          "process_write_bytes_per_second": 62605102.61418906,
+          "db_write_ms_per_second": 340.31748227084455
+        },
+        {
+          "node": "node09",
+          "cpu_core_equivalents": 2.4547050810912587,
+          "peak_resident_bytes": 578322432,
+          "received_bytes_per_second": 27027493.176087283,
+          "sent_bytes_per_second": 17831164.52817714,
+          "process_write_bytes_per_second": 60658131.54940843,
+          "db_write_ms_per_second": 352.7946754753734
+        },
+        {
+          "node": "node10",
+          "cpu_core_equivalents": 2.439381482261448,
+          "peak_resident_bytes": 533131264,
+          "received_bytes_per_second": 26930374.262294345,
+          "sent_bytes_per_second": 20427666.800913032,
+          "process_write_bytes_per_second": 61795616.655926466,
+          "db_write_ms_per_second": 340.5813404165349
+        }
+      ],
+      "controller_cpu_core_equivalents": 0.04784913800953753,
+      "sustainable": false
+    }
+  },
+  {
+    "case": {
+      "suite": "throughput",
+      "mode": "throughput",
+      "rate": 30000,
+      "repeat": 3,
+      "nodes": 10,
+      "version": "old"
+    },
+    "status": "complete",
+    "controller_clock_origin_utc": 1791948923.918607,
+    "case_started_utc": 1791952245.28113,
+    "metrics": {
+      "offered_tps": 30000,
+      "achieved_send_tps": 30001.506420620462,
+      "common_commit_tps": 29571.262214674065,
+      "sent_unique": 1050000,
+      "sent_wire_copies": 10500000,
+      "p50_ms": 413.95768799975485,
+      "p95_ms": 896.7271030001029,
+      "p99_ms": 1087.7968520003378,
+      "p99_after_send_ms": 1087.325138000324,
+      "samples": 600,
+      "unresolved_samples": 0,
+      "deadline_ms": 100,
+      "deadline_success_fraction": 0.016666666666666666,
+      "send_lateness_p99_ms": 3.119994999906339,
+      "backlog_growth_per_second": 2068.1069527861277,
+      "max_backlog_sum": 201536,
+      "reorganizations_sum": 1133,
+      "max_reorg_depth": 2,
+      "invalid_or_rejected_sum": 0,
+      "drained": true,
+      "recovery_seconds": null,
+      "checks": {
+        "accounts_checked_per_node": 1024,
+        "state": {
+          "burned": 0,
+          "head": "de3701db495e91338014c15fda97511487c781a88f0795e52e584d25ddbaf493",
+          "state_hash": "0ee29f86869ff9018b5859445d5237e41a87e9e32dcd1444136018c3b965e198",
+          "supply": 1024000000000,
+          "transactions": 1050000
+        }
+      },
+      "events": [],
+      "sample_poll_seconds": 0.05,
+      "measurement_seconds": 29.899298635999912,
+      "resources": [
+        {
+          "node": "node01",
+          "cpu_core_equivalents": 2.3903513881742886,
+          "peak_resident_bytes": 590962688,
+          "received_bytes_per_second": 25393429.131673303,
+          "sent_bytes_per_second": 27233178.106044535,
+          "process_write_bytes_per_second": 60987856.812281296,
+          "db_write_ms_per_second": 312.8573649128064
+        },
+        {
+          "node": "node02",
+          "cpu_core_equivalents": 2.4495837140412116,
+          "peak_resident_bytes": 595492864,
+          "received_bytes_per_second": 28496264.958340425,
+          "sent_bytes_per_second": 19703873.83236683,
+          "process_write_bytes_per_second": 59781631.86235635,
+          "db_write_ms_per_second": 329.22906115087875
+        },
+        {
+          "node": "node03",
+          "cpu_core_equivalents": 2.388304751537591,
+          "peak_resident_bytes": 586706944,
+          "received_bytes_per_second": 25610489.03929889,
+          "sent_bytes_per_second": 23868492.15722861,
+          "process_write_bytes_per_second": 61290885.72644756,
+          "db_write_ms_per_second": 323.10237512957394
+        },
+        {
+          "node": "node04",
+          "cpu_core_equivalents": 2.398111101966392,
+          "peak_resident_bytes": 591073280,
+          "received_bytes_per_second": 25371733.606039166,
+          "sent_bytes_per_second": 22964549.849784043,
+          "process_write_bytes_per_second": 60331522.486887716,
+          "db_write_ms_per_second": 328.41208650216277
+        },
+        {
+          "node": "node05",
+          "cpu_core_equivalents": 2.393297744912367,
+          "peak_resident_bytes": 554319872,
+          "received_bytes_per_second": 26461407.561159033,
+          "sent_bytes_per_second": 19971432.750634164,
+          "process_write_bytes_per_second": 60364811.82962841,
+          "db_write_ms_per_second": 336.2809787749976
+        },
+        {
+          "node": "node06",
+          "cpu_core_equivalents": 2.466003062400404,
+          "peak_resident_bytes": 571969536,
+          "received_bytes_per_second": 25777708.68083189,
+          "sent_bytes_per_second": 21746773.792784493,
+          "process_write_bytes_per_second": 60363441.89782838,
+          "db_write_ms_per_second": 316.4376644811418
+        },
+        {
+          "node": "node07",
+          "cpu_core_equivalents": 2.4357726542893685,
+          "peak_resident_bytes": 599052288,
+          "received_bytes_per_second": 26318682.072780456,
+          "sent_bytes_per_second": 20328535.475015275,
+          "process_write_bytes_per_second": 59993149.33228072,
+          "db_write_ms_per_second": 337.0498075117467
+        },
+        {
+          "node": "node08",
+          "cpu_core_equivalents": 2.4014585717923063,
+          "peak_resident_bytes": 585179136,
+          "received_bytes_per_second": 28232543.3541652,
+          "sent_bytes_per_second": 19969724.5165842,
+          "process_write_bytes_per_second": 60315220.29846738,
+          "db_write_ms_per_second": 315.6388950755195
+        },
+        {
+          "node": "node09",
+          "cpu_core_equivalents": 2.4624461896692167,
+          "peak_resident_bytes": 587911168,
+          "received_bytes_per_second": 26897363.707110416,
+          "sent_bytes_per_second": 20184082.01968239,
+          "process_write_bytes_per_second": 60269190.58998643,
+          "db_write_ms_per_second": 327.5664392410743
+        },
+        {
+          "node": "node10",
+          "cpu_core_equivalents": 2.4815908193466103,
+          "peak_resident_bytes": 592281600,
+          "received_bytes_per_second": 28795247.155509315,
+          "sent_bytes_per_second": 18618414.691832896,
+          "process_write_bytes_per_second": 60646743.79407424,
+          "db_write_ms_per_second": 341.21176788128423
+        }
+      ],
+      "controller_cpu_core_equivalents": 0.050302592523901166,
+      "sustainable": false
+    }
+  },
+  {
+    "case": {
+      "suite": "throughput",
+      "mode": "throughput",
+      "rate": 30000,
+      "repeat": 3,
+      "nodes": 10,
+      "version": "new"
+    },
+    "status": "complete",
+    "controller_clock_origin_utc": 1791948923.9186068,
+    "case_started_utc": 1791952283.5214045,
+    "metrics": {
+      "offered_tps": 30000,
+      "achieved_send_tps": 29999.254741994166,
+      "common_commit_tps": 29835.70069892447,
+      "sent_unique": 1050000,
+      "sent_wire_copies": 10500000,
+      "p50_ms": 271.95228299979135,
+      "p95_ms": 823.9113009999528,
+      "p99_ms": 1031.297386999995,
+      "p99_after_send_ms": 1028.4148300002016,
+      "samples": 600,
+      "unresolved_samples": 0,
+      "deadline_ms": 100,
+      "deadline_success_fraction": 0.03166666666666667,
+      "send_lateness_p99_ms": 0.809373666470492,
+      "backlog_growth_per_second": 389.51421231029775,
+      "max_backlog_sum": 126851,
+      "reorganizations_sum": 1915,
+      "max_reorg_depth": 2,
+      "invalid_or_rejected_sum": 0,
+      "drained": true,
+      "recovery_seconds": null,
+      "checks": {
+        "accounts_checked_per_node": 1024,
+        "state": {
+          "burned": 0,
+          "head": "bd580b36fc82dd60cecc3fea298cc3ce110b17041aabc067eb0fc8a68d8001df",
+          "state_hash": "0ee29f86869ff9018b5859445d5237e41a87e9e32dcd1444136018c3b965e198",
+          "supply": 1024000000000,
+          "transactions": 1050000
+        }
+      },
+      "events": [],
+      "sample_poll_seconds": 0.05,
+      "measurement_seconds": 29.73940545100004,
+      "resources": [
+        {
+          "node": "node01",
+          "cpu_core_equivalents": 2.0771013429228735,
+          "peak_resident_bytes": 448184320,
+          "received_bytes_per_second": 23025569.900119625,
+          "sent_bytes_per_second": 19539750.44852349,
+          "process_write_bytes_per_second": 55427948.709868036,
+          "db_write_ms_per_second": 371.5281123627325
+        },
+        {
+          "node": "node02",
+          "cpu_core_equivalents": 2.114730541725917,
+          "peak_resident_bytes": 455069696,
+          "received_bytes_per_second": 24359775.826508302,
+          "sent_bytes_per_second": 17757915.43210698,
+          "process_write_bytes_per_second": 55361012.06571488,
+          "db_write_ms_per_second": 401.15187533444225
+        },
+        {
+          "node": "node03",
+          "cpu_core_equivalents": 2.103087740037413,
+          "peak_resident_bytes": 454426624,
+          "received_bytes_per_second": 23577936.96162884,
+          "sent_bytes_per_second": 19645940.096638795,
+          "process_write_bytes_per_second": 53806181.25121906,
+          "db_write_ms_per_second": 380.93523317625875
+        },
+        {
+          "node": "node04",
+          "cpu_core_equivalents": 2.180236760510613,
+          "peak_resident_bytes": 440496128,
+          "received_bytes_per_second": 24123791.25003238,
+          "sent_bytes_per_second": 19322694.797877222,
+          "process_write_bytes_per_second": 55037898.141469404,
+          "db_write_ms_per_second": 385.9863937735177
+        },
+        {
+          "node": "node05",
+          "cpu_core_equivalents": 2.1873241247939137,
+          "peak_resident_bytes": 434524160,
+          "received_bytes_per_second": 23921090.8628329,
+          "sent_bytes_per_second": 19094844.345010415,
+          "process_write_bytes_per_second": 54078610.638327986,
+          "db_write_ms_per_second": 426.2009694808402
+        },
+        {
+          "node": "node06",
+          "cpu_core_equivalents": 2.2263224834501054,
+          "peak_resident_bytes": 435253248,
+          "received_bytes_per_second": 24212140.49441553,
+          "sent_bytes_per_second": 17253232.74688217,
+          "process_write_bytes_per_second": 55298620.50233755,
+          "db_write_ms_per_second": 386.69807373749256
+        },
+        {
+          "node": "node07",
+          "cpu_core_equivalents": 2.224075363879739,
+          "peak_resident_bytes": 450600960,
+          "received_bytes_per_second": 24838437.64856303,
+          "sent_bytes_per_second": 18314565.39699198,
+          "process_write_bytes_per_second": 55475465.46343355,
+          "db_write_ms_per_second": 433.38377864466014
+        },
+        {
+          "node": "node08",
+          "cpu_core_equivalents": 2.1655763127515497,
+          "peak_resident_bytes": 432218112,
+          "received_bytes_per_second": 22888431.617152948,
+          "sent_bytes_per_second": 20333838.818545222,
+          "process_write_bytes_per_second": 48771058.12992059,
+          "db_write_ms_per_second": 370.76884869698085
+        },
+        {
+          "node": "node09",
+          "cpu_core_equivalents": 2.221695188522278,
+          "peak_resident_bytes": 439771136,
+          "received_bytes_per_second": 24856413.73086504,
+          "sent_bytes_per_second": 18203135.2271636,
+          "process_write_bytes_per_second": 54021315.074608415,
+          "db_write_ms_per_second": 396.3115566119589
+        },
+        {
+          "node": "node10",
+          "cpu_core_equivalents": 2.2434848305871706,
+          "peak_resident_bytes": 429486080,
+          "received_bytes_per_second": 24320945.561326887,
+          "sent_bytes_per_second": 17993143.503882866,
+          "process_write_bytes_per_second": 55440619.844152175,
+          "db_write_ms_per_second": 397.9618166039033
+        }
+      ],
+      "controller_cpu_core_equivalents": 0.05159166966883942,
+      "sustainable": false
+    }
+  },
+  {
+    "case": {
+      "suite": "throughput",
+      "mode": "throughput",
+      "rate": 40000,
+      "repeat": 1,
+      "nodes": 10,
+      "version": "old"
+    },
+    "status": "complete",
+    "controller_clock_origin_utc": 1791948923.9186068,
+    "case_started_utc": 1791952321.6334682,
+    "metrics": {
+      "offered_tps": 40000,
+      "achieved_send_tps": 42421.16662177966,
+      "common_commit_tps": 25702.667685849927,
+      "sent_unique": 1400000,
+      "sent_wire_copies": 14000000,
+      "p50_ms": 9661.795667000206,
+      "p95_ms": 17442.155769000237,
+      "p99_ms": 20065.973418999874,
+      "p99_after_send_ms": 20062.690375999864,
+      "samples": 600,
+      "unresolved_samples": 270,
+      "deadline_ms": 100,
+      "deadline_success_fraction": 0.0,
+      "send_lateness_p99_ms": 1614.7005970001373,
+      "backlog_growth_per_second": 31160.100048270244,
+      "max_backlog_sum": 2088796,
+      "reorganizations_sum": 200,
+      "max_reorg_depth": 17,
+      "invalid_or_rejected_sum": 5215441,
+      "drained": false,
+      "recovery_seconds": null,
+      "checks": null,
+      "events": [],
+      "sample_poll_seconds": 0.05,
+      "measurement_seconds": 27.841195658999823,
+      "resources": [
+        {
+          "node": "node01",
+          "cpu_core_equivalents": 3.9185052731287477,
+          "peak_resident_bytes": 568246272,
+          "received_bytes_per_second": 29541693.68563487,
+          "sent_bytes_per_second": 22440838.915552694,
+          "process_write_bytes_per_second": 31425887.11764513,
+          "db_write_ms_per_second": 147.75888063091128
+        },
+        {
+          "node": "node02",
+          "cpu_core_equivalents": 4.100110189164945,
+          "peak_resident_bytes": 644206592,
+          "received_bytes_per_second": 35254257.792003915,
+          "sent_bytes_per_second": 22962985.81535011,
+          "process_write_bytes_per_second": 29451829.369797155,
+          "db_write_ms_per_second": 147.64969929268028
+        },
+        {
+          "node": "node03",
+          "cpu_core_equivalents": 3.966258358746327,
+          "peak_resident_bytes": 601092096,
+          "received_bytes_per_second": 32796846.557300575,
+          "sent_bytes_per_second": 20906676.679018404,
+          "process_write_bytes_per_second": 46534681.91051616,
+          "db_write_ms_per_second": 180.11238649440043
+        },
+        {
+          "node": "node04",
+          "cpu_core_equivalents": 3.8142324884553793,
+          "peak_resident_bytes": 557285376,
+          "received_bytes_per_second": 26093190.24577042,
+          "sent_bytes_per_second": 50273532.866306596,
+          "process_write_bytes_per_second": 33301521.506325547,
+          "db_write_ms_per_second": 165.02511954851346
+        },
+        {
+          "node": "node05",
+          "cpu_core_equivalents": 3.963060579416357,
+          "peak_resident_bytes": 595316736,
+          "received_bytes_per_second": 31034421.746204555,
+          "sent_bytes_per_second": 22124995.906951252,
+          "process_write_bytes_per_second": 32962115.393321723,
+          "db_write_ms_per_second": 157.82972214340086
+        },
+        {
+          "node": "node06",
+          "cpu_core_equivalents": 4.020514505590786,
+          "peak_resident_bytes": 573427712,
+          "received_bytes_per_second": 30319546.19833755,
+          "sent_bytes_per_second": 22615828.239275403,
+          "process_write_bytes_per_second": 32044821.45548955,
+          "db_write_ms_per_second": 148.2621037026356
+        },
+        {
+          "node": "node07",
+          "cpu_core_equivalents": 4.0017216704550975,
+          "peak_resident_bytes": 618921984,
+          "received_bytes_per_second": 36872211.616678774,
+          "sent_bytes_per_second": 16331934.036497297,
+          "process_write_bytes_per_second": 34439495.62166346,
+          "db_write_ms_per_second": 170.742411612748
+        },
+        {
+          "node": "node08",
+          "cpu_core_equivalents": 3.897081516501859,
+          "peak_resident_bytes": 581300224,
+          "received_bytes_per_second": 32214076.75823287,
+          "sent_bytes_per_second": 22750695.148225352,
+          "process_write_bytes_per_second": 32635508.730613235,
+          "db_write_ms_per_second": 145.77099592660943
+        },
+        {
+          "node": "node09",
+          "cpu_core_equivalents": 4.14231660207883,
+          "peak_resident_bytes": 598749184,
+          "received_bytes_per_second": 35917365.48414903,
+          "sent_bytes_per_second": 18196100.02403896,
+          "process_write_bytes_per_second": 45842481.753739834,
+          "db_write_ms_per_second": 204.84039093904622
+        },
+        {
+          "node": "node10",
+          "cpu_core_equivalents": 4.0506392175561965,
+          "peak_resident_bytes": 560189440,
+          "received_bytes_per_second": 31480210.143801194,
+          "sent_bytes_per_second": 18164005.138066947,
+          "process_write_bytes_per_second": 33301962.866680555,
+          "db_write_ms_per_second": 180.68306582852824
+        }
+      ],
+      "controller_cpu_core_equivalents": 0.047779505072429014,
+      "sustainable": false
+    }
+  },
+  {
+    "case": {
+      "suite": "throughput",
+      "mode": "throughput",
+      "rate": 40000,
+      "repeat": 1,
+      "nodes": 10,
+      "version": "new"
+    },
+    "status": "complete",
+    "controller_clock_origin_utc": 1791948923.9186068,
+    "case_started_utc": 1791952379.792353,
+    "metrics": {
+      "offered_tps": 40000,
+      "achieved_send_tps": 39997.387456740114,
+      "common_commit_tps": 47172.23612747759,
+      "sent_unique": 1400000,
+      "sent_wire_copies": 14000000,
+      "p50_ms": 626.1188870003025,
+      "p95_ms": 3572.867263000262,
+      "p99_ms": 4472.867262999898,
+      "p99_after_send_ms": 4470.339681000041,
+      "samples": 600,
+      "unresolved_samples": 0,
+      "deadline_ms": 100,
+      "deadline_success_fraction": 0.005,
+      "send_lateness_p99_ms": 1.8801090000124532,
+      "backlog_growth_per_second": -1063.6750142773485,
+      "max_backlog_sum": 271301,
+      "reorganizations_sum": 973,
+      "max_reorg_depth": 10,
+      "invalid_or_rejected_sum": 0,
+      "drained": true,
+      "recovery_seconds": null,
+      "checks": {
+        "accounts_checked_per_node": 1024,
+        "state": {
+          "burned": 0,
+          "head": "d90d3181531225b1e00ecc6bc056682e4cf41e1dcfdd4458e53eff74d5faaf40",
+          "state_hash": "caf009739621b4a6662030c1e21f20b8d5e714cb47d570eb050f6d93a0947d65",
+          "supply": 1024000000000,
+          "transactions": 1400000
+        }
+      },
+      "events": [],
+      "sample_poll_seconds": 0.05,
+      "measurement_seconds": 28.238644367000234,
+      "resources": [
+        {
+          "node": "node01",
+          "cpu_core_equivalents": 3.3221927292526687,
+          "peak_resident_bytes": 804790272,
+          "received_bytes_per_second": 40139210.90789275,
+          "sent_bytes_per_second": 35674136.049435794,
+          "process_write_bytes_per_second": 68481039.20526221,
+          "db_write_ms_per_second": 461.11558443707395
+        },
+        {
+          "node": "node02",
+          "cpu_core_equivalents": 3.3487082726430946,
+          "peak_resident_bytes": 806653952,
+          "received_bytes_per_second": 41802967.29751971,
+          "sent_bytes_per_second": 34136720.88758282,
+          "process_write_bytes_per_second": 68298131.84140746,
+          "db_write_ms_per_second": 482.3111263413252
+        },
+        {
+          "node": "node03",
+          "cpu_core_equivalents": 3.3396301102260773,
+          "peak_resident_bytes": 785346560,
+          "received_bytes_per_second": 40817776.48458851,
+          "sent_bytes_per_second": 35431910.32814751,
+          "process_write_bytes_per_second": 69127669.67954017,
+          "db_write_ms_per_second": 447.75613190468334
+        },
+        {
+          "node": "node04",
+          "cpu_core_equivalents": 3.515479238656725,
+          "peak_resident_bytes": 807030784,
+          "received_bytes_per_second": 42402269.402112834,
+          "sent_bytes_per_second": 30369372.971819505,
+          "process_write_bytes_per_second": 69100255.33238034,
+          "db_write_ms_per_second": 431.365581672007
+        },
+        {
+          "node": "node05",
+          "cpu_core_equivalents": 3.5569561943057977,
+          "peak_resident_bytes": 833388544,
+          "received_bytes_per_second": 42418285.503810994,
+          "sent_bytes_per_second": 35686703.11871107,
+          "process_write_bytes_per_second": 69512195.78705719,
+          "db_write_ms_per_second": 479.377901505051
+        },
+        {
+          "node": "node06",
+          "cpu_core_equivalents": 3.783121512902444,
+          "peak_resident_bytes": 858263552,
+          "received_bytes_per_second": 48497132.943123646,
+          "sent_bytes_per_second": 28701701.203020547,
+          "process_write_bytes_per_second": 70748887.44782299,
+          "db_write_ms_per_second": 488.1616344908263
+        },
+        {
+          "node": "node07",
+          "cpu_core_equivalents": 3.7239953389154534,
+          "peak_resident_bytes": 823508992,
+          "received_bytes_per_second": 45137440.963331975,
+          "sent_bytes_per_second": 29078265.98643581,
+          "process_write_bytes_per_second": 69080383.55692586,
+          "db_write_ms_per_second": 470.12249828514905
+        },
+        {
+          "node": "node08",
+          "cpu_core_equivalents": 3.508205058022188,
+          "peak_resident_bytes": 753184768,
+          "received_bytes_per_second": 38871648.99752608,
+          "sent_bytes_per_second": 38733699.24507435,
+          "process_write_bytes_per_second": 68128859.12640469,
+          "db_write_ms_per_second": 423.5069801359031
+        },
+        {
+          "node": "node09",
+          "cpu_core_equivalents": 3.578662654149752,
+          "peak_resident_bytes": 752578560,
+          "received_bytes_per_second": 38680082.684012756,
+          "sent_bytes_per_second": 37713232.26990768,
+          "process_write_bytes_per_second": 66745232.36684042,
+          "db_write_ms_per_second": 447.2239578808636
+        },
+        {
+          "node": "node10",
+          "cpu_core_equivalents": 3.6807818268169044,
+          "peak_resident_bytes": 794660864,
+          "received_bytes_per_second": 41534154.49966208,
+          "sent_bytes_per_second": 33861653.6464274,
+          "process_write_bytes_per_second": 68367030.33294672,
+          "db_write_ms_per_second": 451.1953504711912
+        }
+      ],
+      "controller_cpu_core_equivalents": 0.04025289291460219,
+      "sustainable": true
+    }
+  },
+  {
+    "case": {
+      "suite": "throughput",
+      "mode": "throughput",
+      "rate": 40000,
+      "repeat": 2,
+      "nodes": 10,
+      "version": "new"
+    },
+    "status": "complete",
+    "controller_clock_origin_utc": 1791948923.918607,
+    "case_started_utc": 1791952417.98783,
+    "metrics": {
+      "offered_tps": 40000,
+      "achieved_send_tps": 40000.22917747452,
+      "common_commit_tps": 39769.1080616216,
+      "sent_unique": 1400000,
+      "sent_wire_copies": 14000000,
+      "p50_ms": 515.161100000114,
+      "p95_ms": 1307.213232000322,
+      "p99_ms": 2106.8683319999764,
+      "p99_after_send_ms": 2106.378975000098,
+      "samples": 600,
+      "unresolved_samples": 0,
+      "deadline_ms": 100,
+      "deadline_success_fraction": 0.0016666666666666668,
+      "send_lateness_p99_ms": 2.339034999749856,
+      "backlog_growth_per_second": 1098.38891543092,
+      "max_backlog_sum": 193551,
+      "reorganizations_sum": 1133,
+      "max_reorg_depth": 5,
+      "invalid_or_rejected_sum": 0,
+      "drained": true,
+      "recovery_seconds": null,
+      "checks": {
+        "accounts_checked_per_node": 1024,
+        "state": {
+          "burned": 0,
+          "head": "927d8c0764d0a95a1e6314544c813a1f1ffd80684bb6fe203e88071ff6d642e9",
+          "state_hash": "caf009739621b4a6662030c1e21f20b8d5e714cb47d570eb050f6d93a0947d65",
+          "supply": 1024000000000,
+          "transactions": 1400000
+        }
+      },
+      "events": [],
+      "sample_poll_seconds": 0.05,
+      "measurement_seconds": 29.491031032999672,
+      "resources": [
+        {
+          "node": "node01",
+          "cpu_core_equivalents": 2.929137367335154,
+          "peak_resident_bytes": 775303168,
+          "received_bytes_per_second": 36039964.68657515,
+          "sent_bytes_per_second": 30327326.67091931,
+          "process_write_bytes_per_second": 62106466.944153525,
+          "db_write_ms_per_second": 392.11601551198055
+        },
+        {
+          "node": "node02",
+          "cpu_core_equivalents": 2.9434694196641167,
+          "peak_resident_bytes": 807174144,
+          "received_bytes_per_second": 35065863.7822068,
+          "sent_bytes_per_second": 31724867.636980537,
+          "process_write_bytes_per_second": 61431601.96646829,
+          "db_write_ms_per_second": 430.0968229224317
+        },
+        {
+          "node": "node03",
+          "cpu_core_equivalents": 2.9921075292776793,
+          "peak_resident_bytes": 799621120,
+          "received_bytes_per_second": 35195337.8584345,
+          "sent_bytes_per_second": 29821165.56101112,
+          "process_write_bytes_per_second": 63539947.37936434,
+          "db_write_ms_per_second": 408.2975391238887
+        },
+        {
+          "node": "node04",
+          "cpu_core_equivalents": 3.0130856700319892,
+          "peak_resident_bytes": 783953920,
+          "received_bytes_per_second": 35194664.36553498,
+          "sent_bytes_per_second": 31374725.25001396,
+          "process_write_bytes_per_second": 62243273.28352787,
+          "db_write_ms_per_second": 399.7087840642038
+        },
+        {
+          "node": "node05",
+          "cpu_core_equivalents": 3.08473809878687,
+          "peak_resident_bytes": 806408192,
+          "received_bytes_per_second": 36201538.420456074,
+          "sent_bytes_per_second": 29897487.27378818,
+          "process_write_bytes_per_second": 62493830.27462567,
+          "db_write_ms_per_second": 405.01973330923835
+        },
+        {
+          "node": "node06",
+          "cpu_core_equivalents": 3.1596824775550068,
+          "peak_resident_bytes": 795668480,
+          "received_bytes_per_second": 36889260.90046382,
+          "sent_bytes_per_second": 27489070.459858447,
+          "process_write_bytes_per_second": 61649797.661044024,
+          "db_write_ms_per_second": 410.79983800646846
+        },
+        {
+          "node": "node07",
+          "cpu_core_equivalents": 3.142428248652985,
+          "peak_resident_bytes": 789495808,
+          "received_bytes_per_second": 36069366.40532244,
+          "sent_bytes_per_second": 27395786.844344236,
+          "process_write_bytes_per_second": 60112844.41077343,
+          "db_write_ms_per_second": 387.66705132170915
+        },
+        {
+          "node": "node08",
+          "cpu_core_equivalents": 3.2111683004243727,
+          "peak_resident_bytes": 781467648,
+          "received_bytes_per_second": 36580237.55740734,
+          "sent_bytes_per_second": 26913064.758972913,
+          "process_write_bytes_per_second": 62000216.335400864,
+          "db_write_ms_per_second": 394.9803904775583
+        },
+        {
+          "node": "node09",
+          "cpu_core_equivalents": 3.190137770860791,
+          "peak_resident_bytes": 766689280,
+          "received_bytes_per_second": 37719218.52292238,
+          "sent_bytes_per_second": 27503368.942659136,
+          "process_write_bytes_per_second": 61024794.080145985,
+          "db_write_ms_per_second": 389.3432165580038
+        },
+        {
+          "node": "node10",
+          "cpu_core_equivalents": 3.2015971871023545,
+          "peak_resident_bytes": 809406464,
+          "received_bytes_per_second": 36966856.627701685,
+          "sent_bytes_per_second": 29118044.195847683,
+          "process_write_bytes_per_second": 61561602.71129508,
+          "db_write_ms_per_second": 398.65645676627815
+        }
+      ],
+      "controller_cpu_core_equivalents": 0.04360201605318898,
+      "sustainable": false
+    }
+  },
+  {
+    "case": {
+      "suite": "throughput",
+      "mode": "throughput",
+      "rate": 40000,
+      "repeat": 2,
+      "nodes": 10,
+      "version": "old"
+    },
+    "status": "complete",
+    "controller_clock_origin_utc": 1791948923.9186065,
+    "case_started_utc": 1791952456.2063422,
+    "metrics": {
+      "offered_tps": 40000,
+      "achieved_send_tps": 40354.22411531081,
+      "common_commit_tps": 33335.63954032571,
+      "sent_unique": 1400000,
+      "sent_wire_copies": 14000000,
+      "p50_ms": 6583.502441999826,
+      "p95_ms": 18732.29378699989,
+      "p99_ms": 22060.56622699998,
+      "p99_after_send_ms": 22057.62549000019,
+      "samples": 600,
+      "unresolved_samples": 62,
+      "deadline_ms": 100,
+      "deadline_success_fraction": 0.0,
+      "send_lateness_p99_ms": 1745.6340229996385,
+      "backlog_growth_per_second": 39189.04999643362,
+      "max_backlog_sum": 2117664,
+      "reorganizations_sum": 289,
+      "max_reorg_depth": 16,
+      "invalid_or_rejected_sum": 2338881,
+      "drained": false,
+      "recovery_seconds": null,
+      "checks": null,
+      "events": [],
+      "sample_poll_seconds": 0.05,
+      "measurement_seconds": 28.43935238899985,
+      "resources": [
+        {
+          "node": "node01",
+          "cpu_core_equivalents": 4.238463321922328,
+          "peak_resident_bytes": 690745344,
+          "received_bytes_per_second": 43940669.28483765,
+          "sent_bytes_per_second": 29220895.737465322,
+          "process_write_bytes_per_second": 60735240.67545563,
+          "db_write_ms_per_second": 261.42020336144014
+        },
+        {
+          "node": "node02",
+          "cpu_core_equivalents": 4.1150958150955175,
+          "peak_resident_bytes": 667320320,
+          "received_bytes_per_second": 41029481.088019796,
+          "sent_bytes_per_second": 23833588.076434996,
+          "process_write_bytes_per_second": 53703181.813336335,
+          "db_write_ms_per_second": 214.48929249737114
+        },
+        {
+          "node": "node03",
+          "cpu_core_equivalents": 4.026162917981508,
+          "peak_resident_bytes": 722808832,
+          "received_bytes_per_second": 37521647.131906696,
+          "sent_bytes_per_second": 27173927.641858585,
+          "process_write_bytes_per_second": 55082660.76431183,
+          "db_write_ms_per_second": 219.38609461491396
+        },
+        {
+          "node": "node04",
+          "cpu_core_equivalents": 4.128984457656618,
+          "peak_resident_bytes": 664612864,
+          "received_bytes_per_second": 37904963.244414814,
+          "sent_bytes_per_second": 26031260.482793123,
+          "process_write_bytes_per_second": 55304748.52192346,
+          "db_write_ms_per_second": 212.6344305694883
+        },
+        {
+          "node": "node05",
+          "cpu_core_equivalents": 3.7627606471584403,
+          "peak_resident_bytes": 600571904,
+          "received_bytes_per_second": 23325266.761580035,
+          "sent_bytes_per_second": 84285112.58671097,
+          "process_write_bytes_per_second": 50298124.24819093,
+          "db_write_ms_per_second": 221.42220128175907
+        },
+        {
+          "node": "node06",
+          "cpu_core_equivalents": 4.2071807178801865,
+          "peak_resident_bytes": 677740544,
+          "received_bytes_per_second": 46595713.04136165,
+          "sent_bytes_per_second": 22763632.31289343,
+          "process_write_bytes_per_second": 53330011.00920421,
+          "db_write_ms_per_second": 208.2252004546527
+        },
+        {
+          "node": "node07",
+          "cpu_core_equivalents": 4.012180250775843,
+          "peak_resident_bytes": 659914752,
+          "received_bytes_per_second": 36612953.54962963,
+          "sent_bytes_per_second": 26525313.716066983,
+          "process_write_bytes_per_second": 54344384.59990377,
+          "db_write_ms_per_second": 223.61314445612263
+        },
+        {
+          "node": "node08",
+          "cpu_core_equivalents": 4.134540245208979,
+          "peak_resident_bytes": 735191040,
+          "received_bytes_per_second": 36825176.4553219,
+          "sent_bytes_per_second": 29406489.696420647,
+          "process_write_bytes_per_second": 53423627.76824932,
+          "db_write_ms_per_second": 237.11301343163777
+        },
+        {
+          "node": "node09",
+          "cpu_core_equivalents": 4.192284598087956,
+          "peak_resident_bytes": 679366656,
+          "received_bytes_per_second": 42774138.572526775,
+          "sent_bytes_per_second": 22684901.7226404,
+          "process_write_bytes_per_second": 52988813.928930566,
+          "db_write_ms_per_second": 204.90194352153927
+        },
+        {
+          "node": "node10",
+          "cpu_core_equivalents": 4.212037685018912,
+          "peak_resident_bytes": 675373056,
+          "received_bytes_per_second": 44771505.46833455,
+          "sent_bytes_per_second": 19983515.84193674,
+          "process_write_bytes_per_second": 53864634.716243364,
+          "db_write_ms_per_second": 227.27280352909986
+        }
+      ],
+      "controller_cpu_core_equivalents": 0.03725790349572775,
+      "sustainable": false
+    }
+  },
+  {
+    "case": {
+      "suite": "throughput",
+      "mode": "throughput",
+      "rate": 40000,
+      "repeat": 3,
+      "nodes": 10,
+      "version": "old"
+    },
+    "status": "complete",
+    "controller_clock_origin_utc": 1791948923.918607,
+    "case_started_utc": 1791952515.834372,
+    "metrics": {
+      "offered_tps": 40000,
+      "achieved_send_tps": 40043.628808607,
+      "common_commit_tps": 42741.285502543215,
+      "sent_unique": 1400000,
+      "sent_wire_copies": 14000000,
+      "p50_ms": 834.77654599983,
+      "p95_ms": 2193.82749100032,
+      "p99_ms": 3214.2921869999554,
+      "p99_after_send_ms": 3211.760409999897,
+      "samples": 600,
+      "unresolved_samples": 0,
+      "deadline_ms": 100,
+      "deadline_success_fraction": 0.0,
+      "send_lateness_p99_ms": 175.39503800026068,
+      "backlog_growth_per_second": 1713.6503352314542,
+      "max_backlog_sum": 554646,
+      "reorganizations_sum": 222,
+      "max_reorg_depth": 6,
+      "invalid_or_rejected_sum": 0,
+      "drained": true,
+      "recovery_seconds": null,
+      "checks": {
+        "accounts_checked_per_node": 1024,
+        "state": {
+          "burned": 0,
+          "head": "ec48716071b97116eb65ca0e87ceb961faf7e7225f9987842395448c6ab81c48",
+          "state_hash": "caf009739621b4a6662030c1e21f20b8d5e714cb47d570eb050f6d93a0947d65",
+          "supply": 1024000000000,
+          "transactions": 1400000
+        }
+      },
+      "events": [],
+      "sample_poll_seconds": 0.05,
+      "measurement_seconds": 29.59012545199994,
+      "resources": [
+        {
+          "node": "node01",
+          "cpu_core_equivalents": 3.2479443237204766,
+          "peak_resident_bytes": 513376256,
+          "received_bytes_per_second": 31385588.834576257,
+          "sent_bytes_per_second": 37407043.36639398,
+          "process_write_bytes_per_second": 67022263.46478567,
+          "db_write_ms_per_second": 261.99737532630235
+        },
+        {
+          "node": "node02",
+          "cpu_core_equivalents": 3.462939424377274,
+          "peak_resident_bytes": 561434624,
+          "received_bytes_per_second": 40717898.20406343,
+          "sent_bytes_per_second": 21853608.395441733,
+          "process_write_bytes_per_second": 66507185.68910257,
+          "db_write_ms_per_second": 287.57330859592116
+        },
+        {
+          "node": "node03",
+          "cpu_core_equivalents": 3.3051976125836195,
+          "peak_resident_bytes": 529723392,
+          "received_bytes_per_second": 33583373.80529204,
+          "sent_bytes_per_second": 36954079.55514748,
+          "process_write_bytes_per_second": 66748598.11608223,
+          "db_write_ms_per_second": 272.6978666612791
+        },
+        {
+          "node": "node04",
+          "cpu_core_equivalents": 3.3787830728254864,
+          "peak_resident_bytes": 550592512,
+          "received_bytes_per_second": 37701706.192820445,
+          "sent_bytes_per_second": 21998584.901437253,
+          "process_write_bytes_per_second": 67250940.83254392,
+          "db_write_ms_per_second": 264.06473486147
+        },
+        {
+          "node": "node05",
+          "cpu_core_equivalents": 3.3232833081264825,
+          "peak_resident_bytes": 523268096,
+          "received_bytes_per_second": 35002143.28864895,
+          "sent_bytes_per_second": 44099058.59022996,
+          "process_write_bytes_per_second": 69373404.56125905,
+          "db_write_ms_per_second": 286.15502826223087
+        },
+        {
+          "node": "node06",
+          "cpu_core_equivalents": 3.381579377293145,
+          "peak_resident_bytes": 521601024,
+          "received_bytes_per_second": 36432468.11334953,
+          "sent_bytes_per_second": 22737858.144312993,
+          "process_write_bytes_per_second": 67810452.89094518,
+          "db_write_ms_per_second": 282.03412221207566
+        },
+        {
+          "node": "node07",
+          "cpu_core_equivalents": 3.3171543716238583,
+          "peak_resident_bytes": 511995904,
+          "received_bytes_per_second": 34580851.935213424,
+          "sent_bytes_per_second": 32667702.121373285,
+          "process_write_bytes_per_second": 67131480.44006489,
+          "db_write_ms_per_second": 268.16237314950934
+        },
+        {
+          "node": "node08",
+          "cpu_core_equivalents": 3.243093313533553,
+          "peak_resident_bytes": 516096000,
+          "received_bytes_per_second": 31832746.012786385,
+          "sent_bytes_per_second": 38558027.165203735,
+          "process_write_bytes_per_second": 67104902.925168045,
+          "db_write_ms_per_second": 268.15239992379657
+        },
+        {
+          "node": "node09",
+          "cpu_core_equivalents": 3.4465012716972856,
+          "peak_resident_bytes": 562540544,
+          "received_bytes_per_second": 41408457.763641745,
+          "sent_bytes_per_second": 19207834.144602638,
+          "process_write_bytes_per_second": 67879111.47109537,
+          "db_write_ms_per_second": 265.95382201963963
+        },
+        {
+          "node": "node10",
+          "cpu_core_equivalents": 3.428266235793998,
+          "peak_resident_bytes": 594178048,
+          "received_bytes_per_second": 45273494.87494166,
+          "sent_bytes_per_second": 15856296.647376612,
+          "process_write_bytes_per_second": 68059617.0931031,
+          "db_write_ms_per_second": 284.27631747101856
+        }
+      ],
+      "controller_cpu_core_equivalents": 0.043894941451572585,
+      "sustainable": false
+    }
+  },
+  {
+    "case": {
+      "suite": "throughput",
+      "mode": "throughput",
+      "rate": 40000,
+      "repeat": 3,
+      "nodes": 10,
+      "version": "new"
+    },
+    "status": "complete",
+    "controller_clock_origin_utc": 1791948923.9186072,
+    "case_started_utc": 1791952554.4884596,
+    "metrics": {
+      "offered_tps": 40000,
+      "achieved_send_tps": 39999.79672018945,
+      "common_commit_tps": 40366.77230534188,
+      "sent_unique": 1400000,
+      "sent_wire_copies": 14000000,
+      "p50_ms": 501.67888799978755,
+      "p95_ms": 1567.455592999977,
+      "p99_ms": 2691.2735139999313,
+      "p99_after_send_ms": 2689.5212859999447,
+      "samples": 600,
+      "unresolved_samples": 0,
+      "deadline_ms": 100,
+      "deadline_success_fraction": 0.0016666666666666668,
+      "send_lateness_p99_ms": 1.2949439997100853,
+      "backlog_growth_per_second": 1276.6559438323204,
+      "max_backlog_sum": 188826,
+      "reorganizations_sum": 1063,
+      "max_reorg_depth": 3,
+      "invalid_or_rejected_sum": 0,
+      "drained": true,
+      "recovery_seconds": null,
+      "checks": {
+        "accounts_checked_per_node": 1024,
+        "state": {
+          "burned": 0,
+          "head": "401962e29bf5b5e0157e83769674d1ba464095d1d0de5d908fd2e848faa994c4",
+          "state_hash": "caf009739621b4a6662030c1e21f20b8d5e714cb47d570eb050f6d93a0947d65",
+          "supply": 1024000000000,
+          "transactions": 1400000
+        }
+      },
+      "events": [],
+      "sample_poll_seconds": 0.05,
+      "measurement_seconds": 29.516950005000126,
+      "resources": [
+        {
+          "node": "node01",
+          "cpu_core_equivalents": 2.9309351740388134,
+          "peak_resident_bytes": 798486528,
+          "received_bytes_per_second": 33764362.674028784,
+          "sent_bytes_per_second": 31787135.657344688,
+          "process_write_bytes_per_second": 61186020.36098114,
+          "db_write_ms_per_second": 377.1201710581327
+        },
+        {
+          "node": "node02",
+          "cpu_core_equivalents": 2.9636643686146877,
+          "peak_resident_bytes": 816353280,
+          "received_bytes_per_second": 37617583.28051873,
+          "sent_bytes_per_second": 25829868.833698854,
+          "process_write_bytes_per_second": 59454754.224359855,
+          "db_write_ms_per_second": 392.28006379516006
+        },
+        {
+          "node": "node03",
+          "cpu_core_equivalents": 2.968055709860245,
+          "peak_resident_bytes": 792416256,
+          "received_bytes_per_second": 35537127.61048516,
+          "sent_bytes_per_second": 30731599.66887968,
+          "process_write_bytes_per_second": 61158821.88688866,
+          "db_write_ms_per_second": 392.8375194942486
+        },
+        {
+          "node": "node04",
+          "cpu_core_equivalents": 3.0413695854345644,
+          "peak_resident_bytes": 800751616,
+          "received_bytes_per_second": 35417607.33486717,
+          "sent_bytes_per_second": 31782871.158472728,
+          "process_write_bytes_per_second": 59978186.08291512,
+          "db_write_ms_per_second": 378.01166984088445
+        },
+        {
+          "node": "node05",
+          "cpu_core_equivalents": 3.16017959119078,
+          "peak_resident_bytes": 808718336,
+          "received_bytes_per_second": 36998153.46148584,
+          "sent_bytes_per_second": 26395731.973256655,
+          "process_write_bytes_per_second": 61324371.782767884,
+          "db_write_ms_per_second": 403.74180953591883
+        },
+        {
+          "node": "node06",
+          "cpu_core_equivalents": 3.1687933537901323,
+          "peak_resident_bytes": 778936320,
+          "received_bytes_per_second": 35188689.27257227,
+          "sent_bytes_per_second": 34099341.86389512,
+          "process_write_bytes_per_second": 61066818.8852391,
+          "db_write_ms_per_second": 394.1319294516978
+        },
+        {
+          "node": "node07",
+          "cpu_core_equivalents": 3.179878103398224,
+          "peak_resident_bytes": 814927872,
+          "received_bytes_per_second": 35106910.464138776,
+          "sent_bytes_per_second": 27168490.134114604,
+          "process_write_bytes_per_second": 60936238.4560502,
+          "db_write_ms_per_second": 386.54101826466643
+        },
+        {
+          "node": "node08",
+          "cpu_core_equivalents": 3.1635710662579215,
+          "peak_resident_bytes": 795049984,
+          "received_bytes_per_second": 35778081.46915942,
+          "sent_bytes_per_second": 30560830.7378368,
+          "process_write_bytes_per_second": 59841638.64155288,
+          "db_write_ms_per_second": 369.6554995740304
+        },
+        {
+          "node": "node09",
+          "cpu_core_equivalents": 3.223532139461629,
+          "peak_resident_bytes": 813891584,
+          "received_bytes_per_second": 37118257.198470846,
+          "sent_bytes_per_second": 29688797.448637217,
+          "process_write_bytes_per_second": 59999001.241659366,
+          "db_write_ms_per_second": 377.4148765408648
+        },
+        {
+          "node": "node10",
+          "cpu_core_equivalents": 3.312521042432805,
+          "peak_resident_bytes": 783949824,
+          "received_bytes_per_second": 41690723.05206131,
+          "sent_bytes_per_second": 24924229.870476987,
+          "process_write_bytes_per_second": 60866854.59356939,
+          "db_write_ms_per_second": 415.95145778680353
+        }
+      ],
+      "controller_cpu_core_equivalents": 0.043573472822158975,
+      "sustainable": false
+    }
+  },
+  {
+    "case": {
+      "suite": "throughput",
+      "mode": "throughput",
+      "rate": 50000,
+      "repeat": 1,
+      "nodes": 10,
+      "version": "old"
+    },
+    "status": "complete",
+    "controller_clock_origin_utc": 1791948923.9186068,
+    "case_started_utc": 1791952592.702091,
+    "metrics": {
+      "offered_tps": 50000,
+      "achieved_send_tps": 49997.589797261266,
+      "common_commit_tps": 21237.37964861986,
+      "sent_unique": 1750000,
+      "sent_wire_copies": 17500000,
+      "p50_ms": 12604.04817000017,
+      "p95_ms": 21558.874499999547,
+      "p99_ms": 22645.92845199968,
+      "p99_after_send_ms": 22643.987884000126,
+      "samples": 600,
+      "unresolved_samples": 401,
+      "deadline_ms": 100,
+      "deadline_success_fraction": 0.0,
+      "send_lateness_p99_ms": 712.1927749999486,
+      "backlog_growth_per_second": 5620.845897585098,
+      "max_backlog_sum": 2206487,
+      "reorganizations_sum": 185,
+      "max_reorg_depth": 10,
+      "invalid_or_rejected_sum": 9691697,
+      "drained": false,
+      "recovery_seconds": null,
+      "checks": null,
+      "events": [],
+      "sample_poll_seconds": 0.05,
+      "measurement_seconds": 29.630868327999906,
+      "resources": [
+        {
+          "node": "node01",
+          "cpu_core_equivalents": 3.938434969511987,
+          "peak_resident_bytes": 598032384,
+          "received_bytes_per_second": 21547381.734900944,
+          "sent_bytes_per_second": 27640623.5191584,
+          "process_write_bytes_per_second": 24822995.52811142,
+          "db_write_ms_per_second": 104.61744400081322
+        },
+        {
+          "node": "node02",
+          "cpu_core_equivalents": 4.7329920422033895,
+          "peak_resident_bytes": 625496064,
+          "received_bytes_per_second": 33438064.960915685,
+          "sent_bytes_per_second": 13414484.638116248,
+          "process_write_bytes_per_second": 27316602.640197948,
+          "db_write_ms_per_second": 133.61494081693158
+        },
+        {
+          "node": "node03",
+          "cpu_core_equivalents": 4.0024490570845614,
+          "peak_resident_bytes": 591949824,
+          "received_bytes_per_second": 23510509.759233344,
+          "sent_bytes_per_second": 16988129.42057233,
+          "process_write_bytes_per_second": 24361293.23007001,
+          "db_write_ms_per_second": 104.51200750244885
+        },
+        {
+          "node": "node04",
+          "cpu_core_equivalents": 3.987209510440115,
+          "peak_resident_bytes": 572731392,
+          "received_bytes_per_second": 24530959.06450826,
+          "sent_bytes_per_second": 15720750.260964187,
+          "process_write_bytes_per_second": 25060481.91973871,
+          "db_write_ms_per_second": 112.92989628110135
+        },
+        {
+          "node": "node05",
+          "cpu_core_equivalents": 3.918675609323182,
+          "peak_resident_bytes": 562855936,
+          "received_bytes_per_second": 23317457.333746556,
+          "sent_bytes_per_second": 18638863.528616663,
+          "process_write_bytes_per_second": 24339313.988935705,
+          "db_write_ms_per_second": 117.09455361189545
+        },
+        {
+          "node": "node06",
+          "cpu_core_equivalents": 4.0587516257954315,
+          "peak_resident_bytes": 575582208,
+          "received_bytes_per_second": 26613737.142992124,
+          "sent_bytes_per_second": 16924943.287136246,
+          "process_write_bytes_per_second": 25259400.963715233,
+          "db_write_ms_per_second": 108.46506941421585
+        },
+        {
+          "node": "node07",
+          "cpu_core_equivalents": 4.066375567068409,
+          "peak_resident_bytes": 588976128,
+          "received_bytes_per_second": 25626171.956711426,
+          "sent_bytes_per_second": 16334394.511909679,
+          "process_write_bytes_per_second": 26267957.83991587,
+          "db_write_ms_per_second": 111.62499945620934
+        },
+        {
+          "node": "node08",
+          "cpu_core_equivalents": 3.929222043418219,
+          "peak_resident_bytes": 591355904,
+          "received_bytes_per_second": 22071604.205469646,
+          "sent_bytes_per_second": 25542134.898720555,
+          "process_write_bytes_per_second": 24615229.493992787,
+          "db_write_ms_per_second": 115.37231265577141
+        },
+        {
+          "node": "node09",
+          "cpu_core_equivalents": 4.147900143846246,
+          "peak_resident_bytes": 582848512,
+          "received_bytes_per_second": 27163123.27031723,
+          "sent_bytes_per_second": 14832743.581283595,
+          "process_write_bytes_per_second": 24478377.61523201,
+          "db_write_ms_per_second": 114.7669161887685
+        },
+        {
+          "node": "node10",
+          "cpu_core_equivalents": 4.930330268517687,
+          "peak_resident_bytes": 609304576,
+          "received_bytes_per_second": 35166272.09386732,
+          "sent_bytes_per_second": 9490114.19062187,
+          "process_write_bytes_per_second": 25594204.24690574,
+          "db_write_ms_per_second": 140.02551511726367
+        }
+      ],
+      "controller_cpu_core_equivalents": 0.053036721169134805,
+      "sustainable": false
+    }
+  },
+  {
+    "case": {
+      "suite": "throughput",
+      "mode": "throughput",
+      "rate": 50000,
+      "repeat": 1,
+      "nodes": 10,
+      "version": "new"
+    },
+    "status": "complete",
+    "controller_clock_origin_utc": 1791948923.9186068,
+    "case_started_utc": 1791952651.0167582,
+    "metrics": {
+      "offered_tps": 50000,
+      "achieved_send_tps": 50000.94591016229,
+      "common_commit_tps": 53321.540965792825,
+      "sent_unique": 1750000,
+      "sent_wire_copies": 17500000,
+      "p50_ms": 1218.1216229996608,
+      "p95_ms": 4023.688277999554,
+      "p99_ms": 4573.2197009997435,
+      "p99_after_send_ms": 4570.891058000143,
+      "samples": 600,
+      "unresolved_samples": 0,
+      "deadline_ms": 100,
+      "deadline_success_fraction": 0.0,
+      "send_lateness_p99_ms": 187.96708199988643,
+      "backlog_growth_per_second": -9240.71927472108,
+      "max_backlog_sum": 520240,
+      "reorganizations_sum": 678,
+      "max_reorg_depth": 11,
+      "invalid_or_rejected_sum": 5456,
+      "drained": true,
+      "recovery_seconds": null,
+      "checks": {
+        "accounts_checked_per_node": 1024,
+        "state": {
+          "burned": 0,
+          "head": "e28b8d8d970013f6e4171c21a49740ae31e26ec8554396390af26ea7dafdcacb",
+          "state_hash": "d7c5b70d8a77b22c098b62b7c201980a3956bda843093c857137205361c4421e",
+          "supply": 1024000000000,
+          "transactions": 1750000
+        }
+      },
+      "events": [],
+      "sample_poll_seconds": 0.05,
+      "measurement_seconds": 29.580240395000146,
+      "resources": [
+        {
+          "node": "node01",
+          "cpu_core_equivalents": 3.6323066197312244,
+          "peak_resident_bytes": 757215232,
+          "received_bytes_per_second": 41025500.3946865,
+          "sent_bytes_per_second": 43400797.486993976,
+          "process_write_bytes_per_second": 68885768.76962835,
+          "db_write_ms_per_second": 431.525345620841
+        },
+        {
+          "node": "node02",
+          "cpu_core_equivalents": 4.114099188340941,
+          "peak_resident_bytes": 963547136,
+          "received_bytes_per_second": 50019703.12756793,
+          "sent_bytes_per_second": 35277421.31454692,
+          "process_write_bytes_per_second": 70921289.75241852,
+          "db_write_ms_per_second": 459.5830504236825
+        },
+        {
+          "node": "node03",
+          "cpu_core_equivalents": 3.8056583549276275,
+          "peak_resident_bytes": 828387328,
+          "received_bytes_per_second": 40510815.564654715,
+          "sent_bytes_per_second": 41188274.190156184,
+          "process_write_bytes_per_second": 67723721.68884093,
+          "db_write_ms_per_second": 420.8214106030067
+        },
+        {
+          "node": "node04",
+          "cpu_core_equivalents": 3.8972635266171043,
+          "peak_resident_bytes": 827088896,
+          "received_bytes_per_second": 41615053.27752743,
+          "sent_bytes_per_second": 38206193.25294683,
+          "process_write_bytes_per_second": 67793095.56723398,
+          "db_write_ms_per_second": 425.6874544240815
+        },
+        {
+          "node": "node05",
+          "cpu_core_equivalents": 3.995974860974399,
+          "peak_resident_bytes": 806830080,
+          "received_bytes_per_second": 41808777.02430835,
+          "sent_bytes_per_second": 39024972.569023445,
+          "process_write_bytes_per_second": 67321602.4416285,
+          "db_write_ms_per_second": 416.18135689934576
+        },
+        {
+          "node": "node06",
+          "cpu_core_equivalents": 4.090168314536425,
+          "peak_resident_bytes": 887881728,
+          "received_bytes_per_second": 48293459.88822526,
+          "sent_bytes_per_second": 31140969.434301835,
+          "process_write_bytes_per_second": 68746190.18795131,
+          "db_write_ms_per_second": 426.7123823352531
+        },
+        {
+          "node": "node07",
+          "cpu_core_equivalents": 4.230516666833849,
+          "peak_resident_bytes": 895373312,
+          "received_bytes_per_second": 48981801.7248062,
+          "sent_bytes_per_second": 33160273.679378092,
+          "process_write_bytes_per_second": 68388935.48484936,
+          "db_write_ms_per_second": 434.3571690908814
+        },
+        {
+          "node": "node08",
+          "cpu_core_equivalents": 4.055590130372211,
+          "peak_resident_bytes": 818921472,
+          "received_bytes_per_second": 42654328.84085909,
+          "sent_bytes_per_second": 38586113.424315676,
+          "process_write_bytes_per_second": 74050453.23330913,
+          "db_write_ms_per_second": 421.5160181763607
+        },
+        {
+          "node": "node09",
+          "cpu_core_equivalents": 4.2087807041974985,
+          "peak_resident_bytes": 882216960,
+          "received_bytes_per_second": 48820000.60567773,
+          "sent_bytes_per_second": 31729585.745984785,
+          "process_write_bytes_per_second": 67995124.48654628,
+          "db_write_ms_per_second": 427.54670270149904
+        },
+        {
+          "node": "node10",
+          "cpu_core_equivalents": 4.266945444477662,
+          "peak_resident_bytes": 859611136,
+          "received_bytes_per_second": 46888745.98309339,
+          "sent_bytes_per_second": 29034670.18967057,
+          "process_write_bytes_per_second": 67899441.15327363,
+          "db_write_ms_per_second": 438.23256156468216
+        }
+      ],
+      "controller_cpu_core_equivalents": 0.041094176907164465,
+      "sustainable": false
+    }
+  },
+  {
+    "case": {
+      "suite": "throughput",
+      "mode": "throughput",
+      "rate": 50000,
+      "repeat": 2,
+      "nodes": 10,
+      "version": "new"
+    },
+    "status": "failed",
+    "controller_clock_origin_utc": 1791948923.9186068,
+    "case_started_utc": 1791952689.632637,
+    "error": "node03: timed out"
+  },
+  {
+    "case": {
+      "suite": "throughput",
+      "mode": "throughput",
+      "rate": 50000,
+      "repeat": 2,
+      "nodes": 10,
+      "version": "old"
+    },
+    "status": "complete",
+    "controller_clock_origin_utc": 1791948923.9186068,
+    "case_started_utc": 1791952720.0757616,
+    "metrics": {
+      "offered_tps": 50000,
+      "achieved_send_tps": 51459.14104896141,
+      "common_commit_tps": 12002.988834134532,
+      "sent_unique": 1750000,
+      "sent_wire_copies": 17500000,
+      "p50_ms": 8240.752253999744,
+      "p95_ms": 12251.036873999965,
+      "p99_ms": 14101.036873999874,
+      "p99_after_send_ms": 13688.29935199983,
+      "samples": 600,
+      "unresolved_samples": 521,
+      "deadline_ms": 100,
+      "deadline_success_fraction": 0.0,
+      "send_lateness_p99_ms": 1242.3234899997624,
+      "backlog_growth_per_second": 6760.76450118722,
+      "max_backlog_sum": 2148426,
+      "reorganizations_sum": 85,
+      "max_reorg_depth": 11,
+      "invalid_or_rejected_sum": 11244536,
+      "drained": false,
+      "recovery_seconds": null,
+      "checks": null,
+      "events": [],
+      "sample_poll_seconds": 0.05,
+      "measurement_seconds": 29.906134626999574,
+      "resources": [
+        {
+          "node": "node01",
+          "cpu_core_equivalents": 2.90050035157963,
+          "peak_resident_bytes": 588533760,
+          "received_bytes_per_second": 17560647.892150864,
+          "sent_bytes_per_second": 9101827.31386003,
+          "process_write_bytes_per_second": 14177607.547356209,
+          "db_write_ms_per_second": 52.86494081293505
+        },
+        {
+          "node": "node02",
+          "cpu_core_equivalents": 2.991158172585768,
+          "peak_resident_bytes": 607178752,
+          "received_bytes_per_second": 21881771.989657316,
+          "sent_bytes_per_second": 8380821.932558325,
+          "process_write_bytes_per_second": 16121781.233630868,
+          "db_write_ms_per_second": 46.299789266310775
+        },
+        {
+          "node": "node03",
+          "cpu_core_equivalents": 2.9130170477247095,
+          "peak_resident_bytes": 540696576,
+          "received_bytes_per_second": 16085328.812962105,
+          "sent_bytes_per_second": 9287911.54271172,
+          "process_write_bytes_per_second": 14402225.007411893,
+          "db_write_ms_per_second": 51.886982431994866
+        },
+        {
+          "node": "node04",
+          "cpu_core_equivalents": 2.854503802137292,
+          "peak_resident_bytes": 531496960,
+          "received_bytes_per_second": 13001711.18232576,
+          "sent_bytes_per_second": 28149481.0178503,
+          "process_write_bytes_per_second": 13969014.625609374,
+          "db_write_ms_per_second": 68.06782569493944
+        },
+        {
+          "node": "node05",
+          "cpu_core_equivalents": 2.9421669532833152,
+          "peak_resident_bytes": 544534528,
+          "received_bytes_per_second": 16314271.138187202,
+          "sent_bytes_per_second": 9447127.036769627,
+          "process_write_bytes_per_second": 14012157.613363972,
+          "db_write_ms_per_second": 60.66622228611376
+        },
+        {
+          "node": "node06",
+          "cpu_core_equivalents": 3.5752677279620513,
+          "peak_resident_bytes": 578396160,
+          "received_bytes_per_second": 28004671.26379769,
+          "sent_bytes_per_second": 3470598.667950064,
+          "process_write_bytes_per_second": 16452407.177883564,
+          "db_write_ms_per_second": 75.03808683366269
+        },
+        {
+          "node": "node07",
+          "cpu_core_equivalents": 3.0119405641503025,
+          "peak_resident_bytes": 581582848,
+          "received_bytes_per_second": 19330575.890542626,
+          "sent_bytes_per_second": 6719943.633857797,
+          "process_write_bytes_per_second": 14457420.6393646,
+          "db_write_ms_per_second": 56.240956913285544
+        },
+        {
+          "node": "node08",
+          "cpu_core_equivalents": 2.982750365855272,
+          "peak_resident_bytes": 557633536,
+          "received_bytes_per_second": 18645718.10950699,
+          "sent_bytes_per_second": 7826000.448372934,
+          "process_write_bytes_per_second": 15338222.398887837,
+          "db_write_ms_per_second": 50.91054758462289
+        },
+        {
+          "node": "node09",
+          "cpu_core_equivalents": 2.9763742493033245,
+          "peak_resident_bytes": 570327040,
+          "received_bytes_per_second": 18085071.9675324,
+          "sent_bytes_per_second": 6925798.522053278,
+          "process_write_bytes_per_second": 14337989.892310603,
+          "db_write_ms_per_second": 54.03471779803618
+        },
+        {
+          "node": "node10",
+          "cpu_core_equivalents": 2.984046956019251,
+          "peak_resident_bytes": 561172480,
+          "received_bytes_per_second": 18475336.378014356,
+          "sent_bytes_per_second": 7718212.52993396,
+          "process_write_bytes_per_second": 16846720.389774002,
+          "db_write_ms_per_second": 54.307139329658824
+        }
+      ],
+      "controller_cpu_core_equivalents": 0.0624756645833332,
+      "sustainable": false
+    }
+  },
+  {
+    "case": {
+      "suite": "throughput",
+      "mode": "throughput",
+      "rate": 50000,
+      "repeat": 3,
+      "nodes": 10,
+      "version": "old"
+    },
+    "status": "complete",
+    "controller_clock_origin_utc": 1791948923.9186072,
+    "case_started_utc": 1791952778.489012,
+    "metrics": {
+      "offered_tps": 50000,
+      "achieved_send_tps": 53639.234511817835,
+      "common_commit_tps": 12193.884211645627,
+      "sent_unique": 1750000,
+      "sent_wire_copies": 17500000,
+      "p50_ms": 9925.33972299998,
+      "p95_ms": 14476.901189000273,
+      "p99_ms": 14768.213443000604,
+      "p99_after_send_ms": 12792.958676000126,
+      "samples": 600,
+      "unresolved_samples": 514,
+      "deadline_ms": 100,
+      "deadline_success_fraction": 0.0,
+      "send_lateness_p99_ms": 2191.5787200000523,
+      "backlog_growth_per_second": 3039.8031807501293,
+      "max_backlog_sum": 2280296,
+      "reorganizations_sum": 84,
+      "max_reorg_depth": 12,
+      "invalid_or_rejected_sum": 11246848,
+      "drained": false,
+      "recovery_seconds": null,
+      "checks": null,
+      "events": [],
+      "sample_poll_seconds": 0.05,
+      "measurement_seconds": 27.251693900999726,
+      "resources": [
+        {
+          "node": "node01",
+          "cpu_core_equivalents": 3.3689154271849504,
+          "peak_resident_bytes": 675295232,
+          "received_bytes_per_second": 20883954.188958574,
+          "sent_bytes_per_second": 13360247.19500623,
+          "process_write_bytes_per_second": 15222946.269214526,
+          "db_write_ms_per_second": 49.68797458679534
+        },
+        {
+          "node": "node02",
+          "cpu_core_equivalents": 3.807213246153254,
+          "peak_resident_bytes": 666095616,
+          "received_bytes_per_second": 26419798.733083062,
+          "sent_bytes_per_second": 5697205.9265022185,
+          "process_write_bytes_per_second": 17336952.10713738,
+          "db_write_ms_per_second": 57.155150195741065
+        },
+        {
+          "node": "node03",
+          "cpu_core_equivalents": 3.1990045212126015,
+          "peak_resident_bytes": 614191104,
+          "received_bytes_per_second": 13980266.30506163,
+          "sent_bytes_per_second": 31717051.943266235,
+          "process_write_bytes_per_second": 15015077.796136152,
+          "db_write_ms_per_second": 59.5639149220171
+        },
+        {
+          "node": "node04",
+          "cpu_core_equivalents": 3.375842666302115,
+          "peak_resident_bytes": 629370880,
+          "received_bytes_per_second": 18962639.235465746,
+          "sent_bytes_per_second": 13225172.729052944,
+          "process_write_bytes_per_second": 14536063.462296115,
+          "db_write_ms_per_second": 46.885200554565444
+        },
+        {
+          "node": "node05",
+          "cpu_core_equivalents": 3.40429700762919,
+          "peak_resident_bytes": 669171712,
+          "received_bytes_per_second": 19540341.709931836,
+          "sent_bytes_per_second": 13711556.32957892,
+          "process_write_bytes_per_second": 15667240.706249716,
+          "db_write_ms_per_second": 45.80929378317299
+        },
+        {
+          "node": "node06",
+          "cpu_core_equivalents": 3.5303495022916946,
+          "peak_resident_bytes": 652963840,
+          "received_bytes_per_second": 23005408.481305484,
+          "sent_bytes_per_second": 9874471.83934971,
+          "process_write_bytes_per_second": 16340145.372896044,
+          "db_write_ms_per_second": 51.21194557923617
+        },
+        {
+          "node": "node07",
+          "cpu_core_equivalents": 3.4416473831213583,
+          "peak_resident_bytes": 635891712,
+          "received_bytes_per_second": 19847595.67478328,
+          "sent_bytes_per_second": 12164785.103058806,
+          "process_write_bytes_per_second": 15385273.059470955,
+          "db_write_ms_per_second": 52.31263510367338
+        },
+        {
+          "node": "node08",
+          "cpu_core_equivalents": 3.843290636555908,
+          "peak_resident_bytes": 694542336,
+          "received_bytes_per_second": 30826823.538084053,
+          "sent_bytes_per_second": 5883648.6121737175,
+          "process_write_bytes_per_second": 17357844.166253712,
+          "db_write_ms_per_second": 58.649350635094535
+        },
+        {
+          "node": "node09",
+          "cpu_core_equivalents": 3.9947654041426883,
+          "peak_resident_bytes": 663928832,
+          "received_bytes_per_second": 29685393.170012187,
+          "sent_bytes_per_second": 6123649.840125279,
+          "process_write_bytes_per_second": 20335188.04420706,
+          "db_write_ms_per_second": 70.15203238173268
+        },
+        {
+          "node": "node10",
+          "cpu_core_equivalents": 3.458595320437764,
+          "peak_resident_bytes": 638996480,
+          "received_bytes_per_second": 20816143.35831027,
+          "sent_bytes_per_second": 11454689.206990853,
+          "process_write_bytes_per_second": 15053254.652363127,
+          "db_write_ms_per_second": 50.61136716897449
+        }
+      ],
+      "controller_cpu_core_equivalents": 0.05796213222509079,
+      "sustainable": false
+    }
+  },
+  {
+    "case": {
+      "suite": "throughput",
+      "mode": "throughput",
+      "rate": 50000,
+      "repeat": 3,
+      "nodes": 10,
+      "version": "new"
+    },
+    "status": "failed",
+    "controller_clock_origin_utc": 1791948923.918607,
+    "case_started_utc": 1791952836.798565,
+    "error": "node03: timed out"
+  },
+  {
+    "case": {
+      "suite": "throughput",
+      "mode": "throughput",
+      "rate": 60000,
+      "repeat": 1,
+      "nodes": 10,
+      "version": "old"
+    },
+    "status": "failed",
+    "controller_clock_origin_utc": 1791948923.918607,
+    "case_started_utc": 1791952887.3127377,
+    "error": "node09: timed out"
+  },
+  {
+    "case": {
+      "suite": "throughput",
+      "mode": "throughput",
+      "rate": 60000,
+      "repeat": 1,
+      "nodes": 10,
+      "version": "new"
+    },
+    "status": "complete",
+    "controller_clock_origin_utc": 1791948923.918607,
+    "case_started_utc": 1791952928.9532654,
+    "metrics": {
+      "offered_tps": 60000,
+      "achieved_send_tps": 60002.181416929976,
+      "common_commit_tps": 2929.460281116817,
+      "sent_unique": 2100000,
+      "sent_wire_copies": 21000000,
+      "p50_ms": null,
+      "p95_ms": null,
+      "p99_ms": null,
+      "p99_after_send_ms": null,
+      "samples": 600,
+      "unresolved_samples": 600,
+      "deadline_ms": 100,
+      "deadline_success_fraction": 0.0,
+      "send_lateness_p99_ms": 882.5546856669462,
+      "backlog_growth_per_second": 17948.43306883728,
+      "max_backlog_sum": 1813678,
+      "reorganizations_sum": 143,
+      "max_reorg_depth": 28,
+      "invalid_or_rejected_sum": 8664303,
+      "drained": false,
+      "recovery_seconds": null,
+      "checks": null,
+      "events": [],
+      "sample_poll_seconds": 0.05,
+      "measurement_seconds": 29.21493783400001,
+      "resources": [
+        {
+          "node": "node01",
+          "cpu_core_equivalents": 8.033909102720973,
+          "peak_resident_bytes": 1155489792,
+          "received_bytes_per_second": 40102181.036870986,
+          "sent_bytes_per_second": 16222602.447177941,
+          "process_write_bytes_per_second": 25686454.110015605,
+          "db_write_ms_per_second": 209.05177069698357
+        },
+        {
+          "node": "node02",
+          "cpu_core_equivalents": 8.644995085564416,
+          "peak_resident_bytes": 985923584,
+          "received_bytes_per_second": 57076818.32063964,
+          "sent_bytes_per_second": 42555163.768074974,
+          "process_write_bytes_per_second": 29033782.81410721,
+          "db_write_ms_per_second": 342.81791119692843
+        },
+        {
+          "node": "node03",
+          "cpu_core_equivalents": 8.008053630965666,
+          "peak_resident_bytes": 952422400,
+          "received_bytes_per_second": 36516056.71939694,
+          "sent_bytes_per_second": 13505683.367938118,
+          "process_write_bytes_per_second": 25074471.29144556,
+          "db_write_ms_per_second": 208.51158854463156
+        },
+        {
+          "node": "node04",
+          "cpu_core_equivalents": 8.41816735662474,
+          "peak_resident_bytes": 1036054528,
+          "received_bytes_per_second": 44000106.32588086,
+          "sent_bytes_per_second": 59843471.88873088,
+          "process_write_bytes_per_second": 54960683.781819865,
+          "db_write_ms_per_second": 524.0265845502876
+        },
+        {
+          "node": "node05",
+          "cpu_core_equivalents": 7.459780686110767,
+          "peak_resident_bytes": 1046466560,
+          "received_bytes_per_second": 38259418.87506532,
+          "sent_bytes_per_second": 8800105.393371617,
+          "process_write_bytes_per_second": 25291504.373495143,
+          "db_write_ms_per_second": 205.3078699013876
+        },
+        {
+          "node": "node06",
+          "cpu_core_equivalents": 6.45277635267139,
+          "peak_resident_bytes": 944541696,
+          "received_bytes_per_second": 38377672.900442004,
+          "sent_bytes_per_second": 95152033.68890382,
+          "process_write_bytes_per_second": 75848155.09760085,
+          "db_write_ms_per_second": 588.6966273802681
+        },
+        {
+          "node": "node07",
+          "cpu_core_equivalents": 8.33348937394148,
+          "peak_resident_bytes": 1005285376,
+          "received_bytes_per_second": 53755622.2068119,
+          "sent_bytes_per_second": 62678446.29362627,
+          "process_write_bytes_per_second": 54490445.4373791,
+          "db_write_ms_per_second": 552.452724140888
+        },
+        {
+          "node": "node08",
+          "cpu_core_equivalents": 7.411788833176947,
+          "peak_resident_bytes": 987144192,
+          "received_bytes_per_second": 54147639.23129009,
+          "sent_bytes_per_second": 86851502.45457815,
+          "process_write_bytes_per_second": 76293577.64390029,
+          "db_write_ms_per_second": 593.7772044755669
+        },
+        {
+          "node": "node09",
+          "cpu_core_equivalents": 8.611965030683484,
+          "peak_resident_bytes": 977137664,
+          "received_bytes_per_second": 58081973.42885365,
+          "sent_bytes_per_second": 16107985.431080682,
+          "process_write_bytes_per_second": 10615413.312263696,
+          "db_write_ms_per_second": 137.4385193565974
+        },
+        {
+          "node": "node10",
+          "cpu_core_equivalents": 8.57233475638413,
+          "peak_resident_bytes": 955125760,
+          "received_bytes_per_second": 47060740.66671243,
+          "sent_bytes_per_second": 37759651.424490504,
+          "process_write_bytes_per_second": 46305578.32047172,
+          "db_write_ms_per_second": 443.00500331504475
+        }
+      ],
+      "controller_cpu_core_equivalents": 0.05060750996309889,
+      "sustainable": false
+    }
+  },
+  {
+    "case": {
+      "suite": "throughput",
+      "mode": "throughput",
+      "rate": 60000,
+      "repeat": 2,
+      "nodes": 10,
+      "version": "new"
+    },
+    "status": "complete",
+    "controller_clock_origin_utc": 1791948923.918607,
+    "case_started_utc": 1791952987.9930212,
+    "metrics": {
+      "offered_tps": 60000,
+      "achieved_send_tps": 60000.874278139156,
+      "common_commit_tps": 30768.269651095987,
+      "sent_unique": 2100000,
+      "sent_wire_copies": 21000000,
+      "p50_ms": 18009.91463199989,
+      "p95_ms": 19634.970312000405,
+      "p99_ms": 21926.77119400014,
+      "p99_after_send_ms": 21375.21636700012,
+      "samples": 600,
+      "unresolved_samples": 0,
+      "deadline_ms": 100,
+      "deadline_success_fraction": 0.0,
+      "send_lateness_p99_ms": 985.455522666598,
+      "backlog_growth_per_second": -11277.90709235192,
+      "max_backlog_sum": 1400475,
+      "reorganizations_sum": 445,
+      "max_reorg_depth": 24,
+      "invalid_or_rejected_sum": 1431740,
+      "drained": true,
+      "recovery_seconds": null,
+      "checks": {
+        "accounts_checked_per_node": 1024,
+        "state": {
+          "burned": 0,
+          "head": "b457f046e7cf070fca87b9910bf4aca08295e81f96a9462b704beb01a3b67653",
+          "state_hash": "f467269d2fa89de1f2d1f82985f57fd9f690cd8b6af31f3f0d6bc5b3178a80ef",
+          "supply": 1024000000000,
+          "transactions": 2100000
+        }
+      },
+      "events": [],
+      "sample_poll_seconds": 0.05,
+      "measurement_seconds": 27.651863743000376,
+      "resources": [
+        {
+          "node": "node01",
+          "cpu_core_equivalents": 4.851501195247958,
+          "peak_resident_bytes": 681742336,
+          "received_bytes_per_second": 45994018.08212442,
+          "sent_bytes_per_second": 42236443.94659073,
+          "process_write_bytes_per_second": 81184358.38048203,
+          "db_write_ms_per_second": 485.32652720007354
+        },
+        {
+          "node": "node02",
+          "cpu_core_equivalents": 4.8771415646129155,
+          "peak_resident_bytes": 751128576,
+          "received_bytes_per_second": 47543188.66961669,
+          "sent_bytes_per_second": 36633593.72137877,
+          "process_write_bytes_per_second": 81847228.708875,
+          "db_write_ms_per_second": 518.7933650089448
+        },
+        {
+          "node": "node03",
+          "cpu_core_equivalents": 4.8714863580976004,
+          "peak_resident_bytes": 681897984,
+          "received_bytes_per_second": 41977223.299960196,
+          "sent_bytes_per_second": 56668238.588317804,
+          "process_write_bytes_per_second": 78656563.48572767,
+          "db_write_ms_per_second": 505.8589107050993
+        },
+        {
+          "node": "node04",
+          "cpu_core_equivalents": 5.045521535065308,
+          "peak_resident_bytes": 669073408,
+          "received_bytes_per_second": 44722610.18257915,
+          "sent_bytes_per_second": 42145914.3525183,
+          "process_write_bytes_per_second": 78303131.39554988,
+          "db_write_ms_per_second": 462.4233323960592
+        },
+        {
+          "node": "node05",
+          "cpu_core_equivalents": 5.103932209116487,
+          "peak_resident_bytes": 698527744,
+          "received_bytes_per_second": 43455343.88452102,
+          "sent_bytes_per_second": 63358699.62629507,
+          "process_write_bytes_per_second": 80897583.64176276,
+          "db_write_ms_per_second": 530.1973308295062
+        },
+        {
+          "node": "node06",
+          "cpu_core_equivalents": 5.436134229398946,
+          "peak_resident_bytes": 742150144,
+          "received_bytes_per_second": 53075427.3071922,
+          "sent_bytes_per_second": 43043731.66533087,
+          "process_write_bytes_per_second": 79783368.98027185,
+          "db_write_ms_per_second": 489.844301703849
+        },
+        {
+          "node": "node07",
+          "cpu_core_equivalents": 5.40424155090912,
+          "peak_resident_bytes": 752705536,
+          "received_bytes_per_second": 52940250.559804015,
+          "sent_bytes_per_second": 35306522.26821899,
+          "process_write_bytes_per_second": 81671401.42847222,
+          "db_write_ms_per_second": 478.3391797360565
+        },
+        {
+          "node": "node08",
+          "cpu_core_equivalents": 5.465145872428001,
+          "peak_resident_bytes": 776372224,
+          "received_bytes_per_second": 55925166.6496243,
+          "sent_bytes_per_second": 45215095.43155074,
+          "process_write_bytes_per_second": 81400031.94431224,
+          "db_write_ms_per_second": 479.20658531938074
+        },
+        {
+          "node": "node09",
+          "cpu_core_equivalents": 6.985692421867847,
+          "peak_resident_bytes": 806449152,
+          "received_bytes_per_second": 50161539.702766396,
+          "sent_bytes_per_second": 8885058.102537196,
+          "process_write_bytes_per_second": 34885791.45932568,
+          "db_write_ms_per_second": 320.5010660535816
+        },
+        {
+          "node": "node10",
+          "cpu_core_equivalents": 5.431120932599555,
+          "peak_resident_bytes": 757669888,
+          "received_bytes_per_second": 59376148.2864102,
+          "sent_bytes_per_second": 28313144.613920692,
+          "process_write_bytes_per_second": 80641323.1572667,
+          "db_write_ms_per_second": 474.23420883590387
+        }
+      ],
+      "controller_cpu_core_equivalents": 0.04082112475103266,
+      "sustainable": false
+    }
+  },
+  {
+    "case": {
+      "suite": "throughput",
+      "mode": "throughput",
+      "rate": 60000,
+      "repeat": 2,
+      "nodes": 10,
+      "version": "old"
+    },
+    "status": "complete",
+    "controller_clock_origin_utc": 1791948923.9186068,
+    "case_started_utc": 1791953041.8961227,
+    "metrics": {
+      "offered_tps": 60000,
+      "achieved_send_tps": 63724.412142998284,
+      "common_commit_tps": 15245.867829002644,
+      "sent_unique": 2100000,
+      "sent_wire_copies": 21000000,
+      "p50_ms": 23857.727356000396,
+      "p95_ms": 28044.90749999968,
+      "p99_ms": 28230.62905400002,
+      "p99_after_send_ms": 25743.781580999894,
+      "samples": 600,
+      "unresolved_samples": 543,
+      "deadline_ms": 100,
+      "deadline_success_fraction": 0.0,
+      "send_lateness_p99_ms": 3179.0820953328875,
+      "backlog_growth_per_second": 7479.896181000887,
+      "max_backlog_sum": 2301378,
+      "reorganizations_sum": 116,
+      "max_reorg_depth": 14,
+      "invalid_or_rejected_sum": 14883373,
+      "drained": false,
+      "recovery_seconds": null,
+      "checks": null,
+      "events": [],
+      "sample_poll_seconds": 0.05,
+      "measurement_seconds": 29.64967328000057,
+      "resources": [
+        {
+          "node": "node01",
+          "cpu_core_equivalents": 5.180355397157248,
+          "peak_resident_bytes": 675610624,
+          "received_bytes_per_second": 28562874.841903947,
+          "sent_bytes_per_second": 23352684.343643017,
+          "process_write_bytes_per_second": 20285853.483778708,
+          "db_write_ms_per_second": 73.94556453608104
+        },
+        {
+          "node": "node02",
+          "cpu_core_equivalents": 5.245002079159404,
+          "peak_resident_bytes": 667271168,
+          "received_bytes_per_second": 29565926.265747476,
+          "sent_bytes_per_second": 15471057.730319489,
+          "process_write_bytes_per_second": 22471331.86622376,
+          "db_write_ms_per_second": 108.19649045387182
+        },
+        {
+          "node": "node03",
+          "cpu_core_equivalents": 5.20199678234016,
+          "peak_resident_bytes": 646860800,
+          "received_bytes_per_second": 28878786.889620107,
+          "sent_bytes_per_second": 17740649.68718569,
+          "process_write_bytes_per_second": 23112193.700368047,
+          "db_write_ms_per_second": 112.19108570224138
+        },
+        {
+          "node": "node04",
+          "cpu_core_equivalents": 5.176991279142926,
+          "peak_resident_bytes": 649728000,
+          "received_bytes_per_second": 27411358.0046837,
+          "sent_bytes_per_second": 18255909.462756466,
+          "process_write_bytes_per_second": 21486485.128647856,
+          "db_write_ms_per_second": 100.36625381660674
+        },
+        {
+          "node": "node05",
+          "cpu_core_equivalents": 5.111049135985525,
+          "peak_resident_bytes": 608804864,
+          "received_bytes_per_second": 25015948.337626528,
+          "sent_bytes_per_second": 22271214.78756434,
+          "process_write_bytes_per_second": 23043258.57313416,
+          "db_write_ms_per_second": 106.73459910044376
+        },
+        {
+          "node": "node06",
+          "cpu_core_equivalents": 6.272248710593428,
+          "peak_resident_bytes": 676118528,
+          "received_bytes_per_second": 34770687.39558064,
+          "sent_bytes_per_second": 6078467.013718018,
+          "process_write_bytes_per_second": 27855040.97129748,
+          "db_write_ms_per_second": 158.7605087093867
+        },
+        {
+          "node": "node07",
+          "cpu_core_equivalents": 5.06360608368893,
+          "peak_resident_bytes": 623501312,
+          "received_bytes_per_second": 22019620.07589405,
+          "sent_bytes_per_second": 33441927.35738574,
+          "process_write_bytes_per_second": 20818961.01082393,
+          "db_write_ms_per_second": 107.27014844191696
+        },
+        {
+          "node": "node08",
+          "cpu_core_equivalents": 5.193573923928144,
+          "peak_resident_bytes": 633151488,
+          "received_bytes_per_second": 29420448.10282588,
+          "sent_bytes_per_second": 13614729.416674105,
+          "process_write_bytes_per_second": 24995960.022935733,
+          "db_write_ms_per_second": 123.3501511622704
+        },
+        {
+          "node": "node09",
+          "cpu_core_equivalents": 5.255820275939209,
+          "peak_resident_bytes": 645943296,
+          "received_bytes_per_second": 29791008.273801222,
+          "sent_bytes_per_second": 14387941.646822484,
+          "process_write_bytes_per_second": 25281647.083295807,
+          "db_write_ms_per_second": 139.94217514021523
+        },
+        {
+          "node": "node10",
+          "cpu_core_equivalents": 5.34791609683454,
+          "peak_resident_bytes": 735662080,
+          "received_bytes_per_second": 32482379.886783745,
+          "sent_bytes_per_second": 10737332.650971927,
+          "process_write_bytes_per_second": 26146997.057229802,
+          "db_write_ms_per_second": 145.4034208163766
+        }
+      ],
+      "controller_cpu_core_equivalents": 0.0603228504491505,
+      "sustainable": false
+    }
+  },
+  {
+    "case": {
+      "suite": "throughput",
+      "mode": "throughput",
+      "rate": 60000,
+      "repeat": 3,
+      "nodes": 10,
+      "version": "old"
+    },
+    "status": "complete",
+    "controller_clock_origin_utc": 1791948923.918607,
+    "case_started_utc": 1791953100.171207,
+    "metrics": {
+      "offered_tps": 60000,
+      "achieved_send_tps": 64131.522407366014,
+      "common_commit_tps": 11174.931724850036,
+      "sent_unique": 2100000,
+      "sent_wire_copies": 21000000,
+      "p50_ms": 16760.446183000568,
+      "p95_ms": 24458.60612600063,
+      "p99_ms": 24508.606126000814,
+      "p99_after_send_ms": 23264.594310000575,
+      "samples": 600,
+      "unresolved_samples": 565,
+      "deadline_ms": 100,
+      "deadline_success_fraction": 0.0,
+      "send_lateness_p99_ms": 3397.7852556663493,
+      "backlog_growth_per_second": 9920.009633155067,
+      "max_backlog_sum": 2303491,
+      "reorganizations_sum": 103,
+      "max_reorg_depth": 21,
+      "invalid_or_rejected_sum": 15515944,
+      "drained": false,
+      "recovery_seconds": null,
+      "checks": null,
+      "events": [],
+      "sample_poll_seconds": 0.05,
+      "measurement_seconds": 29.830696795999756,
+      "resources": [
+        {
+          "node": "node01",
+          "cpu_core_equivalents": 4.740582627589292,
+          "peak_resident_bytes": 664489984,
+          "received_bytes_per_second": 21399854.43067507,
+          "sent_bytes_per_second": 10150165.585156668,
+          "process_write_bytes_per_second": 14974011.068353578,
+          "db_write_ms_per_second": 59.14149193580287
+        },
+        {
+          "node": "node02",
+          "cpu_core_equivalents": 5.199195079506089,
+          "peak_resident_bytes": 655810560,
+          "received_bytes_per_second": 26143790.61720682,
+          "sent_bytes_per_second": 5312142.491463688,
+          "process_write_bytes_per_second": 16641207.525080973,
+          "db_write_ms_per_second": 79.62363092767295
+        },
+        {
+          "node": "node03",
+          "cpu_core_equivalents": 4.516868812064375,
+          "peak_resident_bytes": 625303552,
+          "received_bytes_per_second": 16888233.635479715,
+          "sent_bytes_per_second": 22972647.192468405,
+          "process_write_bytes_per_second": 13449889.781113086,
+          "db_write_ms_per_second": 56.32351464969158
+        },
+        {
+          "node": "node04",
+          "cpu_core_equivalents": 4.70836118782296,
+          "peak_resident_bytes": 659873792,
+          "received_bytes_per_second": 23139647.07966742,
+          "sent_bytes_per_second": 6847645.980143255,
+          "process_write_bytes_per_second": 16671552.642601706,
+          "db_write_ms_per_second": 77.51775705454155
+        },
+        {
+          "node": "node05",
+          "cpu_core_equivalents": 5.033500961336419,
+          "peak_resident_bytes": 667586560,
+          "received_bytes_per_second": 24888844.47042355,
+          "sent_bytes_per_second": 9025752.292722348,
+          "process_write_bytes_per_second": 16159667.583247421,
+          "db_write_ms_per_second": 66.04913638035478
+        },
+        {
+          "node": "node06",
+          "cpu_core_equivalents": 4.8344007847426065,
+          "peak_resident_bytes": 626769920,
+          "received_bytes_per_second": 23442340.47840864,
+          "sent_bytes_per_second": 7862014.54172703,
+          "process_write_bytes_per_second": 15731677.848803403,
+          "db_write_ms_per_second": 63.362020402200706
+        },
+        {
+          "node": "node07",
+          "cpu_core_equivalents": 4.71829595408158,
+          "peak_resident_bytes": 650080256,
+          "received_bytes_per_second": 19540379.092927065,
+          "sent_bytes_per_second": 12378534.719628714,
+          "process_write_bytes_per_second": 14018895.06168287,
+          "db_write_ms_per_second": 58.02036871066637
+        },
+        {
+          "node": "node08",
+          "cpu_core_equivalents": 4.738513316221136,
+          "peak_resident_bytes": 682602496,
+          "received_bytes_per_second": 19061541.233466957,
+          "sent_bytes_per_second": 17190982.01114659,
+          "process_write_bytes_per_second": 14017659.287666189,
+          "db_write_ms_per_second": 49.8382318109098
+        },
+        {
+          "node": "node09",
+          "cpu_core_equivalents": 5.458408266944504,
+          "peak_resident_bytes": 781840384,
+          "received_bytes_per_second": 29829343.380249992,
+          "sent_bytes_per_second": 11443424.447456302,
+          "process_write_bytes_per_second": 21660097.73149669,
+          "db_write_ms_per_second": 108.1031168012287
+        },
+        {
+          "node": "node10",
+          "cpu_core_equivalents": 4.759653016856106,
+          "peak_resident_bytes": 691965952,
+          "received_bytes_per_second": 22086449.455258824,
+          "sent_bytes_per_second": 8895525.800643861,
+          "process_write_bytes_per_second": 16686381.930801885,
+          "db_write_ms_per_second": 61.56215362848191
+        }
+      ],
+      "controller_cpu_core_equivalents": 0.06342493031806308,
+      "sustainable": false
+    }
+  },
+  {
+    "case": {
+      "suite": "throughput",
+      "mode": "throughput",
+      "rate": 60000,
+      "repeat": 3,
+      "nodes": 10,
+      "version": "new"
+    },
+    "status": "failed",
+    "controller_clock_origin_utc": 1791948923.918607,
+    "case_started_utc": 1791953158.5424826,
+    "error": "node09: timed out"
+  }
+]

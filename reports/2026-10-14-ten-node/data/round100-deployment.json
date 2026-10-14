@@ -1,0 +1,62 @@
+[
+  {
+    "host": "10.206.0.16",
+    "new_sha256": "a8fc85bf5b059504276eb4d93f77d305a922f811c5fcd882f3bd8544a584dcd7",
+    "old_sha256": "16d2a98cd5758877456401491d692c4a660b97a114b5a8bb8daefa20369c4ccc",
+    "free_gib": 8.932510375976562
+  },
+  {
+    "host": "10.206.0.4",
+    "new_sha256": "a8fc85bf5b059504276eb4d93f77d305a922f811c5fcd882f3bd8544a584dcd7",
+    "old_sha256": "16d2a98cd5758877456401491d692c4a660b97a114b5a8bb8daefa20369c4ccc",
+    "free_gib": 11.335891723632812
+  },
+  {
+    "host": "10.206.0.14",
+    "new_sha256": "a8fc85bf5b059504276eb4d93f77d305a922f811c5fcd882f3bd8544a584dcd7",
+    "old_sha256": "16d2a98cd5758877456401491d692c4a660b97a114b5a8bb8daefa20369c4ccc",
+    "free_gib": 10.856849670410156
+  },
+  {
+    "host": "10.206.0.17",
+    "new_sha256": "a8fc85bf5b059504276eb4d93f77d305a922f811c5fcd882f3bd8544a584dcd7",
+    "old_sha256": "16d2a98cd5758877456401491d692c4a660b97a114b5a8bb8daefa20369c4ccc",
+    "free_gib": 9.9951171875
+  },
+  {
+    "host": "10.206.0.15",
+    "new_sha256": "a8fc85bf5b059504276eb4d93f77d305a922f811c5fcd882f3bd8544a584dcd7",
+    "old_sha256": "16d2a98cd5758877456401491d692c4a660b97a114b5a8bb8daefa20369c4ccc",
+    "free_gib": 10.417083740234375
+  },
+  {
+    "host": "10.206.0.12",
+    "new_sha256": "a8fc85bf5b059504276eb4d93f77d305a922f811c5fcd882f3bd8544a584dcd7",
+    "old_sha256": "16d2a98cd5758877456401491d692c4a660b97a114b5a8bb8daefa20369c4ccc",
+    "free_gib": 9.973773956298828
+  },
+  {
+    "host": "10.206.0.2",
+    "new_sha256": "a8fc85bf5b059504276eb4d93f77d305a922f811c5fcd882f3bd8544a584dcd7",
+    "old_sha256": "16d2a98cd5758877456401491d692c4a660b97a114b5a8bb8daefa20369c4ccc",
+    "free_gib": 4.9783935546875
+  },
+  {
+    "host": "10.206.0.6",
+    "new_sha256": "a8fc85bf5b059504276eb4d93f77d305a922f811c5fcd882f3bd8544a584dcd7",
+    "old_sha256": "16d2a98cd5758877456401491d692c4a660b97a114b5a8bb8daefa20369c4ccc",
+    "free_gib": 9.882835388183594
+  },
+  {
+    "host": "10.206.0.11",
+    "new_sha256": "a8fc85bf5b059504276eb4d93f77d305a922f811c5fcd882f3bd8544a584dcd7",
+    "old_sha256": "16d2a98cd5758877456401491d692c4a660b97a114b5a8bb8daefa20369c4ccc",
+    "free_gib": 11.139240264892578
+  },
+  {
+    "host": "10.206.0.8",
+    "new_sha256": "a8fc85bf5b059504276eb4d93f77d305a922f811c5fcd882f3bd8544a584dcd7",
+    "old_sha256": "16d2a98cd5758877456401491d692c4a660b97a114b5a8bb8daefa20369c4ccc",
+    "free_gib": 9.567005157470703
+  }
+]

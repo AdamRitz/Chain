@@ -1,0 +1,7 @@
+{
+  "commit": "38507270f0667cd46bc51f47ee750767874e7c5a",
+  "ctest_passed": true,
+  "tests": 11,
+  "seconds": 53.88,
+  "root": "chain-throughput/build-throughput/next-20261014-03"
+}

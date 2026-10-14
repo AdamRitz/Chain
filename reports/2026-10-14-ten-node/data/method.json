@@ -1,0 +1,22 @@
+{
+  "servers": 10,
+  "vcpus_each": 8,
+  "memory_nominal_gib": 16,
+  "warmup_seconds": 5,
+  "measurement_seconds": 30,
+  "repetitions": 3,
+  "maximum_drain_seconds": 20,
+  "wallets": 1024,
+  "transactions_per_frame": 128,
+  "ingress": "broadcast to all ten nodes",
+  "db_sync": true,
+  "experimental_index": true,
+  "io_threads": 4,
+  "verify_threads": 8,
+  "candidate_threads_new": 4,
+  "block_wait_ms": 50,
+  "max_block_transactions": 6000,
+  "open_loop_ack": false,
+  "same_signed_dataset": true,
+  "validation": "identical common chain, every native account balance and nonce, supply, state digest"
+}

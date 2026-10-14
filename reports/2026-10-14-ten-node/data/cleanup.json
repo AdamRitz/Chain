@@ -1,0 +1,62 @@
+[
+  {
+    "removed_databases": 116,
+    "free_gib_before": 1.33099365234375,
+    "free_gib_after": 15.361331939697266,
+    "host": "10.206.0.16"
+  },
+  {
+    "removed_databases": 116,
+    "free_gib_before": 3.4497032165527344,
+    "free_gib_after": 17.228954315185547,
+    "host": "10.206.0.4"
+  },
+  {
+    "removed_databases": 112,
+    "free_gib_before": 3.9423675537109375,
+    "free_gib_after": 17.20642852783203,
+    "host": "10.206.0.14"
+  },
+  {
+    "removed_databases": 112,
+    "free_gib_before": 3.34332275390625,
+    "free_gib_after": 16.66796875,
+    "host": "10.206.0.17"
+  },
+  {
+    "removed_databases": 112,
+    "free_gib_before": 2.221355438232422,
+    "free_gib_after": 16.350067138671875,
+    "host": "10.206.0.15"
+  },
+  {
+    "removed_databases": 112,
+    "free_gib_before": 2.839252471923828,
+    "free_gib_after": 16.292247772216797,
+    "host": "10.206.0.12"
+  },
+  {
+    "removed_databases": 102,
+    "free_gib_before": 0.9287796020507812,
+    "free_gib_after": 12.349494934082031,
+    "host": "10.206.0.2"
+  },
+  {
+    "removed_databases": 108,
+    "free_gib_before": 3.0806617736816406,
+    "free_gib_after": 16.336380004882812,
+    "host": "10.206.0.6"
+  },
+  {
+    "removed_databases": 108,
+    "free_gib_before": 3.7082595825195312,
+    "free_gib_after": 17.195308685302734,
+    "host": "10.206.0.11"
+  },
+  {
+    "removed_databases": 108,
+    "free_gib_before": 2.3782958984375,
+    "free_gib_after": 15.737590789794922,
+    "host": "10.206.0.8"
+  }
+]

@@ -1,0 +1,206 @@
+[
+  {
+    "cpu_count": 8,
+    "memory_gib": 15.120922088623047,
+    "free_gib": 1.3364486694335938,
+    "processes": [],
+    "releases": [
+      {
+        "name": "2026-10-13-throughput",
+        "sha256": "16d2a98cd5758877456401491d692c4a660b97a114b5a8bb8daefa20369c4ccc"
+      },
+      {
+        "name": "2026-09-30-tps-opt-01",
+        "sha256": "ea022a600750511a1ee7cb8290a7979df0e56732e30b4b59e2e031e0c62f6d44"
+      }
+    ],
+    "ports": "",
+    "compiler": [],
+    "cmake": [],
+    "host": "10.206.0.16"
+  },
+  {
+    "cpu_count": 8,
+    "memory_gib": 15.120922088623047,
+    "free_gib": 3.455158233642578,
+    "processes": [],
+    "releases": [
+      {
+        "name": "2026-10-13-throughput",
+        "sha256": "16d2a98cd5758877456401491d692c4a660b97a114b5a8bb8daefa20369c4ccc"
+      },
+      {
+        "name": "2026-09-30-tps-opt-01",
+        "sha256": "ea022a600750511a1ee7cb8290a7979df0e56732e30b4b59e2e031e0c62f6d44"
+      }
+    ],
+    "ports": "",
+    "compiler": [],
+    "cmake": [],
+    "host": "10.206.0.4"
+  },
+  {
+    "cpu_count": 8,
+    "memory_gib": 15.120922088623047,
+    "free_gib": 3.9476890563964844,
+    "processes": [],
+    "releases": [
+      {
+        "name": "2026-10-13-throughput",
+        "sha256": "16d2a98cd5758877456401491d692c4a660b97a114b5a8bb8daefa20369c4ccc"
+      },
+      {
+        "name": "2026-09-30-tps-opt-01",
+        "sha256": "ea022a600750511a1ee7cb8290a7979df0e56732e30b4b59e2e031e0c62f6d44"
+      }
+    ],
+    "ports": "",
+    "compiler": [],
+    "cmake": [],
+    "host": "10.206.0.14"
+  },
+  {
+    "cpu_count": 8,
+    "memory_gib": 15.120922088623047,
+    "free_gib": 3.348663330078125,
+    "processes": [],
+    "releases": [
+      {
+        "name": "2026-10-13-throughput",
+        "sha256": "16d2a98cd5758877456401491d692c4a660b97a114b5a8bb8daefa20369c4ccc"
+      },
+      {
+        "name": "2026-09-30-tps-opt-01",
+        "sha256": "ea022a600750511a1ee7cb8290a7979df0e56732e30b4b59e2e031e0c62f6d44"
+      }
+    ],
+    "ports": "",
+    "compiler": [],
+    "cmake": [],
+    "host": "10.206.0.17"
+  },
+  {
+    "cpu_count": 8,
+    "memory_gib": 15.120914459228516,
+    "free_gib": 2.2266883850097656,
+    "processes": [],
+    "releases": [
+      {
+        "name": "2026-10-13-throughput",
+        "sha256": "16d2a98cd5758877456401491d692c4a660b97a114b5a8bb8daefa20369c4ccc"
+      },
+      {
+        "name": "2026-09-30-tps-opt-01",
+        "sha256": "ea022a600750511a1ee7cb8290a7979df0e56732e30b4b59e2e031e0c62f6d44"
+      }
+    ],
+    "ports": "",
+    "compiler": [],
+    "cmake": [],
+    "host": "10.206.0.15"
+  },
+  {
+    "cpu_count": 8,
+    "memory_gib": 15.120922088623047,
+    "free_gib": 2.844554901123047,
+    "processes": [],
+    "releases": [
+      {
+        "name": "2026-10-13-throughput",
+        "sha256": "16d2a98cd5758877456401491d692c4a660b97a114b5a8bb8daefa20369c4ccc"
+      },
+      {
+        "name": "2026-09-30-tps-opt-01",
+        "sha256": "ea022a600750511a1ee7cb8290a7979df0e56732e30b4b59e2e031e0c62f6d44"
+      }
+    ],
+    "ports": "",
+    "compiler": [],
+    "cmake": [],
+    "host": "10.206.0.12"
+  },
+  {
+    "cpu_count": 8,
+    "memory_gib": 15.120914459228516,
+    "free_gib": 0.9338531494140625,
+    "processes": [],
+    "releases": [
+      {
+        "name": "2026-10-13-throughput",
+        "sha256": "16d2a98cd5758877456401491d692c4a660b97a114b5a8bb8daefa20369c4ccc"
+      },
+      {
+        "name": "2026-09-30-tps-opt-01",
+        "sha256": "ea022a600750511a1ee7cb8290a7979df0e56732e30b4b59e2e031e0c62f6d44"
+      }
+    ],
+    "ports": "",
+    "compiler": [
+      "g++ (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0"
+    ],
+    "cmake": [
+      "cmake version 3.28.3"
+    ],
+    "host": "10.206.0.2"
+  },
+  {
+    "cpu_count": 8,
+    "memory_gib": 15.120922088623047,
+    "free_gib": 3.0858688354492188,
+    "processes": [],
+    "releases": [
+      {
+        "name": "2026-10-13-throughput",
+        "sha256": "16d2a98cd5758877456401491d692c4a660b97a114b5a8bb8daefa20369c4ccc"
+      },
+      {
+        "name": "2026-09-30-tps-opt-01",
+        "sha256": "ea022a600750511a1ee7cb8290a7979df0e56732e30b4b59e2e031e0c62f6d44"
+      }
+    ],
+    "ports": "",
+    "compiler": [],
+    "cmake": [],
+    "host": "10.206.0.6"
+  },
+  {
+    "cpu_count": 8,
+    "memory_gib": 15.120922088623047,
+    "free_gib": 3.7134666442871094,
+    "processes": [],
+    "releases": [
+      {
+        "name": "2026-10-13-throughput",
+        "sha256": "16d2a98cd5758877456401491d692c4a660b97a114b5a8bb8daefa20369c4ccc"
+      },
+      {
+        "name": "2026-09-30-tps-opt-01",
+        "sha256": "ea022a600750511a1ee7cb8290a7979df0e56732e30b4b59e2e031e0c62f6d44"
+      }
+    ],
+    "ports": "",
+    "compiler": [],
+    "cmake": [],
+    "host": "10.206.0.11"
+  },
+  {
+    "cpu_count": 8,
+    "memory_gib": 15.120918273925781,
+    "free_gib": 2.3835105895996094,
+    "processes": [],
+    "releases": [
+      {
+        "name": "2026-10-13-throughput",
+        "sha256": "16d2a98cd5758877456401491d692c4a660b97a114b5a8bb8daefa20369c4ccc"
+      },
+      {
+        "name": "2026-09-30-tps-opt-01",
+        "sha256": "ea022a600750511a1ee7cb8290a7979df0e56732e30b4b59e2e031e0c62f6d44"
+      }
+    ],
+    "ports": "",
+    "compiler": [],
+    "cmake": [],
+    "host": "10.206.0.8"
+  }
+]

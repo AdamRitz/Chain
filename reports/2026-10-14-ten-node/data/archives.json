@@ -1,0 +1,32 @@
+[
+  {
+    "path": "C:\\Users\\61485\\Documents\\Codex\\2026-09-08\\yue-d\\work\\throughput-initial-next-results-20261014.tar.gz",
+    "bytes": 12498227,
+    "sha256": "92de3eddade81fe93a42c0394eb637a12337a875f88eb194294c7b596d0eb915"
+  },
+  {
+    "path": "C:\\Users\\61485\\Documents\\Codex\\2026-09-08\\yue-d\\work\\throughput-next-v2-results-20261014.tar.gz",
+    "bytes": 17546223,
+    "sha256": "3061bf6b93baa75375976fd3bc0d6a4e4200fb5c1684c52e1bef8c437e9ecc05"
+  },
+  {
+    "path": "C:\\Users\\61485\\Documents\\Codex\\2026-09-08\\yue-d\\work\\throughput-round-results-20261014.tar.gz",
+    "bytes": 1630576,
+    "sha256": "fdd0c9dc1b027bb9327a10f3cef593fb8acca03ba146b0e7efccf92eb6480273"
+  },
+  {
+    "path": "C:\\Users\\61485\\Documents\\Codex\\2026-09-08\\yue-d\\work\\throughput-round100-results-20261014.tar.gz",
+    "bytes": 2867671,
+    "sha256": "7b0f9ab318579261b7009d468784aceb37ffa7f7c11a1de16c283fe857fdeebf"
+  },
+  {
+    "path": "C:\\Users\\61485\\Documents\\Codex\\2026-09-08\\yue-d\\work\\cleanup-records-20261014.tar.gz",
+    "bytes": 58557064,
+    "sha256": "f277dc93e8a35b5e0a075d1830d37d15fc5ad508e1cd28a5caf08bc3b3e8def0"
+  },
+  {
+    "path": "C:\\Users\\61485\\Documents\\Codex\\2026-09-08\\yue-d\\work\\throughput-profile-v2-20261014.tar.gz",
+    "bytes": 2839371,
+    "sha256": "0de94174ca34897528ff493e3738c979e0cbdc52adc4fb9247a5f0d5d99dd894"
+  }
+]

@@ -1,0 +1,72 @@
+[
+  {
+    "sha256": "a8fc85bf5b059504276eb4d93f77d305a922f811c5fcd882f3bd8544a584dcd7",
+    "processes": [],
+    "free_gib": 8.29534912109375,
+    "port_8089": "",
+    "host": "10.206.0.16"
+  },
+  {
+    "sha256": "a8fc85bf5b059504276eb4d93f77d305a922f811c5fcd882f3bd8544a584dcd7",
+    "processes": [],
+    "free_gib": 10.707508087158203,
+    "port_8089": "",
+    "host": "10.206.0.4"
+  },
+  {
+    "sha256": "a8fc85bf5b059504276eb4d93f77d305a922f811c5fcd882f3bd8544a584dcd7",
+    "processes": [],
+    "free_gib": 10.20745849609375,
+    "port_8089": "",
+    "host": "10.206.0.14"
+  },
+  {
+    "sha256": "a8fc85bf5b059504276eb4d93f77d305a922f811c5fcd882f3bd8544a584dcd7",
+    "processes": [],
+    "free_gib": 9.355613708496094,
+    "port_8089": "",
+    "host": "10.206.0.17"
+  },
+  {
+    "sha256": "a8fc85bf5b059504276eb4d93f77d305a922f811c5fcd882f3bd8544a584dcd7",
+    "processes": [],
+    "free_gib": 9.782718658447266,
+    "port_8089": "",
+    "host": "10.206.0.15"
+  },
+  {
+    "sha256": "a8fc85bf5b059504276eb4d93f77d305a922f811c5fcd882f3bd8544a584dcd7",
+    "processes": [],
+    "free_gib": 9.333091735839844,
+    "port_8089": "",
+    "host": "10.206.0.12"
+  },
+  {
+    "sha256": "a8fc85bf5b059504276eb4d93f77d305a922f811c5fcd882f3bd8544a584dcd7",
+    "processes": [],
+    "free_gib": 4.318462371826172,
+    "port_8089": "",
+    "host": "10.206.0.2"
+  },
+  {
+    "sha256": "a8fc85bf5b059504276eb4d93f77d305a922f811c5fcd882f3bd8544a584dcd7",
+    "processes": [],
+    "free_gib": 9.24544906616211,
+    "port_8089": "",
+    "host": "10.206.0.6"
+  },
+  {
+    "sha256": "a8fc85bf5b059504276eb4d93f77d305a922f811c5fcd882f3bd8544a584dcd7",
+    "processes": [],
+    "free_gib": 10.516010284423828,
+    "port_8089": "",
+    "host": "10.206.0.11"
+  },
+  {
+    "sha256": "a8fc85bf5b059504276eb4d93f77d305a922f811c5fcd882f3bd8544a584dcd7",
+    "processes": [],
+    "free_gib": 8.936172485351562,
+    "port_8089": "",
+    "host": "10.206.0.8"
+  }
+]
