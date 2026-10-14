@@ -34,7 +34,10 @@ awaitable<void> ProcessMessage(shared_ptr<Peer> peer,uint8_t type,vector<uint8_t
     vector<vector<uint8_t>> blocks;
     if (type==43&&!ReadBlockBatch(data,blocks)) { ClosePeer(peer); co_return; }
     auto num=(type==1||type==10||type==44)?data.size()/176:(type==17||type==18||type==43)?1:max(size_t(1),min(size_t(6000),(data.size()-112)/176));
-    if (type==43) for (const auto& block:blocks) num+=min(uint64_t(6000),ReadU64(block.data()+72));
+    if (type==43) {
+        num=0;
+        for (const auto& block:blocks) num+=max(uint64_t(1),min(uint64_t(6000),ReadU64(block.data()+72)));
+    }
     if (type==18) {
         num=0; size_t offset=0;
         while (offset<data.size()) {

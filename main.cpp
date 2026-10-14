@@ -100,7 +100,7 @@ int main(int argc,char* argv[]) {
         io_context io;
         nodeIO=&io;
         verifyThreads=make_unique<thread_pool>(verifyNum);
-        candidateThreads=make_unique<thread_pool>(1);
+        candidateThreads=make_unique<thread_pool>(min(4,verifyNum));
         blockVerifyNum=min(size_t(4),size_t(verifyNum));
         blockVerifyThreads=make_unique<thread_pool>(blockVerifyNum);
         auto guard=make_work_guard(io);
@@ -149,6 +149,7 @@ int main(int argc,char* argv[]) {
         auto stats=GetNodeStats();
         stats["io_threads"]=ioNum;
         stats["verify_threads"]=verifyNum;
+        stats["candidate_threads"]=min(4,verifyNum);
         stats["hardware_threads"]=thread::hardware_concurrency();
         stats["block_ms"]=blockInterval;
         stats["max_block_txs"]=maxBlockTx;
