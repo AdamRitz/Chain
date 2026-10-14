@@ -111,6 +111,85 @@ int main(int argc,char** argv) {
         auto absentBytes=SerializeBlockALL(absent); QueueForkBlock(absent,absentBytes); ProcessForks(); attempts=forkAttempts.load();
         forkReady=true; ProcessForks();
         Require(forkAttempts==attempts&&forkParentSkips>0,"missing ancestors retry after parent or head changes");
+        // 高度较高的分支有 3 笔，较短分支有 4 笔；最高的 5 笔候选序号无效。
+        db.reset(); InitDB((root/"ranked").string()); GenerateGenesisBlock(); genesis=DBReadCurrentBlock();
+        forkBlocks.clear(); forkChecks.clear(); forkBytes=0;
+        txpool.clear(); txUserPool.clear(); readyPoolTx=0;
+        auto lower=Candidate(wallet,receiver,genesis,2,1);
+        Block taller; taller.height=3; taller.previousHash=lower.first.hash;
+        taller.txs={GenerateTx(wallet.public_key,receiver.public_key,1,3,wallet)};
+        taller.merkleRoot=MerkleCompute(vector<array<uint8_t,32>>{GetTransactionHash(taller.txs[0])});
+        auto tallerBytes=SerializeBlockALL(taller),preferred=Candidate(wallet,receiver,genesis,4,2).second;
+        auto preferredBlock=UnSerializeBlock(preferred); auto bad=Candidate(wallet,receiver,genesis,5,1,true);
+        QueueForkBlock(lower.first,lower.second); QueueForkBlock(taller,tallerBytes);
+        QueueForkBlock(preferredBlock,preferred); QueueForkBlock(bad.first,bad.second);
+        writes=dbWriteCount.load(); auto selections=forkSelections.load(),invalidCount=forkInvalidCandidates.load();
+        Require(ProcessForks()&&DBReadCurrentBlock()==preferredBlock.hash,"cumulative rank wins before height and invalid leader falls back");
+        Require(dbWriteCount-writes==1&&forkSelections-selections==1&&forkInvalidCandidates-invalidCount==1,"one valid branch writes once per schedule");
+        Require(ReadChainHead().hash==preferredBlock.hash&&ReadChainHead().transactions==4,"published chain head follows successful branch persistence");
+        auto stale=Candidate(wallet,receiver,genesis,5,3); RankedFork prepared;
+        Require(RankFork(make_shared<ForkEntry>(stale),prepared)==1,"prepare another fork rank");
+        Block next; next.height=3; next.previousHash=preferredBlock.hash;
+        next.txs={GenerateTx(wallet.public_key,receiver.public_key,2,5,wallet)};
+        next.merkleRoot=MerkleCompute(vector<array<uint8_t,32>>{GetTransactionHash(next.txs[0])}); auto nextBytes=SerializeBlockALL(next);
+        Require(CommitBlock(next,nextBytes),"advance state after rank preparation");
+        detached.clear(); Require(AdoptFork(prepared,detached)==0&&DBReadCurrentBlock()==next.hash,"stale rank cannot publish another state");
+        auto snapshot=ReadChainHead(); stateLock=unique_lock(dbCommitMutex);
+        auto headTask=async(launch::async,[&] { return ReadQueryResponse(19,{}); });
+        concurrent=headTask.wait_for(std::chrono::seconds(2))==future_status::ready;
+        stateLock.unlock(); auto headReply=headTask.get();
+        Require(concurrent&&ReadU64(headReply.data()+5+64)==snapshot.height&&memcmp(headReply.data()+5+32,snapshot.hash.data(),32)==0,"chain head query stays readable while commit is locked");
+        vector<uint8_t> request(10); WriteU64(request.data(),2); request[8]=2;
+        auto replies=ReadBlockReplies(42,request); vector<vector<uint8_t>> parsed;
+        Require(replies.size()==1&&replies[0][0]==43&&ReadBlockBatch(vector<uint8_t>(replies[0].begin()+5,replies[0].end()),parsed)&&
+                parsed.size()==2&&parsed[0]==preferred&&parsed[1]==nextBytes,"read one consistent contiguous block reply");
+        {
+            boost::asio::io_context io; auto peer=make_shared<Peer>(tcp::socket(io));
+            queryThreads=make_unique<boost::asio::thread_pool>(1);
+            promise<void> progress; auto progressed=progress.get_future();
+            promise<exception_ptr> completed; auto finished=completed.get_future();
+            vector<uint8_t> heightRequest(8); WriteU64(heightRequest.data(),2);
+            stateLock=unique_lock(dbCommitMutex);
+            co_spawn(peer->strand,SendBlockReply(peer,6,heightRequest),[&](exception_ptr error) { completed.set_value(error); });
+            post(peer->strand,[&] { progress.set_value(); });
+            thread runner([&] { io.run(); });
+            bool responsive=progressed.wait_for(std::chrono::seconds(2))==future_status::ready;
+            bool waiting=finished.wait_for(std::chrono::milliseconds(0))!=future_status::ready;
+            stateLock.unlock();
+            bool done=finished.wait_for(std::chrono::seconds(5))==future_status::ready;
+            io.stop(); runner.join(); queryThreads->join(); queryThreads.reset();
+            Require(responsive&&waiting&&done,"blocked block read leaves the network strand responsive");
+            if (auto error=finished.get()) rethrow_exception(error);
+        }
+        Require(pendingBlockReplies==0,"block reply completion releases its budget");
+        // 同一块头的改签名内容与正确内容分别验证，完成后释放全部在途记录。
+        bool duplicate=false; auto claim=ReserveBlockWork(nextBytes,false,duplicate);
+        auto second=ReserveBlockWork(nextBytes,false,duplicate);
+        Require(claim&&!second&&duplicate,"identical complete blocks share in-flight work");
+        auto changed=nextBytes; changed[112+112]^=1; duplicate=false;
+        auto altered=ReserveBlockWork(changed,false,duplicate);
+        Require(altered&&!duplicate&&!VerifyBlock(changed),"changed signature shares no trusted block work");
+        altered.reset(); claim.reset(); duplicate=false;
+        claim=ReserveBlockWork(nextBytes,false,duplicate);
+        Require(claim&&!duplicate&&VerifyBlock(nextBytes),"correct content accepted after failed content");
+        claim.reset(); Require(blockWork.empty()&&blockWorkBytes==0,"in-flight block records release on completion");
+        Require(ReserveVerify(maxProtocolTx*4,true),"fill the full-block budget");
+        for (size_t i=0;i<64;i++) Require(ReserveVerify(1,true,true),"metadata keeps independent bounded capacity");
+        Require(!ReserveVerify(1,true,true),"metadata count is bounded");
+        for (size_t i=0;i<64;i++) ReleaseVerify(1,true,true);
+        ReleaseVerify(maxProtocolTx*4,true);
+        Require(pendingVerify==0&&pendingMetadata==0,"metadata and block budgets release together");
+        auto untouched=GenerateWallet(); users[untouched.public_key]={10000,0}; PublishPoolUsers();
+        for (uint64_t nonce=1;nonce<=6;nonce++) {
+            if (nonce>5) ProcessTx(GenerateTx(wallet.public_key,receiver.public_key,1,nonce,wallet));
+            ProcessTx(GenerateTx(untouched.public_key,receiver.public_key,1,nonce,untouched));
+        }
+        auto* retained=&txUserPool.at(untouched.public_key);
+        users[wallet.public_key].nonce=2; PublishPoolUsers();
+        array<array<uint8_t,32>,1> changedUsers{wallet.public_key}; RefreshTxPool(changedUsers);
+        Require(&txUserPool.at(untouched.public_key)==retained&&txUserPool.at(wallet.public_key).readyNonce==2,"partial refresh preserves unrelated users and recalculates rollback gaps");
+        auto partialPool=txpool; auto partialReady=readyPoolTx; RefreshTxPool();
+        Require(txpool==partialPool&&readyPoolTx==partialReady,"partial nonce rollback matches full refresh");
         maxBlockTx=6000;
         db.reset(); cout<<"Admission, compact indexes and changed-state fork checks passed\n"; return 0;
     } catch (const exception& e) { cerr<<e.what()<<'\n'; return 1; }

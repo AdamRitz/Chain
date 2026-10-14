@@ -69,7 +69,10 @@ int main(int argc,char** argv) {
         db.reset(); InitDB(root.string());
         Require(AdoptFork(better,detached)==1,"better branch adopted");
         auto checksBefore=signatureChecks.load();
+        RefreshTxPool(lastBranchUsers);
+        auto refreshed=txpool; auto refreshedInputs=evmPool; auto refreshedReady=readyPoolTx;
         RefreshTxPool();
+        Require(txpool==refreshed&&evmPool==refreshedInputs&&readyPoolTx==refreshedReady,"affected-account refresh matches full native and EVM refresh");
         Require(signatureChecks==checksBefore,"pool refresh preserves signature verification");
         Require(txpool.size()==3&&readyPoolTx==3,"pool refresh restores executable native and contract prefixes");
         Require(!txpool.count(GetTransactionHash(transfer))&&!txpool.count(GetTransactionHash(expensive)),"pool refresh removes confirmed and unaffordable transactions");

@@ -1,0 +1,120 @@
+{
+  "base_commit": "0d2025181b7c29c279925f2aeddb459eef4f9744",
+  "branch": "master",
+  "source_files": {
+    "AGENTS.md": {
+      "bytes": 7060,
+      "sha256": "20711d72f23b286aa6a86815f1cd9baa6de862bd44451ce76cceabe0e8227c73"
+    },
+    "DB/DB.h": {
+      "bytes": 32612,
+      "sha256": "c13dbb8d9673764a1fa10c63972634d5c3e8992c744b5766b79b451a19eddc5d"
+    },
+    "EXPERIMENTS.md": {
+      "bytes": 21562,
+      "sha256": "a127c1891f41ff2cd133c9be7f40c20d3e94754f92aeca832429795a733f5b53"
+    },
+    "MODULE_GUIDE.md": {
+      "bytes": 37081,
+      "sha256": "1ad7cc0d9f88a0b99a62fcb8d1abc53acbd038ec4919928c7b3f549395b547d5"
+    },
+    "Network/Blocks.h": {
+      "bytes": 18348,
+      "sha256": "a4fa3739bf11962203b5549ccd05481df81655b8eb98212fa6549ab02769f542"
+    },
+    "Network/Client.h": {
+      "bytes": 24542,
+      "sha256": "47856a5cc9fb5366072d2635ebecf3852be74309eef6a526342403014a5a853d"
+    },
+    "Network/Server.h": {
+      "bytes": 22924,
+      "sha256": "a1f4a0a83312106307c3e42fb020d03e964ecf74a1a3d9c121148c2ae909fd18"
+    },
+    "README.md": {
+      "bytes": 11260,
+      "sha256": "ebf6333a966d1908702c6a9d630a54d5e71e8913c02b381b60dd8cb5186d95db"
+    },
+    "Test/AdmissionNetworkTest.py": {
+      "bytes": 5429,
+      "sha256": "76681c9d86d6e6d51af615a22ae89cb1683c366ea0df14e6b3fc4fb928d65e77"
+    },
+    "Test/ExperimentTest.py": {
+      "bytes": 9428,
+      "sha256": "b766a19a9d6eebdd206247e153d7ac8e3961fb6ae2b05f30b4c3cfd7b8255c42"
+    },
+    "Test/Experiments.py": {
+      "bytes": 33671,
+      "sha256": "64e0debd756096e11e22b24328d8296c983cb36e3ddd660cf93563479f20a768"
+    },
+    "Test/FlowTest.cpp": {
+      "bytes": 17095,
+      "sha256": "3d2fef37989623729e9dc33c72b879af0a4477f27e0f10729f84367c6093873c"
+    },
+    "Test/ForkStateTest.cpp": {
+      "bytes": 9736,
+      "sha256": "3ace0c44bc8a109cfb336d8e559553c43bac3a8536a9681a18d38b25fc516a94"
+    },
+    "Transaction/Block.h": {
+      "bytes": 15518,
+      "sha256": "f3fe2eab84e16ea8633e4519e7d2b2403812770a3790ea73ccb3fcfc855baed7"
+    },
+    "Transaction/Fork.h": {
+      "bytes": 14193,
+      "sha256": "002744a350ca1033c8b55ff12f1c84cf77b806e165de9d1ff1044da60b8576cd"
+    },
+    "Transaction/Transaction.h": {
+      "bytes": 16213,
+      "sha256": "8f374d5a061ed7e43c73131c5e8163384b72717fcbe8eb31be151f79aeb52740"
+    },
+    "main.cpp": {
+      "bytes": 11698,
+      "sha256": "e2a269a6ce39044ab9f201fffb7cbc4243d6914583faaaf55b6a27ab90bc7899"
+    },
+    "CMakeLists.txt": {
+      "bytes": 5427,
+      "sha256": "1c28cdbb16a9c8bb1509987ebe56c95e0d4acf16af90032361cd19f537aa0abf"
+    },
+    "ThirdParty/VERSIONS.md": {
+      "bytes": 2613,
+      "sha256": "6c37de7fb47da306b34204888b55a4ea8bb50b8c01a4ed3d65a56a0de594fdc4"
+    },
+    "Experiments/plan.json": {
+      "bytes": 1193,
+      "sha256": "685f4892cfec26b94469256cb69c499eba98ab863912182f9a6c44161e3c0b4a"
+    }
+  },
+  "local_binaries": {
+    "boost.exe": {
+      "bytes": 15761606,
+      "sha256": "9a15976008b115fbab2f8b6aedba4439fcac0f41babfd2f1ba10b50c9271206d"
+    },
+    "sender.exe": {
+      "bytes": 14743604,
+      "sha256": "340f7682ee320ea62acb8f3a1b1942ffb23a00e2c18b7952aefa5e313ec02c49"
+    },
+    "evm_sender.exe": {
+      "bytes": 14692014,
+      "sha256": "61c34ba53b6da5f6c4083c67162e9c5af0ff121944c66fd4812b31f100d96eeb"
+    },
+    "chain_test.exe": {
+      "bytes": 15469286,
+      "sha256": "43544b1a2feabf8af07cb011accff153c1f95e07bff21b312afa59d7208f293e"
+    },
+    "user_test.exe": {
+      "bytes": 15456701,
+      "sha256": "f50bbcc39d68f2a6454bd279b9210532568b97a3d392edd40abf725fde02b04d"
+    },
+    "fork_state_test.exe": {
+      "bytes": 14731129,
+      "sha256": "6a047ac81d0bf8d6c543506d6ab719e28b657f8b1cc079f674d0803ef5947fd6"
+    },
+    "throughput_test.exe": {
+      "bytes": 15493181,
+      "sha256": "2fd8bc8ba1d3ef01835cd2c08f60dd55bc1e511b95059dc966d2fd314143a5e0"
+    },
+    "flow_test.exe": {
+      "bytes": 15607237,
+      "sha256": "cd1df5dbd2c5333ca3641488152b42f9d436cb6a5a376bb53973e2987d34ed06"
+    }
+  }
+}

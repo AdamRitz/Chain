@@ -1,0 +1,70 @@
+{
+  "date": "2026-10-14",
+  "build_type": "Release",
+  "build_result": "passed",
+  "platform": "Windows, MinGW GCC, CMake, Ninja",
+  "ctest_tests": 11,
+  "ctest_failures": 0,
+  "ctest_wall_seconds": 25.89,
+  "ctest_timestamp": "2026-10-14T19:17:09",
+  "cases": [
+    {
+      "name": "ChainCorrectness",
+      "seconds": 0.22564,
+      "status": "passed"
+    },
+    {
+      "name": "AccountCorrectness",
+      "seconds": 0.171597,
+      "status": "passed"
+    },
+    {
+      "name": "ForkStateCorrectness",
+      "seconds": 12.2468,
+      "status": "passed"
+    },
+    {
+      "name": "ThroughputCorrectness",
+      "seconds": 0.0366029,
+      "status": "passed"
+    },
+    {
+      "name": "FlowCorrectness",
+      "seconds": 0.14,
+      "status": "passed"
+    },
+    {
+      "name": "ChainNetwork",
+      "seconds": 19.0769,
+      "status": "passed"
+    },
+    {
+      "name": "AccountNetwork",
+      "seconds": 2.02002,
+      "status": "passed"
+    },
+    {
+      "name": "ForkNetwork",
+      "seconds": 2.93507,
+      "status": "passed"
+    },
+    {
+      "name": "EvmNetwork",
+      "seconds": 3.81431,
+      "status": "passed"
+    },
+    {
+      "name": "ExperimentNetwork",
+      "seconds": 5.63289,
+      "status": "passed"
+    },
+    {
+      "name": "AdmissionNetwork",
+      "seconds": 5.44859,
+      "status": "passed"
+    }
+  ],
+  "ten_server_benchmark": "not_run_per_user_request",
+  "db_profile_default": false,
+  "parallel_ingress_default": false
+}

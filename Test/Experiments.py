@@ -1,6 +1,7 @@
 """Five reproducible cluster experiments. Run --help; see EXPERIMENTS.md."""
 import argparse
 import collections
+import concurrent.futures
 import csv
 import hashlib
 import json
@@ -43,7 +44,7 @@ def ArrivalTime(index, rate, pattern):
 
 
 class Load:
-    def __init__(self, cluster, dataset, rate, total_seconds, pattern, ingress, sample_hz, batch=128):
+    def __init__(self, cluster, dataset, rate, total_seconds, pattern, ingress, sample_hz, batch=128, parallel_ingress=False):
         self.cluster, self.dataset = cluster, Path(dataset)
         self.rate, self.count = rate, int(rate*total_seconds)
         self.pattern, self.ingress, self.batch = pattern, ingress, batch
@@ -52,9 +53,27 @@ class Load:
         self.lock, self.stop = threading.Lock(), threading.Event()
         self.error, self.late_ms = None, []
         self.started = 0
+        self.parallel_ingress = parallel_ingress
 
     def Run(self):
         sockets = {}
+        workers = concurrent.futures.ThreadPoolExecutor(len(self.cluster.nodes)) if self.parallel_ingress else None
+        def Send(index, payload):
+            if index in self.cluster.offline:
+                if index in sockets: sockets.pop(index).close()
+                return 0
+            node = self.cluster.nodes[index]
+            try:
+                if index not in sockets:
+                    connection = socket.create_connection((node['host'], node['port']), timeout=5)
+                    connection.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
+                    connection.sendall(b'\x02'); sockets[index] = connection
+                sockets[index].sendall(Frame(10, payload))
+                return len(payload)//176
+            except OSError:
+                if index in sockets: sockets.pop(index).close()
+                if index not in self.cluster.offline: raise
+                return 0
         try:
             with self.dataset.open('rb') as source, mmap.mmap(source.fileno(), 0, access=mmap.ACCESS_READ) as data:
                 if len(data) < self.count*176:
@@ -84,24 +103,11 @@ class Load:
                             if owner not in active:
                                 owner = active[owner % len(active)]
                             packages[owner].extend(package[offset:offset+176])
-                    for index, payload in packages.items():
-                        if index in self.cluster.offline:
-                            if index in sockets:
-                                sockets.pop(index).close()
-                            continue
-                        node = self.cluster.nodes[index]
-                        try:
-                            if index not in sockets:
-                                connection = socket.create_connection((node['host'], node['port']), timeout=5)
-                                connection.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
-                                connection.sendall(b'\x02'); sockets[index] = connection
-                            sockets[index].sendall(Frame(10, payload))
-                            self.wire_transactions += len(payload)//176
-                        except OSError:
-                            if index in sockets:
-                                sockets.pop(index).close()
-                            if index not in self.cluster.offline:
-                                raise
+                    if workers:
+                        futures = [workers.submit(Send, index, payload) for index, payload in packages.items()]
+                        self.wire_transactions += sum(future.result() for future in futures)
+                    else:
+                        self.wire_transactions += sum(Send(index, payload) for index, payload in packages.items())
                     sent_at = time.monotonic()
                     with self.lock:
                         self.sent = end
@@ -114,6 +120,7 @@ class Load:
         except Exception as error:
             self.error = str(error)
         finally:
+            if workers: workers.shutdown(wait=True)
             self.finished = time.monotonic()
             for connection in sockets.values():
                 connection.close()
@@ -223,7 +230,7 @@ def LoadCase(cluster, case, plan, dataset, genesis, output):
     warmup, duration = plan['warmup'], plan['duration']
     load = Load(cluster, dataset, case['rate'], warmup+duration, case.get('pattern', 'steady'),
                 'shard' if case.get('fault', {}).get('kind') == 'partition' else plan['ingress'],
-                plan['sample_hz'], plan.get('latency_batch', plan['batch']) if case['suite'] in ['latency', 'fault'] else plan['batch'])
+                plan['sample_hz'], plan.get('latency_batch', plan['batch']) if case['suite'] in ['latency', 'fault'] else plan['batch'], plan.get('parallel_ingress', False))
     thread = threading.Thread(target=load.Run, daemon=True)
     points, events = [], []
     applied = recovered = False
@@ -290,6 +297,13 @@ def LoadCase(cluster, case, plan, dataset, genesis, output):
         achieved = (last['sent']-first['sent'])/(last['seconds']-first['seconds']) if first else None
         backlogs = [sum(node['pool']+node['pending'] for node in row['nodes'] if node) for row in measured]
         slope = statistics.linear_regression([row['seconds'] for row in measured], backlogs).slope if first else None
+        def QueueGrowth(key):
+            return statistics.linear_regression([row['seconds'] for row in measured],
+                [sum(node.get(key, 0) for node in row['nodes'] if node) for row in measured]).slope if first else None
+        tx_backlogs = [sum(node['pool']+node.get('pending_tx_verify', 0) for node in row['nodes'] if node) for row in measured]
+        tx_slope = statistics.linear_regression([row['seconds'] for row in measured], tx_backlogs).slope if first else None
+        logical_backlogs = [row['sent']-row['common']['transactions'] for row in measured]
+        logical_slope = statistics.linear_regression([row['seconds'] for row in measured], logical_backlogs).slope if first else None
         reorgs = max((sum(node['reorganizations'] for node in row['nodes'] if node) for row in points), default=0)
         invalid = max((sum(node['invalid']+node['rejected'] for node in row['nodes'] if node) for row in points), default=0)
         within = sum(value <= plan['deadline_ms'] for value in latency)
@@ -300,11 +314,16 @@ def LoadCase(cluster, case, plan, dataset, genesis, output):
                    'unresolved_samples': len(samples)-len(completed), 'deadline_ms': plan['deadline_ms'],
                    'deadline_success_fraction': within/len(samples) if samples else None,
                    'send_lateness_p99_ms': Percentile(load.late_ms, .99), 'backlog_growth_per_second': slope,
+                   'tx_backlog_growth_per_second': tx_slope, 'logical_backlog_growth_per_second': logical_slope,
+                   'candidate_backlog_growth_per_second': QueueGrowth('pending_block_verify'),
+                   'metadata_queue_growth_per_second': QueueGrowth('pending_metadata'),
+                   'logical_backlog_end': logical_backlogs[-1] if first else None,
                    'max_backlog_sum': max(backlogs, default=0), 'reorganizations_sum': reorgs,
                    'max_reorg_depth': max((node['max_reorg_depth'] for row in points for node in row['nodes'] if node), default=0),
                    'invalid_or_rejected_sum': invalid, 'drained': checks is not None,
                    'recovery_seconds': recovery_seconds, 'checks': checks, 'events': events,
-                   'sample_poll_seconds': plan['poll_seconds'], 'measurement_seconds': last['seconds']-first['seconds'] if first else 0}
+                   'sample_poll_seconds': plan['poll_seconds'], 'measurement_seconds': last['seconds']-first['seconds'] if first else 0,
+                   'measurement_samples': len(measured), 'parallel_ingress': load.parallel_ingress}
         resources = []
         for index, node in enumerate(cluster.nodes):
             rows = [(point['seconds'], point['nodes'][index]) for point in measured if point['nodes'][index]]
@@ -321,6 +340,9 @@ def LoadCase(cluster, case, plan, dataset, genesis, output):
         summary['sustainable'] = bool(not fault and checks and throughput is not None and achieved is not None and
                                       achieved >= .95*case['rate'] and throughput >= .95*case['rate'] and invalid == 0 and
                                       slope <= plan['max_backlog_growth'] and not summary['unresolved_samples'])
+        summary['tx_sustainable'] = bool(not fault and checks and throughput is not None and achieved is not None and
+                                      achieved >= .95*case['rate'] and throughput >= .95*case['rate'] and invalid == 0 and
+                                      tx_slope is not None and tx_slope <= plan['max_backlog_growth'] and not summary['unresolved_samples'])
         Save(output/'latency-samples.json', load.samples)
         Save(output/'events.json', events)
         return summary
@@ -371,7 +393,7 @@ def ValidatePlan(plan):
         raise ValueError('Invalid warmup, repeat count or batch size')
     if not isinstance(plan.get('latency_batch', plan['batch']), int) or not 1 <= plan.get('latency_batch', plan['batch']) <= 10000:
         raise ValueError('latency_batch must be 1..10000')
-    limits={'candidate-threads':(1,64),'candidate-ms':(0,5000),'block-verify-threads':(1,64),'query-threads':(1,4),
+    limits={'candidate-threads':(1,64),'candidate-ms':(0,5000),'block-verify-threads':(1,64),'query-threads':(1,4),'db-profile':(0,1),
             'signature-cache':(16,4194304),'recent-tx-cache':(16,2097152),
             'recent-tx-bytes':(176,512*1024*1024),'sync-window':(4,64)}
     for name,value in plan.get('node_settings',{}).items():
@@ -385,6 +407,8 @@ def ValidatePlan(plan):
             raise ValueError(f'{name} must be 1..64')
     if not 1 <= plan['wallets'] <= 100000 or plan['ingress'] not in ['broadcast', 'shard']:
         raise ValueError('Invalid wallets or ingress mode')
+    if not isinstance(plan.get('parallel_ingress', False), bool):
+        raise ValueError('parallel_ingress must be a boolean')
     for name in ['latency_rates', 'throughput_rates', 'scale_rates']:
         if not plan[name] or any(not isinstance(value, int) or value <= 0 for value in plan[name]):
             raise ValueError(f'{name} must contain positive integer rates')
@@ -495,7 +519,9 @@ def Main(args):
             break
     rows = [{**row['case'], **row.get('metrics', {}), 'status': row['status']} for row in results]
     fields = ['suite', 'mode', 'nodes', 'rate', 'repeat', 'status', 'common_commit_tps', 'p50_ms', 'p99_ms',
-              'deadline_success_fraction', 'sustainable', 'drained', 'recovery_seconds', 'final_spread_ms']
+              'deadline_success_fraction', 'sustainable', 'tx_sustainable', 'drained', 'recovery_seconds', 'final_spread_ms',
+              'measurement_seconds', 'measurement_samples', 'parallel_ingress', 'tx_backlog_growth_per_second',
+              'logical_backlog_growth_per_second', 'logical_backlog_end']
     with (args.work/'summary.csv').open('w', newline='', encoding='utf-8-sig') as output:
         writer = csv.DictWriter(output, fields, extrasaction='ignore'); writer.writeheader(); writer.writerows(rows)
     if failed:

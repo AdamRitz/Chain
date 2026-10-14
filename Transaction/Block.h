@@ -253,6 +253,7 @@ void GenerateGenesisBlock() {
     users.reserve(genesisUsers.size());
     for (const auto& [key,user]:genesisUsers) users.emplace(key,user);
     PublishPoolUsers();
+    PublishChainHead();
     dbLegacyKeys=false;
     {
         lock_guard lock(blockBufferLock);

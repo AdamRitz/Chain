@@ -136,9 +136,8 @@ void ReceiveCompactBlock(const shared_ptr<Peer>& peer,const vector<uint8_t>& dat
     array<uint8_t,32> hash,calculated; memcpy(hash.data(),data.data()+80,32);
     crypto_generichash(calculated.data(),32,data.data(),80,nullptr,0);
     if (hash!=calculated) return;
-    { shared_lock lock(dbCommitMutex);
-      auto current=DBReadBlockHeight();
-      if ((height>current&&height-current>256)||(current>height&&current-height>256)||!DBReadBlockHeader(hash).empty()) return; }
+    auto current=ReadChainHead().height;
+    if ((height>current&&height-current>256)||(current>height&&current-height>256)) return;
     if (KnowsForkBlock(hash)) return;
     { lock_guard lock(blockBufferLock); for (const auto& slot:BlockBuffer) if (!slot.second.empty()&&slot.first.hash==hash) { relaySuppressed++; return; } }
     {
@@ -192,23 +191,27 @@ awaitable<void> SendBounded(const shared_ptr<Peer>& peer,vector<uint8_t> data) {
     }
     if (!peer->closed) QueueData(peer,make_shared<const vector<uint8_t>>(std::move(data)));
 }
-awaitable<void> SendMissingTransactions(const shared_ptr<Peer>& peer,const vector<uint8_t>& request) {
+vector<vector<uint8_t>> ReadMissingTransactions(const vector<uint8_t>& request) {
+    vector<vector<uint8_t>> replies;
     array<uint8_t,32> hash; memcpy(hash.data(),request.data(),32);
-    auto data=ReadRelayBlock(hash); if (!data) co_return;
-    auto num=ReadU64(data->data()+72); EvmPayloads inputs; if (!ReadEvmPayloads(*data,inputs)) co_return;
+    auto data=ReadRelayBlock(hash); if (!data) return replies;
+    auto num=ReadU64(data->data()+72); EvmPayloads inputs; if (!ReadEvmPayloads(*data,inputs)) return replies;
     vector<uint8_t> response(hash.begin(),hash.end());
+    unordered_set<uint32_t> indices;
     for (size_t offset=32;offset<request.size();offset+=4) {
-        auto index=ReadU32(request.data()+offset); if (index>=num) co_return;
+        auto index=ReadU32(request.data()+offset); if (index>=num) return {};
+        if (!indices.insert(index).second) continue;
         auto input=inputs.find(index); auto length=size_t(176)+(input==inputs.end()?0:input->second.size());
         if (response.size()+8+length>maxMessageSize) {
-            co_await SendBounded(peer,GenerateMessage(41,response)); response.assign(hash.begin(),hash.end());
+            replies.push_back(GenerateMessage(41,response)); response.assign(hash.begin(),hash.end());
         }
         auto at=response.size(); response.resize(at+8+length);
         WriteU32(response.data()+at,index); WriteU32(response.data()+at+4,uint32_t(length));
         memcpy(response.data()+at+8,data->data()+112+index*176,176);
         if (input!=inputs.end()) memcpy(response.data()+at+8+176,input->second.data(),input->second.size());
     }
-    if (response.size()>32) co_await SendBounded(peer,GenerateMessage(41,response));
+    if (response.size()>32) replies.push_back(GenerateMessage(41,response));
+    return replies;
 }
 void ReceiveMissingTransactions(const shared_ptr<Peer>& peer,const vector<uint8_t>& data) {
     array<uint8_t,32> hash; memcpy(hash.data(),data.data(),32);
@@ -235,22 +238,70 @@ void ReceiveMissingTransactions(const shared_ptr<Peer>& peer,const vector<uint8_
     }
     SubmitCompactBlock(hash,block);
 }
-awaitable<void> SendBlockBatch(const shared_ptr<Peer>& peer,const vector<uint8_t>& request) {
+vector<vector<uint8_t>> ReadBlockReplies(uint8_t type,const vector<uint8_t>& request) {
+    if (type==40) return ReadMissingTransactions(request);
+    vector<vector<uint8_t>> replies;
+    if (type==6) {
+        shared_lock lock(dbCommitMutex); auto data=GenerateBlockMessage(ReadU64(request.data()));
+        if (!data.empty()) replies.push_back(std::move(data));
+        return replies;
+    }
+    if (type==21) {
+        array<uint8_t,32> hash; memcpy(hash.data(),request.data(),32); auto data=FindForkBlock(hash);
+        if (!data.empty()) replies.push_back(GenerateMessage(22,data));
+        return replies;
+    }
     auto start=ReadU64(request.data()); auto count=unsigned(request[8])|(unsigned(request[9])<<8);
-    if (!peer->compact||!start||!count||count>4||start>UINT64_MAX-count) co_return;
-    vector<uint8_t> response(2,0); unsigned packed=0;
-    for (unsigned i=0;i<count;i++) {
-        vector<uint8_t> block;
-        { shared_lock lock(dbCommitMutex); block=DBReadBlockByHeight(to_string(start+i)); }
-        if (block.empty()) break;
-        if (response.size()+4+block.size()>maxMessageSize&&packed) {
-            response[0]=uint8_t(packed); co_await SendBounded(peer,GenerateMessage(43,response)); response.assign(2,0); packed=0;
+    if (type!=42||!start||!count||count>4||start>UINT64_MAX-count) return replies;
+    vector<vector<uint8_t>> blocks;
+    {
+        shared_lock lock(dbCommitMutex);
+        for (unsigned i=0;i<count;i++) {
+            auto block=DBReadBlockByHeight(to_string(start+i)); if (block.empty()) break;
+            blocks.push_back(std::move(block));
         }
-        if (block.size()+6>maxMessageSize) { co_await SendBounded(peer,GenerateMessage(7,block)); continue; }
+    }
+    vector<uint8_t> response(2,0); unsigned packed=0;
+    for (const auto& block:blocks) {
+        if (response.size()+4+block.size()>maxMessageSize&&packed) {
+            response[0]=uint8_t(packed); replies.push_back(GenerateMessage(43,response)); response.assign(2,0); packed=0;
+        }
+        if (block.size()+6>maxMessageSize) { replies.push_back(GenerateMessage(7,block)); continue; }
         auto at=response.size(); response.resize(at+4+block.size()); WriteU32(response.data()+at,uint32_t(block.size()));
         memcpy(response.data()+at+4,block.data(),block.size()); packed++;
     }
-    if (packed) { response[0]=uint8_t(packed); co_await SendBounded(peer,GenerateMessage(43,response)); }
+    if (packed) { response[0]=uint8_t(packed); replies.push_back(GenerateMessage(43,response)); }
+    return replies;
+}
+struct BlockReplyReservation {
+    bool active=false;
+    ~BlockReplyReservation() { if (active) pendingBlockReplies--; }
+};
+awaitable<vector<vector<uint8_t>>> ReadBlockAsync(shared_ptr<Peer> peer,uint8_t type,vector<uint8_t> request,
+        shared_ptr<BlockReplyReservation> reservation,uint64_t queued) {
+    return async_initiate<decltype(use_awaitable),void(exception_ptr,vector<vector<uint8_t>>)>(
+        [peer,type,queued,request=std::move(request),reservation](auto handler) mutable {
+            auto completion=make_shared<decltype(handler)>(std::move(handler));
+            post(*queryThreads,[peer,type,queued,request=std::move(request),reservation,completion]() mutable {
+                exception_ptr error; vector<vector<uint8_t>> responses;
+                auto start=GetSteadyTime(); blockReplyWaitNs+=start-queued; blockReplyTasks++;
+                try { responses=ReadBlockReplies(type,request); } catch (...) { error=current_exception(); }
+                blockReplyReadNs+=GetSteadyTime()-start;
+                post(peer->strand,[completion,error,responses=std::move(responses)]() mutable { (*completion)(error,std::move(responses)); });
+            });
+        },use_awaitable);
+}
+awaitable<void> SendBlockReply(shared_ptr<Peer> peer,uint8_t type,vector<uint8_t> request) {
+    auto reservation=make_shared<BlockReplyReservation>();
+    steady_timer timer(co_await this_coro::executor); auto queued=GetSteadyTime();
+    auto pending=pendingBlockReplies.load();
+    while (true) {
+        if (pending<8&&pendingBlockReplies.compare_exchange_weak(pending,pending+1)) { reservation->active=true; break; }
+        if (peer->closed||!nodeRunning) co_return;
+        timer.expires_after(milliseconds(1)); co_await timer.async_wait(use_awaitable); pending=pendingBlockReplies.load();
+    }
+    auto replies=co_await ReadBlockAsync(peer,type,std::move(request),reservation,queued);
+    for (auto& reply:replies) { if (peer->closed) break; co_await SendBounded(peer,std::move(reply)); }
 }
 bool ReadBlockBatch(const vector<uint8_t>& data,vector<vector<uint8_t>>& blocks) {
     if (data.size()<2||data[1]||!data[0]||data[0]>4) return false;

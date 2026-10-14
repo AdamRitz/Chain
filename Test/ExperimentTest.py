@@ -9,7 +9,7 @@ from types import SimpleNamespace
 from unittest.mock import patch
 from Cluster import Cluster, LocalInventory, NodeClient, ReadInventory
 from ClusterWorker import CaseDirectory, Handle
-from Experiments import LoadCase, MakeCases, ValidatePlan
+from Experiments import Load, LoadCase, MakeCases, ValidatePlan
 from ForkNetworkTest import MakeBlock
 from Netem import NetemCommands, ClearNetem
 from NetworkTest import ExeName, Run, StartNode, StopNode, SendFrame, WaitStats, GetStats
@@ -27,6 +27,24 @@ def TestConfiguration(work):
         raise AssertionError('Traversal accepted')
     except ValueError:
         pass
+
+    dataset=work/'send-order.bin'; dataset.write_bytes(bytes(range(176))*16)
+    class Connection:
+        def __init__(self, port, records): self.port, self.records=port, records
+        def setsockopt(self, *args): pass
+        def sendall(self, data): self.records.setdefault(self.port, []).append(bytes(data))
+        def close(self): pass
+    cluster=SimpleNamespace(nodes=[{'host':'127.0.0.1','port':port} for port in [19001,19002]],offline=set())
+    deliveries=[]
+    for parallel in [False,True]:
+        records={}
+        with patch('Experiments.socket.create_connection',side_effect=lambda endpoint,timeout:Connection(endpoint[1],records)):
+            load=Load(cluster,dataset,1000000,16/1000000,'steady','broadcast',20,8,parallel)
+            load.Run()
+        assert not load.error and load.sent==16 and load.wire_transactions==32
+        assert records[19001]==records[19002]
+        deliveries.append(records)
+    assert deliveries[0]==deliveries[1]
     device, preferences, commands = NetemCommands('eth0', 8089, [{'host': '10.0.0.2', 'port': 8090}],
                                                  {'delay_ms': 20, 'jitter_ms': 5, 'loss_percent': .1}, 'case')
     filters = [command for command in commands if command[:3] == ['tc', 'filter', 'add']]

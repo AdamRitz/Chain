@@ -15,9 +15,45 @@ awaitable<bool> ReadData(const shared_ptr<Peer>& peer,mutable_buffer data,int ti
     if (ec) { ClosePeer(peer); co_return false; }
     co_return true;
 }
-bool ReserveVerify(size_t num,bool block=false) {
-    auto& pending=block?pendingBlockVerify:pendingTxVerify;
-    auto limit=block?maxProtocolTx*4:maxPendingVerify;
+mutex blockWorkMutex;
+struct BlockWork;
+unordered_map<array<uint8_t,32>,weak_ptr<BlockWork>,GetMapHash> blockWork;
+size_t blockWorkBytes=0;
+struct BlockWork {
+    array<uint8_t,32> fingerprint;
+    vector<uint8_t> data;
+    bool registered=false;
+    ~BlockWork() {
+        if (!registered) return;
+        lock_guard lock(blockWorkMutex);
+        auto found=blockWork.find(fingerprint);
+        if (found!=blockWork.end()&&found->second.expired()) blockWork.erase(found);
+        blockWorkBytes-=data.size();
+    }
+};
+array<uint8_t,32> GetBlockFingerprint(const vector<uint8_t>& data,bool batch) {
+    array<uint8_t,32> fingerprint; crypto_generichash_state hash;
+    uint8_t format=batch;
+    crypto_generichash_init(&hash,nullptr,0,32); crypto_generichash_update(&hash,&format,1);
+    crypto_generichash_update(&hash,data.data(),data.size()); crypto_generichash_final(&hash,fingerprint.data(),32);
+    return fingerprint;
+}
+shared_ptr<BlockWork> ReserveBlockWork(const vector<uint8_t>& data,const array<uint8_t,32>& fingerprint,bool& duplicate) {
+    shared_ptr<BlockWork> known;
+    lock_guard lock(blockWorkMutex);
+    auto found=blockWork.find(fingerprint);
+    if (found!=blockWork.end()) known=found->second.lock();
+    if (known&&known->data==data) { duplicate=true; duplicateBlockWork++; return {}; }
+    if (blockWork.size()>=64||data.size()>32*1024*1024-blockWorkBytes) return {};
+    auto work=make_shared<BlockWork>(); work->fingerprint=fingerprint; work->data=data;
+    blockWork[fingerprint]=work; blockWorkBytes+=data.size(); work->registered=true; return work;
+}
+shared_ptr<BlockWork> ReserveBlockWork(const vector<uint8_t>& data,bool batch,bool& duplicate) {
+    return ReserveBlockWork(data,GetBlockFingerprint(data,batch),duplicate);
+}
+bool ReserveVerify(size_t num,bool block=false,bool metadata=false) {
+    auto& pending=metadata?pendingMetadata:(block?pendingBlockVerify:pendingTxVerify);
+    auto limit=metadata?size_t(64):(block?maxProtocolTx*4:maxPendingVerify);
     auto current=pending.load();
     do {
         if (num>limit||current>limit-num) return false;
@@ -27,9 +63,17 @@ bool ReserveVerify(size_t num,bool block=false) {
     while (peak<total&&!peakPendingVerify.compare_exchange_weak(peak,total)) {}
     return true;
 }
-void ReleaseVerify(size_t num,bool block=false) {
-    (block?pendingBlockVerify:pendingTxVerify)-=num; pendingVerify-=num;
+void ReleaseVerify(size_t num,bool block=false,bool metadata=false) {
+    (metadata?pendingMetadata:(block?pendingBlockVerify:pendingTxVerify))-=num; pendingVerify-=num;
 }
+struct VerifyReservation {
+    size_t count=0,bytes=0; bool block=false,metadata=false,active=false;
+    ~VerifyReservation() {
+        if (!active) return;
+        ReleaseVerify(count,block,metadata);
+        (block?pendingBlockBytes:pendingTxBytes)-=bytes; pendingVerifyBytes-=bytes;
+    }
+};
 awaitable<void> ProcessMessage(shared_ptr<Peer> peer,uint8_t type,vector<uint8_t> data) {
     vector<vector<uint8_t>> blocks;
     if (type==43&&!ReadBlockBatch(data,blocks)) { ClosePeer(peer); co_return; }
@@ -47,8 +91,8 @@ awaitable<void> ProcessMessage(shared_ptr<Peer> peer,uint8_t type,vector<uint8_t
             offset+=length;
         }
     }
-    if (type==39) num=max(uint64_t(1),min(uint64_t(maxProtocolTx),ReadU64(data.data()+72)));
-    if (type==41) num=max(size_t(1),min(maxProtocolTx,(data.size()-32)/184));
+    bool metadata=type==39||type==41;
+    if (metadata) num=1;
     bool blockMessage=type!=1&&type!=10&&type!=17&&type!=18&&type!=44;
     auto& byteCounter=blockMessage?pendingBlockBytes:pendingTxBytes;
     auto byteLimit=blockMessage?size_t(16*1024*1024):size_t(48*1024*1024);
@@ -57,7 +101,18 @@ awaitable<void> ProcessMessage(shared_ptr<Peer> peer,uint8_t type,vector<uint8_t
     uint64_t expected=0;
     if (type==1||type==10) firstTxTime.compare_exchange_strong(expected,queuedAt);
     // 队列满时暂停该连接读取，利用 TCP 背压，不无限堆积异步任务。
-    if (num>(blockMessage?maxProtocolTx*4:maxPendingVerify)) { ClosePeer(peer); co_return; }
+    if (num>(metadata?size_t(64):(blockMessage?maxProtocolTx*4:maxPendingVerify))) { ClosePeer(peer); co_return; }
+    shared_ptr<BlockWork> work;
+    if (type==2||type==7||type==22||type==43) {
+        auto fingerprint=GetBlockFingerprint(data,type==43);
+        while (!work) {
+            bool duplicate=false; work=ReserveBlockWork(data,fingerprint,duplicate);
+            if (duplicate) co_return;
+            if (work) break;
+            if (peer->closed||!nodeRunning) co_return;
+            timer.expires_after(milliseconds(1)); co_await timer.async_wait(use_awaitable);
+        }
+    }
     if ((type==1||type==10)&&produceBlocks&&!peer->port) {
         auto waitStart=GetSteadyTime();
         while (true) {
@@ -70,24 +125,27 @@ awaitable<void> ProcessMessage(shared_ptr<Peer> peer,uint8_t type,vector<uint8_t
         if (peer->closed||!nodeRunning) co_return;
     }
     bool reserved=false;
+    auto reservation=make_shared<VerifyReservation>();
+    reservation->count=num; reservation->bytes=data.size(); reservation->block=blockMessage; reservation->metadata=metadata;
     while (!reserved) {
         auto bytes=byteCounter.load();
         if (data.size()<=byteLimit&&bytes<=byteLimit-data.size()&&byteCounter.compare_exchange_weak(bytes,bytes+data.size())) {
-            reserved=ReserveVerify(num,blockMessage);
+            reserved=ReserveVerify(num,blockMessage,metadata);
             if (!reserved) byteCounter-=data.size();
             else pendingVerifyBytes+=data.size();
         }
-        if (reserved) break;
+        if (reserved) { reservation->active=true; break; }
         if (peer->closed||!nodeRunning) co_return;
         timer.expires_after(milliseconds(1));
         co_await timer.async_wait(use_awaitable);
     }
     auto admissionOrder=type==44?peer->admissionRead++:0;
-    auto messageBytes=data.size();
     auto& workers=blockMessage&&candidateThreads?*candidateThreads:*verifyThreads;
-    post(workers,[peer,type,num,messageBytes,queuedAt,blockMessage,admissionOrder,data=std::move(data),blocks=std::move(blocks)]() mutable {
+    post(workers,[peer,type,queuedAt,blockMessage,metadata,admissionOrder,reservation=std::move(reservation),work=std::move(work),data=std::move(data),blocks=std::move(blocks)]() mutable {
+        (void)work;
         auto wait=GetSteadyTime()-queuedAt; queueWaitNs+=wait;
-        (blockMessage?blockQueueWaitNs:txQueueWaitNs)+=wait;
+        (metadata?metadataQueueWaitNs:(blockMessage?blockQueueWaitNs:txQueueWaitNs))+=wait;
+        if (metadata) metadataTasks++; else if (blockMessage) blockTasks++;
         try {
             if (type==1||type==10||type==44) {
                 vector<uint8_t> results;
@@ -137,9 +195,7 @@ awaitable<void> ProcessMessage(shared_ptr<Peer> peer,uint8_t type,vector<uint8_t
             nodeRunning=false;
             if (nodeIO) nodeIO->stop();
         }
-        ReleaseVerify(num,blockMessage);
-        (blockMessage?pendingBlockBytes:pendingTxBytes)-=messageBytes;
-        pendingVerifyBytes-=messageBytes;
+        reservation.reset(); work.reset();
         WakeMainLoop();
     });
 }
@@ -163,9 +219,8 @@ vector<uint8_t> ReadQueryResponse(uint8_t type,const vector<uint8_t>& data) {
         return GenerateMessage(16,reply);
     } else if (type==19) {
         array<uint8_t,80> reply;
-        { shared_lock lock(dbCommitMutex);
-          auto head=DBReadCurrentBlock(); memcpy(reply.data(),genesisRoot.data(),32); memcpy(reply.data()+32,head.data(),32);
-          WriteU64(reply.data()+64,DBReadBlockHeight()); WriteU64(reply.data()+72,DBReadNumber("ChainTx")); }
+        auto head=ReadChainHead(); memcpy(reply.data(),genesisRoot.data(),32); memcpy(reply.data()+32,head.hash.data(),32);
+        WriteU64(reply.data()+64,head.height); WriteU64(reply.data()+72,head.transactions);
         return GenerateMessage(20,reply);
     } else if (type==23) {
         array<uint8_t,32> hash; memcpy(hash.data(),data.data(),32);
@@ -281,11 +336,11 @@ awaitable<void> session(uint64_t key,shared_ptr<Peer> peer) {
         } else if (type==39&&peer->port) {
             co_await ProcessMessage(peer,type,std::move(data));
         } else if (type==40&&peer->port) {
-            co_await SendMissingTransactions(peer,data);
+            co_await SendBlockReply(peer,type,std::move(data));
         } else if (type==41&&peer->port) {
             co_await ProcessMessage(peer,type,std::move(data));
         } else if (type==42&&peer->port) {
-            co_await SendBlockBatch(peer,data);
+            if (peer->compact) co_await SendBlockReply(peer,type,std::move(data));
         } else if (type==43&&peer->compact) {
             co_await ProcessMessage(peer,type,std::move(data));
         } else if (type==27) {
@@ -309,7 +364,7 @@ awaitable<void> session(uint64_t key,shared_ptr<Peer> peer) {
                 StartSync(peer);
             }
         } else if (type==6) {
-            SendData(peer,GenerateBlockMessage(ReadU64(data.data())));
+            co_await SendBlockReply(peer,type,std::move(data));
         } else if (type==8) {
             SendData(peer,GenerateDiscoverMessage());
         } else if (type==9) {
@@ -320,8 +375,7 @@ awaitable<void> session(uint64_t key,shared_ptr<Peer> peer) {
             if (memcmp(data.data(),genesisRoot.data(),32)) { ClosePeer(peer); co_return; }
             array<uint8_t,32> remote; memcpy(remote.data(),data.data()+32,32);
             peer->remoteHeight=ReadU64(data.data()+64);
-            uint64_t height; array<uint8_t,32> local;
-            { shared_lock lock(dbCommitMutex); height=DBReadBlockHeight(); local=DBReadCurrentBlock(); }
+            auto localHead=ReadChainHead(); auto height=localHead.height; auto local=localHead.hash;
             if (local!=remote&&(peer->remoteHeight<=height||peer->remoteHeight-height<=256)&&peer->requestedHead!=remote) {
                 peer->requestedHead=remote; SendData(peer,GenerateMessage(21,remote));
             }
@@ -329,9 +383,7 @@ awaitable<void> session(uint64_t key,shared_ptr<Peer> peer) {
                 StartSync(peer);
             }
         } else if (type==21&&peer->port) {
-            array<uint8_t,32> hash; memcpy(hash.data(),data.data(),32);
-            auto block=FindForkBlock(hash);
-            if (!block.empty()) SendData(peer,GenerateMessage(22,block));
+            co_await SendBlockReply(peer,type,std::move(data));
         }
     }
 }

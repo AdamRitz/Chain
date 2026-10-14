@@ -49,6 +49,7 @@ atomic<uint64_t> txCommitWaitNs{0},txReadNs{0},txPoolWaitNs{0};
 atomic<uint64_t> verifyNs{0},poolNs{0},committedTx{0},firstTxTime{0},lastCommitTime{0};
 atomic<uint64_t> gapAcceptedTx{0},poolBusyTx{0};
 atomic<uint64_t> signatureChecks{0},signatureCacheHits{0},poolRefreshNs{0};
+atomic<uint64_t> poolRefreshUsers{0},poolRefreshTx{0};
 atomic<uint64_t> signatureCacheEvictions{0},signatureWaitNs{0},signatureSharedChecks{0};
 struct VerifiedTransactions {
     mutex lock;
@@ -306,6 +307,28 @@ void RefreshTxPool() {
         ++it;
     }
     for (auto& [key,pending]:txUserPool) {
+        while (pending.readyNonce<UINT64_MAX&&pending.txs.count(pending.readyNonce+1)) { pending.readyNonce++; readyPoolTx++; }
+    }
+    poolRefreshNs+=GetSteadyTime()-start;
+}
+void RefreshTxPool(span<const array<uint8_t,32>> affected) {
+    auto start=GetSteadyTime();
+    shared_lock commitLock(dbCommitMutex);
+    lock_guard lock(txpoolMutex);
+    for (const auto& key:affected) {
+        auto found=txUserPool.find(key); if (found==txUserPool.end()) continue;
+        auto& pending=found->second; auto user=GetUser(users,key);
+        poolRefreshUsers++;
+        for (const auto& [nonce,hash]:pending.txs) if (nonce<=pending.readyNonce) readyPoolTx--;
+        for (auto it=pending.txs.begin();it!=pending.txs.end();) {
+            const auto& tx=txpool.at(it->second); auto input=evmPool.find(it->second);
+            poolRefreshTx++;
+            bool valid=input==evmPool.end()?CheckUserTx(user,ReadU64(tx.data()+64),it->first,true):CheckEvmUserTx(user,tx,input->second,true);
+            if (!valid) { txpool.erase(it->second); EraseEvmPool(it->second); it=pending.txs.erase(it); }
+            else ++it;
+        }
+        if (pending.txs.empty()) { txUserPool.erase(found); continue; }
+        pending.readyNonce=user.nonce;
         while (pending.readyNonce<UINT64_MAX&&pending.txs.count(pending.readyNonce+1)) { pending.readyNonce++; readyPoolTx++; }
     }
     poolRefreshNs+=GetSteadyTime()-start;

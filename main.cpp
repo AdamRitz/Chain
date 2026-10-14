@@ -82,6 +82,7 @@ int main(int argc,char* argv[]) {
             else if (name=="--max-pool") maxPoolTx=ParseNumber(value,6000,2000000);
             else if (name=="--max-pending") maxPendingVerify=ParseNumber(value,6000,1000000);
             else if (name=="--sync") sync=ParseNumber(value,0,1)!=0;
+            else if (name=="--db-profile") dbProfile=ParseNumber(value,0,1)!=0;
             else if (name=="--produce") produceBlocks=ParseNumber(value,0,1)!=0;
             else if (name=="--run-seconds") runSeconds=int(ParseNumber(value,1,86400));
             else if (name=="--metrics") metricsPath=value;

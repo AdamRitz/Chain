@@ -128,7 +128,7 @@ bash scripts/Build-Linux.sh --install
 
 中央处理器（Central Processing Unit，CPU）的平均忙碌核心数计算为进程 CPU 秒数增量除以墙钟测量秒数。例如 6.4 表示平均占用约 6.4 个逻辑处理器。资源结果同时包含驻留内存、应用层收发字节、进程写入量和数据库写入耗时。Linux 写入量来自 `/proc/self/io`；Windows 进程输入输出计数也包括其他设备操作，解释磁盘瓶颈时结合主机磁盘观测。应用层网络字节不包含协议头和重传。
 
-先观察 `achieved_send_tps` 和 `send_lateness_p99_ms` 判断负载是否到达节点，再结合忙碌核心数、排队、网络流量和数据库耗时定位瓶颈。控制机使用单发送线程，`broadcast` 的总发包量随节点数增长；接近控制机上限时可测试 `shard`，并将两种输入方式分别报告。控制机 CPU 使用另存为 `controller_cpu_core_equivalents`。
+先观察 `achieved_send_tps` 和 `send_lateness_p99_ms` 判断负载是否到达节点，再结合忙碌核心数、排队、网络流量和数据库耗时定位瓶颈。控制机默认使用单发送线程，`broadcast` 的总发包量随节点数增长；可选 `parallel_ingress=true` 并行发送同一批交易。`shard` 与 `broadcast` 的输入方式分别报告。控制机 CPU 使用另存为 `controller_cpu_core_equivalents`。
 
 ## 时间同步与轮次
 
@@ -188,6 +188,26 @@ printf '%s' '{"action":"clear-fault","root":"/var/tmp/chain-experiments","run":"
 ```
 
 以上为加入完整实验计划的可选字段。首次十台部署需要全部使用同一新版程序与全新格式 7 数据目录。账户创世配置、区块字节上限和燃料规则继续核对。
+
+## 分类队列与可选诊断（2026-10-14）
+
+计划支持 `"parallel_ingress": true`，默认值为 `false`。并行入口按节点投递发送任务，每个节点最多一批在途，全部节点完成当前批次后推进下一批；各节点交易字节与顺序一致，使用同一计划时刻。跨版本对照统一选择同一种入口方式，并保存控制机占用、实际发送和发送迟到量。
+
+`node_settings` 可设置 `"db-profile": 1`，默认关闭。开启后每 64 次实际写调用抽样一次，`db_profiled_writes` 给出样本数，`db_wal_sample_ms`、`db_memtable_sample_ms`、`db_delay_sample_ms`、`db_other_sample_ms` 给出累计样本时间。用各项增量除以抽样次数增量比较每次写入的阶段耗时。`db_write_ms / db_writes` 仍使用全部实际写调用；`db_write_stalls_ms` 为数据库累计写停顿。
+
+| 结果字段 | 单位与定义 |
+|---|---|
+| `backlog_growth_per_second` | 全部节点 `pool + pending` 的增长斜率；混合预算计数 |
+| `tx_backlog_growth_per_second` | 全部节点 `pool + pending_tx_verify` 的增长斜率；交易副本/秒 |
+| `logical_backlog_growth_per_second` | 已发送唯一交易数减共同链交易数的增长斜率；唯一交易/秒 |
+| `logical_backlog_end` | 最后一个测量样本的唯一交易落后量；笔 |
+| `candidate_backlog_growth_per_second` | 全部节点 `pending_block_verify` 的增长斜率；完整块交易预算/秒 |
+| `metadata_queue_growth_per_second` | 全部节点 `pending_metadata` 的增长斜率；消息/秒 |
+| `measurement_seconds`、`measurement_samples` | 共同链测量首尾实际跨度与样本数 |
+
+`sustainable` 保留原有公式，`tx_sustainable` 使用交易队列斜率替换混合队列斜率，其他条件一致。当前摘要、补传各按一条消息计入 `pending`；历史版本按声明交易数加权。比较两个版本的业务积压时使用交易队列与唯一交易落后量，并保留各自的原始 `sustainable`。队列增长为测量窗口采样点的线性回归斜率，队列副本与唯一交易分别记录。新增字段完整保存在每轮 JSON，汇总 CSV 保存主要字段。
+
+节点统计另记录分支调度、成功采用、无效候选、合并提交批次数，在途重复块、增量清池数量，以及读块回复的排队与读取时间。统计快照来自已落盘的链头；完整状态与历史位置核对继续读取一致账本。
 
 ## 测试数据生命周期
 

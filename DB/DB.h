@@ -14,6 +14,8 @@
 #include <rocksdb/statistics.h>
 #include <rocksdb/filter_policy.h>
 #include <rocksdb/table.h>
+#include <rocksdb/perf_context.h>
+#include <rocksdb/perf_level.h>
 #include <rocksdb/utilities/write_batch_with_index.h>
 #include <spdlog/spdlog.h>
 #include "../Tool/Tool.h"
@@ -30,6 +32,17 @@ bool dbLegacyKeys=false;
 bool experimentIndex=false;
 atomic<uint64_t> dbWriteNs{0},dbWriteCount{0};
 atomic<uint64_t> dbPrepareNs{0},dbBatchBytes{0};
+bool dbProfile=false;
+atomic<uint64_t> dbProfileWrites{0},dbWalNs{0},dbMemtableNs{0},dbDelayNs{0},dbOtherNs{0};
+struct ChainHead {
+    uint64_t height=0,transactions=0,version=0,burned=0;
+    size_t users=0,contracts=0;
+    array<uint8_t,32> hash{};
+};
+ChainHead publishedHead;
+mutex chainHeadMutex;
+ChainHead ReadChainHead() { lock_guard lock(chainHeadMutex); return publishedHead; }
+void PublishChainHead();
 UserMap users;
 uint64_t userBurned=0;
 UserMap poolUsers;
@@ -170,6 +183,7 @@ void InitDB(const string& path="test",bool sync=true) {
     spdlog::info("RocksDB Started. Path:{}, Sync:{}",path,sync);
     InvalidateExecutionCache();
     PublishPoolUsers();
+    PublishChainHead();
 }
 void DBWriteBatch(rocksdb::WriteBatch& batch) {
     if (branchBatch) {
@@ -181,9 +195,25 @@ void DBWriteBatch(rocksdb::WriteBatch& batch) {
         return;
     }
     auto start=GetSteadyTime();
+    bool sampled=dbProfile&&dbWriteCount.load()%64==0;
+    auto context=sampled?rocksdb::get_perf_context():nullptr;
+    uint64_t wal=0,memtable=0,delay=0,other=0;
+    struct PerfLevel {
+        bool active; rocksdb::PerfLevel previous;
+        ~PerfLevel() { if (active) rocksdb::SetPerfLevel(previous); }
+    } level{sampled,sampled?rocksdb::GetPerfLevel():rocksdb::kDisable};
+    if (sampled) {
+        wal=context->write_wal_time; memtable=context->write_memtable_time;
+        delay=context->write_delay_time; other=context->write_pre_and_post_process_time;
+        rocksdb::SetPerfLevel(rocksdb::kEnableTimeExceptForMutex);
+    }
     rocksdb::WriteOptions writeOptions;
     writeOptions.sync=dbSync;
     CheckDBStatus(db->Write(writeOptions,&batch));
+    if (sampled) {
+        dbWalNs+=context->write_wal_time-wal; dbMemtableNs+=context->write_memtable_time-memtable;
+        dbDelayNs+=context->write_delay_time-delay; dbOtherNs+=context->write_pre_and_post_process_time-other; dbProfileWrites++;
+    }
     dbWriteNs+=GetSteadyTime()-start;
     dbBatchBytes+=batch.Data().size();
     dbWriteCount++;
@@ -411,6 +441,11 @@ array<uint8_t,32> DBReadCurrentBlock() {
     memcpy(hash.data(),value.data(),32);
     return hash;
 }
+// 调用方持有提交锁，在原子写入和账户发布完成后更新。
+void PublishChainHead() {
+    ChainHead head{DBReadBlockHeight(),DBReadNumber("ChainTx"),dbStateVersion,userBurned,users.size(),evmState.get_accounts().size(),DBReadCurrentBlock()};
+    lock_guard lock(chainHeadMutex); publishedHead=head;
+}
 void DBWriteCurrentBlock(const array<uint8_t,32>& hash) {
     CheckDBStatus(db->Put(rocksdb::WriteOptions(),"CurrentBlock",rocksdb::Slice(reinterpret_cast<const char*>(hash.data()),32)));
 }
@@ -571,6 +606,7 @@ bool DBCommitBlockLocked(const array<uint8_t,32>& hash,const vector<uint8_t>& da
     evmAccountWrites+=accountWrites; evmSlotWrites+=slotWrites;
     InvalidateExecutionCache();
     userWriteCount+=writeCount;
+    if (!branchBatch) PublishChainHead();
     return true;
 }
 bool DBCommitBlock(const array<uint8_t,32>& hash,const vector<uint8_t>& data) {

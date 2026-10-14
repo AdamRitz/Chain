@@ -1,0 +1,11 @@
+{
+  "date": "2026-10-14",
+  "status": "blocked_by_execution_policy",
+  "action": "recursive deletion of this task isolated local test databases",
+  "reason": "blocked by policy",
+  "deleted_databases": 0,
+  "remaining_databases": 47,
+  "remaining_bytes": 220243888,
+  "test_processes": "no running local test processes observed",
+  "records": "JUnit, validation JSON and local test-records ZIP saved"
+}

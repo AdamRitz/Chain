@@ -13,7 +13,7 @@ def FullBlockBatch(binary,work,count=6000):
     work.mkdir(parents=True)
     dataset=work/'transactions.bin'
     Run([binary/ExeName('sender'),'--prepare',dataset,'--count',4*count,'--wallets',64])
-    txs=dataset.read_bytes();node=StartNode(binary,work,'full-batch',produce=0)
+    txs=dataset.read_bytes();node=StartNode(binary,work,'full-batch',produce=0,**{'db-profile':1})
     try:
         parent=bytes.fromhex(GetStats(node['port'])['head']);blocks=[]
         for index in range(4):
@@ -39,6 +39,7 @@ def FullBlockBatch(binary,work,count=6000):
                 connection.sendall(Frame(43,struct.pack('<H',1)+struct.pack('<I',len(block))+block))
             stats=WaitStats(node['port'],lambda s:s['height']==5 and s['chain_transactions']==4*count and s['pending']==0,timeout=15)
             assert stats['head']==parent.hex() and stats['invalid']==0 and stats['rejected']==0
+            assert stats['db_profiled_writes']>0 and stats['pending_metadata']==0
             VerifyAccounts(node['port'],dataset,4*count,str(dataset)+'.genesis.json')
     finally:StopNode(node)
 

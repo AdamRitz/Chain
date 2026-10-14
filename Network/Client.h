@@ -24,6 +24,10 @@ atomic<size_t> pendingTxVerify{0},pendingBlockVerify{0},pendingTxBytes{0},pendin
 atomic<uint64_t> txQueueWaitNs{0},blockQueueWaitNs{0};
 atomic<size_t> pendingVerify{0},peakPendingVerify{0},connectionCount{0};
 atomic<size_t> pendingVerifyBytes{0};
+atomic<size_t> pendingMetadata{0},pendingBlockReplies{0};
+atomic<uint64_t> metadataQueueWaitNs{0},metadataTasks{0},blockTasks{0},blockReplyWaitNs{0};
+atomic<uint64_t> duplicateBlockWork{0};
+atomic<uint64_t> blockReplyReadNs{0},blockReplyTasks{0};
 atomic<uint64_t> queueWaitNs{0},networkBytes{0};
 size_t maxPendingVerify=32768;
 size_t maxConnections=128;
@@ -236,11 +240,11 @@ struct SyncCompletion {
 awaitable<void> SyncBlock(shared_ptr<Peer> peer) {
     SyncCompletion complete{peer};
     steady_timer timer(co_await this_coro::executor);
-    uint64_t requested=DBReadBlockHeight(),progress=requested;
+    uint64_t requested=ReadChainHead().height,progress=requested;
     auto lastProgress=steady_clock::now();
     unsigned retries=0;
-    while (!peer->closed&&DBReadBlockHeight()<peer->remoteHeight) {
-        auto height=DBReadBlockHeight();
+    while (!peer->closed&&ReadChainHead().height<peer->remoteHeight) {
+        auto height=ReadChainHead().height;
         if (height!=progress) { progress=height; lastProgress=steady_clock::now(); retries=0; }
         if (steady_clock::now()-lastProgress>seconds(3)) {
             if (++retries>3) break;
@@ -367,7 +371,7 @@ void MainLoop() {
             }
             if (selected.second.empty()) continue;
             // 已收到连续后继时复用分支批次，一次同步写盘发布整段状态。
-            if (HasForkChild(selected.first.hash)) {
+            if (forkReady||HasForkChild(selected.first.hash)) {
                 QueueForkBlock(selected.first,selected.second,false); forkReady=true;
                 if (ProcessForks()) { AnnounceBlock(DBReadBlockByHash(DBReadCurrentBlock())); continue; }
             }
@@ -402,11 +406,9 @@ nlohmann::json GetNodeStats() {
     auto first=firstTxTime.load();
     auto last=lastCommitTime.load();
     double elapsed=last>first&&first?double(last-first)/1e9:0;
-    uint64_t height,chainTx,burned;
-    size_t userCount,evmCount; array<uint8_t,32> head;
-    { shared_lock lock(dbCommitMutex);
-      height=DBReadBlockHeight(); head=DBReadCurrentBlock(); chainTx=DBReadNumber("ChainTx");
-      burned=userBurned; userCount=users.size(); evmCount=evmState.get_accounts().size(); }
+    auto snapshot=ReadChainHead();
+    auto height=snapshot.height,chainTx=snapshot.transactions,burned=snapshot.burned;
+    auto userCount=snapshot.users,evmCount=snapshot.contracts; auto head=snapshot.hash;
     nlohmann::json stats={{"received",receivedTx.load()},{"valid",validTx.load()},{"invalid",invalidTx.load()},
         {"duplicate",duplicateTx.load()},{"rejected",rejectedTx.load()},{"committed",committedTx.load()},
         {"pool",poolSize},{"ready_pool",readySize},{"pending",pendingVerify.load()},{"peak_pending",peakPendingVerify.load()},
@@ -421,6 +423,9 @@ nlohmann::json GetNodeStats() {
         {"block_verify_ms",blockVerifyNs.load()/1e6},{"db_write_ms",dbWriteNs.load()/1e6},
         {"db_writes",dbWriteCount.load()},{"network_bytes",networkBytes.load()},{"sync",dbSync},
         {"db_prepare_ms",dbPrepareNs.load()/1e6},{"db_batch_bytes",dbBatchBytes.load()},
+        {"db_profiled_writes",dbProfileWrites.load()},{"db_wal_sample_ms",dbWalNs.load()/1e6},
+        {"db_memtable_sample_ms",dbMemtableNs.load()/1e6},{"db_delay_sample_ms",dbDelayNs.load()/1e6},
+        {"db_other_sample_ms",dbOtherNs.load()/1e6},{"db_write_stalls_ms",options.statistics->getTickerCount(rocksdb::STALL_MICROS)/1000.0},
         {"bloom_useful",options.statistics->getTickerCount(rocksdb::BLOOM_FILTER_USEFUL)},
         {"users",userCount},{"base_fee",baseFee},{"user_burned",burned},
         {"user_supply",genesisSupply-burned},{"invalid_user_tx",invalidUserTx.load()},
@@ -441,6 +446,10 @@ nlohmann::json GetNodeStats() {
         {"commit_lock_wait_ms",commitLockWaitNs.load()/1e6},{"candidate_lock_wait_ms",candidateLockWaitNs.load()/1e6},
         {"gap_accepted",gapAcceptedTx.load()},{"pool_busy",poolBusyTx.load()},
         {"pending_tx_verify",pendingTxVerify.load()},{"pending_block_verify",pendingBlockVerify.load()},
+        {"pending_metadata",pendingMetadata.load()},{"metadata_queue_wait_ms",metadataQueueWaitNs.load()/1e6},
+        {"metadata_tasks",metadataTasks.load()},{"block_tasks",blockTasks.load()},
+        {"duplicate_block_work",duplicateBlockWork.load()},
+        {"pool_refresh_users",poolRefreshUsers.load()},{"pool_refresh_transactions",poolRefreshTx.load()},
         {"tx_queue_wait_ms",txQueueWaitNs.load()/1e6},{"block_queue_wait_ms",blockQueueWaitNs.load()/1e6},
         {"fork_attempts",forkAttempts.load()},{"fork_walk_ms",forkWalkNs.load()/1e6},
         {"fork_lock_wait_ms",forkLockWaitNs.load()/1e6},{"fork_backup_keys",forkBackupKeys.load()},
@@ -448,11 +457,16 @@ nlohmann::json GetNodeStats() {
         {"fork_rank_skips",forkRankSkips.load()},{"fork_parent_skips",forkParentSkips.load()},
         {"branch_append_transactions",branchAppendTx.load()},{"fork_reexecute_transactions",forkReexecuteTx.load()},
         {"grouped_commit_blocks",groupedCommitBlocks.load()},
+        {"grouped_commit_batches",groupedCommitBatches.load()},{"fork_schedules",forkSchedules.load()},
+        {"fork_selections",forkSelections.load()},{"fork_invalid_candidates",forkInvalidCandidates.load()},
         {"signature_cache_evictions",signatureCacheEvictions.load()},{"signature_shared_checks",signatureSharedChecks.load()},
         {"signature_wait_ms",signatureWaitNs.load()/1e6},{"signature_cache_capacity",maxVerifiedPerBucket*verifiedTransactions.size()},
         {"recent_tx_capacity",maxRecentBlockTransactions},{"recent_tx_bytes_limit",maxRelayTransactionBytes},
         {"sync_owner_skips",syncOwnerSkips.load()},{"sync_window",syncWindow},
         {"pending_queries",pendingQueries.load()},{"query_wait_ms",queryWaitNs.load()/1e6},
+        {"pending_block_replies",pendingBlockReplies.load()},{"block_reply_wait_ms",blockReplyWaitNs.load()/1e6},
+        {"block_reply_read_ms",blockReplyReadNs.load()/1e6},{"block_reply_tasks",blockReplyTasks.load()},
+        {"state_version",snapshot.version},
         {"ingress_wait_ms",ingressWaitNs.load()/1e6},{"clock",GetClockStats()},{"experiment_index",experimentIndex}};
     stats.update(GetProcessResources());
     return stats;

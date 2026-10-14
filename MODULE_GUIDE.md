@@ -10,7 +10,7 @@
 
 五组多节点实验、远程节点清单、Linux 构建和指标定义见 `EXPERIMENTS.md`。时间同步器当前采用四时间戳测偏差和邻居中位数校正，供后续接入萤火虫相位响应公式。
 
-当前数据库格式为 7，版本 2、3、4、5、6 的数据库保留，使用新目录运行。最新接入说明为 `EVM_GUIDE.md`，六项追加优化位于下文，最新十节点性能记录为 `reports/2026-10-14-six-ten/REPORT.md`，后续优化方案为 `reports/2026-10-14-tps-review/REPORT.md`，前次性能记录为 `reports/2026-10-14-ten-node/REPORT.md`，合约接入性能记录为 `reports/2026-09-16-fork-evm/REPORT.md`。历史报告按原版本解释。
+当前数据库格式为 7，版本 2、3、4、5、6 的数据库保留，使用新目录运行。最新接入说明为 `EVM_GUIDE.md`，最新本地实施记录为 `reports/2026-10-14-tps-local/REPORT.md`，最新十节点性能记录为 `reports/2026-10-14-six-ten/REPORT.md`，瓶颈审阅与方案为 `reports/2026-10-14-tps-review/REPORT.md`，前次性能记录为 `reports/2026-10-14-ten-node/REPORT.md`，合约接入性能记录为 `reports/2026-09-16-fork-evm/REPORT.md`。历史报告按原版本解释。
 
 ## 模块地图
 
@@ -21,7 +21,7 @@
 | `Key/Key.h` | Ed25519 钱包生成与公私钥结构 | 密钥格式、私钥保护 |
 | `Transaction/Transaction.h` | 交易编码、签名、交易池与序号索引 | 签名和状态检查的区别，两个索引和就绪计数 |
 | `Transaction/Block.h` | 区块生成、内容验证、候选比较、提交后清池 | 同账户顺序、未来高度、正式确认状态 |
-| `Transaction/Fork.h` | 分支缓存、共同祖先、回滚重放、交易池恢复 | 256 块与 512 MiB 边界，原子提交，状态失败恢复 |
+| `Transaction/Fork.h` | 分支缓存、累计择优、共同祖先、回滚重放、交易池恢复 | 每次调度采用一条有效分支，256 块与 512 MiB 边界，原子提交，状态失败恢复 |
 | `EVM/Encoding.h` | EVM 输入、区块尾部、签名摘要 | 完整输入及创世摘要绑定，严格长度与索引顺序 |
 | `EVM/Execute.h` | 原生余额映射、evmone 执行、费用、回执 | Gas、执行回退、确定环境、原生与合约总量 |
 | `EVM/Precompiles.cpp` | 有界模幂预编译适配 | 计费、整数长度、配对预编译支持范围 |
@@ -29,6 +29,7 @@
 | `DB/DB.h` | RocksDB、账户缓存、临时执行、原子提交 | 锁顺序、磁盘与缓存发布时序、守恒 |
 | `Network/Server.h` | 连接接收、报文长度、完整读取、验签投递、查询 | 超时、资源容量、协程边界 |
 | `Network/Client.h` | 连接、发送队列、广播、同步、出块主循环 | 可执行池大小、每连接 strand、分叉 |
+| `Network/Blocks.h` | 摘要重建、缺失交易、块读取与有界回复 | 全部交易输入、同批读取一致性、现有查询工作池与 strand |
 | `Message/Message.h` | 报文编码与长度约束 | 同时更新发送端、接收端和测试 |
 | `Crypto/MerkleTree.h` | 有序交易哈希的默克尔树根 | 奇数叶重复、顺序影响树根 |
 | `Crypto/VRF.h` | 可验证随机函数（Verifiable Random Function，VRF）实验 | 当前调用来自独立测试，选主接入另行设计 |
@@ -49,7 +50,7 @@
 | `Test/ForkNetworkTest.py` | 分区重连、分支补齐、未来候选 | 多节点链头、账户序号与重启 |
 | `Test/EvmNetworkTest.py` | 合约运行、复制与分叉 | 真实 Solidity、嵌套调用、日志、Gas、回退 |
 | `Test/BenchCores.py`、`Test/PlotCores.py` | 物理核心亲和性测试及图表 | 同步落盘、三次中位数、混合架构核心映射 |
-| `Test/Experiments.py` | 五组实验、速率控制、共同链采样、账户核对 | 测量窗口、未完成样本、发送瓶颈、独立数据库 |
+| `Test/Experiments.py` | 五组实验、速率控制、可选并行发送、共同链采样、账户核对 | 测量窗口、分类积压、发送方式、独立数据库 |
 | `Test/Cluster.py` | 动态节点清单、并行查询、共同前缀和故障调度 | 全连接增长、断线重连、所有节点查询一致性 |
 | `Test/Fisco/` | FISCO BCOS 单节点和十节点对照、分布式发压、参数调整、热点采样、共同链计数、余额核对与图表 | 固定版本和合约；记录发送端、历史规模、实际区块间隔和重复次数；区分短测与 60 秒持续负载；目录与 Chain 数据隔离；最新结果见 `reports/2026-09-30-fisco-tuning/REPORT.md` |
 | `Test/ClusterWorker.py` | 通过标准输入 JSON 管理本地或远程节点 | 路径边界、进程创建时间和可执行文件身份 |
@@ -93,7 +94,7 @@
 
 `QueryHeight → SyncBlock → SendBlockBatch → ProcessMessage → QueueForkBlock → AdoptFork`
 
-跟随节点使用同一执行函数重放原生与 EVM 交易。节点交换创世摘要、链头和高度，通过区块哈希请求不同分支。`AdoptFork` 取得提交独占锁，在 `WriteBatchWithIndex` 临时视图回滚并重放，验证成功后一次写盘；失败使用 `BranchMemory` 的变化键旧值恢复原生、EVM 和费用缓存。顺序追赶只清理涉及账户的已确认序号；重组后 `RefreshTxPool` 在原池中按新账户状态筛选交易，重建序号索引和就绪计数，保留已验签交易与合约输入。退出主链的交易通过正常入池检查恢复。未知大块将冷交易分成最多四片，使用独立验签线程池。并发任务总量限制为线程数的两倍，剩余任务由调用线程执行。分叉后先按新确认序号筛去过期交易，再批量恢复原生交易。
+跟随节点使用同一执行函数重放原生与 EVM 交易。节点交换创世摘要、链头和高度，通过区块哈希请求不同分支。`RankFork` 准备完整父链及累计排名，`ProcessForks` 排序后尝试最优分支，每次调度采用一条有效分支。`AdoptFork` 取得提交独占锁、复核状态版本，在 `WriteBatchWithIndex` 临时视图回滚并重放，验证成功后一次写盘；失败使用 `BranchMemory` 的变化键旧值恢复原生、EVM 和费用缓存。顺序追赶只清理涉及账户的已确认序号；重组后 `RefreshTxPool(lastBranchUsers)` 按变化账户筛选交易，重建序号索引和就绪计数，保留已验签交易与合约输入。退出主链的交易通过正常入池检查恢复。未知大块将冷交易分成最多四片，使用独立验签线程池。并发任务总量限制为线程数的两倍，剩余任务由调用线程执行。分叉后先按新确认序号筛去过期交易，再批量恢复原生交易。
 
 ### 合约执行
 
@@ -129,6 +130,7 @@ EVM 交易沿用 176 字节基础字段，附带部署/调用类型、Gas 上限
 | 数据 | 保护方式 |
 |---|---|
 | `users`、`userBurned`、链头和提交视图 | `dbCommitMutex`，读共享、提交独占 |
+| `publishedHead`：已落盘链头快照 | `chainHeadMutex`，提交成功后在提交锁内发布；读者复制后释放 |
 | `poolUsers`：已发布原生账户镜像 | `poolUsersMutex`，接收读共享，成功提交后增量发布 |
 | `txpool`：哈希 → 完整交易 | `txpoolMutex` |
 | `evmPool`：哈希 → 合约输入，以及字节计数 | `txpoolMutex` |
@@ -137,6 +139,7 @@ EVM 交易沿用 176 字节基础字段，附带部署/调用类型、Gas 上限
 | `readyPoolTx`：连续序号前缀中的交易数 | 同一交易池锁 |
 | `BlockBuffer`、`epoch` | `blockBufferLock`；`blockReady` 为原子标记 |
 | `forkBlocks` 与缓存字节数 | `forkMutex`，快照后释放；提交锁内可读取此缓存 |
+| `blockWork` 与完整内容在途字节数 | `blockWorkMutex`，短锁登记与释放，任务持有强引用 |
 | `evmState` | `dbCommitMutex`；候选执行使用增量覆盖层 |
 | `branchBatch` | 提交线程的临时批次指针，外层持有提交独占锁 |
 | `peerPool` | `peerMutex`，复制连接列表后投递发送 |
@@ -309,8 +312,17 @@ EVM 交易沿用 176 字节基础字段，附带部署/调用类型、Gas 上限
 
 `Cluster.Close` 并行停止各节点、收集记录，再请求 `ClusterWorker.Handle` 的 `delete-db`。删除前核对数据库路径、记录的 `--data` 和进程身份。通过、失败轮次均清理独立数据库，保留参数、创世配置、签名数据、统计和日志；清理失败写入 `cleanup-errors.json`。后续问题使用相同参数和新数据库复跑。
 
-## 下一轮 TPS 优化入口
+## 2026-10-14 瓶颈方案的本地实施
 
-详细代码审阅与已有时间线聚合见 [TPS 瓶颈与方案](reports/2026-10-14-tps-review/REPORT.md)。5 万档顺畅短测没有重组、执行缓存命中率 100%；4 万和 6 万档的分支工作量、候选在途量和数据库写调用耗时明显增加。优先在 `ProcessForks` 按累计排名准备最优分支并一次切换，在 `ProcessMessage` 区分摘要与完整块预算并合并重复块任务，再整理连续提交、按变化账户刷新交易池和网络线程的读块等待。
+代码审阅与已有时间线聚合见 [TPS 瓶颈与方案](reports/2026-10-14-tps-review/REPORT.md)，本次实现及十一项本地回归见 [实施记录](reports/2026-10-14-tps-local/REPORT.md)。本版本的十节点吞吐量待复测。
 
-现有 12 字节交易索引、增量 EVM 状态、窗口同步和完整内容验签缓存已实现，后续按新增计数选择缓存与线程参数。报告中的代码行数和调优参数为规划估计。本次审阅生成文档与图表，账本实现继续使用 `c4a8724`。测量结果同时保留计划窗口和实际共同链样本跨度；候选预算计数与唯一交易落后量分别解释。
+1. `RankFork` 保存共同祖先、不可变父链、累计排名和状态版本。`ProcessForks` 按累计交易数、高度、哈希排序；最优分支无效时重新准备下一候选，成功后立即结束本次调度。原有低排名和缺父缓存继续使用。
+2. `ReserveVerify` 对摘要 39、补传 41 各按一条消息计数，最多 64 条，与完整块交易预算独立，共享 16 MiB 正文预算。`BlockWork` 对完整块 2/7/22 和整个批次 43 按全部字节指纹及字节比较合并在途工作，最多 64 项、32 MiB；批次格式独立标记。`VerifyReservation` 与工作引用在完成、关闭或异常时释放。
+3. `MainLoop` 在 `forkReady` 或存在连续后继时，先把已选候选放入分支缓存比较，再采用已有原子批次。每请求最多四块、整体 256 块恢复窗口继续生效。`grouped_commit_batches` 与 `grouped_commit_blocks` 描述连续追加的合并写入。
+4. `RefreshTxPool(span)` 只访问变化账户的序号表，先撤销该账户旧就绪计数，再按新余额、序号和合约预算筛选并重建连续前缀。完整 `RefreshTxPool()` 保留；回归检查两者结果一致。
+5. `PublishChainHead` 在成功写盘和账户发布后更新高度、哈希、累计交易数、版本、费用与账户数。`ReadChainHead` 服务统计、链头比较、追赶进度和摘要范围检查。状态与历史位置查询继续使用提交共享锁。`ReadBlockReplies` 在同一共享锁下读取连续块，`ReadBlockAsync` 在已有 `queryThreads` 中读块和编码，再回到连接 strand。`SendBlockReply` 最多八项，发送继续遵守字节容量。
+6. `--db-profile 1` 每 64 次真实写调用抽样一次 RocksDB 阶段时间，默认关闭。新增 `db_profiled_writes`、日志/内存表/限流/其他阶段样本时间，以及 `db_write_stalls_ms`。已有执行、写入和锁指标继续保留。
+
+观测还增加 `fork_schedules`、`fork_selections`、`fork_invalid_candidates`、`pending_metadata`、`metadata_queue_wait_ms`、`metadata_tasks`、`block_tasks`、`duplicate_block_work`、`pool_refresh_users`、`pool_refresh_transactions`、`pending_block_replies`、`block_reply_wait_ms`、`block_reply_read_ms`、`block_reply_tasks` 和已发布 `state_version`。
+
+实验可选 `parallel_ingress=true`，默认关闭；每节点最多一批发送在途，批次之间保持顺序。结果分列业务交易、完整候选、元数据和唯一交易落后量，保留原有持续负载公式，并增加业务队列条件 `tx_sustainable`；字段口径见 `EXPERIMENTS.md`。默认线程、区块、缓存和同步写盘参数沿用既有设置，后续根据计数选择少量参数对照。
