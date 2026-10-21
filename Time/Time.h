@@ -32,6 +32,7 @@ struct ClockState {
     uint64_t samples=0,rejected=0;
     map<uint64_t,pair<int64_t,int64_t>> offsets;
     string control="legacy",scheduler="legacy";
+    bool joinCurrentRound=true;
     double maxSlewPpm=1000;
     int minPeers=3,modelPeriodMs=500,modelTtlMs=2000;
     int64_t guardUs=500;
@@ -273,7 +274,7 @@ nlohmann::json GetClockStats() {
         {"injected_offset_us",nodeClock.offsetUs},{"drift_ppm",nodeClock.driftPpm},{"enabled",nodeClock.enabled},
         {"samples",nodeClock.samples},{"rejected_samples",nodeClock.rejected},{"round_ms",nodeClock.roundMs},
         {"candidate_ms",nodeClock.candidateMs},{"algorithm",nodeClock.control=="legacy"?"four_timestamp_median_coupling":"bounded_robust_slew"},
-        {"control",nodeClock.control},{"scheduler",nodeClock.scheduler},{"slew_ppm",nodeClock.servo.slewPpm},
+        {"control",nodeClock.control},{"scheduler",nodeClock.scheduler},{"join_current_round",nodeClock.joinCurrentRound},{"slew_ppm",nodeClock.servo.slewPpm},
         {"max_slew_ppm",nodeClock.maxSlewPpm},{"mapping_version",nodeClock.servo.version},{"min_peers",nodeClock.minPeers},
         {"member_count",nodeClock.members.size()},{"fresh_sources",freshSources},{"unbound_samples",nodeClock.unboundSamples},{"fallback",fallback},
         {"empirical_uncertainty_us",nodeClock.baselineTimeUs},{"prepare_budget_us",nodeClock.baselinePrepareUs},

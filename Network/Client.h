@@ -371,7 +371,7 @@ void RunBoundedCandidateRound(int64_t& lastRound) {
     auto [uncertainty,prepare]=GetCandidateBudgets();
     auto mapping=GetClockMapping();
     auto planned=PlanCandidateRound(mapping,lastRound,int64_t(nodeClock.roundMs)*1000,
-        int64_t(nodeClock.candidateMs)*1000,prepare,uncertainty,nodeClock.guardUs,true);
+        int64_t(nodeClock.candidateMs)*1000,prepare,uncertainty,nodeClock.guardUs,nodeClock.joinCurrentRound);
     if (!planned) {
         { lock_guard lock(nodeClock.lock); nodeClock.budgetSkips++; }
         if (!blockReady) WaitSteadyDeadline(mapping.steadyUs+int64_t(nodeClock.roundMs)*1000);

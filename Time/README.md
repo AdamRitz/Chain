@@ -38,9 +38,10 @@
 | `--clock-trace` | 空 | 可选 JSONL；父目录须已存在，每节点独立路径 |
 | `--round-scheduler` | `legacy` | `legacy` 或 `bounded`；后者要求连续时钟模式与非零轮长 |
 | `--proposal-guard-us` | 500 | 提议预留余量，100..1000000 |
+| `--join-current-round` | 1 | 有界调度是否允许补入当前轮；设 0 仅选择未来轮，保留相同准备、观测和保护 |
 | `--round-ms` / `--candidate-ms` | 0 / 0 | 沿用既有配置；对照中固定，例如 50 / 12 |
 
-四组实验分别为 A=`robust+legacy`、B=`robust+bounded`、C=`learned+legacy`、D=`learned+bounded`。旧的 `legacy+legacy` 可作为额外历史参照；不混入上述四组。`Test/Cluster.py` 在新控制模式下从清单构造成员白名单，默认来源数仍需与实验节点数匹配。
+四组实验统一使用 `--round-scheduler bounded`：A=`robust+join-current-round=0`、B=`robust+join-current-round=1`、C=`learned+join-current-round=0`、D=`learned+join-current-round=1`。四组共用候选准备、模型输入采集、版本与截止保护，避免旧路径缺少准备耗时特征影响模型比较。旧的 `legacy` 调度可作为额外历史参照；不混入上述四组。`Test/Cluster.py` 在新控制模式下从清单构造成员白名单，默认来源数仍需与实验节点数匹配。
 
 启动单个本地实验节点的参数示例，使用相同创世配置并分别指定全新数据库。下面未自动启动任何节点：
 
