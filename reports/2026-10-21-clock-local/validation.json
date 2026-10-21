@@ -1,0 +1,108 @@
+{
+  "date": "2026-10-21",
+  "baseline_commit": "933905448951c600156a8ad2a0b3c3a895916fb5",
+  "workspace": "D:/Project/Chain",
+  "build": "Release GCC 15.2.0 CMake 3.30.3 Windows",
+  "tests_passed": 14,
+  "tests_failed": 0,
+  "tests": [
+    {
+      "name": "ChainCorrectness",
+      "seconds": 1.16773,
+      "passed": true
+    },
+    {
+      "name": "AccountCorrectness",
+      "seconds": 1.02702,
+      "passed": true
+    },
+    {
+      "name": "ForkStateCorrectness",
+      "seconds": 14.3247,
+      "passed": true
+    },
+    {
+      "name": "ThroughputCorrectness",
+      "seconds": 0.0468184,
+      "passed": true
+    },
+    {
+      "name": "FlowCorrectness",
+      "seconds": 0.948768,
+      "passed": true
+    },
+    {
+      "name": "ClockCorrectness",
+      "seconds": 0.312198,
+      "passed": true
+    },
+    {
+      "name": "ClockToolsCorrectness",
+      "seconds": 0.172024,
+      "passed": true
+    },
+    {
+      "name": "ClockNetwork",
+      "seconds": 9.26189,
+      "passed": true
+    },
+    {
+      "name": "ChainNetwork",
+      "seconds": 22.4623,
+      "passed": true
+    },
+    {
+      "name": "AccountNetwork",
+      "seconds": 3.05272,
+      "passed": true
+    },
+    {
+      "name": "ForkNetwork",
+      "seconds": 12.0642,
+      "passed": true
+    },
+    {
+      "name": "EvmNetwork",
+      "seconds": 16.448,
+      "passed": true
+    },
+    {
+      "name": "ExperimentNetwork",
+      "seconds": 13.4758,
+      "passed": true
+    },
+    {
+      "name": "AdmissionNetwork",
+      "seconds": 19.1694,
+      "passed": true
+    }
+  ],
+  "test_root": "build/clock-check-20261021-02",
+  "model_sha256": "c39f45fbd01acb40ecab390ddd99c3987aad67c9ef0aa1b5f92f82c832e4d167",
+  "source_sha256_git_lf": {
+    "CMakeLists.txt": "7d591bc1948e63f38a1a1ba4c310a8b18ce6e1fbdf51859bcf5156caaf3fd538",
+    "Network/Client.h": "b3c9f4915e85d02824bad5a287a964d4218ad43a00ce7a95c37b4d522083c980",
+    "Network/Server.h": "f9bccb86f3e3a7e1cd80c2e3f87506985fb484cb8e71aebd2610d273b1759d1c",
+    "Test/Clock/LabelTrace.py": "e0cdcaf9532e1142c0db31ddca15d13be917adc4c572f8dfd5c32220bf460916",
+    "Test/Clock/Simulate.py": "c9d8ff56a49eff1dffbde74f03f29b8900ff899c8637a386867723469c34edbf",
+    "Test/Clock/Train.py": "44584c7dd9caa34d68cc175ede84a34e8eba07dda5fe0cbbc4c74bb5eaec2e33",
+    "Test/ClockNetworkTest.py": "5ca7007a8569b860e6f8d00ff1fc6d6c2257ee0fbc578b18a425d7770e91feb4",
+    "Test/ClockTest.cpp": "898d8e53c1b469abc685f29e2067662450c991ffa681e6f67165c5dbf7757cf3",
+    "Test/ClockToolsTest.py": "3fae9127a7b80178b1ec909cf88ff7b8c5dbcd5edab78264af2cfa13366637d6",
+    "Test/Cluster.py": "ce82c443180f02060763b485fd009a8ab407c02daea0c141b9e102228dd99c5a",
+    "Time/ClockControl.h": "1548222ee0d545df98a627fa0938cdb6d35daf7c0553186fdb0a1113c8a766cc",
+    "Time/ClockModel.h": "d66443288e765c55c41b45520656630071b01591473a03b3c0270d47de1e03f7",
+    "Time/Models/simulation-v1.json": "c39f45fbd01acb40ecab390ddd99c3987aad67c9ef0aa1b5f92f82c832e4d167",
+    "Time/Round.h": "b885294edbc3cc188a70ecc83a70fb6615807c67768555b7db0785e566a29e1c",
+    "Time/Time.h": "21cf293af2c969606f58a0c4504b4a5de8cb543a23daad54a55858df66eb923c",
+    "Transaction/Block.h": "e106b1a87f10b08465c29acad8fb6266ab8ac65664a567d87ad79aa204e55f29",
+    "main.cpp": "0590e12672073b5085ed10721db92cc127f32cc75f641564086b346f9a0fce94"
+  },
+  "cloud_deployed": false,
+  "cloud_commands_executed": 0,
+  "default_features_enabled": false,
+  "performance_claim": null,
+  "preexisting_fisco_edits": "Preserved locally and excluded from staged changes",
+  "database_cleanup_status": "blocked_by_automatic_approval",
+  "remaining_local_databases": 47
+}

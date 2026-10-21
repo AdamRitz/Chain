@@ -1,0 +1,184 @@
+{
+  "dataset_sha256": "41771a379d3f6493bfd9b599c913cc6f9b7324d35e3c77d6b6a079e55c64ad04",
+  "label_source": "simulation",
+  "split": "whole run",
+  "counts": {
+    "train": 5280,
+    "calibration": 672,
+    "test": 3264
+  },
+  "runs": {
+    "train": [
+      "sim-0000",
+      "sim-0001",
+      "sim-0002",
+      "sim-0003",
+      "sim-0007",
+      "sim-0008",
+      "sim-0009",
+      "sim-0011",
+      "sim-0012",
+      "sim-0014",
+      "sim-0017",
+      "sim-0018",
+      "sim-0021",
+      "sim-0023",
+      "sim-0024",
+      "sim-0026",
+      "sim-0027",
+      "sim-0029",
+      "sim-0031",
+      "sim-0035",
+      "sim-0037",
+      "sim-0038",
+      "sim-0039",
+      "sim-0041",
+      "sim-0043",
+      "sim-0047",
+      "sim-0048",
+      "sim-0049",
+      "sim-0050",
+      "sim-0054",
+      "sim-0055",
+      "sim-0057",
+      "sim-0060",
+      "sim-0062",
+      "sim-0063",
+      "sim-0065",
+      "sim-0066",
+      "sim-0068",
+      "sim-0069",
+      "sim-0071",
+      "sim-0073",
+      "sim-0074",
+      "sim-0075",
+      "sim-0077",
+      "sim-0078",
+      "sim-0079",
+      "sim-0080",
+      "sim-0081",
+      "sim-0083",
+      "sim-0085",
+      "sim-0089",
+      "sim-0090",
+      "sim-0091",
+      "sim-0092",
+      "sim-0093"
+    ],
+    "calibration": [
+      "sim-0013",
+      "sim-0025",
+      "sim-0033",
+      "sim-0044",
+      "sim-0053",
+      "sim-0061",
+      "sim-0086"
+    ],
+    "test": [
+      "sim-0004",
+      "sim-0005",
+      "sim-0006",
+      "sim-0010",
+      "sim-0015",
+      "sim-0016",
+      "sim-0019",
+      "sim-0020",
+      "sim-0022",
+      "sim-0028",
+      "sim-0030",
+      "sim-0032",
+      "sim-0034",
+      "sim-0036",
+      "sim-0040",
+      "sim-0042",
+      "sim-0045",
+      "sim-0046",
+      "sim-0051",
+      "sim-0052",
+      "sim-0056",
+      "sim-0058",
+      "sim-0059",
+      "sim-0064",
+      "sim-0067",
+      "sim-0070",
+      "sim-0072",
+      "sim-0076",
+      "sim-0082",
+      "sim-0084",
+      "sim-0087",
+      "sim-0088",
+      "sim-0094",
+      "sim-0095"
+    ]
+  },
+  "heldout_scenarios": [
+    "mixed"
+  ],
+  "censored_prepare_rows": 64,
+  "coverage_scope": "fully observed labels only; censored rows retained and counted",
+  "time": {
+    "test_rows": 3264,
+    "coverage": 0.9905024509803921,
+    "pinball_ms": 0.035371789227573294,
+    "predicted_p95_ms": 2.901549052104306,
+    "by_scenario": {
+      "asymmetric": {
+        "rows": 288,
+        "coverage": 0.9826388888888888
+      },
+      "congestion": {
+        "rows": 288,
+        "coverage": 1.0
+      },
+      "false_time": {
+        "rows": 384,
+        "coverage": 1.0
+      },
+      "jitter": {
+        "rows": 192,
+        "coverage": 0.9895833333333334
+      },
+      "mixed": {
+        "rows": 1536,
+        "coverage": 0.984375
+      },
+      "quiet": {
+        "rows": 576,
+        "coverage": 1.0
+      }
+    }
+  },
+  "prepare": {
+    "test_rows": 3200,
+    "coverage": 0.9709375,
+    "pinball_ms": 0.015329811287953143,
+    "predicted_p95_ms": 1.690571283048296,
+    "by_scenario": {
+      "asymmetric": {
+        "rows": 288,
+        "coverage": 0.9895833333333334
+      },
+      "congestion": {
+        "rows": 288,
+        "coverage": 0.9583333333333334
+      },
+      "false_time": {
+        "rows": 384,
+        "coverage": 0.9869791666666666
+      },
+      "jitter": {
+        "rows": 192,
+        "coverage": 1.0
+      },
+      "mixed": {
+        "rows": 1472,
+        "coverage": 0.9565217391304348
+      },
+      "quiet": {
+        "rows": 576,
+        "coverage": 0.984375
+      }
+    }
+  },
+  "model_sha256": "c39f45fbd01acb40ecab390ddd99c3987aad67c9ef0aa1b5f92f82c832e4d167"
+}

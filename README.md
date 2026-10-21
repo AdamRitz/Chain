@@ -21,7 +21,9 @@ cmake --build build -j 4
 ctest --test-dir build --output-on-failure
 ```
 
-十一项测试覆盖原生交易、账户状态、网络复制、钱包、分叉恢复、EVM 合约及实验测量接口。全部使用新数据库。运行前安装 `Experiments/requirements.txt`，其中进程采样使用 `psutil`，图表使用 `matplotlib`。再次运行网络测试时，通过 `CHAIN_TEST_DATA_ROOT` 设置新的测试目录。
+十四项测试覆盖原生交易、账户状态、网络复制、钱包、分叉恢复、EVM 合约、实验测量接口及学习辅助时钟。全部使用新数据库。运行前安装 `Experiments/requirements.txt`，其中进程采样使用 `psutil`，图表使用 `matplotlib`。再次运行网络测试时，通过 `CHAIN_TEST_DATA_ROOT` 设置新的测试目录。
+
+学习辅助时钟、离线模型训练、模型旁路观察、限速校正与候选窗口内补入已实现，默认关闭。模式、来源约束、A/B/C/D 对照及本地使用方法见 [时间模块说明](Time/README.md)，本地验证见 [实施报告](reports/2026-10-21-clock-local/REPORT.md)。附带模型只经过受控模拟训练，尚未在云端部署或验证 TPS/确认延迟收益。
 
 Ubuntu 24.04 构建与回归入口：
 

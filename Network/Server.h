@@ -351,8 +351,9 @@ awaitable<void> session(uint64_t key,shared_ptr<Peer> peer) {
             WriteU64(response.data()+16,uint64_t(GetLogicalTimeUs()));
             SendData(peer,GenerateMessage(28,response));
         } else if (type==28&&peer->port&&peer->clockToken&&ReadU64(data.data())==peer->clockToken) {
-            RecordClockSample(peer->key,peer->clockSentLogical,int64_t(ReadU64(data.data()+8)),
-                int64_t(ReadU64(data.data()+16)),GetLogicalTimeUs(),int64_t((GetSteadyTime()-peer->clockSentSteady)/1000));
+            auto received=GetClockMapping();
+            RecordClockSample(GetPeerKey(peer->address,peer->port),peer->clockSentLogical,int64_t(ReadU64(data.data()+8)),
+                int64_t(ReadU64(data.data()+16)),received.logicalUs,received.steadyUs-int64_t(peer->clockSentSteady/1000));
             peer->clockToken=0;
         } else if (type==13||type==15||type==19||type==23||type==25||type==29||type==31||type==33||type==35||type==37) {
             co_await ProcessQuery(peer,type,std::move(data));

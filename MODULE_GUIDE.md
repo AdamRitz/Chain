@@ -1,6 +1,6 @@
 # Chain 模块与修改指南
 
-更新日期：2026-10-14。供后续开发者和 Codex 调整代码前阅读。当前为 C++20、每个程序单入口、头文件集中实现；函数沿用 PascalCase，数据流直接连接。
+更新日期：2026-10-21。供后续开发者和 Codex 调整代码前阅读。当前为 C++20、每个程序单入口、头文件集中实现；函数沿用 PascalCase，数据流直接连接。
 
 ## 当前能力
 
@@ -35,6 +35,8 @@
 | `Crypto/VRF.h` | 可验证随机函数（Verifiable Random Function，VRF）实验 | 当前调用来自独立测试，选主接入另行设计 |
 | `Tool/Tool.h` | 小端整数、公钥十六进制、哈希表散列 | 固定长度与非法输入 |
 | `Time/Time.h` | 墙钟、单调时钟、可注入偏差的逻辑时钟、同步校正 | `nodeClock.lock` 保护动态状态，性能使用单调时钟 |
+| `Time/ClockControl.h`、`Time/Round.h`、`Time/ClockModel.h` | 连续限速映射、冻结轮次、固定分位数模型 | 正速率、来源期限、经验不确定性、父状态版本、本地截止与共识分开 |
+| `Test/Clock/`、`Test/ClockTest.cpp`、`Test/ClockNetworkTest.py` | 受控标签、离线训练、控制与调度回归 | run 隔离、混合故障留出、删失记录、接收块有效性、独立数据库 |
 | `Tool/Resource.h` | Windows/Linux 进程处理器、内存和写入计数 | 比较累计增量，区分平台写入计数含义 |
 | `Sender/Sender.cpp` | 钱包文件、签名数据、测试创世配置、发包和查询 | 同账户走同一连接，创世资金仅用于新链 |
 | `Sender/EvmSender.cpp` | 合约交易、部署、调用、回执和存储查询 | 上海版字节码，Gas 预算，账户序号与创世配置 |
@@ -60,7 +62,7 @@
 | `Experiments/`、`scripts/Build-Linux.sh` | 实验计划、清单示例、依赖与 Ubuntu 构建 | 实际机器清单使用被忽略的 `cluster.local.json` |
 | `scripts/Sync-Repo.ps1`、`.githooks/` | 日期命名、提交、推送和远端核对 | 仅暂存本任务文件，遵循 `AGENTS.md` |
 
-`Test.cpp`、`Test/TestHash.cpp`、`Test/TxTest.h`、`ForEfficiency` 保留早期实验材料。正式回归入口是 `CMakeLists.txt` 中的十一项 CTest，实验工具需要安装 `Experiments/requirements.txt`。
+`Test.cpp`、`Test/TestHash.cpp`、`Test/TxTest.h`、`ForEfficiency` 保留早期实验材料。正式回归入口是 `CMakeLists.txt` 中的十四项 CTest，实验工具需要安装 `Experiments/requirements.txt`，离线模型训练另见 `Test/Clock/requirements.txt`。
 
 ## 主调用路径
 
@@ -334,3 +336,11 @@ EVM 交易沿用 176 字节基础字段，附带部署/调用类型、Gas 上限
 `MainLoop` 按 `max(lastRound+1, GetLogicalTimeUs()/period+1)` 选择未来轮次，候选收集与同步提交位于同一主循环。6 万档写调用平均约 40 毫秒、候选窗口 12 毫秒，提交跨过 50 毫秒轮次起点时，存在再等待未来整轮的路径。本地候选从 5 万档每节点每秒 18.41 次降至 6 万档 7.39 次。后续先加入跳轮和提交完成阶段计数，再验证窗口内补入当前轮的方式，保持每轮一次、截止窗口及父状态版本约束。
 
 6 万档每节点每秒重组重放约 45,343 笔，执行缓存命中约 29.0%，完整块在途预算峰值为 39,104 笔。继续记录候选父状态与分歧来源；数据库阶段计时使用现有抽样开关，状态与回执的原子同步持久化继续核对。资源、原始归档校验、全部参数和计量口径位于最新实测报告。
+
+## 2026-10-21 学习辅助时钟本地实现
+
+默认 `legacy` 行为保留；`robust/shadow/learned` 使用连续限速逻辑时钟和配置成员的一源一票。32 维低频特征与双分位数头只增加稳健控制器的预算、衰减增益，异常或过期模型回退；观察线程独立，候选线程只向有界遥测队列投递。
+
+`bounded` 在剩余窗口可行时补入当前轮，否则提前准备未来轮。父哈希、下一高度、状态版本与单调截止冻结；每轮至多一次准备，验证后再次检查版本与截止才入候选池。`SelectBlockCandidate` 的本地准备入口仅由主循环调用，主循环继续独占状态发布；网络收到的块完整执行 `ProcessBlock` 验证，不使用本地截止拒绝。
+
+当前成员白名单不是密码学认证；模拟训练模型不是云端适用性结论。本次仅本地正确性验证与 GitHub 同步，部署及十台性能实验尚未执行。完整参数、训练标签、预算和后续验收见 `Time/README.md` 与 `reports/2026-10-21-clock-local/REPORT.md`。

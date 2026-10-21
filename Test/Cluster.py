@@ -134,6 +134,10 @@ class Cluster:
             # One TCP connection per undirected edge; configured peers reconnect automatically.
             for peer in self.nodes[index+1:]:
                 arguments += ['--seed', f'{peer["host"]}:{peer["port"]}']
+            if settings.get('clock-control', 'legacy') != 'legacy':
+                for peer in self.nodes:
+                    if peer['id'] != node['id']:
+                        arguments += ['--clock-peer', f'{peer["host"]}:{peer["port"]}']
             self.starts[index] = {'action': 'start', 'run': self.run, 'binary': node['binary'],
                                   'genesis': self.genesis, 'arguments': arguments}
         def StartOne(index):

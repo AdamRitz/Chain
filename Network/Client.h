@@ -306,13 +306,33 @@ awaitable<void> SynchronizeClock() {
             if (peer->closed) return;
             auto now=GetSteadyTime();
             if (peer->clockToken&&now-peer->clockSentSteady<1000000000) return;
-            peer->clockSentSteady=now; peer->clockSentLogical=GetLogicalTimeUs(); peer->clockToken=now;
+            auto mapping=GetClockMapping();
+            peer->clockSentSteady=uint64_t(mapping.steadyUs)*1000; peer->clockSentLogical=mapping.logicalUs; peer->clockToken=now;
             array<uint8_t,8> request; WriteU64(request.data(),now);
             SendData(peer,GenerateMessage(27,request));
         });
         timer.expires_after(milliseconds(nodeClock.periodMs));
         co_await timer.async_wait(use_awaitable);
         AdjustClock();
+    }
+}
+void ObserveClock() {
+    double previousCpu=0; int64_t previousAt=0;
+    try {
+        while (nodeRunning) {
+            auto at=int64_t(GetSteadyTime()/1000);
+            auto resources=GetProcessResources(); double cpu=resources.value("process_cpu_seconds",0.0);
+            double cores=previousAt?max(0.0,(cpu-previousCpu)*1e6/(at-previousAt)):0;
+            size_t ready=0;
+            { lock_guard lock(txpoolMutex); ready=readyPoolTx; }
+            UpdateClockModel(cores,pendingTxVerify.load(),pendingBlockVerify.load()+pendingMetadata.load(),ready);
+            FlushClockTrace(); previousCpu=cpu; previousAt=at;
+            this_thread::sleep_for(milliseconds(nodeClock.modelPeriodMs));
+        }
+        FlushClockTrace();
+    } catch (const exception& e) {
+        // If observation fails, prediction TTL and source expiry still force the bounded fallback.
+        spdlog::warn("Clock observer stopped: {}",e.what());
     }
 }
 void WaitLogicalTime(int64_t target) {
@@ -332,22 +352,105 @@ void ProcessTxTimeACKMessage(const vector<uint8_t>& data,system_clock::time_poin
 }
 
 // ------------------------------------------------出块循环------------------------------------------------
+bool WaitSteadyDeadline(int64_t target) {
+    while (nodeRunning) {
+        if (forkReady||syncOwner.load()) return false;
+        auto remaining=target-int64_t(GetSteadyTime()/1000);
+        if (remaining<=0) return true;
+        unique_lock lock(txpoolMutex);
+        txpoolCondition.wait_for(lock,microseconds(min(int64_t(5000),remaining)));
+    }
+    return false;
+}
+bool ProcessTimedForks() {
+    auto start=GetSteadyTime(); auto changed=ProcessForks();
+    if (changed) RecordClockWork(false,int64_t((GetSteadyTime()-start)/1000));
+    return changed;
+}
+void RunBoundedCandidateRound(int64_t& lastRound) {
+    auto [uncertainty,prepare]=GetCandidateBudgets();
+    auto mapping=GetClockMapping();
+    auto planned=PlanCandidateRound(mapping,lastRound,int64_t(nodeClock.roundMs)*1000,
+        int64_t(nodeClock.candidateMs)*1000,prepare,uncertainty,nodeClock.guardUs,true);
+    if (!planned) {
+        { lock_guard lock(nodeClock.lock); nodeClock.budgetSkips++; }
+        if (!blockReady) WaitSteadyDeadline(mapping.steadyUs+int64_t(nodeClock.roundMs)*1000);
+        return;
+    }
+    auto round=*planned;
+    auto head=ReadChainHead(); round.parent=head.hash; round.height=head.height+1; round.stateVersion=head.version;
+    ClockFeatures features;
+    { lock_guard lock(nodeClock.lock); features=nodeClock.features; round.featureVersion=nodeClock.featureVersion; }
+    if (!WaitSteadyDeadline(round.startUs-prepare)) return;
+    if (!produceBlocks) { WaitSteadyDeadline(round.collectionDeadlineUs); return; }
+    if (forkReady||syncOwner.load()) return;
+    head=ReadChainHead();
+    if (head.hash!=round.parent||head.version!=round.stateVersion||head.height+1!=round.height) return;
+    // Reserve the attempt before preparation, including cancellation. Never catch up old rounds.
+    {
+        lock_guard lock(nodeClock.lock);
+        if (lastRound>=0&&round.id>lastRound+1) nodeClock.skippedRounds+=round.id-lastRound-1;
+        nodeClock.rounds++; if (round.joinedCurrent) nodeClock.joinedRounds++;
+    }
+    lastRound=round.id;
+    auto start=GetSteadyTime(); auto data=GenerateBlock(); Block preparedBlock;
+    bool valid=!data.empty()&&VerifyBlock(data,&preparedBlock)&&DBCheckBlockUsers(data);
+    auto prepared=GetSteadyTime();
+    string outcome=data.empty()?"empty":"invalid"; bool accepted=false; uint64_t verifyStart=prepared,finished=prepared;
+    if (valid) {
+        if (!WaitSteadyDeadline(round.startUs)) outcome="cancelled";
+        else {
+            verifyStart=GetSteadyTime(); head=ReadChainHead();
+            if (!CandidateRoundFits(round,int64_t(verifyStart/1000),head.height+1,head.version,head.hash))
+                outcome=head.version!=round.stateVersion||head.hash!=round.parent?"stale_parent":"late";
+            else {
+                accepted=SelectBlockCandidate(std::move(preparedBlock),data,&round);
+                outcome=accepted?"offered":"not_selected";
+            }
+            finished=GetSteadyTime();
+        }
+    }
+    auto workUs=int64_t((prepared-start+finished-verifyStart)/1000);
+    if (accepted) { localProposals++; AnnounceBlock(data); }
+    if (!accepted&&outcome=="not_selected") {
+        head=ReadChainHead();
+        if (head.version!=round.stateVersion||head.hash!=round.parent) outcome="stale_parent";
+        else if (int64_t(finished/1000)>=round.proposalDeadlineUs) outcome="late";
+    }
+    bool late=outcome=="late";
+    RecordClockWork(true,workUs,late);
+    {
+        lock_guard lock(nodeClock.lock);
+        if (late) nodeClock.lateCandidates++;
+        if (outcome=="stale_parent") nodeClock.staleCandidates++;
+        if (outcome=="cancelled") nodeClock.cancelledCandidates++;
+    }
+    WriteClockTrace({{"kind","candidate"},{"round",round.id},{"clock_version",round.clockVersion},{"feature_version",round.featureVersion},
+        {"features",features},{"parent",U32ToHex(round.parent)},{"height",round.height},{"state_version",round.stateVersion},
+        {"start_us",round.startUs},{"proposal_deadline_us",round.proposalDeadlineUs},{"collection_deadline_us",round.collectionDeadlineUs},
+        {"offered_us",round.offeredUs},{"joined_current",round.joinedCurrent},{"outcome",outcome},{"prepare_us",workUs},
+        {"censored",outcome=="cancelled"||outcome=="empty"},{"label_source","local_monotonic"}});
+    WaitSteadyDeadline(round.collectionDeadlineUs);
+}
 void MainLoop() {
     try {
         int64_t lastRound=-1;
         while (true) {
-            if (ProcessForks()) AnnounceBlock(DBReadBlockByHash(DBReadCurrentBlock()));
+            if (ProcessTimedForks()) AnnounceBlock(DBReadBlockByHash(DBReadCurrentBlock()));
             {
                 unique_lock lock(txpoolMutex);
                 txpoolCondition.wait(lock,[]{return !nodeRunning||forkReady||blockReady||(produceBlocks&&readyPoolTx>0);});
                 if (forkReady) continue;
+                if (!nodeRunning&&nodeClock.scheduler=="bounded"&&!blockReady) break;
                 if (!nodeRunning&&!blockReady&&(!produceBlocks||txpool.empty())) break;
                 if (!nodeClock.roundMs&&produceBlocks&&!blockReady&&nodeRunning&&readyPoolTx<maxBlockTx) {
                     txpoolCondition.wait_for(lock,milliseconds(blockInterval),[]{return !nodeRunning||forkReady||blockReady||readyPoolTx>=maxBlockTx;});
                 }
                 if (forkReady) continue;
             }
-            if (nodeClock.roundMs&&nodeRunning) {
+            if (nodeClock.roundMs&&nodeRunning&&nodeClock.scheduler=="bounded") {
+                RunBoundedCandidateRound(lastRound);
+            } else if (nodeClock.roundMs&&nodeRunning) {
                 auto period=int64_t(nodeClock.roundMs)*1000;
                 auto round=max(lastRound+1,GetLogicalTimeUs()/period+1);
                 WaitLogicalTime(round*period);
@@ -373,12 +476,14 @@ void MainLoop() {
             // 已收到连续后继时复用分支批次，一次同步写盘发布整段状态。
             if (forkReady||HasForkChild(selected.first.hash)) {
                 QueueForkBlock(selected.first,selected.second,false); forkReady=true;
-                if (ProcessForks()) { AnnounceBlock(DBReadBlockByHash(DBReadCurrentBlock())); continue; }
+                if (ProcessTimedForks()) { AnnounceBlock(DBReadBlockByHash(DBReadCurrentBlock())); continue; }
             }
+            auto commitStart=GetSteadyTime();
             if (!CommitBlock(selected.first,selected.second)) {
                 spdlog::warn("Rejected candidate at height {}",selected.first.height);
                 continue;
             }
+            RecordClockWork(false,int64_t((GetSteadyTime()-commitStart)/1000));
             AnnounceBlock(selected.second);
             forkReady=true;
             spdlog::debug("Local block committed. Height:{}, TxNum:{}",selected.first.height,selected.first.txNum);

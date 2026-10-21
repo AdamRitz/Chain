@@ -1,3 +1,4 @@
 .githooks/* text eol=lf
 scripts/*.ps1 text eol=lf
 *.sh text eol=lf
+/Time/Models/*.json text eol=lf

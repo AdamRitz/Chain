@@ -264,6 +264,27 @@ void GenerateGenesisBlock() {
 // 维护三个高度的候选窗口，按交易数量和哈希比较。
 bool QueueForkBlock(Block block,vector<uint8_t> data,bool notify);
 bool HasForkBlock(const array<uint8_t,32>& hash,const vector<uint8_t>& data);
+// Local prepared work is offered only by MainLoop, the sole state publisher. A version
+// mismatch discards it; network candidates always use the full ProcessBlock path below.
+bool SelectBlockCandidate(Block block,vector<uint8_t> data,CandidateRound* localRound=nullptr) {
+    if (localRound) {
+        auto state=ReadChainHead();
+        if (block.height!=localRound->height||block.previousHash!=localRound->parent||
+            !CandidateRoundFits(*localRound,int64_t(GetSteadyTime()/1000),state.height+1,state.version,state.hash)) return false;
+    }
+    {
+        lock_guard lock(blockBufferLock);
+        auto now=int64_t(GetSteadyTime()/1000);
+        if (localRound&&now>=localRound->proposalDeadlineUs) return false;
+        if (block.height<epoch||block.height-epoch>=3) return false;
+        auto& slot=BlockBuffer[block.height-epoch];
+        if (!slot.second.empty()&&(block.txNum<slot.first.txNum||(block.txNum==slot.first.txNum&&block.hash>=slot.first.hash))) return false;
+        if (localRound) localRound->offeredUs=now;
+        slot={std::move(block),std::move(data)};
+        blockReady=!BlockBuffer[0].second.empty();
+    }
+    WakeMainLoop(); return true;
+}
 bool ProcessBlock(vector<uint8_t> data) {
     if (data.size()<112) return false;
     auto height=ReadU64(data.data()+64);
@@ -291,16 +312,7 @@ bool ProcessBlock(vector<uint8_t> data) {
         return QueueForkBlock(std::move(block),std::move(data),true);
     }
     if (!DBCheckBlockUsers(data)) { invalidUserBlocks++; return false; }
-    {
-        lock_guard lock(blockBufferLock);
-        if (height<epoch||height-epoch>=3) return false;
-        auto& slot=BlockBuffer[height-epoch];
-        if (!slot.second.empty()&&(block.txNum<slot.first.txNum||(block.txNum==slot.first.txNum&&block.hash>=slot.first.hash))) return false;
-        slot={std::move(block),std::move(data)};
-        blockReady=!BlockBuffer[0].second.empty();
-    }
-    WakeMainLoop();
-    return true;
+    return SelectBlockCandidate(std::move(block),std::move(data));
 }
 bool CommitBlock(const Block& block,const vector<uint8_t>& data) {
     auto start=GetSteadyTime();
