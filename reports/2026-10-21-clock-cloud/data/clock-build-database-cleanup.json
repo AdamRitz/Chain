@@ -1,0 +1,186 @@
+[
+  {
+    "path": "/opt/chain/releases/10f80fdd3a1323bf77eee70addddb0d3a4926fd7/build/check-clock-20261021/experiment-test-data/1792594924490372787/index/index/db",
+    "removed": true
+  },
+  {
+    "path": "/opt/chain/releases/10f80fdd3a1323bf77eee70addddb0d3a4926fd7/build/check-clock-20261021/admission-network-test-data/1792594928910380577/full-block-batch/full-batch/db",
+    "removed": true
+  },
+  {
+    "path": "/opt/chain/releases/10f80fdd3a1323bf77eee70addddb0d3a4926fd7/build/check-clock-20261021/admission-network-test-data/1792594928910380577/large-block-batch/full-batch/db",
+    "removed": true
+  },
+  {
+    "path": "/opt/chain/releases/10f80fdd3a1323bf77eee70addddb0d3a4926fd7/build/check-clock-20261021/admission-network-test-data/1792594928910380577/reliable/db",
+    "removed": true
+  },
+  {
+    "path": "/opt/chain/releases/10f80fdd3a1323bf77eee70addddb0d3a4926fd7/build/check-clock-20261021/network-test-data/1792594919143905199/follower/db",
+    "removed": true
+  },
+  {
+    "path": "/opt/chain/releases/10f80fdd3a1323bf77eee70addddb0d3a4926fd7/build/check-clock-20261021/account-network-test-data/1792594922601486203/leader/db",
+    "removed": true
+  },
+  {
+    "path": "/opt/chain/releases/10f80fdd3a1323bf77eee70addddb0d3a4926fd7/build/check-clock-20261021/network-test-data/1792594919143905199/leader/db",
+    "removed": true
+  },
+  {
+    "path": "/opt/chain/releases/10f80fdd3a1323bf77eee70addddb0d3a4926fd7/build/check-clock-20261021/account-network-test-data/1792594922601486203/follower/db",
+    "removed": true
+  },
+  {
+    "path": "/opt/chain/releases/10f80fdd3a1323bf77eee70addddb0d3a4926fd7/build/check-clock-20261021/admission-network-test-data/1792594928910380577/admission/db",
+    "removed": true
+  },
+  {
+    "path": "/opt/chain/releases/10f80fdd3a1323bf77eee70addddb0d3a4926fd7/build/check-clock-20261021/network-test-data/1792594919143905199/graceful/db",
+    "removed": true
+  },
+  {
+    "path": "/opt/chain/releases/10f80fdd3a1323bf77eee70addddb0d3a4926fd7/build/check-clock-20261021/clock-test-data/193051625758176/db",
+    "removed": true
+  },
+  {
+    "path": "/opt/chain/releases/10f80fdd3a1323bf77eee70addddb0d3a4926fd7/build/check-clock-20261021/flow-test-data/193051450678727/deterministic",
+    "removed": true
+  },
+  {
+    "path": "/opt/chain/releases/10f80fdd3a1323bf77eee70addddb0d3a4926fd7/build/check-clock-20261021/flow-test-data/193051450678727/ranked",
+    "removed": true
+  },
+  {
+    "path": "/opt/chain/releases/10f80fdd3a1323bf77eee70addddb0d3a4926fd7/build/check-clock-20261021/fork-network-test-data/a/db",
+    "removed": true
+  },
+  {
+    "path": "/opt/chain/releases/10f80fdd3a1323bf77eee70addddb0d3a4926fd7/build/check-clock-20261021/evm-network-test-data/producer/db",
+    "removed": true
+  },
+  {
+    "path": "/opt/chain/releases/10f80fdd3a1323bf77eee70addddb0d3a4926fd7/build/check-clock-20261021/fork-state-data/193027741140647/large-fork",
+    "removed": true
+  },
+  {
+    "path": "/opt/chain/releases/10f80fdd3a1323bf77eee70addddb0d3a4926fd7/build/check-clock-20261021/fork-network-test-data/b/db",
+    "removed": true
+  },
+  {
+    "path": "/opt/chain/releases/10f80fdd3a1323bf77eee70addddb0d3a4926fd7/build/check-clock-20261021/evm-network-test-data/follower/db",
+    "removed": true
+  },
+  {
+    "path": "/opt/chain/releases/10f80fdd3a1323bf77eee70addddb0d3a4926fd7/build/check-clock-20261021/user-test-data/193027573258406/chain",
+    "removed": true
+  },
+  {
+    "path": "/opt/chain/releases/10f80fdd3a1323bf77eee70addddb0d3a4926fd7/build/check-clock-20261021/fork-network-test-data/future/db",
+    "removed": true
+  },
+  {
+    "path": "/opt/chain/releases/10f80fdd3a1323bf77eee70addddb0d3a4926fd7/build/check-clock-20261021/flow-test-data/193051450678727",
+    "removed": true
+  },
+  {
+    "path": "/opt/chain/releases/10f80fdd3a1323bf77eee70addddb0d3a4926fd7/build/check-clock-20261021/test-data/193026454279175",
+    "removed": true
+  },
+  {
+    "path": "/opt/chain/releases/10f80fdd3a1323bf77eee70addddb0d3a4926fd7/build/check-clock-20261021/fork-state-data/193027741140647",
+    "removed": true
+  },
+  {
+    "path": "/opt/chain/releases/070fbb46ff25bce38d9599c5165dce66d63fc561/build/check-clock-cloud/admission-network-test-data/1792595658846730851/large-block-batch/full-batch/db",
+    "removed": true
+  },
+  {
+    "path": "/opt/chain/releases/070fbb46ff25bce38d9599c5165dce66d63fc561/build/check-clock-cloud/admission-network-test-data/1792595658846730851/full-block-batch/full-batch/db",
+    "removed": true
+  },
+  {
+    "path": "/opt/chain/releases/070fbb46ff25bce38d9599c5165dce66d63fc561/build/check-clock-cloud/experiment-test-data/1792595654425154182/index/index/db",
+    "removed": true
+  },
+  {
+    "path": "/opt/chain/releases/070fbb46ff25bce38d9599c5165dce66d63fc561/build/check-clock-cloud/network-test-data/1792595649140889126/leader/db",
+    "removed": true
+  },
+  {
+    "path": "/opt/chain/releases/070fbb46ff25bce38d9599c5165dce66d63fc561/build/check-clock-cloud/admission-network-test-data/1792595658846730851/reliable/db",
+    "removed": true
+  },
+  {
+    "path": "/opt/chain/releases/070fbb46ff25bce38d9599c5165dce66d63fc561/build/check-clock-cloud/account-network-test-data/1792595652641105243/follower/db",
+    "removed": true
+  },
+  {
+    "path": "/opt/chain/releases/070fbb46ff25bce38d9599c5165dce66d63fc561/build/check-clock-cloud/account-network-test-data/1792595652641105243/leader/db",
+    "removed": true
+  },
+  {
+    "path": "/opt/chain/releases/070fbb46ff25bce38d9599c5165dce66d63fc561/build/check-clock-cloud/network-test-data/1792595649140889126/graceful/db",
+    "removed": true
+  },
+  {
+    "path": "/opt/chain/releases/070fbb46ff25bce38d9599c5165dce66d63fc561/build/check-clock-cloud/admission-network-test-data/1792595658846730851/admission/db",
+    "removed": true
+  },
+  {
+    "path": "/opt/chain/releases/070fbb46ff25bce38d9599c5165dce66d63fc561/build/check-clock-cloud/network-test-data/1792595649140889126/follower/db",
+    "removed": true
+  },
+  {
+    "path": "/opt/chain/releases/070fbb46ff25bce38d9599c5165dce66d63fc561/build/check-clock-cloud/fork-network-test-data/future/db",
+    "removed": true
+  },
+  {
+    "path": "/opt/chain/releases/070fbb46ff25bce38d9599c5165dce66d63fc561/build/check-clock-cloud/fork-network-test-data/a/db",
+    "removed": true
+  },
+  {
+    "path": "/opt/chain/releases/070fbb46ff25bce38d9599c5165dce66d63fc561/build/check-clock-cloud/user-test-data/193754735420945/chain",
+    "removed": true
+  },
+  {
+    "path": "/opt/chain/releases/070fbb46ff25bce38d9599c5165dce66d63fc561/build/check-clock-cloud/fork-network-test-data/b/db",
+    "removed": true
+  },
+  {
+    "path": "/opt/chain/releases/070fbb46ff25bce38d9599c5165dce66d63fc561/build/check-clock-cloud/clock-test-data/193778591735524/db",
+    "removed": true
+  },
+  {
+    "path": "/opt/chain/releases/070fbb46ff25bce38d9599c5165dce66d63fc561/build/check-clock-cloud/evm-network-test-data/follower/db",
+    "removed": true
+  },
+  {
+    "path": "/opt/chain/releases/070fbb46ff25bce38d9599c5165dce66d63fc561/build/check-clock-cloud/fork-state-data/193754899985241/large-fork",
+    "removed": true
+  },
+  {
+    "path": "/opt/chain/releases/070fbb46ff25bce38d9599c5165dce66d63fc561/build/check-clock-cloud/flow-test-data/193778434779348/deterministic",
+    "removed": true
+  },
+  {
+    "path": "/opt/chain/releases/070fbb46ff25bce38d9599c5165dce66d63fc561/build/check-clock-cloud/evm-network-test-data/producer/db",
+    "removed": true
+  },
+  {
+    "path": "/opt/chain/releases/070fbb46ff25bce38d9599c5165dce66d63fc561/build/check-clock-cloud/flow-test-data/193778434779348/ranked",
+    "removed": true
+  },
+  {
+    "path": "/opt/chain/releases/070fbb46ff25bce38d9599c5165dce66d63fc561/build/check-clock-cloud/flow-test-data/193778434779348",
+    "removed": true
+  },
+  {
+    "path": "/opt/chain/releases/070fbb46ff25bce38d9599c5165dce66d63fc561/build/check-clock-cloud/fork-state-data/193754899985241",
+    "removed": true
+  },
+  {
+    "path": "/opt/chain/releases/070fbb46ff25bce38d9599c5165dce66d63fc561/build/check-clock-cloud/test-data/193754454680484",
+    "removed": true
+  }
+]

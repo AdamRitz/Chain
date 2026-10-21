@@ -1,0 +1,82 @@
+[
+  {
+    "node": "node01",
+    "ip": "182.151.5.57",
+    "private_ip": "192.168.0.176",
+    "stdout": "7.2.2\nMainPID=119723\nId=chain-node.service\nActiveState=active\nSubState=running\n\nMainPID=119306\nId=fisco-bcos.service\nActiveState=active\nSubState=running\n",
+    "stderr": "",
+    "exit_code": 0
+  },
+  {
+    "node": "node02",
+    "ip": "118.122.78.54",
+    "private_ip": "192.168.0.111",
+    "stdout": "7.2.2\nMainPID=80211\nId=chain-node.service\nActiveState=active\nSubState=running\n\nMainPID=80002\nId=fisco-bcos.service\nActiveState=active\nSubState=running\n",
+    "stderr": "",
+    "exit_code": 0
+  },
+  {
+    "node": "node03",
+    "ip": "182.151.27.42",
+    "private_ip": "192.168.0.108",
+    "stdout": "7.2.2\nMainPID=80435\nId=chain-node.service\nActiveState=active\nSubState=running\n\nMainPID=80231\nId=fisco-bcos.service\nActiveState=active\nSubState=running\n",
+    "stderr": "",
+    "exit_code": 0
+  },
+  {
+    "node": "node04",
+    "ip": "118.121.202.17",
+    "private_ip": "192.168.0.167",
+    "stdout": "7.2.2\nMainPID=15723\nId=chain-node.service\nActiveState=active\nSubState=running\n\nMainPID=15520\nId=fisco-bcos.service\nActiveState=active\nSubState=running\n",
+    "stderr": "",
+    "exit_code": 0
+  },
+  {
+    "node": "node05",
+    "ip": "110.185.105.122",
+    "private_ip": "192.168.0.249",
+    "stdout": "7.2.2\nMainPID=84334\nId=chain-node.service\nActiveState=active\nSubState=running\n\nMainPID=84093\nId=fisco-bcos.service\nActiveState=active\nSubState=running\n",
+    "stderr": "",
+    "exit_code": 0
+  },
+  {
+    "node": "node06",
+    "ip": "110.185.104.206",
+    "private_ip": "192.168.0.138",
+    "stdout": "7.2.2\nMainPID=74598\nId=chain-node.service\nActiveState=active\nSubState=running\n\nMainPID=74312\nId=fisco-bcos.service\nActiveState=active\nSubState=running\n",
+    "stderr": "",
+    "exit_code": 0
+  },
+  {
+    "node": "node07",
+    "ip": "182.151.9.116",
+    "private_ip": "192.168.0.162",
+    "stdout": "7.2.2\nMainPID=94401\nId=chain-node.service\nActiveState=active\nSubState=running\n\nMainPID=94157\nId=fisco-bcos.service\nActiveState=active\nSubState=running\n",
+    "stderr": "",
+    "exit_code": 0
+  },
+  {
+    "node": "node08",
+    "ip": "182.151.38.203",
+    "private_ip": "192.168.0.61",
+    "stdout": "7.2.2\nMainPID=102744\nId=chain-node.service\nActiveState=active\nSubState=running\n\nMainPID=102541\nId=fisco-bcos.service\nActiveState=active\nSubState=running\n",
+    "stderr": "",
+    "exit_code": 0
+  },
+  {
+    "node": "node09",
+    "ip": "118.121.198.136",
+    "private_ip": "192.168.0.12",
+    "stdout": "7.2.2\nMainPID=16062\nId=chain-node.service\nActiveState=active\nSubState=running\n\nMainPID=15719\nId=fisco-bcos.service\nActiveState=active\nSubState=running\n",
+    "stderr": "",
+    "exit_code": 0
+  },
+  {
+    "node": "node10",
+    "ip": "118.122.72.173",
+    "private_ip": "192.168.0.11",
+    "stdout": "7.2.2\nMainPID=15941\nId=chain-node.service\nActiveState=active\nSubState=running\n\nMainPID=15733\nId=fisco-bcos.service\nActiveState=active\nSubState=running\n",
+    "stderr": "",
+    "exit_code": 0
+  }
+]

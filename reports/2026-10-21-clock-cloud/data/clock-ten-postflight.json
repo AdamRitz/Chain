@@ -1,0 +1,82 @@
+[
+  {
+    "node": "node01",
+    "ip": "182.151.5.57",
+    "private_ip": "192.168.0.176",
+    "stdout": "ecs-c381-0001\nactive\nactive\n/opt/chain/releases/070fbb46ff25bce38d9599c5165dce66d63fc561/source\n/opt/chain/releases/070fbb46ff25bce38d9599c5165dce66d63fc561/build\na5174f5b797e53b6ff9457465c84f5d09be5aac3f13a1d3eb953aa8ff311830d  /opt/chain/build/boost\nc39f45fbd01acb40ecab390ddd99c3987aad67c9ef0aa1b5f92f82c832e4d167  /opt/chain/src/Time/Models/simulation-v1.json\n{\"remaining_experiment_databases\": [], \"processes\": [{\"cmdline\": [\"/opt/chain/build/boost\", \"--config\", \"/etc/chain/node.yaml\", \"--metrics\", \"/var/lib/chain/last-stats.json\", \"--relay-transactions\", \"1\", \"--clock-sync\", \"1\", \"--round-ms\", \"50\", \"--candidate-ms\", \"12\", \"--clock-control\", \"learned\", \"--clock-model\", \"/opt/chain/src/Time/Models/simulation-v1.json\", \"--round-scheduler\", \"bounded\", \"--join-current-round\", \"1\", \"--clock-peer\", \"192.168.0.111:8089\", \"--clock-peer\", \"192.168.0.108:8089\", \"--clock-peer\", \"192.168.0.167:8089\", \"--clock-peer\", \"192.168.0.249:8089\", \"--clock-peer\", \"192.168.0.138:8089\", \"--clock-peer\", \"192.168.0.162:8089\", \"--clock-peer\", \"192.168.0.61:8089\", \"--clock-peer\", \"192.168.0.12:8089\", \"--clock-peer\", \"192.168.0.11:8089\"], \"exe\": \"/opt/chain/releases/070fbb46ff25bce38d9599c5165dce66d63fc561/build/boost\", \"pid\": 140025, \"name\": \"boost\"}]}\n",
+    "stderr": "",
+    "exit_code": 0
+  },
+  {
+    "node": "node02",
+    "ip": "118.122.78.54",
+    "private_ip": "192.168.0.111",
+    "stdout": "ecs-c381-0002\nactive\nactive\n/opt/chain/releases/070fbb46ff25bce38d9599c5165dce66d63fc561/source\n/opt/chain/releases/070fbb46ff25bce38d9599c5165dce66d63fc561/build\na5174f5b797e53b6ff9457465c84f5d09be5aac3f13a1d3eb953aa8ff311830d  /opt/chain/build/boost\nc39f45fbd01acb40ecab390ddd99c3987aad67c9ef0aa1b5f92f82c832e4d167  /opt/chain/src/Time/Models/simulation-v1.json\n{\"remaining_experiment_databases\": [], \"processes\": [{\"cmdline\": [\"/opt/chain/build/boost\", \"--config\", \"/etc/chain/node.yaml\", \"--metrics\", \"/var/lib/chain/last-stats.json\", \"--relay-transactions\", \"1\", \"--clock-sync\", \"1\", \"--round-ms\", \"50\", \"--candidate-ms\", \"12\", \"--clock-control\", \"learned\", \"--clock-model\", \"/opt/chain/src/Time/Models/simulation-v1.json\", \"--round-scheduler\", \"bounded\", \"--join-current-round\", \"1\", \"--clock-peer\", \"192.168.0.176:8089\", \"--clock-peer\", \"192.168.0.108:8089\", \"--clock-peer\", \"192.168.0.167:8089\", \"--clock-peer\", \"192.168.0.249:8089\", \"--clock-peer\", \"192.168.0.138:8089\", \"--clock-peer\", \"192.168.0.162:8089\", \"--clock-peer\", \"192.168.0.61:8089\", \"--clock-peer\", \"192.168.0.12:8089\", \"--clock-peer\", \"192.168.0.11:8089\"], \"exe\": \"/opt/chain/releases/070fbb46ff25bce38d9599c5165dce66d63fc561/build/boost\", \"pid\": 97341, \"name\": \"boost\"}]}\n",
+    "stderr": "",
+    "exit_code": 0
+  },
+  {
+    "node": "node03",
+    "ip": "182.151.27.42",
+    "private_ip": "192.168.0.108",
+    "stdout": "ecs-c381-0003\nactive\nactive\n/opt/chain/releases/070fbb46ff25bce38d9599c5165dce66d63fc561/source\n/opt/chain/releases/070fbb46ff25bce38d9599c5165dce66d63fc561/build\na5174f5b797e53b6ff9457465c84f5d09be5aac3f13a1d3eb953aa8ff311830d  /opt/chain/build/boost\nc39f45fbd01acb40ecab390ddd99c3987aad67c9ef0aa1b5f92f82c832e4d167  /opt/chain/src/Time/Models/simulation-v1.json\n{\"remaining_experiment_databases\": [], \"processes\": [{\"name\": \"boost\", \"cmdline\": [\"/opt/chain/build/boost\", \"--config\", \"/etc/chain/node.yaml\", \"--metrics\", \"/var/lib/chain/last-stats.json\", \"--relay-transactions\", \"1\", \"--clock-sync\", \"1\", \"--round-ms\", \"50\", \"--candidate-ms\", \"12\", \"--clock-control\", \"learned\", \"--clock-model\", \"/opt/chain/src/Time/Models/simulation-v1.json\", \"--round-scheduler\", \"bounded\", \"--join-current-round\", \"1\", \"--clock-peer\", \"192.168.0.176:8089\", \"--clock-peer\", \"192.168.0.111:8089\", \"--clock-peer\", \"192.168.0.167:8089\", \"--clock-peer\", \"192.168.0.249:8089\", \"--clock-peer\", \"192.168.0.138:8089\", \"--clock-peer\", \"192.168.0.162:8089\", \"--clock-peer\", \"192.168.0.61:8089\", \"--clock-peer\", \"192.168.0.12:8089\", \"--clock-peer\", \"192.168.0.11:8089\"], \"exe\": \"/opt/chain/releases/070fbb46ff25bce38d9599c5165dce66d63fc561/build/boost\", \"pid\": 91768}]}\n",
+    "stderr": "",
+    "exit_code": 0
+  },
+  {
+    "node": "node04",
+    "ip": "118.121.202.17",
+    "private_ip": "192.168.0.167",
+    "stdout": "ecs-c381-0004\nactive\nactive\n/opt/chain/releases/070fbb46ff25bce38d9599c5165dce66d63fc561/source\n/opt/chain/releases/070fbb46ff25bce38d9599c5165dce66d63fc561/build\na5174f5b797e53b6ff9457465c84f5d09be5aac3f13a1d3eb953aa8ff311830d  /opt/chain/build/boost\nc39f45fbd01acb40ecab390ddd99c3987aad67c9ef0aa1b5f92f82c832e4d167  /opt/chain/src/Time/Models/simulation-v1.json\n{\"remaining_experiment_databases\": [], \"processes\": [{\"name\": \"boost\", \"exe\": \"/opt/chain/releases/070fbb46ff25bce38d9599c5165dce66d63fc561/build/boost\", \"cmdline\": [\"/opt/chain/build/boost\", \"--config\", \"/etc/chain/node.yaml\", \"--metrics\", \"/var/lib/chain/last-stats.json\", \"--relay-transactions\", \"1\", \"--clock-sync\", \"1\", \"--round-ms\", \"50\", \"--candidate-ms\", \"12\", \"--clock-control\", \"learned\", \"--clock-model\", \"/opt/chain/src/Time/Models/simulation-v1.json\", \"--round-scheduler\", \"bounded\", \"--join-current-round\", \"1\", \"--clock-peer\", \"192.168.0.176:8089\", \"--clock-peer\", \"192.168.0.111:8089\", \"--clock-peer\", \"192.168.0.108:8089\", \"--clock-peer\", \"192.168.0.249:8089\", \"--clock-peer\", \"192.168.0.138:8089\", \"--clock-peer\", \"192.168.0.162:8089\", \"--clock-peer\", \"192.168.0.61:8089\", \"--clock-peer\", \"192.168.0.12:8089\", \"--clock-peer\", \"192.168.0.11:8089\"], \"pid\": 27431}]}\n",
+    "stderr": "",
+    "exit_code": 0
+  },
+  {
+    "node": "node05",
+    "ip": "110.185.105.122",
+    "private_ip": "192.168.0.249",
+    "stdout": "ecs-c381-0005\nactive\nactive\n/opt/chain/releases/070fbb46ff25bce38d9599c5165dce66d63fc561/source\n/opt/chain/releases/070fbb46ff25bce38d9599c5165dce66d63fc561/build\na5174f5b797e53b6ff9457465c84f5d09be5aac3f13a1d3eb953aa8ff311830d  /opt/chain/build/boost\nc39f45fbd01acb40ecab390ddd99c3987aad67c9ef0aa1b5f92f82c832e4d167  /opt/chain/src/Time/Models/simulation-v1.json\n{\"remaining_experiment_databases\": [], \"processes\": [{\"name\": \"boost\", \"cmdline\": [\"/opt/chain/build/boost\", \"--config\", \"/etc/chain/node.yaml\", \"--metrics\", \"/var/lib/chain/last-stats.json\", \"--relay-transactions\", \"1\", \"--clock-sync\", \"1\", \"--round-ms\", \"50\", \"--candidate-ms\", \"12\", \"--clock-control\", \"learned\", \"--clock-model\", \"/opt/chain/src/Time/Models/simulation-v1.json\", \"--round-scheduler\", \"bounded\", \"--join-current-round\", \"1\", \"--clock-peer\", \"192.168.0.176:8089\", \"--clock-peer\", \"192.168.0.111:8089\", \"--clock-peer\", \"192.168.0.108:8089\", \"--clock-peer\", \"192.168.0.167:8089\", \"--clock-peer\", \"192.168.0.138:8089\", \"--clock-peer\", \"192.168.0.162:8089\", \"--clock-peer\", \"192.168.0.61:8089\", \"--clock-peer\", \"192.168.0.12:8089\", \"--clock-peer\", \"192.168.0.11:8089\"], \"exe\": \"/opt/chain/releases/070fbb46ff25bce38d9599c5165dce66d63fc561/build/boost\", \"pid\": 96064}]}\n",
+    "stderr": "",
+    "exit_code": 0
+  },
+  {
+    "node": "node06",
+    "ip": "110.185.104.206",
+    "private_ip": "192.168.0.138",
+    "stdout": "ecs-c381-0006\nactive\nactive\n/opt/chain/releases/070fbb46ff25bce38d9599c5165dce66d63fc561/source\n/opt/chain/releases/070fbb46ff25bce38d9599c5165dce66d63fc561/build\na5174f5b797e53b6ff9457465c84f5d09be5aac3f13a1d3eb953aa8ff311830d  /opt/chain/build/boost\nc39f45fbd01acb40ecab390ddd99c3987aad67c9ef0aa1b5f92f82c832e4d167  /opt/chain/src/Time/Models/simulation-v1.json\n{\"remaining_experiment_databases\": [], \"processes\": [{\"exe\": \"/opt/chain/releases/070fbb46ff25bce38d9599c5165dce66d63fc561/build/boost\", \"pid\": 83967, \"name\": \"boost\", \"cmdline\": [\"/opt/chain/build/boost\", \"--config\", \"/etc/chain/node.yaml\", \"--metrics\", \"/var/lib/chain/last-stats.json\", \"--relay-transactions\", \"1\", \"--clock-sync\", \"1\", \"--round-ms\", \"50\", \"--candidate-ms\", \"12\", \"--clock-control\", \"learned\", \"--clock-model\", \"/opt/chain/src/Time/Models/simulation-v1.json\", \"--round-scheduler\", \"bounded\", \"--join-current-round\", \"1\", \"--clock-peer\", \"192.168.0.176:8089\", \"--clock-peer\", \"192.168.0.111:8089\", \"--clock-peer\", \"192.168.0.108:8089\", \"--clock-peer\", \"192.168.0.167:8089\", \"--clock-peer\", \"192.168.0.249:8089\", \"--clock-peer\", \"192.168.0.162:8089\", \"--clock-peer\", \"192.168.0.61:8089\", \"--clock-peer\", \"192.168.0.12:8089\", \"--clock-peer\", \"192.168.0.11:8089\"]}]}\n",
+    "stderr": "",
+    "exit_code": 0
+  },
+  {
+    "node": "node07",
+    "ip": "182.151.9.116",
+    "private_ip": "192.168.0.162",
+    "stdout": "ecs-c381-0007\nactive\nactive\n/opt/chain/releases/070fbb46ff25bce38d9599c5165dce66d63fc561/source\n/opt/chain/releases/070fbb46ff25bce38d9599c5165dce66d63fc561/build\na5174f5b797e53b6ff9457465c84f5d09be5aac3f13a1d3eb953aa8ff311830d  /opt/chain/build/boost\nc39f45fbd01acb40ecab390ddd99c3987aad67c9ef0aa1b5f92f82c832e4d167  /opt/chain/src/Time/Models/simulation-v1.json\n{\"remaining_experiment_databases\": [], \"processes\": [{\"pid\": 107942, \"name\": \"boost\", \"cmdline\": [\"/opt/chain/build/boost\", \"--config\", \"/etc/chain/node.yaml\", \"--metrics\", \"/var/lib/chain/last-stats.json\", \"--relay-transactions\", \"1\", \"--clock-sync\", \"1\", \"--round-ms\", \"50\", \"--candidate-ms\", \"12\", \"--clock-control\", \"learned\", \"--clock-model\", \"/opt/chain/src/Time/Models/simulation-v1.json\", \"--round-scheduler\", \"bounded\", \"--join-current-round\", \"1\", \"--clock-peer\", \"192.168.0.176:8089\", \"--clock-peer\", \"192.168.0.111:8089\", \"--clock-peer\", \"192.168.0.108:8089\", \"--clock-peer\", \"192.168.0.167:8089\", \"--clock-peer\", \"192.168.0.249:8089\", \"--clock-peer\", \"192.168.0.138:8089\", \"--clock-peer\", \"192.168.0.61:8089\", \"--clock-peer\", \"192.168.0.12:8089\", \"--clock-peer\", \"192.168.0.11:8089\"], \"exe\": \"/opt/chain/releases/070fbb46ff25bce38d9599c5165dce66d63fc561/build/boost\"}]}\n",
+    "stderr": "",
+    "exit_code": 0
+  },
+  {
+    "node": "node08",
+    "ip": "182.151.38.203",
+    "private_ip": "192.168.0.61",
+    "stdout": "ecs-c381-0008\nactive\nactive\n/opt/chain/releases/070fbb46ff25bce38d9599c5165dce66d63fc561/source\n/opt/chain/releases/070fbb46ff25bce38d9599c5165dce66d63fc561/build\na5174f5b797e53b6ff9457465c84f5d09be5aac3f13a1d3eb953aa8ff311830d  /opt/chain/build/boost\nc39f45fbd01acb40ecab390ddd99c3987aad67c9ef0aa1b5f92f82c832e4d167  /opt/chain/src/Time/Models/simulation-v1.json\n{\"remaining_experiment_databases\": [], \"processes\": [{\"pid\": 111649, \"cmdline\": [\"/opt/chain/build/boost\", \"--config\", \"/etc/chain/node.yaml\", \"--metrics\", \"/var/lib/chain/last-stats.json\", \"--relay-transactions\", \"1\", \"--clock-sync\", \"1\", \"--round-ms\", \"50\", \"--candidate-ms\", \"12\", \"--clock-control\", \"learned\", \"--clock-model\", \"/opt/chain/src/Time/Models/simulation-v1.json\", \"--round-scheduler\", \"bounded\", \"--join-current-round\", \"1\", \"--clock-peer\", \"192.168.0.176:8089\", \"--clock-peer\", \"192.168.0.111:8089\", \"--clock-peer\", \"192.168.0.108:8089\", \"--clock-peer\", \"192.168.0.167:8089\", \"--clock-peer\", \"192.168.0.249:8089\", \"--clock-peer\", \"192.168.0.138:8089\", \"--clock-peer\", \"192.168.0.162:8089\", \"--clock-peer\", \"192.168.0.12:8089\", \"--clock-peer\", \"192.168.0.11:8089\"], \"exe\": \"/opt/chain/releases/070fbb46ff25bce38d9599c5165dce66d63fc561/build/boost\", \"name\": \"boost\"}]}\n",
+    "stderr": "",
+    "exit_code": 0
+  },
+  {
+    "node": "node09",
+    "ip": "118.121.198.136",
+    "private_ip": "192.168.0.12",
+    "stdout": "ecs-c381-0009\nactive\nactive\n/opt/chain/releases/070fbb46ff25bce38d9599c5165dce66d63fc561/source\n/opt/chain/releases/070fbb46ff25bce38d9599c5165dce66d63fc561/build\na5174f5b797e53b6ff9457465c84f5d09be5aac3f13a1d3eb953aa8ff311830d  /opt/chain/build/boost\nc39f45fbd01acb40ecab390ddd99c3987aad67c9ef0aa1b5f92f82c832e4d167  /opt/chain/src/Time/Models/simulation-v1.json\n{\"remaining_experiment_databases\": [], \"processes\": [{\"exe\": \"/opt/chain/releases/070fbb46ff25bce38d9599c5165dce66d63fc561/build/boost\", \"cmdline\": [\"/opt/chain/build/boost\", \"--config\", \"/etc/chain/node.yaml\", \"--metrics\", \"/var/lib/chain/last-stats.json\", \"--relay-transactions\", \"1\", \"--clock-sync\", \"1\", \"--round-ms\", \"50\", \"--candidate-ms\", \"12\", \"--clock-control\", \"learned\", \"--clock-model\", \"/opt/chain/src/Time/Models/simulation-v1.json\", \"--round-scheduler\", \"bounded\", \"--join-current-round\", \"1\", \"--clock-peer\", \"192.168.0.176:8089\", \"--clock-peer\", \"192.168.0.111:8089\", \"--clock-peer\", \"192.168.0.108:8089\", \"--clock-peer\", \"192.168.0.167:8089\", \"--clock-peer\", \"192.168.0.249:8089\", \"--clock-peer\", \"192.168.0.138:8089\", \"--clock-peer\", \"192.168.0.162:8089\", \"--clock-peer\", \"192.168.0.61:8089\", \"--clock-peer\", \"192.168.0.11:8089\"], \"pid\": 42764, \"name\": \"boost\"}]}\n",
+    "stderr": "",
+    "exit_code": 0
+  },
+  {
+    "node": "node10",
+    "ip": "118.122.72.173",
+    "private_ip": "192.168.0.11",
+    "stdout": "ecs-c381-0010\nactive\nactive\n/opt/chain/releases/070fbb46ff25bce38d9599c5165dce66d63fc561/source\n/opt/chain/releases/070fbb46ff25bce38d9599c5165dce66d63fc561/build\na5174f5b797e53b6ff9457465c84f5d09be5aac3f13a1d3eb953aa8ff311830d  /opt/chain/build/boost\nc39f45fbd01acb40ecab390ddd99c3987aad67c9ef0aa1b5f92f82c832e4d167  /opt/chain/src/Time/Models/simulation-v1.json\n{\"remaining_experiment_databases\": [], \"processes\": [{\"pid\": 27545, \"cmdline\": [\"/opt/chain/build/boost\", \"--config\", \"/etc/chain/node.yaml\", \"--metrics\", \"/var/lib/chain/last-stats.json\", \"--relay-transactions\", \"1\", \"--clock-sync\", \"1\", \"--round-ms\", \"50\", \"--candidate-ms\", \"12\", \"--clock-control\", \"learned\", \"--clock-model\", \"/opt/chain/src/Time/Models/simulation-v1.json\", \"--round-scheduler\", \"bounded\", \"--join-current-round\", \"1\", \"--clock-peer\", \"192.168.0.176:8089\", \"--clock-peer\", \"192.168.0.111:8089\", \"--clock-peer\", \"192.168.0.108:8089\", \"--clock-peer\", \"192.168.0.167:8089\", \"--clock-peer\", \"192.168.0.249:8089\", \"--clock-peer\", \"192.168.0.138:8089\", \"--clock-peer\", \"192.168.0.162:8089\", \"--clock-peer\", \"192.168.0.61:8089\", \"--clock-peer\", \"192.168.0.12:8089\"], \"name\": \"boost\", \"exe\": \"/opt/chain/releases/070fbb46ff25bce38d9599c5165dce66d63fc561/build/boost\"}]}\n",
+    "stderr": "",
+    "exit_code": 0
+  }
+]

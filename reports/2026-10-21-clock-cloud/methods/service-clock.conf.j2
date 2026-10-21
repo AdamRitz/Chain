@@ -1,0 +1,6 @@
+[Unit]
+Description=Chain learning clock node {{ inventory_hostname }} (070fbb4)
+
+[Service]
+ExecStart=
+ExecStart=/opt/chain/build/boost --config /etc/chain/node.yaml --metrics /var/lib/chain/last-stats.json --relay-transactions 1 --clock-sync 1 --round-ms 50 --candidate-ms 12 --clock-control learned --clock-model /opt/chain/src/Time/Models/simulation-v1.json --round-scheduler bounded --join-current-round 1{% for peer in groups['chain'] %}{% if peer != inventory_hostname %} --clock-peer {{ hostvars[peer].ansible_host }}:8089{% endif %}{% endfor %}

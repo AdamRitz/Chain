@@ -1,0 +1,14 @@
+{
+  "revision": "070fbb46ff25bce38d9599c5165dce66d63fc561",
+  "tests": 14,
+  "ctest_passed": true,
+  "built_at": 1792595663.6190858,
+  "source_sha256": "f7c0c2401c714946a2d9bd796e647126ec9d2a14bef6bbb36952e05c76040098",
+  "model_sha256": "c39f45fbd01acb40ecab390ddd99c3987aad67c9ef0aa1b5f92f82c832e4d167",
+  "binaries": {
+    "boost": "a5174f5b797e53b6ff9457465c84f5d09be5aac3f13a1d3eb953aa8ff311830d",
+    "sender": "64e34bab8c4107a7a55ec5048afd4f581dee70daf76d71e40909e5782a20d412",
+    "evm_sender": "4ebd0a9da5856549c0f44e3f6ad95e0243b9620b91ad0eb95d155f4350e86b86"
+  },
+  "binary_archive_sha256": "59e27aed1e8e214b63bc6d72e3c6609ab1a623376a7acadad22606d19713750d"
+}

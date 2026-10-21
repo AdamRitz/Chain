@@ -1,0 +1,8 @@
+{
+  "archive": "/opt/chain-control/packages/clock-070fbb4-evidence.tar.gz",
+  "sha256": "1fb102b946e416fb4b335ed992da79fdb85f82f56f2ac3177fb698fca09f54e0",
+  "bytes": 9490993,
+  "build_databases_removed": 46,
+  "dataset_preserved_remote": "/opt/chain-control/results/clock-070fbb4-20261021/transactions.bin",
+  "dataset_sha256": "142f5e5d6024c1be4f6e646ec2fb240c4e7789ad546b1543f37752132821f613"
+}

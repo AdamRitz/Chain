@@ -1,0 +1,40 @@
+{
+  "source_revision": "070fbb46ff25bce38d9599c5165dce66d63fc561",
+  "nodes": 10,
+  "tests_windows": 14,
+  "tests_linux": 14,
+  "cases": 20,
+  "state_audits_passed": 20,
+  "experiment_databases_removed": 200,
+  "build_databases_removed": 46,
+  "persistent_service_peers": [
+    9,
+    9,
+    9,
+    9,
+    9,
+    9,
+    9,
+    9,
+    9,
+    9
+  ],
+  "persistent_accounts_checked_per_node": [
+    34,
+    34,
+    34,
+    34,
+    34,
+    34,
+    34,
+    34,
+    34,
+    34
+  ],
+  "control": "learned",
+  "scheduler": "bounded",
+  "model_training": "simulation",
+  "binary_sha256": "a5174f5b797e53b6ff9457465c84f5d09be5aac3f13a1d3eb953aa8ff311830d",
+  "model_sha256": "c39f45fbd01acb40ecab390ddd99c3987aad67c9ef0aa1b5f92f82c832e4d167",
+  "future_task": "controlled real-world labels and retraining are not performed in this deployment test"
+}

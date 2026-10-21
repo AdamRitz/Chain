@@ -1,0 +1,51 @@
+- name: Activate the tested learning clock service while preserving the existing chain database
+  hosts: chain
+  gather_facts: false
+  vars:
+    clock_revision: 070fbb46ff25bce38d9599c5165dce66d63fc561
+    clock_release: '/opt/chain/releases/{{ clock_revision }}'
+  tasks:
+    - name: Stop the previous Chain service before switching its executable
+      ansible.builtin.systemd_service:
+        name: chain-node
+        state: stopped
+    - name: Preserve the previous service definition
+      ansible.builtin.copy:
+        src: /etc/systemd/system/chain-node.service
+        dest: /etc/systemd/system/chain-node.service.before-clock-070fbb4
+        remote_src: true
+        force: false
+        mode: '0644'
+    - name: Point to the verified source and binaries
+      ansible.builtin.file:
+        src: '{{ clock_release }}/{{ item.target }}'
+        dest: '/opt/chain/{{ item.name }}'
+        state: link
+      loop:
+        - {target: source, name: src}
+        - {target: build, name: build}
+    - name: Create a service override directory
+      ansible.builtin.file:
+        path: /etc/systemd/system/chain-node.service.d
+        state: directory
+        mode: '0755'
+    - name: Enable the shared model and bounded current-round scheduler
+      ansible.builtin.template:
+        src: service-clock.conf.j2
+        dest: /etc/systemd/system/chain-node.service.d/20-clock-model.conf
+        mode: '0644'
+    - name: Start the new Chain version
+      ansible.builtin.systemd_service:
+        name: chain-node
+        state: started
+        enabled: true
+        daemon_reload: true
+    - name: Restore the previously running FISCO service
+      ansible.builtin.systemd_service:
+        name: fisco-bcos
+        state: started
+    - name: Wait for the normal private Chain listener
+      ansible.builtin.wait_for:
+        host: '{{ ansible_host }}'
+        port: 8089
+        timeout: 30

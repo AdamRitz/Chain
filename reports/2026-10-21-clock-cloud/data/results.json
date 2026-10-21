@@ -1,0 +1,4090 @@
+[
+  {
+    "case": {
+      "suite": "throughput",
+      "mode": "throughput",
+      "rate": 20000,
+      "nodes": 10,
+      "repeat": 1,
+      "pattern": "steady",
+      "group": "A",
+      "clock_control": "robust",
+      "join_current": false,
+      "revision": "070fbb46ff25bce38d9599c5165dce66d63fc561"
+    },
+    "status": "complete",
+    "dataset_sha256": "142f5e5d6024c1be4f6e646ec2fb240c4e7789ad546b1543f37752132821f613",
+    "started_utc": 1792596169.1794949,
+    "metrics": {
+      "offered_tps": 20000,
+      "common_commit_tps": 20005.38149801106,
+      "achieved_send_tps": 19993.6,
+      "common_commit_tps_rpc_interval_bounds": [
+        20003.095074585934,
+        20007.66844418825
+      ],
+      "common_observation_tps": 20006.836910313832,
+      "common_observation_tps_acquisition_interval_bounds": [
+        20001.636416261,
+        20012.040109362548
+      ],
+      "common_observation_note": "net common-prefix observation rate; interval spans stats acquisition through prefix checks, no atomic global snapshot or finality claimed",
+      "common_observation_boundary_targets": [
+        2,
+        12
+      ],
+      "measurement_seconds": 10.000509114004672,
+      "measurement_samples": 11,
+      "boundary_canonical_proof_passed": true,
+      "skipped_stats_targets": [],
+      "diagnostic_prefix_observed_tps": 20005.38149801106,
+      "diagnostic_prefix_rpc_interval_bounds": [
+        20003.095074585934,
+        20007.66844418825
+      ],
+      "diagnostic_prefix_note": "snapshot time corrected, but boundaries may be reorganized; not used as proven TPS",
+      "sent_unique_completed_all_ingress": 239872,
+      "sent_unique_attempted_upper_bound": 240000,
+      "sent_unique": 239872,
+      "sent_wire_copies_completed": 2398976,
+      "completed_per_ingress": [
+        240000,
+        240000,
+        239872,
+        239872,
+        239872,
+        239872,
+        239872,
+        239872,
+        239872,
+        239872
+      ],
+      "partial_batch": {
+        "begin": 239872,
+        "end": 240000,
+        "completed_ingress_indices": [
+          0,
+          1
+        ],
+        "cutoff_expected": true,
+        "reason": "Stopped: "
+      },
+      "load_error": null,
+      "cutoff_seconds": 12.000268090021564,
+      "generator_finished_seconds": 12.004006433999166,
+      "p50_ms": 70.04689300083555,
+      "p95_ms": 292.17764901113696,
+      "p99_ms": 400.8592360187322,
+      "p99_after_send_ms": 395.1373500167392,
+      "latency_label": "first observed identical transaction position on all ten nodes; no finality guarantee",
+      "latency_poll_seconds": 0.05,
+      "latency_sample_hz_total": 2,
+      "latency_note": "upper observation latency includes query/round-trip/polling delay; not node commit timestamp",
+      "samples": 20,
+      "unresolved_samples": 0,
+      "drained": true,
+      "drained_observed_seconds": 13.003458096005488,
+      "checks": {
+        "accounts_checked_per_node": 1024,
+        "state": {
+          "burned": 0,
+          "head": "c8463a0ba9feec82c211ab2cb7acebbbb2f24bb29f3975e3a89651bc3ab74f92",
+          "state_hash": "fe47ae9c63c1e7ab45bc68a4ce6c3f07714ca6b0f4ff2c86a4db2977a452801f",
+          "supply": 1024000000000,
+          "transactions": 240000
+        }
+      },
+      "resources": [
+        {
+          "node": "node01",
+          "node_clock_seconds": 9.999979,
+          "cpu_core_equivalents": 1.6058826723536117,
+          "network_received_bytes_per_second": 10820300.622631308,
+          "network_sent_bytes_per_second": 6092908.99510889,
+          "db_write_ms_per_second": 249.5409558360073,
+          "peak_resident_bytes": 169103360
+        },
+        {
+          "node": "node02",
+          "node_clock_seconds": 9.999954,
+          "cpu_core_equivalents": 1.6918348824404588,
+          "network_received_bytes_per_second": 10763600.712563276,
+          "network_sent_bytes_per_second": 7702312.5306376405,
+          "db_write_ms_per_second": 188.66811637333532,
+          "peak_resident_bytes": 167354368
+        },
+        {
+          "node": "node03",
+          "node_clock_seconds": 9.999966,
+          "cpu_core_equivalents": 1.610293674998495,
+          "network_received_bytes_per_second": 10634055.55578889,
+          "network_sent_bytes_per_second": 7052848.479684831,
+          "db_write_ms_per_second": 210.04553095480523,
+          "peak_resident_bytes": 158212096
+        },
+        {
+          "node": "node04",
+          "node_clock_seconds": 9.999993,
+          "cpu_core_equivalents": 1.6972229880560914,
+          "network_received_bytes_per_second": 10856811.29976791,
+          "network_sent_bytes_per_second": 6702387.491671245,
+          "db_write_ms_per_second": 245.5300515710361,
+          "peak_resident_bytes": 165482496
+        },
+        {
+          "node": "node05",
+          "node_clock_seconds": 9.999978,
+          "cpu_core_equivalents": 1.6077288370034413,
+          "network_received_bytes_per_second": 10420853.625877976,
+          "network_sent_bytes_per_second": 6714675.872286919,
+          "db_write_ms_per_second": 202.48528516762735,
+          "peak_resident_bytes": 160772096
+        },
+        {
+          "node": "node06",
+          "node_clock_seconds": 9.99994,
+          "cpu_core_equivalents": 1.6840994045964277,
+          "network_received_bytes_per_second": 10464876.589259535,
+          "network_sent_bytes_per_second": 7484342.806056836,
+          "db_write_ms_per_second": 210.35212431274584,
+          "peak_resident_bytes": 157294592
+        },
+        {
+          "node": "node07",
+          "node_clock_seconds": 9.999955,
+          "cpu_core_equivalents": 1.6574793586571137,
+          "network_received_bytes_per_second": 10443713.996712985,
+          "network_sent_bytes_per_second": 7699102.045959207,
+          "db_write_ms_per_second": 212.90883818977187,
+          "peak_resident_bytes": 158117888
+        },
+        {
+          "node": "node08",
+          "node_clock_seconds": 9.999897,
+          "cpu_core_equivalents": 1.6095696785676892,
+          "network_received_bytes_per_second": 10732703.046841381,
+          "network_sent_bytes_per_second": 7271550.596971149,
+          "db_write_ms_per_second": 210.4551207877441,
+          "peak_resident_bytes": 160808960
+        },
+        {
+          "node": "node09",
+          "node_clock_seconds": 9.999999,
+          "cpu_core_equivalents": 1.734767273476727,
+          "network_received_bytes_per_second": 10558548.755854875,
+          "network_sent_bytes_per_second": 7635139.663513966,
+          "db_write_ms_per_second": 218.47358954735896,
+          "peak_resident_bytes": 158953472
+        },
+        {
+          "node": "node10",
+          "node_clock_seconds": 9.999909,
+          "cpu_core_equivalents": 1.674414237169558,
+          "network_received_bytes_per_second": 11109490.396362606,
+          "network_sent_bytes_per_second": 7292465.561436608,
+          "db_write_ms_per_second": 256.4221505415699,
+          "peak_resident_bytes": 167190528
+        }
+      ],
+      "timing": "RPC intervals bound each snapshot; TPS uses limiting stats snapshot, never later prefix query completion",
+      "measurement_quality": "canonical boundary proof passed"
+    },
+    "state_audit": {
+      "method": "live fully drained shared dataset",
+      "passed": true,
+      "checks": {
+        "accounts_checked_per_node": 1024,
+        "state": {
+          "burned": 0,
+          "head": "c8463a0ba9feec82c211ab2cb7acebbbb2f24bb29f3975e3a89651bc3ab74f92",
+          "state_hash": "fe47ae9c63c1e7ab45bc68a4ce6c3f07714ca6b0f4ff2c86a4db2977a452801f",
+          "supply": 1024000000000,
+          "transactions": 240000
+        }
+      }
+    },
+    "finished_utc": 1792596185.751261
+  },
+  {
+    "case": {
+      "suite": "throughput",
+      "mode": "throughput",
+      "rate": 20000,
+      "nodes": 10,
+      "repeat": 1,
+      "pattern": "steady",
+      "group": "B",
+      "clock_control": "robust",
+      "join_current": true,
+      "revision": "070fbb46ff25bce38d9599c5165dce66d63fc561"
+    },
+    "status": "complete",
+    "dataset_sha256": "142f5e5d6024c1be4f6e646ec2fb240c4e7789ad546b1543f37752132821f613",
+    "started_utc": 1792596185.752417,
+    "metrics": {
+      "offered_tps": 20000,
+      "common_commit_tps": 19991.704175748368,
+      "achieved_send_tps": 19993.6,
+      "common_commit_tps_rpc_interval_bounds": [
+        19989.277852329906,
+        19994.13108814226
+      ],
+      "common_observation_tps": 19993.089385497497,
+      "common_observation_tps_acquisition_interval_bounds": [
+        19987.51267708491,
+        19998.669206689225
+      ],
+      "common_observation_note": "net common-prefix observation rate; interval spans stats acquisition through prefix checks, no atomic global snapshot or finality claimed",
+      "common_observation_boundary_targets": [
+        2,
+        12
+      ],
+      "measurement_seconds": 10.000948305474594,
+      "measurement_samples": 11,
+      "boundary_canonical_proof_passed": true,
+      "skipped_stats_targets": [],
+      "diagnostic_prefix_observed_tps": 19991.704175748368,
+      "diagnostic_prefix_rpc_interval_bounds": [
+        19989.277852329906,
+        19994.13108814226
+      ],
+      "diagnostic_prefix_note": "snapshot time corrected, but boundaries may be reorganized; not used as proven TPS",
+      "sent_unique_completed_all_ingress": 239872,
+      "sent_unique_attempted_upper_bound": 240000,
+      "sent_unique": 239872,
+      "sent_wire_copies_completed": 2399104,
+      "completed_per_ingress": [
+        240000,
+        240000,
+        240000,
+        239872,
+        239872,
+        239872,
+        239872,
+        239872,
+        239872,
+        239872
+      ],
+      "partial_batch": {
+        "begin": 239872,
+        "end": 240000,
+        "completed_ingress_indices": [
+          0,
+          1,
+          2
+        ],
+        "cutoff_expected": true,
+        "reason": "Stopped: "
+      },
+      "load_error": null,
+      "cutoff_seconds": 12.000108979991637,
+      "generator_finished_seconds": 12.002578434010502,
+      "p50_ms": 90.81700901151635,
+      "p95_ms": 137.87991099525243,
+      "p99_ms": 140.7171470054891,
+      "p99_after_send_ms": 138.1769519939553,
+      "latency_label": "first observed identical transaction position on all ten nodes; no finality guarantee",
+      "latency_poll_seconds": 0.05,
+      "latency_sample_hz_total": 2,
+      "latency_note": "upper observation latency includes query/round-trip/polling delay; not node commit timestamp",
+      "samples": 20,
+      "unresolved_samples": 0,
+      "drained": true,
+      "drained_observed_seconds": 13.003055359993596,
+      "checks": {
+        "accounts_checked_per_node": 1024,
+        "state": {
+          "burned": 0,
+          "head": "25223906b6a29eb837f3858e65ee4049f4e551eeec89004376f987169411f02a",
+          "state_hash": "fe47ae9c63c1e7ab45bc68a4ce6c3f07714ca6b0f4ff2c86a4db2977a452801f",
+          "supply": 1024000000000,
+          "transactions": 240000
+        }
+      },
+      "resources": [
+        {
+          "node": "node01",
+          "node_clock_seconds": 10.000269,
+          "cpu_core_equivalents": 1.5881892777084297,
+          "network_received_bytes_per_second": 10928389.526321743,
+          "network_sent_bytes_per_second": 6182360.494502698,
+          "db_write_ms_per_second": 197.14225757327128,
+          "peak_resident_bytes": 157360128
+        },
+        {
+          "node": "node02",
+          "node_clock_seconds": 10.000227,
+          "cpu_core_equivalents": 1.6511895179979414,
+          "network_received_bytes_per_second": 10384355.875121634,
+          "network_sent_bytes_per_second": 7498135.292328863,
+          "db_write_ms_per_second": 181.35184311316132,
+          "peak_resident_bytes": 156905472
+        },
+        {
+          "node": "node03",
+          "node_clock_seconds": 10.000243,
+          "cpu_core_equivalents": 1.5771444753892483,
+          "network_received_bytes_per_second": 10448787.494463885,
+          "network_sent_bytes_per_second": 6631939.043881234,
+          "db_write_ms_per_second": 196.74590027462335,
+          "peak_resident_bytes": 155897856
+        },
+        {
+          "node": "node04",
+          "node_clock_seconds": 10.000195,
+          "cpu_core_equivalents": 1.628775538876992,
+          "network_received_bytes_per_second": 10438660.446121302,
+          "network_sent_bytes_per_second": 6509173.871109514,
+          "db_write_ms_per_second": 220.75449998725023,
+          "peak_resident_bytes": 153141248
+        },
+        {
+          "node": "node05",
+          "node_clock_seconds": 10.000205,
+          "cpu_core_equivalents": 1.573144050546964,
+          "network_received_bytes_per_second": 10263219.304004269,
+          "network_sent_bytes_per_second": 7013987.813249829,
+          "db_write_ms_per_second": 197.67748801149577,
+          "peak_resident_bytes": 157884416
+        },
+        {
+          "node": "node06",
+          "node_clock_seconds": 10.000255,
+          "cpu_core_equivalents": 1.6742528065534328,
+          "network_received_bytes_per_second": 10349971.57572482,
+          "network_sent_bytes_per_second": 7422293.431517497,
+          "db_write_ms_per_second": 212.36504239141902,
+          "peak_resident_bytes": 154087424
+        },
+        {
+          "node": "node07",
+          "node_clock_seconds": 10.000229,
+          "cpu_core_equivalents": 1.6513536840006362,
+          "network_received_bytes_per_second": 11269948.118188094,
+          "network_sent_bytes_per_second": 7446597.572915581,
+          "db_write_ms_per_second": 222.60734779173555,
+          "peak_resident_bytes": 154415104
+        },
+        {
+          "node": "node08",
+          "node_clock_seconds": 10.000178,
+          "cpu_core_equivalents": 1.5649244443448906,
+          "network_received_bytes_per_second": 10946297.155910624,
+          "network_sent_bytes_per_second": 6980694.743633564,
+          "db_write_ms_per_second": 202.63618707587003,
+          "peak_resident_bytes": 156512256
+        },
+        {
+          "node": "node09",
+          "node_clock_seconds": 10.000188,
+          "cpu_core_equivalents": 1.7444017052479417,
+          "network_received_bytes_per_second": 10994984.394293388,
+          "network_sent_bytes_per_second": 7602284.7770461915,
+          "db_write_ms_per_second": 227.1857082086857,
+          "peak_resident_bytes": 151941120
+        },
+        {
+          "node": "node10",
+          "node_clock_seconds": 10.000191,
+          "cpu_core_equivalents": 1.6468332454850114,
+          "network_received_bytes_per_second": 10286458.928634465,
+          "network_sent_bytes_per_second": 7865031.977889223,
+          "db_write_ms_per_second": 242.81679619919262,
+          "peak_resident_bytes": 160436224
+        }
+      ],
+      "timing": "RPC intervals bound each snapshot; TPS uses limiting stats snapshot, never later prefix query completion",
+      "measurement_quality": "canonical boundary proof passed"
+    },
+    "state_audit": {
+      "method": "live fully drained shared dataset",
+      "passed": true,
+      "checks": {
+        "accounts_checked_per_node": 1024,
+        "state": {
+          "burned": 0,
+          "head": "25223906b6a29eb837f3858e65ee4049f4e551eeec89004376f987169411f02a",
+          "state_hash": "fe47ae9c63c1e7ab45bc68a4ce6c3f07714ca6b0f4ff2c86a4db2977a452801f",
+          "supply": 1024000000000,
+          "transactions": 240000
+        }
+      }
+    },
+    "finished_utc": 1792596202.3199708
+  },
+  {
+    "case": {
+      "suite": "throughput",
+      "mode": "throughput",
+      "rate": 20000,
+      "nodes": 10,
+      "repeat": 1,
+      "pattern": "steady",
+      "group": "C",
+      "clock_control": "learned",
+      "join_current": false,
+      "revision": "070fbb46ff25bce38d9599c5165dce66d63fc561"
+    },
+    "status": "complete",
+    "dataset_sha256": "142f5e5d6024c1be4f6e646ec2fb240c4e7789ad546b1543f37752132821f613",
+    "started_utc": 1792596202.3214495,
+    "metrics": {
+      "offered_tps": 20000,
+      "common_commit_tps": null,
+      "achieved_send_tps": 19993.6,
+      "common_commit_tps_rpc_interval_bounds": null,
+      "common_observation_tps": 19982.058254289856,
+      "common_observation_tps_acquisition_interval_bounds": [
+        19952.501113588096,
+        20011.703095340286
+      ],
+      "common_observation_note": "net common-prefix observation rate; interval spans stats acquisition through prefix checks, no atomic global snapshot or finality claimed",
+      "common_observation_boundary_targets": [
+        2,
+        12
+      ],
+      "measurement_seconds": 9.99990953647648,
+      "measurement_samples": 11,
+      "boundary_canonical_proof_passed": false,
+      "skipped_stats_targets": [],
+      "diagnostic_prefix_observed_tps": 20111.575741315755,
+      "diagnostic_prefix_rpc_interval_bounds": [
+        20109.454058963493,
+        20113.69787141871
+      ],
+      "diagnostic_prefix_note": "snapshot time corrected, but boundaries may be reorganized; not used as proven TPS",
+      "sent_unique_completed_all_ingress": 239872,
+      "sent_unique_attempted_upper_bound": 240000,
+      "sent_unique": 239872,
+      "sent_wire_copies_completed": 2398848,
+      "completed_per_ingress": [
+        240000,
+        239872,
+        239872,
+        239872,
+        239872,
+        239872,
+        239872,
+        239872,
+        239872,
+        239872
+      ],
+      "partial_batch": {
+        "begin": 239872,
+        "end": 240000,
+        "completed_ingress_indices": [
+          0
+        ],
+        "cutoff_expected": true,
+        "reason": "Stopped: "
+      },
+      "load_error": null,
+      "cutoff_seconds": 12.000073340983363,
+      "generator_finished_seconds": 12.001835005998146,
+      "p50_ms": 65.43580899597146,
+      "p95_ms": 102.98301497823559,
+      "p99_ms": 149.74793398869224,
+      "p99_after_send_ms": 148.74152399715967,
+      "latency_label": "first observed identical transaction position on all ten nodes; no finality guarantee",
+      "latency_poll_seconds": 0.05,
+      "latency_sample_hz_total": 2,
+      "latency_note": "upper observation latency includes query/round-trip/polling delay; not node commit timestamp",
+      "samples": 20,
+      "unresolved_samples": 0,
+      "drained": true,
+      "drained_observed_seconds": 13.003025132988114,
+      "checks": {
+        "accounts_checked_per_node": 1024,
+        "state": {
+          "burned": 0,
+          "head": "26f7b109d4e7af75717f8d6292c1db97471ae5ad606185e6744f33ce100fbf15",
+          "state_hash": "fe47ae9c63c1e7ab45bc68a4ce6c3f07714ca6b0f4ff2c86a4db2977a452801f",
+          "supply": 1024000000000,
+          "transactions": 240000
+        }
+      },
+      "resources": [
+        {
+          "node": "node01",
+          "node_clock_seconds": 10.000132,
+          "cpu_core_equivalents": 1.6091066597920907,
+          "network_received_bytes_per_second": 10276441.050978126,
+          "network_sent_bytes_per_second": 7110254.24464397,
+          "db_write_ms_per_second": 209.6213244985166,
+          "peak_resident_bytes": 157806592
+        },
+        {
+          "node": "node02",
+          "node_clock_seconds": 10.000013,
+          "cpu_core_equivalents": 1.6472832585317638,
+          "network_received_bytes_per_second": 10606492.411559867,
+          "network_sent_bytes_per_second": 7050529.034312256,
+          "db_write_ms_per_second": 188.3715696169595,
+          "peak_resident_bytes": 178294784
+        },
+        {
+          "node": "node03",
+          "node_clock_seconds": 10.00007,
+          "cpu_core_equivalents": 1.5796210426527015,
+          "network_received_bytes_per_second": 10398418.811068323,
+          "network_sent_bytes_per_second": 6407103.950272349,
+          "db_write_ms_per_second": 206.1830346187577,
+          "peak_resident_bytes": 158625792
+        },
+        {
+          "node": "node04",
+          "node_clock_seconds": 10.000006,
+          "cpu_core_equivalents": 1.6655707006575793,
+          "network_received_bytes_per_second": 10645577.91265325,
+          "network_sent_bytes_per_second": 6375406.874755874,
+          "db_write_ms_per_second": 230.01744878953068,
+          "peak_resident_bytes": 172478464
+        },
+        {
+          "node": "node05",
+          "node_clock_seconds": 10.000064,
+          "cpu_core_equivalents": 1.5856817516367896,
+          "network_received_bytes_per_second": 10322445.536348566,
+          "network_sent_bytes_per_second": 6730338.325834715,
+          "db_write_ms_per_second": 200.97967933005228,
+          "peak_resident_bytes": 159313920
+        },
+        {
+          "node": "node06",
+          "node_clock_seconds": 10.000014,
+          "cpu_core_equivalents": 1.6664074670295461,
+          "network_received_bytes_per_second": 10405776.331913136,
+          "network_sent_bytes_per_second": 7009210.187105738,
+          "db_write_ms_per_second": 216.3924956505061,
+          "peak_resident_bytes": 158793728
+        },
+        {
+          "node": "node07",
+          "node_clock_seconds": 10.000016,
+          "cpu_core_equivalents": 1.6649110361423425,
+          "network_received_bytes_per_second": 10185719.802848315,
+          "network_sent_bytes_per_second": 7603396.7345652245,
+          "db_write_ms_per_second": 213.59096975444837,
+          "peak_resident_bytes": 158375936
+        },
+        {
+          "node": "node08",
+          "node_clock_seconds": 10.000025,
+          "cpu_core_equivalents": 1.577749355626611,
+          "network_received_bytes_per_second": 10097328.856677858,
+          "network_sent_bytes_per_second": 6702413.94396514,
+          "db_write_ms_per_second": 209.03230511923718,
+          "peak_resident_bytes": 157511680
+        },
+        {
+          "node": "node09",
+          "node_clock_seconds": 10.00001,
+          "cpu_core_equivalents": 1.7608635391364609,
+          "network_received_bytes_per_second": 10349748.75025125,
+          "network_sent_bytes_per_second": 6790677.209322791,
+          "db_write_ms_per_second": 218.8800836199164,
+          "peak_resident_bytes": 159485952
+        },
+        {
+          "node": "node10",
+          "node_clock_seconds": 10.00005,
+          "cpu_core_equivalents": 1.68120309398453,
+          "network_received_bytes_per_second": 10806772.96613517,
+          "network_sent_bytes_per_second": 7160884.395578022,
+          "db_write_ms_per_second": 240.52078659606704,
+          "peak_resident_bytes": 184795136
+        }
+      ],
+      "timing": "RPC intervals bound each snapshot; TPS uses limiting stats snapshot, never later prefix query completion",
+      "measurement_quality": "TPS unresolved: canonical boundary proof unavailable/failed"
+    },
+    "state_audit": {
+      "method": "live fully drained shared dataset",
+      "passed": true,
+      "checks": {
+        "accounts_checked_per_node": 1024,
+        "state": {
+          "burned": 0,
+          "head": "26f7b109d4e7af75717f8d6292c1db97471ae5ad606185e6744f33ce100fbf15",
+          "state_hash": "fe47ae9c63c1e7ab45bc68a4ce6c3f07714ca6b0f4ff2c86a4db2977a452801f",
+          "supply": 1024000000000,
+          "transactions": 240000
+        }
+      }
+    },
+    "finished_utc": 1792596218.930327
+  },
+  {
+    "case": {
+      "suite": "throughput",
+      "mode": "throughput",
+      "rate": 20000,
+      "nodes": 10,
+      "repeat": 1,
+      "pattern": "steady",
+      "group": "D",
+      "clock_control": "learned",
+      "join_current": true,
+      "revision": "070fbb46ff25bce38d9599c5165dce66d63fc561"
+    },
+    "status": "complete",
+    "dataset_sha256": "142f5e5d6024c1be4f6e646ec2fb240c4e7789ad546b1543f37752132821f613",
+    "started_utc": 1792596218.932175,
+    "metrics": {
+      "offered_tps": 20000,
+      "common_commit_tps": 19993.501460032498,
+      "achieved_send_tps": 19993.6,
+      "common_commit_tps_rpc_interval_bounds": [
+        19992.520018072013,
+        19994.482998356583
+      ],
+      "common_observation_tps": 19993.431571338388,
+      "common_observation_tps_acquisition_interval_bounds": [
+        19979.951922600427,
+        20006.929420680604
+      ],
+      "common_observation_note": "net common-prefix observation rate; interval spans stats acquisition through prefix checks, no atomic global snapshot or finality claimed",
+      "common_observation_boundary_targets": [
+        2,
+        12
+      ],
+      "measurement_seconds": 10.000049285998102,
+      "measurement_samples": 11,
+      "boundary_canonical_proof_passed": true,
+      "skipped_stats_targets": [],
+      "diagnostic_prefix_observed_tps": 19993.501460032498,
+      "diagnostic_prefix_rpc_interval_bounds": [
+        19992.520018072013,
+        19994.482998356583
+      ],
+      "diagnostic_prefix_note": "snapshot time corrected, but boundaries may be reorganized; not used as proven TPS",
+      "sent_unique_completed_all_ingress": 239872,
+      "sent_unique_attempted_upper_bound": 240000,
+      "sent_unique": 239872,
+      "sent_wire_copies_completed": 2398976,
+      "completed_per_ingress": [
+        240000,
+        240000,
+        239872,
+        239872,
+        239872,
+        239872,
+        239872,
+        239872,
+        239872,
+        239872
+      ],
+      "partial_batch": {
+        "begin": 239872,
+        "end": 240000,
+        "completed_ingress_indices": [
+          0,
+          1
+        ],
+        "cutoff_expected": true,
+        "reason": "Stopped: "
+      },
+      "load_error": null,
+      "cutoff_seconds": 12.000348730012774,
+      "generator_finished_seconds": 12.001780438993592,
+      "p50_ms": 75.76514201355167,
+      "p95_ms": 90.39034601300955,
+      "p99_ms": 92.96534300665371,
+      "p99_after_send_ms": 90.38167199469171,
+      "latency_label": "first observed identical transaction position on all ten nodes; no finality guarantee",
+      "latency_poll_seconds": 0.05,
+      "latency_sample_hz_total": 2,
+      "latency_note": "upper observation latency includes query/round-trip/polling delay; not node commit timestamp",
+      "samples": 20,
+      "unresolved_samples": 0,
+      "drained": true,
+      "drained_observed_seconds": 13.003156099002808,
+      "checks": {
+        "accounts_checked_per_node": 1024,
+        "state": {
+          "burned": 0,
+          "head": "9df311e03bd0e986da709542d74f2d07dc19d9a337589c8dc08841a5c648a78e",
+          "state_hash": "fe47ae9c63c1e7ab45bc68a4ce6c3f07714ca6b0f4ff2c86a4db2977a452801f",
+          "supply": 1024000000000,
+          "transactions": 240000
+        }
+      },
+      "resources": [
+        {
+          "node": "node01",
+          "node_clock_seconds": 10.000021,
+          "cpu_core_equivalents": 1.6007045385204692,
+          "network_received_bytes_per_second": 10232999.310701447,
+          "network_sent_bytes_per_second": 6523004.001691597,
+          "db_write_ms_per_second": 209.43181049319796,
+          "peak_resident_bytes": 155811840
+        },
+        {
+          "node": "node02",
+          "node_clock_seconds": 9.999929,
+          "cpu_core_equivalents": 1.6527343344137742,
+          "network_received_bytes_per_second": 10396554.715538481,
+          "network_sent_bytes_per_second": 7077364.5492883,
+          "db_write_ms_per_second": 184.5180943784701,
+          "peak_resident_bytes": 158240768
+        },
+        {
+          "node": "node03",
+          "node_clock_seconds": 10.000162,
+          "cpu_core_equivalents": 1.5746693903558762,
+          "network_received_bytes_per_second": 10580149.501578076,
+          "network_sent_bytes_per_second": 6359642.373793545,
+          "db_write_ms_per_second": 207.0956756500545,
+          "peak_resident_bytes": 159817728
+        },
+        {
+          "node": "node04",
+          "node_clock_seconds": 10.000119,
+          "cpu_core_equivalents": 1.675257464436173,
+          "network_received_bytes_per_second": 10522127.186686479,
+          "network_sent_bytes_per_second": 7056009.233490122,
+          "db_write_ms_per_second": 239.78034011395266,
+          "peak_resident_bytes": 157048832
+        },
+        {
+          "node": "node05",
+          "node_clock_seconds": 10.000098,
+          "cpu_core_equivalents": 1.570854505625845,
+          "network_received_bytes_per_second": 10314025.72254792,
+          "network_sent_bytes_per_second": 6268442.569262821,
+          "db_write_ms_per_second": 209.2013122271402,
+          "peak_resident_bytes": 155635712
+        },
+        {
+          "node": "node06",
+          "node_clock_seconds": 10.000131,
+          "cpu_core_equivalents": 1.6713039059188326,
+          "network_received_bytes_per_second": 10284139.677770222,
+          "network_sent_bytes_per_second": 7139783.068841798,
+          "db_write_ms_per_second": 218.2061598993053,
+          "peak_resident_bytes": 157667328
+        },
+        {
+          "node": "node07",
+          "node_clock_seconds": 10.000034,
+          "cpu_core_equivalents": 1.657944762987806,
+          "network_received_bytes_per_second": 10162710.34678482,
+          "network_sent_bytes_per_second": 7084996.411012203,
+          "db_write_ms_per_second": 214.8889388776078,
+          "peak_resident_bytes": 158253056
+        },
+        {
+          "node": "node08",
+          "node_clock_seconds": 10.000144,
+          "cpu_core_equivalents": 1.568397715072903,
+          "network_received_bytes_per_second": 10194530.798756497,
+          "network_sent_bytes_per_second": 6564958.064603869,
+          "db_write_ms_per_second": 208.22572074962116,
+          "peak_resident_bytes": 153935872
+        },
+        {
+          "node": "node09",
+          "node_clock_seconds": 10.000088,
+          "cpu_core_equivalents": 1.7631267844842964,
+          "network_received_bytes_per_second": 10346468.45107763,
+          "network_sent_bytes_per_second": 7235350.928911826,
+          "db_write_ms_per_second": 228.3297043986013,
+          "peak_resident_bytes": 157687808
+        },
+        {
+          "node": "node10",
+          "node_clock_seconds": 10.000113,
+          "cpu_core_equivalents": 1.6819066944543526,
+          "network_received_bytes_per_second": 10489315.77073179,
+          "network_sent_bytes_per_second": 7056479.861777562,
+          "db_write_ms_per_second": 233.5984206378468,
+          "peak_resident_bytes": 163233792
+        }
+      ],
+      "timing": "RPC intervals bound each snapshot; TPS uses limiting stats snapshot, never later prefix query completion",
+      "measurement_quality": "canonical boundary proof passed"
+    },
+    "state_audit": {
+      "method": "live fully drained shared dataset",
+      "passed": true,
+      "checks": {
+        "accounts_checked_per_node": 1024,
+        "state": {
+          "burned": 0,
+          "head": "9df311e03bd0e986da709542d74f2d07dc19d9a337589c8dc08841a5c648a78e",
+          "state_hash": "fe47ae9c63c1e7ab45bc68a4ce6c3f07714ca6b0f4ff2c86a4db2977a452801f",
+          "supply": 1024000000000,
+          "transactions": 240000
+        }
+      }
+    },
+    "finished_utc": 1792596235.4859653
+  },
+  {
+    "case": {
+      "suite": "throughput",
+      "mode": "throughput",
+      "rate": 30000,
+      "nodes": 10,
+      "repeat": 1,
+      "pattern": "steady",
+      "group": "B",
+      "clock_control": "robust",
+      "join_current": true,
+      "revision": "070fbb46ff25bce38d9599c5165dce66d63fc561"
+    },
+    "status": "complete",
+    "dataset_sha256": "142f5e5d6024c1be4f6e646ec2fb240c4e7789ad546b1543f37752132821f613",
+    "started_utc": 1792596235.488036,
+    "metrics": {
+      "offered_tps": 30000,
+      "common_commit_tps": null,
+      "achieved_send_tps": 30003.2,
+      "common_commit_tps_rpc_interval_bounds": null,
+      "common_observation_tps": 29658.814946370734,
+      "common_observation_tps_acquisition_interval_bounds": [
+        29582.137601001043,
+        29735.89082240167
+      ],
+      "common_observation_note": "net common-prefix observation rate; interval spans stats acquisition through prefix checks, no atomic global snapshot or finality claimed",
+      "common_observation_boundary_targets": [
+        2,
+        12
+      ],
+      "measurement_seconds": 10.00035942098475,
+      "measurement_samples": 11,
+      "boundary_canonical_proof_passed": false,
+      "skipped_stats_targets": [],
+      "diagnostic_prefix_observed_tps": 28971.242610075904,
+      "diagnostic_prefix_rpc_interval_bounds": [
+        28698.543832082883,
+        29249.17357190567
+      ],
+      "diagnostic_prefix_note": "snapshot time corrected, but boundaries may be reorganized; not used as proven TPS",
+      "sent_unique_completed_all_ingress": 359936,
+      "sent_unique_attempted_upper_bound": 360000,
+      "sent_unique": 359936,
+      "sent_wire_copies_completed": 3599936,
+      "completed_per_ingress": [
+        360000,
+        360000,
+        360000,
+        360000,
+        360000,
+        360000,
+        360000,
+        360000,
+        360000,
+        359936
+      ],
+      "partial_batch": {
+        "begin": 359936,
+        "end": 360000,
+        "completed_ingress_indices": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8
+        ],
+        "cutoff_expected": true,
+        "reason": "Stopped: "
+      },
+      "load_error": null,
+      "cutoff_seconds": 12.000355840020347,
+      "generator_finished_seconds": 12.002940241014585,
+      "p50_ms": 161.20818600757048,
+      "p95_ms": 871.8506110017188,
+      "p99_ms": 1116.5669510082807,
+      "p99_after_send_ms": 1112.3808929987717,
+      "latency_label": "first observed identical transaction position on all ten nodes; no finality guarantee",
+      "latency_poll_seconds": 0.05,
+      "latency_sample_hz_total": 2,
+      "latency_note": "upper observation latency includes query/round-trip/polling delay; not node commit timestamp",
+      "samples": 20,
+      "unresolved_samples": 0,
+      "drained": true,
+      "drained_observed_seconds": 13.003119455999695,
+      "checks": {
+        "accounts_checked_per_node": 1024,
+        "state": {
+          "burned": 0,
+          "head": "26ebbda717b347e9aac32b2b2d258f611b8427eef3e51e90e48a55db53809359",
+          "state_hash": "9d913022181b333fe6cc1ada81647f3856650215a3b10fe15b809c2c4b02b4fd",
+          "supply": 1024000000000,
+          "transactions": 360000
+        }
+      },
+      "resources": [
+        {
+          "node": "node01",
+          "node_clock_seconds": 10.000019,
+          "cpu_core_equivalents": 2.5156772202132816,
+          "network_received_bytes_per_second": 21041328.22147638,
+          "network_sent_bytes_per_second": 15191938.835316213,
+          "db_write_ms_per_second": 402.0645961772673,
+          "peak_resident_bytes": 323096576
+        },
+        {
+          "node": "node02",
+          "node_clock_seconds": 9.999976,
+          "cpu_core_equivalents": 2.491790680297633,
+          "network_received_bytes_per_second": 17608645.760749824,
+          "network_sent_bytes_per_second": 13833149.19955808,
+          "db_write_ms_per_second": 286.84354492450785,
+          "peak_resident_bytes": 284262400
+        },
+        {
+          "node": "node03",
+          "node_clock_seconds": 10.000037,
+          "cpu_core_equivalents": 2.4638255838453396,
+          "network_received_bytes_per_second": 18641044.928133763,
+          "network_sent_bytes_per_second": 11677829.292031618,
+          "db_write_ms_per_second": 345.0265393018046,
+          "peak_resident_bytes": 299311104
+        },
+        {
+          "node": "node04",
+          "node_clock_seconds": 9.999973,
+          "cpu_core_equivalents": 2.5615069160686734,
+          "network_received_bytes_per_second": 19528975.228233114,
+          "network_sent_bytes_per_second": 12155042.01861345,
+          "db_write_ms_per_second": 357.83408955204175,
+          "peak_resident_bytes": 280371200
+        },
+        {
+          "node": "node05",
+          "node_clock_seconds": 10.000017,
+          "cpu_core_equivalents": 2.4784203866853427,
+          "network_received_bytes_per_second": 18141578.85931594,
+          "network_sent_bytes_per_second": 14523362.010284582,
+          "db_write_ms_per_second": 335.5233087103752,
+          "peak_resident_bytes": 275451904
+        },
+        {
+          "node": "node06",
+          "node_clock_seconds": 10.000064,
+          "cpu_core_equivalents": 2.6279118813639593,
+          "network_received_bytes_per_second": 20592387.808718026,
+          "network_sent_bytes_per_second": 14980676.32367153,
+          "db_write_ms_per_second": 384.8237771278264,
+          "peak_resident_bytes": 297304064
+        },
+        {
+          "node": "node07",
+          "node_clock_seconds": 10.000775,
+          "cpu_core_equivalents": 2.490495586592039,
+          "network_received_bytes_per_second": 18057620.034447327,
+          "network_sent_bytes_per_second": 17084756.231392067,
+          "db_write_ms_per_second": 328.1308473593296,
+          "peak_resident_bytes": 283078656
+        },
+        {
+          "node": "node08",
+          "node_clock_seconds": 10.00009,
+          "cpu_core_equivalents": 2.4393632457307883,
+          "network_received_bytes_per_second": 17126871.258158676,
+          "network_sent_bytes_per_second": 12126982.257159686,
+          "db_write_ms_per_second": 318.32707625631366,
+          "peak_resident_bytes": 298360832
+        },
+        {
+          "node": "node09",
+          "node_clock_seconds": 10.000075,
+          "cpu_core_equivalents": 2.6042479681402386,
+          "network_received_bytes_per_second": 21154212.44340667,
+          "network_sent_bytes_per_second": 12453084.901863236,
+          "db_write_ms_per_second": 372.6926558050814,
+          "peak_resident_bytes": 315142144
+        },
+        {
+          "node": "node10",
+          "node_clock_seconds": 10.000041,
+          "cpu_core_equivalents": 2.515064788234368,
+          "network_received_bytes_per_second": 18101379.384344526,
+          "network_sent_bytes_per_second": 13186335.336025123,
+          "db_write_ms_per_second": 349.66777416212597,
+          "peak_resident_bytes": 285048832
+        }
+      ],
+      "timing": "RPC intervals bound each snapshot; TPS uses limiting stats snapshot, never later prefix query completion",
+      "measurement_quality": "TPS unresolved: canonical boundary proof unavailable/failed"
+    },
+    "state_audit": {
+      "method": "live fully drained shared dataset",
+      "passed": true,
+      "checks": {
+        "accounts_checked_per_node": 1024,
+        "state": {
+          "burned": 0,
+          "head": "26ebbda717b347e9aac32b2b2d258f611b8427eef3e51e90e48a55db53809359",
+          "state_hash": "9d913022181b333fe6cc1ada81647f3856650215a3b10fe15b809c2c4b02b4fd",
+          "supply": 1024000000000,
+          "transactions": 360000
+        }
+      }
+    },
+    "finished_utc": 1792596252.1082587
+  },
+  {
+    "case": {
+      "suite": "throughput",
+      "mode": "throughput",
+      "rate": 30000,
+      "nodes": 10,
+      "repeat": 1,
+      "pattern": "steady",
+      "group": "C",
+      "clock_control": "learned",
+      "join_current": false,
+      "revision": "070fbb46ff25bce38d9599c5165dce66d63fc561"
+    },
+    "status": "complete",
+    "dataset_sha256": "142f5e5d6024c1be4f6e646ec2fb240c4e7789ad546b1543f37752132821f613",
+    "started_utc": 1792596252.1104732,
+    "metrics": {
+      "offered_tps": 30000,
+      "common_commit_tps": null,
+      "achieved_send_tps": 30003.2,
+      "common_commit_tps_rpc_interval_bounds": null,
+      "common_observation_tps": 27573.204382265576,
+      "common_observation_tps_acquisition_interval_bounds": [
+        27403.381538040463,
+        27745.1451868164
+      ],
+      "common_observation_note": "net common-prefix observation rate; interval spans stats acquisition through prefix checks, no atomic global snapshot or finality claimed",
+      "common_observation_boundary_targets": [
+        2,
+        12
+      ],
+      "measurement_seconds": 10.000411383021856,
+      "measurement_samples": 11,
+      "boundary_canonical_proof_passed": false,
+      "skipped_stats_targets": [],
+      "diagnostic_prefix_observed_tps": 28158.515773947354,
+      "diagnostic_prefix_rpc_interval_bounds": [
+        28155.74942660029,
+        28161.282665126062
+      ],
+      "diagnostic_prefix_note": "snapshot time corrected, but boundaries may be reorganized; not used as proven TPS",
+      "sent_unique_completed_all_ingress": 359936,
+      "sent_unique_attempted_upper_bound": 360000,
+      "sent_unique": 359936,
+      "sent_wire_copies_completed": 3599488,
+      "completed_per_ingress": [
+        360000,
+        360000,
+        359936,
+        359936,
+        359936,
+        359936,
+        359936,
+        359936,
+        359936,
+        359936
+      ],
+      "partial_batch": {
+        "begin": 359936,
+        "end": 360000,
+        "completed_ingress_indices": [
+          0,
+          1
+        ],
+        "cutoff_expected": true,
+        "reason": "Stopped: "
+      },
+      "load_error": null,
+      "cutoff_seconds": 12.000206665019505,
+      "generator_finished_seconds": 12.002189243998146,
+      "p50_ms": 115.01997799496166,
+      "p95_ms": 900.3322579956148,
+      "p99_ms": 1016.9042380002793,
+      "p99_after_send_ms": 1016.4926289871801,
+      "latency_label": "first observed identical transaction position on all ten nodes; no finality guarantee",
+      "latency_poll_seconds": 0.05,
+      "latency_sample_hz_total": 2,
+      "latency_note": "upper observation latency includes query/round-trip/polling delay; not node commit timestamp",
+      "samples": 20,
+      "unresolved_samples": 0,
+      "drained": true,
+      "drained_observed_seconds": 13.003095230000326,
+      "checks": {
+        "accounts_checked_per_node": 1024,
+        "state": {
+          "burned": 0,
+          "head": "69be0b6e7b62fa988e2fb63193daddfecc9e7817136e9644816695b3b6dd2bf5",
+          "state_hash": "9d913022181b333fe6cc1ada81647f3856650215a3b10fe15b809c2c4b02b4fd",
+          "supply": 1024000000000,
+          "transactions": 360000
+        }
+      },
+      "resources": [
+        {
+          "node": "node01",
+          "node_clock_seconds": 10.003398,
+          "cpu_core_equivalents": 2.4077643416766983,
+          "network_received_bytes_per_second": 16458920.958658246,
+          "network_sent_bytes_per_second": 10736646.187625444,
+          "db_write_ms_per_second": 280.4513478320066,
+          "peak_resident_bytes": 266944512
+        },
+        {
+          "node": "node02",
+          "node_clock_seconds": 10.000023,
+          "cpu_core_equivalents": 2.428604714209157,
+          "network_received_bytes_per_second": 17276775.963415284,
+          "network_sent_bytes_per_second": 13298111.214344207,
+          "db_write_ms_per_second": 270.8171180206286,
+          "peak_resident_bytes": 297242624
+        },
+        {
+          "node": "node03",
+          "node_clock_seconds": 10.000113,
+          "cpu_core_equivalents": 2.4501590132031508,
+          "network_received_bytes_per_second": 18138024.240326084,
+          "network_sent_bytes_per_second": 13555923.118068764,
+          "db_write_ms_per_second": 303.7128064452872,
+          "peak_resident_bytes": 255102976
+        },
+        {
+          "node": "node04",
+          "node_clock_seconds": 10.000097,
+          "cpu_core_equivalents": 2.47104143089812,
+          "network_received_bytes_per_second": 17901041.559896868,
+          "network_sent_bytes_per_second": 10451749.318031615,
+          "db_write_ms_per_second": 312.7898019389212,
+          "peak_resident_bytes": 276107264
+        },
+        {
+          "node": "node05",
+          "node_clock_seconds": 10.000148,
+          "cpu_core_equivalents": 2.4442727247636737,
+          "network_received_bytes_per_second": 18710541.7839816,
+          "network_sent_bytes_per_second": 16801758.533973698,
+          "db_write_ms_per_second": 283.50833837659206,
+          "peak_resident_bytes": 252096512
+        },
+        {
+          "node": "node06",
+          "node_clock_seconds": 10.000102,
+          "cpu_core_equivalents": 2.5205186907093546,
+          "network_received_bytes_per_second": 19018147.51489535,
+          "network_sent_bytes_per_second": 12414240.674745118,
+          "db_write_ms_per_second": 335.37691795543685,
+          "peak_resident_bytes": 282071040
+        },
+        {
+          "node": "node07",
+          "node_clock_seconds": 10.000148,
+          "cpu_core_equivalents": 2.465416911829705,
+          "network_received_bytes_per_second": 18221553.821003452,
+          "network_sent_bytes_per_second": 12018775.422123753,
+          "db_write_ms_per_second": 332.83189768791425,
+          "peak_resident_bytes": 279191552
+        },
+        {
+          "node": "node08",
+          "node_clock_seconds": 10.004317,
+          "cpu_core_equivalents": 2.3997296367158296,
+          "network_received_bytes_per_second": 16850210.464142628,
+          "network_sent_bytes_per_second": 11537073.345436774,
+          "db_write_ms_per_second": 290.40949362160353,
+          "peak_resident_bytes": 273022976
+        },
+        {
+          "node": "node09",
+          "node_clock_seconds": 10.000162,
+          "cpu_core_equivalents": 2.6161100190176922,
+          "network_received_bytes_per_second": 18874341.635665502,
+          "network_sent_bytes_per_second": 13680062.882981297,
+          "db_write_ms_per_second": 320.1583065354341,
+          "peak_resident_bytes": 267104256
+        },
+        {
+          "node": "node10",
+          "node_clock_seconds": 10.000147,
+          "cpu_core_equivalents": 2.4942918339100415,
+          "network_received_bytes_per_second": 19237389.310377136,
+          "network_sent_bytes_per_second": 13422096.395182991,
+          "db_write_ms_per_second": 343.6927234169658,
+          "peak_resident_bytes": 287444992
+        }
+      ],
+      "timing": "RPC intervals bound each snapshot; TPS uses limiting stats snapshot, never later prefix query completion",
+      "measurement_quality": "TPS unresolved: canonical boundary proof unavailable/failed"
+    },
+    "state_audit": {
+      "method": "live fully drained shared dataset",
+      "passed": true,
+      "checks": {
+        "accounts_checked_per_node": 1024,
+        "state": {
+          "burned": 0,
+          "head": "69be0b6e7b62fa988e2fb63193daddfecc9e7817136e9644816695b3b6dd2bf5",
+          "state_hash": "9d913022181b333fe6cc1ada81647f3856650215a3b10fe15b809c2c4b02b4fd",
+          "supply": 1024000000000,
+          "transactions": 360000
+        }
+      }
+    },
+    "finished_utc": 1792596268.7179337
+  },
+  {
+    "case": {
+      "suite": "throughput",
+      "mode": "throughput",
+      "rate": 30000,
+      "nodes": 10,
+      "repeat": 1,
+      "pattern": "steady",
+      "group": "D",
+      "clock_control": "learned",
+      "join_current": true,
+      "revision": "070fbb46ff25bce38d9599c5165dce66d63fc561"
+    },
+    "status": "complete",
+    "dataset_sha256": "142f5e5d6024c1be4f6e646ec2fb240c4e7789ad546b1543f37752132821f613",
+    "started_utc": 1792596268.7204158,
+    "metrics": {
+      "offered_tps": 30000,
+      "common_commit_tps": null,
+      "achieved_send_tps": 30003.2,
+      "common_commit_tps_rpc_interval_bounds": null,
+      "common_observation_tps": 29322.53873752326,
+      "common_observation_tps_acquisition_interval_bounds": [
+        28805.26656997007,
+        29858.728506057196
+      ],
+      "common_observation_note": "net common-prefix observation rate; interval spans stats acquisition through prefix checks, no atomic global snapshot or finality claimed",
+      "common_observation_boundary_targets": [
+        2,
+        12
+      ],
+      "measurement_seconds": 9.99982417197316,
+      "measurement_samples": 10,
+      "boundary_canonical_proof_passed": false,
+      "skipped_stats_targets": [
+        11
+      ],
+      "diagnostic_prefix_observed_tps": 29850.12484885531,
+      "diagnostic_prefix_rpc_interval_bounds": [
+        29847.814011350623,
+        29852.43604411395
+      ],
+      "diagnostic_prefix_note": "snapshot time corrected, but boundaries may be reorganized; not used as proven TPS",
+      "sent_unique_completed_all_ingress": 359936,
+      "sent_unique_attempted_upper_bound": 360000,
+      "sent_unique": 359936,
+      "sent_wire_copies_completed": 3599424,
+      "completed_per_ingress": [
+        360000,
+        359936,
+        359936,
+        359936,
+        359936,
+        359936,
+        359936,
+        359936,
+        359936,
+        359936
+      ],
+      "partial_batch": {
+        "begin": 359936,
+        "end": 360000,
+        "completed_ingress_indices": [
+          0
+        ],
+        "cutoff_expected": true,
+        "reason": "Stopped: "
+      },
+      "load_error": null,
+      "cutoff_seconds": 12.00018466101028,
+      "generator_finished_seconds": 12.002624994987855,
+      "p50_ms": 169.74574900814332,
+      "p95_ms": 813.7860170099884,
+      "p99_ms": 1313.7860170099884,
+      "p99_after_send_ms": 1311.5536910190713,
+      "latency_label": "first observed identical transaction position on all ten nodes; no finality guarantee",
+      "latency_poll_seconds": 0.05,
+      "latency_sample_hz_total": 2,
+      "latency_note": "upper observation latency includes query/round-trip/polling delay; not node commit timestamp",
+      "samples": 20,
+      "unresolved_samples": 0,
+      "drained": true,
+      "drained_observed_seconds": 13.002998996991664,
+      "checks": {
+        "accounts_checked_per_node": 1024,
+        "state": {
+          "burned": 0,
+          "head": "07c5a09cff97f845f7d4b86631958bcd9f5125c9105289204fae7738d5149863",
+          "state_hash": "9d913022181b333fe6cc1ada81647f3856650215a3b10fe15b809c2c4b02b4fd",
+          "supply": 1024000000000,
+          "transactions": 360000
+        }
+      },
+      "resources": [
+        {
+          "node": "node01",
+          "node_clock_seconds": 10.001308,
+          "cpu_core_equivalents": 2.4331892388475587,
+          "network_received_bytes_per_second": 16712786.667503892,
+          "network_sent_bytes_per_second": 13725831.961179478,
+          "db_write_ms_per_second": 308.6863559246451,
+          "peak_resident_bytes": 286081024
+        },
+        {
+          "node": "node02",
+          "node_clock_seconds": 9.999502,
+          "cpu_core_equivalents": 2.593736868096031,
+          "network_received_bytes_per_second": 18774702.980208416,
+          "network_sent_bytes_per_second": 14757868.541853385,
+          "db_write_ms_per_second": 350.89142459294476,
+          "peak_resident_bytes": 278040576
+        },
+        {
+          "node": "node03",
+          "node_clock_seconds": 10.000037,
+          "cpu_core_equivalents": 2.4872636971243205,
+          "network_received_bytes_per_second": 17896730.482097216,
+          "network_sent_bytes_per_second": 12219160.28910693,
+          "db_write_ms_per_second": 343.3156258321844,
+          "peak_resident_bytes": 305115136
+        },
+        {
+          "node": "node04",
+          "node_clock_seconds": 9.99941,
+          "cpu_core_equivalents": 2.5426720176490414,
+          "network_received_bytes_per_second": 19070385.452741712,
+          "network_sent_bytes_per_second": 12559626.117940959,
+          "db_write_ms_per_second": 416.96497463350335,
+          "peak_resident_bytes": 302829568
+        },
+        {
+          "node": "node05",
+          "node_clock_seconds": 9.999384,
+          "cpu_core_equivalents": 2.469070894767118,
+          "network_received_bytes_per_second": 18017585.483265772,
+          "network_sent_bytes_per_second": 11429140.73506928,
+          "db_write_ms_per_second": 366.1949997119823,
+          "peak_resident_bytes": 307736576
+        },
+        {
+          "node": "node06",
+          "node_clock_seconds": 10.00005,
+          "cpu_core_equivalents": 2.57399523002385,
+          "network_received_bytes_per_second": 17828473.55763221,
+          "network_sent_bytes_per_second": 14955463.022684887,
+          "db_write_ms_per_second": 341.78685056574716,
+          "peak_resident_bytes": 319217664
+        },
+        {
+          "node": "node07",
+          "node_clock_seconds": 10.000001,
+          "cpu_core_equivalents": 2.5269083473091656,
+          "network_received_bytes_per_second": 17666899.73331003,
+          "network_sent_bytes_per_second": 13677695.232230477,
+          "db_write_ms_per_second": 329.2729673727033,
+          "peak_resident_bytes": 288722944
+        },
+        {
+          "node": "node08",
+          "node_clock_seconds": 10.000106,
+          "cpu_core_equivalents": 2.4629230930152137,
+          "network_received_bytes_per_second": 17751258.13666375,
+          "network_sent_bytes_per_second": 10222766.53867469,
+          "db_write_ms_per_second": 331.68959139033126,
+          "peak_resident_bytes": 293945344
+        },
+        {
+          "node": "node09",
+          "node_clock_seconds": 9.999531,
+          "cpu_core_equivalents": 2.7251987118195844,
+          "network_received_bytes_per_second": 19075489.340450067,
+          "network_sent_bytes_per_second": 11842152.696961489,
+          "db_write_ms_per_second": 365.81727062999255,
+          "peak_resident_bytes": 291835904
+        },
+        {
+          "node": "node10",
+          "node_clock_seconds": 9.999651,
+          "cpu_core_equivalents": 2.5174955605950644,
+          "network_received_bytes_per_second": 18776662.905535404,
+          "network_sent_bytes_per_second": 13356338.136200953,
+          "db_write_ms_per_second": 379.9802679113501,
+          "peak_resident_bytes": 286420992
+        }
+      ],
+      "timing": "RPC intervals bound each snapshot; TPS uses limiting stats snapshot, never later prefix query completion",
+      "measurement_quality": "TPS unresolved: canonical boundary proof unavailable/failed"
+    },
+    "state_audit": {
+      "method": "live fully drained shared dataset",
+      "passed": true,
+      "checks": {
+        "accounts_checked_per_node": 1024,
+        "state": {
+          "burned": 0,
+          "head": "07c5a09cff97f845f7d4b86631958bcd9f5125c9105289204fae7738d5149863",
+          "state_hash": "9d913022181b333fe6cc1ada81647f3856650215a3b10fe15b809c2c4b02b4fd",
+          "supply": 1024000000000,
+          "transactions": 360000
+        }
+      }
+    },
+    "finished_utc": 1792596285.3063245
+  },
+  {
+    "case": {
+      "suite": "throughput",
+      "mode": "throughput",
+      "rate": 30000,
+      "nodes": 10,
+      "repeat": 1,
+      "pattern": "steady",
+      "group": "A",
+      "clock_control": "robust",
+      "join_current": false,
+      "revision": "070fbb46ff25bce38d9599c5165dce66d63fc561"
+    },
+    "status": "complete",
+    "dataset_sha256": "142f5e5d6024c1be4f6e646ec2fb240c4e7789ad546b1543f37752132821f613",
+    "started_utc": 1792596285.3090594,
+    "metrics": {
+      "offered_tps": 30000,
+      "common_commit_tps": 28912.265947595133,
+      "achieved_send_tps": 30003.2,
+      "common_commit_tps_rpc_interval_bounds": [
+        28870.383121383515,
+        28954.270470900126
+      ],
+      "common_observation_tps": 28901.82484896915,
+      "common_observation_tps_acquisition_interval_bounds": [
+        28842.87890824166,
+        28961.012217713596
+      ],
+      "common_observation_note": "net common-prefix observation rate; interval spans stats acquisition through prefix checks, no atomic global snapshot or finality claimed",
+      "common_observation_boundary_targets": [
+        2,
+        12
+      ],
+      "measurement_seconds": 10.014296372508397,
+      "measurement_samples": 11,
+      "boundary_canonical_proof_passed": true,
+      "skipped_stats_targets": [],
+      "diagnostic_prefix_observed_tps": 28912.265947595133,
+      "diagnostic_prefix_rpc_interval_bounds": [
+        28870.383121383515,
+        28954.270470900126
+      ],
+      "diagnostic_prefix_note": "snapshot time corrected, but boundaries may be reorganized; not used as proven TPS",
+      "sent_unique_completed_all_ingress": 359936,
+      "sent_unique_attempted_upper_bound": 360000,
+      "sent_unique": 359936,
+      "sent_wire_copies_completed": 3599424,
+      "completed_per_ingress": [
+        360000,
+        359936,
+        359936,
+        359936,
+        359936,
+        359936,
+        359936,
+        359936,
+        359936,
+        359936
+      ],
+      "partial_batch": {
+        "begin": 359936,
+        "end": 360000,
+        "completed_ingress_indices": [
+          0
+        ],
+        "cutoff_expected": true,
+        "reason": "Stopped: "
+      },
+      "load_error": null,
+      "cutoff_seconds": 12.000179462018423,
+      "generator_finished_seconds": 12.001975079998374,
+      "p50_ms": 150.28911601984873,
+      "p95_ms": 606.4414890133776,
+      "p99_ms": 669.3691440159455,
+      "p99_after_send_ms": 665.6963629939128,
+      "latency_label": "first observed identical transaction position on all ten nodes; no finality guarantee",
+      "latency_poll_seconds": 0.05,
+      "latency_sample_hz_total": 2,
+      "latency_note": "upper observation latency includes query/round-trip/polling delay; not node commit timestamp",
+      "samples": 20,
+      "unresolved_samples": 0,
+      "drained": true,
+      "drained_observed_seconds": 13.00295031600399,
+      "checks": {
+        "accounts_checked_per_node": 1024,
+        "state": {
+          "burned": 0,
+          "head": "a0e674460390efe2a16f0925c5d5ba60743be4748b20fc1715949187bb661d2d",
+          "state_hash": "9d913022181b333fe6cc1ada81647f3856650215a3b10fe15b809c2c4b02b4fd",
+          "supply": 1024000000000,
+          "transactions": 360000
+        }
+      },
+      "resources": [
+        {
+          "node": "node01",
+          "node_clock_seconds": 10.001799,
+          "cpu_core_equivalents": 2.4532454611415404,
+          "network_received_bytes_per_second": 19546912.210493334,
+          "network_sent_bytes_per_second": 13086434.750388404,
+          "db_write_ms_per_second": 307.29485465564744,
+          "peak_resident_bytes": 313221120
+        },
+        {
+          "node": "node02",
+          "node_clock_seconds": 10.00001,
+          "cpu_core_equivalents": 2.5522214477785523,
+          "network_received_bytes_per_second": 19339384.16061584,
+          "network_sent_bytes_per_second": 15183962.316037685,
+          "db_write_ms_per_second": 294.2825581174419,
+          "peak_resident_bytes": 310112256
+        },
+        {
+          "node": "node03",
+          "node_clock_seconds": 10.000465,
+          "cpu_core_equivalents": 2.406603692928279,
+          "network_received_bytes_per_second": 17399161.73897914,
+          "network_sent_bytes_per_second": 13431824.620155163,
+          "db_write_ms_per_second": 276.94809541356324,
+          "peak_resident_bytes": 314761216
+        },
+        {
+          "node": "node04",
+          "node_clock_seconds": 10.000661,
+          "cpu_core_equivalents": 2.6480708625159877,
+          "network_received_bytes_per_second": 21639521.627620418,
+          "network_sent_bytes_per_second": 15783329.421925211,
+          "db_write_ms_per_second": 415.901718396414,
+          "peak_resident_bytes": 322260992
+        },
+        {
+          "node": "node05",
+          "node_clock_seconds": 10.000071,
+          "cpu_core_equivalents": 2.450941098318202,
+          "network_received_bytes_per_second": 18847999.279205117,
+          "network_sent_bytes_per_second": 12844191.206242435,
+          "db_write_ms_per_second": 301.30949290260037,
+          "peak_resident_bytes": 309129216
+        },
+        {
+          "node": "node06",
+          "node_clock_seconds": 10.000772,
+          "cpu_core_equivalents": 2.5801269142022236,
+          "network_received_bytes_per_second": 19314462.123524066,
+          "network_sent_bytes_per_second": 14390580.147212636,
+          "db_write_ms_per_second": 307.9472879693688,
+          "peak_resident_bytes": 306237440
+        },
+        {
+          "node": "node07",
+          "node_clock_seconds": 10.000144,
+          "cpu_core_equivalents": 2.523249165212021,
+          "network_received_bytes_per_second": 18249668.80476921,
+          "network_sent_bytes_per_second": 13273708.058603955,
+          "db_write_ms_per_second": 291.21711597353,
+          "peak_resident_bytes": 312487936
+        },
+        {
+          "node": "node08",
+          "node_clock_seconds": 10.028125,
+          "cpu_core_equivalents": 2.4215824992209414,
+          "network_received_bytes_per_second": 18528047.26706139,
+          "network_sent_bytes_per_second": 13315652.72670614,
+          "db_write_ms_per_second": 313.1220155313182,
+          "peak_resident_bytes": 302333952
+        },
+        {
+          "node": "node09",
+          "node_clock_seconds": 10.000028,
+          "cpu_core_equivalents": 2.7549305861943583,
+          "network_received_bytes_per_second": 20981238.252532892,
+          "network_sent_bytes_per_second": 17589144.45039554,
+          "db_write_ms_per_second": 375.8521160140751,
+          "peak_resident_bytes": 315326464
+        },
+        {
+          "node": "node10",
+          "node_clock_seconds": 10.001212,
+          "cpu_core_equivalents": 2.6019792401160977,
+          "network_received_bytes_per_second": 21218605.40502491,
+          "network_sent_bytes_per_second": 13251459.123154273,
+          "db_write_ms_per_second": 387.53689872787413,
+          "peak_resident_bytes": 328187904
+        }
+      ],
+      "timing": "RPC intervals bound each snapshot; TPS uses limiting stats snapshot, never later prefix query completion",
+      "measurement_quality": "canonical boundary proof passed"
+    },
+    "state_audit": {
+      "method": "live fully drained shared dataset",
+      "passed": true,
+      "checks": {
+        "accounts_checked_per_node": 1024,
+        "state": {
+          "burned": 0,
+          "head": "a0e674460390efe2a16f0925c5d5ba60743be4748b20fc1715949187bb661d2d",
+          "state_hash": "9d913022181b333fe6cc1ada81647f3856650215a3b10fe15b809c2c4b02b4fd",
+          "supply": 1024000000000,
+          "transactions": 360000
+        }
+      }
+    },
+    "finished_utc": 1792596301.429096
+  },
+  {
+    "case": {
+      "suite": "throughput",
+      "mode": "throughput",
+      "rate": 40000,
+      "nodes": 10,
+      "repeat": 1,
+      "pattern": "steady",
+      "group": "C",
+      "clock_control": "learned",
+      "join_current": false,
+      "revision": "070fbb46ff25bce38d9599c5165dce66d63fc561"
+    },
+    "status": "complete",
+    "dataset_sha256": "142f5e5d6024c1be4f6e646ec2fb240c4e7789ad546b1543f37752132821f613",
+    "started_utc": 1792596301.432157,
+    "metrics": {
+      "offered_tps": 40000,
+      "common_commit_tps": null,
+      "achieved_send_tps": 40000.0,
+      "common_commit_tps_rpc_interval_bounds": null,
+      "common_observation_tps": 37107.22646521306,
+      "common_observation_tps_acquisition_interval_bounds": [
+        33726.037699432316,
+        41241.91626142166
+      ],
+      "common_observation_note": "net common-prefix observation rate; interval spans stats acquisition through prefix checks, no atomic global snapshot or finality claimed",
+      "common_observation_boundary_targets": [
+        2,
+        12
+      ],
+      "measurement_seconds": 10.00709258846473,
+      "measurement_samples": 8,
+      "boundary_canonical_proof_passed": false,
+      "skipped_stats_targets": [
+        4,
+        10,
+        11,
+        13
+      ],
+      "diagnostic_prefix_observed_tps": 40688.13588562996,
+      "diagnostic_prefix_rpc_interval_bounds": [
+        40159.71527079104,
+        41230.64780609647
+      ],
+      "diagnostic_prefix_note": "snapshot time corrected, but boundaries may be reorganized; not used as proven TPS",
+      "sent_unique_completed_all_ingress": 479872,
+      "sent_unique_attempted_upper_bound": 480000,
+      "sent_unique": 479872,
+      "sent_wire_copies_completed": 4798720,
+      "completed_per_ingress": [
+        479872,
+        479872,
+        479872,
+        479872,
+        479872,
+        479872,
+        479872,
+        479872,
+        479872,
+        479872
+      ],
+      "partial_batch": {
+        "begin": 479872,
+        "end": 480000,
+        "completed_ingress_indices": [],
+        "cutoff_expected": true,
+        "reason": "Stopped: "
+      },
+      "load_error": null,
+      "cutoff_seconds": 12.000242887996137,
+      "generator_finished_seconds": 12.003362960007507,
+      "p50_ms": 922.0312940014992,
+      "p95_ms": 1931.7750979971606,
+      "p99_ms": 2431.7750979971606,
+      "p99_after_send_ms": 2428.3698739891406,
+      "latency_label": "first observed identical transaction position on all ten nodes; no finality guarantee",
+      "latency_poll_seconds": 0.05,
+      "latency_sample_hz_total": 2,
+      "latency_note": "upper observation latency includes query/round-trip/polling delay; not node commit timestamp",
+      "samples": 20,
+      "unresolved_samples": 0,
+      "drained": true,
+      "drained_observed_seconds": 14.003024300996913,
+      "checks": {
+        "accounts_checked_per_node": 1024,
+        "state": {
+          "burned": 0,
+          "head": "b5ca7812e7f9329463c31cd24dd58d6a6a526c47b69147d1fff6676ac2c445ee",
+          "state_hash": "7d0982864275b4237fe940f994f725b5d835850b68b59116f16e1bb0c5cb7a4e",
+          "supply": 1024000000000,
+          "transactions": 479872
+        }
+      },
+      "resources": [
+        {
+          "node": "node01",
+          "node_clock_seconds": 10.002026,
+          "cpu_core_equivalents": 3.363183019120326,
+          "network_received_bytes_per_second": 25228641.27727722,
+          "network_sent_bytes_per_second": 40123608.256967135,
+          "db_write_ms_per_second": 380.012886589177,
+          "peak_resident_bytes": 536899584
+        },
+        {
+          "node": "node02",
+          "node_clock_seconds": 10.014519,
+          "cpu_core_equivalents": 3.55021733944486,
+          "network_received_bytes_per_second": 31654718.81375431,
+          "network_sent_bytes_per_second": 19401415.984132636,
+          "db_write_ms_per_second": 485.12916246901113,
+          "peak_resident_bytes": 583376896
+        },
+        {
+          "node": "node03",
+          "node_clock_seconds": 9.999569,
+          "cpu_core_equivalents": 3.456831489437195,
+          "network_received_bytes_per_second": 32793310.891699433,
+          "network_sent_bytes_per_second": 21061977.471229013,
+          "db_write_ms_per_second": 484.82314377749685,
+          "peak_resident_bytes": 570171392
+        },
+        {
+          "node": "node04",
+          "node_clock_seconds": 9.998215,
+          "cpu_core_equivalents": 3.47891158571805,
+          "network_received_bytes_per_second": 36013378.48806012,
+          "network_sent_bytes_per_second": 14804676.534761455,
+          "db_write_ms_per_second": 532.0112241035025,
+          "peak_resident_bytes": 606158848
+        },
+        {
+          "node": "node05",
+          "node_clock_seconds": 10.000248,
+          "cpu_core_equivalents": 3.434168432622871,
+          "network_received_bytes_per_second": 29313090.935344808,
+          "network_sent_bytes_per_second": 29950768.02095308,
+          "db_write_ms_per_second": 448.5163476945771,
+          "peak_resident_bytes": 572088320
+        },
+        {
+          "node": "node06",
+          "node_clock_seconds": 9.999852,
+          "cpu_core_equivalents": 3.536623842032862,
+          "network_received_bytes_per_second": 33571001.55082295,
+          "network_sent_bytes_per_second": 19729181.991893478,
+          "db_write_ms_per_second": 506.720221559279,
+          "peak_resident_bytes": 587300864
+        },
+        {
+          "node": "node07",
+          "node_clock_seconds": 9.99978,
+          "cpu_core_equivalents": 3.4653357373862224,
+          "network_received_bytes_per_second": 29156024.032528717,
+          "network_sent_bytes_per_second": 32162538.87585527,
+          "db_write_ms_per_second": 439.76176195876315,
+          "peak_resident_bytes": 575389696
+        },
+        {
+          "node": "node08",
+          "node_clock_seconds": 10.06473,
+          "cpu_core_equivalents": 3.3383145896611235,
+          "network_received_bytes_per_second": 35013304.380743444,
+          "network_sent_bytes_per_second": 24757721.270217877,
+          "db_write_ms_per_second": 467.103932942066,
+          "peak_resident_bytes": 601571328
+        },
+        {
+          "node": "node09",
+          "node_clock_seconds": 9.999701,
+          "cpu_core_equivalents": 3.5820741040157102,
+          "network_received_bytes_per_second": 31391098.793853935,
+          "network_sent_bytes_per_second": 23216660.778157268,
+          "db_write_ms_per_second": 451.8463179049054,
+          "peak_resident_bytes": 579670016
+        },
+        {
+          "node": "node10",
+          "node_clock_seconds": 9.999958,
+          "cpu_core_equivalents": 3.5112362471922385,
+          "network_received_bytes_per_second": 32458799.926959693,
+          "network_sent_bytes_per_second": 20958381.425201986,
+          "db_write_ms_per_second": 489.9434027622916,
+          "peak_resident_bytes": 562548736
+        }
+      ],
+      "timing": "RPC intervals bound each snapshot; TPS uses limiting stats snapshot, never later prefix query completion",
+      "measurement_quality": "TPS unresolved: canonical boundary proof unavailable/failed"
+    },
+    "state_audit": {
+      "method": "live fully drained shared dataset",
+      "passed": true,
+      "checks": {
+        "accounts_checked_per_node": 1024,
+        "state": {
+          "burned": 0,
+          "head": "b5ca7812e7f9329463c31cd24dd58d6a6a526c47b69147d1fff6676ac2c445ee",
+          "state_hash": "7d0982864275b4237fe940f994f725b5d835850b68b59116f16e1bb0c5cb7a4e",
+          "supply": 1024000000000,
+          "transactions": 479872
+        }
+      }
+    },
+    "finished_utc": 1792596320.1625206
+  },
+  {
+    "case": {
+      "suite": "throughput",
+      "mode": "throughput",
+      "rate": 40000,
+      "nodes": 10,
+      "repeat": 1,
+      "pattern": "steady",
+      "group": "D",
+      "clock_control": "learned",
+      "join_current": true,
+      "revision": "070fbb46ff25bce38d9599c5165dce66d63fc561"
+    },
+    "status": "complete",
+    "dataset_sha256": "142f5e5d6024c1be4f6e646ec2fb240c4e7789ad546b1543f37752132821f613",
+    "started_utc": 1792596320.1658335,
+    "metrics": {
+      "offered_tps": 40000,
+      "common_commit_tps": null,
+      "achieved_send_tps": 40000.0,
+      "common_commit_tps_rpc_interval_bounds": null,
+      "common_observation_tps": 35018.971791880285,
+      "common_observation_tps_acquisition_interval_bounds": [
+        32151.828952590862,
+        38447.53489219514
+      ],
+      "common_observation_note": "net common-prefix observation rate; interval spans stats acquisition through prefix checks, no atomic global snapshot or finality claimed",
+      "common_observation_boundary_targets": [
+        2,
+        12
+      ],
+      "measurement_seconds": 10.426601291983388,
+      "measurement_samples": 10,
+      "boundary_canonical_proof_passed": false,
+      "skipped_stats_targets": [
+        6,
+        13
+      ],
+      "diagnostic_prefix_observed_tps": 38685.37339214578,
+      "diagnostic_prefix_rpc_interval_bounds": [
+        35862.2192172208,
+        41990.99881625137
+      ],
+      "diagnostic_prefix_note": "snapshot time corrected, but boundaries may be reorganized; not used as proven TPS",
+      "sent_unique_completed_all_ingress": 479872,
+      "sent_unique_attempted_upper_bound": 479872,
+      "sent_unique": 479872,
+      "sent_wire_copies_completed": 4798720,
+      "completed_per_ingress": [
+        479872,
+        479872,
+        479872,
+        479872,
+        479872,
+        479872,
+        479872,
+        479872,
+        479872,
+        479872
+      ],
+      "partial_batch": null,
+      "load_error": null,
+      "cutoff_seconds": 12.000147145998199,
+      "generator_finished_seconds": 12.002668139000889,
+      "p50_ms": 932.8245089855045,
+      "p95_ms": 2317.7933959814254,
+      "p99_ms": 2817.7933959814254,
+      "p99_after_send_ms": 2816.0080689995084,
+      "latency_label": "first observed identical transaction position on all ten nodes; no finality guarantee",
+      "latency_poll_seconds": 0.05,
+      "latency_sample_hz_total": 2,
+      "latency_note": "upper observation latency includes query/round-trip/polling delay; not node commit timestamp",
+      "samples": 20,
+      "unresolved_samples": 0,
+      "drained": true,
+      "drained_observed_seconds": 14.002880446991185,
+      "checks": {
+        "accounts_checked_per_node": 1024,
+        "state": {
+          "burned": 0,
+          "head": "830bee9c3633c9cdd22a5e2328c2666a85156b7fcfbc25e475d98e1abe9a75e4",
+          "state_hash": "7d0982864275b4237fe940f994f725b5d835850b68b59116f16e1bb0c5cb7a4e",
+          "supply": 1024000000000,
+          "transactions": 479872
+        }
+      },
+      "resources": [
+        {
+          "node": "node01",
+          "node_clock_seconds": 10.000094,
+          "cpu_core_equivalents": 3.4556018173429166,
+          "network_received_bytes_per_second": 28849312.116466105,
+          "network_sent_bytes_per_second": 25400478.235504586,
+          "db_write_ms_per_second": 433.88255920394346,
+          "peak_resident_bytes": 558370816
+        },
+        {
+          "node": "node02",
+          "node_clock_seconds": 10.00005,
+          "cpu_core_equivalents": 3.4114376428117854,
+          "network_received_bytes_per_second": 29154964.425177876,
+          "network_sent_bytes_per_second": 22897972.910135448,
+          "db_write_ms_per_second": 482.26908735456317,
+          "peak_resident_bytes": 582270976
+        },
+        {
+          "node": "node03",
+          "node_clock_seconds": 10.852273,
+          "cpu_core_equivalents": 3.148630521919233,
+          "network_received_bytes_per_second": 26682607.59750515,
+          "network_sent_bytes_per_second": 23651093.554318067,
+          "db_write_ms_per_second": 536.4512439007018,
+          "peak_resident_bytes": 583155712
+        },
+        {
+          "node": "node04",
+          "node_clock_seconds": 9.998168,
+          "cpu_core_equivalents": 3.5097475857577107,
+          "network_received_bytes_per_second": 30253632.765522644,
+          "network_sent_bytes_per_second": 19350284.372096967,
+          "db_write_ms_per_second": 450.9734878429729,
+          "peak_resident_bytes": 553472000
+        },
+        {
+          "node": "node05",
+          "node_clock_seconds": 10.000061,
+          "cpu_core_equivalents": 3.480918566396745,
+          "network_received_bytes_per_second": 31025881.142125033,
+          "network_sent_bytes_per_second": 18654665.6065398,
+          "db_write_ms_per_second": 494.5238025048046,
+          "peak_resident_bytes": 565719040
+        },
+        {
+          "node": "node06",
+          "node_clock_seconds": 9.99982,
+          "cpu_core_equivalents": 3.575456358214448,
+          "network_received_bytes_per_second": 30369915.058471054,
+          "network_sent_bytes_per_second": 19894592.50266505,
+          "db_write_ms_per_second": 466.92182869291645,
+          "peak_resident_bytes": 566554624
+        },
+        {
+          "node": "node07",
+          "node_clock_seconds": 10.000048,
+          "cpu_core_equivalents": 3.41626290193807,
+          "network_received_bytes_per_second": 28392312.31690088,
+          "network_sent_bytes_per_second": 26142935.513909534,
+          "db_write_ms_per_second": 442.9307391324522,
+          "peak_resident_bytes": 576217088
+        },
+        {
+          "node": "node08",
+          "node_clock_seconds": 10.002347,
+          "cpu_core_equivalents": 3.3571990653793553,
+          "network_received_bytes_per_second": 25142446.667767074,
+          "network_sent_bytes_per_second": 30052604.1538051,
+          "db_write_ms_per_second": 403.56657932383274,
+          "peak_resident_bytes": 546680832
+        },
+        {
+          "node": "node09",
+          "node_clock_seconds": 9.999984,
+          "cpu_core_equivalents": 3.5874530399248643,
+          "network_received_bytes_per_second": 29847635.856217373,
+          "network_sent_bytes_per_second": 19998235.39717664,
+          "db_write_ms_per_second": 455.334754335607,
+          "peak_resident_bytes": 552648704
+        },
+        {
+          "node": "node10",
+          "node_clock_seconds": 9.999589,
+          "cpu_core_equivalents": 3.5139622238473995,
+          "network_received_bytes_per_second": 30927147.705770705,
+          "network_sent_bytes_per_second": 14167736.193957571,
+          "db_write_ms_per_second": 472.05000335513785,
+          "peak_resident_bytes": 566870016
+        }
+      ],
+      "timing": "RPC intervals bound each snapshot; TPS uses limiting stats snapshot, never later prefix query completion",
+      "measurement_quality": "TPS unresolved: canonical boundary proof unavailable/failed"
+    },
+    "state_audit": {
+      "method": "live fully drained shared dataset",
+      "passed": true,
+      "checks": {
+        "accounts_checked_per_node": 1024,
+        "state": {
+          "burned": 0,
+          "head": "830bee9c3633c9cdd22a5e2328c2666a85156b7fcfbc25e475d98e1abe9a75e4",
+          "state_hash": "7d0982864275b4237fe940f994f725b5d835850b68b59116f16e1bb0c5cb7a4e",
+          "supply": 1024000000000,
+          "transactions": 479872
+        }
+      }
+    },
+    "finished_utc": 1792596338.7759898
+  },
+  {
+    "case": {
+      "suite": "throughput",
+      "mode": "throughput",
+      "rate": 40000,
+      "nodes": 10,
+      "repeat": 1,
+      "pattern": "steady",
+      "group": "A",
+      "clock_control": "robust",
+      "join_current": false,
+      "revision": "070fbb46ff25bce38d9599c5165dce66d63fc561"
+    },
+    "status": "complete",
+    "dataset_sha256": "142f5e5d6024c1be4f6e646ec2fb240c4e7789ad546b1543f37752132821f613",
+    "started_utc": 1792596338.780556,
+    "metrics": {
+      "offered_tps": 40000,
+      "common_commit_tps": null,
+      "achieved_send_tps": 40000.0,
+      "common_commit_tps_rpc_interval_bounds": null,
+      "common_observation_tps": 35535.4730612593,
+      "common_observation_tps_acquisition_interval_bounds": [
+        32888.95084373846,
+        38645.190872917
+      ],
+      "common_observation_note": "net common-prefix observation rate; interval spans stats acquisition through prefix checks, no atomic global snapshot or finality claimed",
+      "common_observation_boundary_targets": [
+        2,
+        12
+      ],
+      "measurement_seconds": 10.110854813014157,
+      "measurement_samples": 9,
+      "boundary_canonical_proof_passed": false,
+      "skipped_stats_targets": [
+        6,
+        10,
+        13
+      ],
+      "diagnostic_prefix_observed_tps": 37525.61831683997,
+      "diagnostic_prefix_rpc_interval_bounds": [
+        37071.0884443047,
+        37991.43256003072
+      ],
+      "diagnostic_prefix_note": "snapshot time corrected, but boundaries may be reorganized; not used as proven TPS",
+      "sent_unique_completed_all_ingress": 479872,
+      "sent_unique_attempted_upper_bound": 480000,
+      "sent_unique": 479872,
+      "sent_wire_copies_completed": 4798720,
+      "completed_per_ingress": [
+        479872,
+        479872,
+        479872,
+        479872,
+        479872,
+        479872,
+        479872,
+        479872,
+        479872,
+        479872
+      ],
+      "partial_batch": {
+        "begin": 479872,
+        "end": 480000,
+        "completed_ingress_indices": [],
+        "cutoff_expected": true,
+        "reason": "Stopped: "
+      },
+      "load_error": null,
+      "cutoff_seconds": 12.000050564995036,
+      "generator_finished_seconds": 12.002917650999734,
+      "p50_ms": 821.875072986586,
+      "p95_ms": 1364.6957549790386,
+      "p99_ms": 2080.484867998166,
+      "p99_after_send_ms": 2079.5197050028946,
+      "latency_label": "first observed identical transaction position on all ten nodes; no finality guarantee",
+      "latency_poll_seconds": 0.05,
+      "latency_sample_hz_total": 2,
+      "latency_note": "upper observation latency includes query/round-trip/polling delay; not node commit timestamp",
+      "samples": 20,
+      "unresolved_samples": 0,
+      "drained": true,
+      "drained_observed_seconds": 14.003319037990877,
+      "checks": {
+        "accounts_checked_per_node": 1024,
+        "state": {
+          "burned": 0,
+          "head": "9be1dd36cb63d734c0fef9e140438e79307ed002b35d2f6a7a6d347006c2344b",
+          "state_hash": "7d0982864275b4237fe940f994f725b5d835850b68b59116f16e1bb0c5cb7a4e",
+          "supply": 1024000000000,
+          "transactions": 479872
+        }
+      },
+      "resources": [
+        {
+          "node": "node01",
+          "node_clock_seconds": 10.221458,
+          "cpu_core_equivalents": 3.2791278895828757,
+          "network_received_bytes_per_second": 27734164.73462005,
+          "network_sent_bytes_per_second": 27917692.270515613,
+          "db_write_ms_per_second": 443.5217253742079,
+          "peak_resident_bytes": 581316608
+        },
+        {
+          "node": "node02",
+          "node_clock_seconds": 10.000161,
+          "cpu_core_equivalents": 3.5034455945259277,
+          "network_received_bytes_per_second": 30356284.36382174,
+          "network_sent_bytes_per_second": 22148901.902679365,
+          "db_write_ms_per_second": 490.02272983404964,
+          "peak_resident_bytes": 574656512
+        },
+        {
+          "node": "node03",
+          "node_clock_seconds": 10.000293,
+          "cpu_core_equivalents": 3.4027756986720292,
+          "network_received_bytes_per_second": 30454777.275025845,
+          "network_sent_bytes_per_second": 29887142.106736276,
+          "db_write_ms_per_second": 467.5956174484088,
+          "peak_resident_bytes": 534044672
+        },
+        {
+          "node": "node04",
+          "node_clock_seconds": 10.007107,
+          "cpu_core_equivalents": 3.501507178847993,
+          "network_received_bytes_per_second": 36156269.03959356,
+          "network_sent_bytes_per_second": 16382561.213745391,
+          "db_write_ms_per_second": 518.5457761169138,
+          "peak_resident_bytes": 574672896
+        },
+        {
+          "node": "node05",
+          "node_clock_seconds": 10.000146,
+          "cpu_core_equivalents": 3.4955875644215593,
+          "network_received_bytes_per_second": 33312614.035835072,
+          "network_sent_bytes_per_second": 23056626.87324765,
+          "db_write_ms_per_second": 449.95215599852236,
+          "peak_resident_bytes": 567836672
+        },
+        {
+          "node": "node06",
+          "node_clock_seconds": 10.003198,
+          "cpu_core_equivalents": 3.534178669661442,
+          "network_received_bytes_per_second": 31779686.656207345,
+          "network_sent_bytes_per_second": 24626584.318334997,
+          "db_write_ms_per_second": 472.0962183293783,
+          "peak_resident_bytes": 565821440
+        },
+        {
+          "node": "node07",
+          "node_clock_seconds": 10.000197,
+          "cpu_core_equivalents": 3.4590095575117172,
+          "network_received_bytes_per_second": 28186768.220666055,
+          "network_sent_bytes_per_second": 30671021.680872887,
+          "db_write_ms_per_second": 442.7403850144152,
+          "peak_resident_bytes": 526458880
+        },
+        {
+          "node": "node08",
+          "node_clock_seconds": 10.000187,
+          "cpu_core_equivalents": 3.4700903093112156,
+          "network_received_bytes_per_second": 32129484.978630897,
+          "network_sent_bytes_per_second": 21278328.595255267,
+          "db_write_ms_per_second": 441.28284351082635,
+          "peak_resident_bytes": 568655872
+        },
+        {
+          "node": "node09",
+          "node_clock_seconds": 10.000185,
+          "cpu_core_equivalents": 3.611077895058941,
+          "network_received_bytes_per_second": 34704022.6755805,
+          "network_sent_bytes_per_second": 20553628.35787538,
+          "db_write_ms_per_second": 458.24724012605765,
+          "peak_resident_bytes": 566652928
+        },
+        {
+          "node": "node10",
+          "node_clock_seconds": 10.000218,
+          "cpu_core_equivalents": 3.51683253305078,
+          "network_received_bytes_per_second": 28955770.16421042,
+          "network_sent_bytes_per_second": 27036453.205320124,
+          "db_write_ms_per_second": 445.37758226870653,
+          "peak_resident_bytes": 520110080
+        }
+      ],
+      "timing": "RPC intervals bound each snapshot; TPS uses limiting stats snapshot, never later prefix query completion",
+      "measurement_quality": "TPS unresolved: canonical boundary proof unavailable/failed"
+    },
+    "state_audit": {
+      "method": "live fully drained shared dataset",
+      "passed": true,
+      "checks": {
+        "accounts_checked_per_node": 1024,
+        "state": {
+          "burned": 0,
+          "head": "9be1dd36cb63d734c0fef9e140438e79307ed002b35d2f6a7a6d347006c2344b",
+          "state_hash": "7d0982864275b4237fe940f994f725b5d835850b68b59116f16e1bb0c5cb7a4e",
+          "supply": 1024000000000,
+          "transactions": 479872
+        }
+      }
+    },
+    "finished_utc": 1792596357.0374157
+  },
+  {
+    "case": {
+      "suite": "throughput",
+      "mode": "throughput",
+      "rate": 40000,
+      "nodes": 10,
+      "repeat": 1,
+      "pattern": "steady",
+      "group": "B",
+      "clock_control": "robust",
+      "join_current": true,
+      "revision": "070fbb46ff25bce38d9599c5165dce66d63fc561"
+    },
+    "status": "complete",
+    "dataset_sha256": "142f5e5d6024c1be4f6e646ec2fb240c4e7789ad546b1543f37752132821f613",
+    "started_utc": 1792596357.0411944,
+    "metrics": {
+      "offered_tps": 40000,
+      "common_commit_tps": null,
+      "achieved_send_tps": 40000.0,
+      "common_commit_tps_rpc_interval_bounds": null,
+      "common_observation_tps": 38970.0947827271,
+      "common_observation_tps_acquisition_interval_bounds": [
+        38671.92280776144,
+        39272.900473434674
+      ],
+      "common_observation_note": "net common-prefix observation rate; interval spans stats acquisition through prefix checks, no atomic global snapshot or finality claimed",
+      "common_observation_boundary_targets": [
+        2,
+        12
+      ],
+      "measurement_seconds": 10.000306317466311,
+      "measurement_samples": 11,
+      "boundary_canonical_proof_passed": false,
+      "skipped_stats_targets": [],
+      "diagnostic_prefix_observed_tps": 38388.55028681197,
+      "diagnostic_prefix_rpc_interval_bounds": [
+        37963.20865393707,
+        38823.53101284554
+      ],
+      "diagnostic_prefix_note": "snapshot time corrected, but boundaries may be reorganized; not used as proven TPS",
+      "sent_unique_completed_all_ingress": 479872,
+      "sent_unique_attempted_upper_bound": 480000,
+      "sent_unique": 479872,
+      "sent_wire_copies_completed": 4798848,
+      "completed_per_ingress": [
+        480000,
+        479872,
+        479872,
+        479872,
+        479872,
+        479872,
+        479872,
+        479872,
+        479872,
+        479872
+      ],
+      "partial_batch": {
+        "begin": 479872,
+        "end": 480000,
+        "completed_ingress_indices": [
+          0
+        ],
+        "cutoff_expected": true,
+        "reason": "Stopped: "
+      },
+      "load_error": null,
+      "cutoff_seconds": 12.000190049991943,
+      "generator_finished_seconds": 12.003588357008994,
+      "p50_ms": 922.2471829853021,
+      "p95_ms": 1503.2859570055734,
+      "p99_ms": 1532.8606159891933,
+      "p99_after_send_ms": 1529.4679409998935,
+      "latency_label": "first observed identical transaction position on all ten nodes; no finality guarantee",
+      "latency_poll_seconds": 0.05,
+      "latency_sample_hz_total": 2,
+      "latency_note": "upper observation latency includes query/round-trip/polling delay; not node commit timestamp",
+      "samples": 20,
+      "unresolved_samples": 0,
+      "drained": true,
+      "drained_observed_seconds": 13.00300660400535,
+      "checks": {
+        "accounts_checked_per_node": 1024,
+        "state": {
+          "burned": 0,
+          "head": "9649c862bba8b6d633d3782d9e33df46571d5ef631b13c0ced2b23fbe2a97f1b",
+          "state_hash": "b9940a1fff5f5b263602c4c42acedb21be223b50f320feb5fa7ba793b892fa1b",
+          "supply": 1024000000000,
+          "transactions": 480000
+        }
+      },
+      "resources": [
+        {
+          "node": "node01",
+          "node_clock_seconds": 10.001293,
+          "cpu_core_equivalents": 3.418763153924198,
+          "network_received_bytes_per_second": 29064131.107847754,
+          "network_sent_bytes_per_second": 20949292.656459518,
+          "db_write_ms_per_second": 475.0044820204747,
+          "peak_resident_bytes": 508280832
+        },
+        {
+          "node": "node02",
+          "node_clock_seconds": 10.000032,
+          "cpu_core_equivalents": 3.4531132500375996,
+          "network_received_bytes_per_second": 30583859.33165014,
+          "network_sent_bytes_per_second": 22940197.29136867,
+          "db_write_ms_per_second": 466.7590985708847,
+          "peak_resident_bytes": 535191552
+        },
+        {
+          "node": "node03",
+          "node_clock_seconds": 9.999347,
+          "cpu_core_equivalents": 3.4127382518078426,
+          "network_received_bytes_per_second": 28899877.161978677,
+          "network_sent_bytes_per_second": 27268161.810966257,
+          "db_write_ms_per_second": 458.35515509162747,
+          "peak_resident_bytes": 529350656
+        },
+        {
+          "node": "node04",
+          "node_clock_seconds": 9.999917,
+          "cpu_core_equivalents": 3.4697518989407614,
+          "network_received_bytes_per_second": 31978084.61810233,
+          "network_sent_bytes_per_second": 19974510.388436224,
+          "db_write_ms_per_second": 505.10321005664343,
+          "peak_resident_bytes": 539897856
+        },
+        {
+          "node": "node05",
+          "node_clock_seconds": 9.999945,
+          "cpu_core_equivalents": 3.404767926223594,
+          "network_received_bytes_per_second": 28631869.075279914,
+          "network_sent_bytes_per_second": 28616844.89264691,
+          "db_write_ms_per_second": 437.1978609882355,
+          "peak_resident_bytes": 524611584
+        },
+        {
+          "node": "node06",
+          "node_clock_seconds": 9.999936,
+          "cpu_core_equivalents": 3.570185049184315,
+          "network_received_bytes_per_second": 29947985.76710891,
+          "network_sent_bytes_per_second": 25485230.505475234,
+          "db_write_ms_per_second": 441.696420157089,
+          "peak_resident_bytes": 513093632
+        },
+        {
+          "node": "node07",
+          "node_clock_seconds": 10.069205,
+          "cpu_core_equivalents": 3.4973629000502027,
+          "network_received_bytes_per_second": 30257119.2065312,
+          "network_sent_bytes_per_second": 26678118.282426465,
+          "db_write_ms_per_second": 449.136279279248,
+          "peak_resident_bytes": 569298944
+        },
+        {
+          "node": "node08",
+          "node_clock_seconds": 10.00007,
+          "cpu_core_equivalents": 3.4357987494087543,
+          "network_received_bytes_per_second": 27235661.25037125,
+          "network_sent_bytes_per_second": 32798032.313773807,
+          "db_write_ms_per_second": 406.65568381021336,
+          "peak_resident_bytes": 475049984
+        },
+        {
+          "node": "node09",
+          "node_clock_seconds": 9.99993,
+          "cpu_core_equivalents": 3.6296713076991534,
+          "network_received_bytes_per_second": 35559541.51679061,
+          "network_sent_bytes_per_second": 15567890.575234026,
+          "db_write_ms_per_second": 460.52160915126404,
+          "peak_resident_bytes": 567693312
+        },
+        {
+          "node": "node10",
+          "node_clock_seconds": 9.999818,
+          "cpu_core_equivalents": 3.414215038713705,
+          "network_received_bytes_per_second": 34048218.277572654,
+          "network_sent_bytes_per_second": 15485633.338526761,
+          "db_write_ms_per_second": 540.3227181734708,
+          "peak_resident_bytes": 601034752
+        }
+      ],
+      "timing": "RPC intervals bound each snapshot; TPS uses limiting stats snapshot, never later prefix query completion",
+      "measurement_quality": "TPS unresolved: canonical boundary proof unavailable/failed"
+    },
+    "state_audit": {
+      "method": "live fully drained shared dataset",
+      "passed": true,
+      "checks": {
+        "accounts_checked_per_node": 1024,
+        "state": {
+          "burned": 0,
+          "head": "9649c862bba8b6d633d3782d9e33df46571d5ef631b13c0ced2b23fbe2a97f1b",
+          "state_hash": "b9940a1fff5f5b263602c4c42acedb21be223b50f320feb5fa7ba793b892fa1b",
+          "supply": 1024000000000,
+          "transactions": 480000
+        }
+      }
+    },
+    "finished_utc": 1792596373.7026243
+  },
+  {
+    "case": {
+      "suite": "throughput",
+      "mode": "throughput",
+      "rate": 50000,
+      "nodes": 10,
+      "repeat": 1,
+      "pattern": "steady",
+      "group": "D",
+      "clock_control": "learned",
+      "join_current": true,
+      "revision": "070fbb46ff25bce38d9599c5165dce66d63fc561"
+    },
+    "status": "complete",
+    "dataset_sha256": "142f5e5d6024c1be4f6e646ec2fb240c4e7789ad546b1543f37752132821f613",
+    "started_utc": 1792596373.7065449,
+    "metrics": {
+      "offered_tps": 50000,
+      "common_commit_tps": null,
+      "achieved_send_tps": 49996.8,
+      "common_commit_tps_rpc_interval_bounds": null,
+      "common_observation_tps": 44689.24756179712,
+      "common_observation_tps_acquisition_interval_bounds": [
+        42944.192103639856,
+        46582.13226104982
+      ],
+      "common_observation_note": "net common-prefix observation rate; interval spans stats acquisition through prefix checks, no atomic global snapshot or finality claimed",
+      "common_observation_boundary_targets": [
+        2,
+        12
+      ],
+      "measurement_seconds": 9.999372018501163,
+      "measurement_samples": 11,
+      "boundary_canonical_proof_passed": false,
+      "skipped_stats_targets": [],
+      "diagnostic_prefix_observed_tps": 45906.882867311,
+      "diagnostic_prefix_rpc_interval_bounds": [
+        45899.66659404114,
+        45914.10140999988
+      ],
+      "diagnostic_prefix_note": "snapshot time corrected, but boundaries may be reorganized; not used as proven TPS",
+      "sent_unique_completed_all_ingress": 599936,
+      "sent_unique_attempted_upper_bound": 599936,
+      "sent_unique": 599936,
+      "sent_wire_copies_completed": 5999360,
+      "completed_per_ingress": [
+        599936,
+        599936,
+        599936,
+        599936,
+        599936,
+        599936,
+        599936,
+        599936,
+        599936,
+        599936
+      ],
+      "partial_batch": null,
+      "load_error": null,
+      "cutoff_seconds": 12.00005996201071,
+      "generator_finished_seconds": 12.003690520999953,
+      "p50_ms": 923.6546380270738,
+      "p95_ms": 1953.6226080090273,
+      "p99_ms": 2207.391757023288,
+      "p99_after_send_ms": 2205.122036015382,
+      "latency_label": "first observed identical transaction position on all ten nodes; no finality guarantee",
+      "latency_poll_seconds": 0.05,
+      "latency_sample_hz_total": 2,
+      "latency_note": "upper observation latency includes query/round-trip/polling delay; not node commit timestamp",
+      "samples": 20,
+      "unresolved_samples": 0,
+      "drained": true,
+      "drained_observed_seconds": 13.003010919026565,
+      "checks": {
+        "accounts_checked_per_node": 1024,
+        "state": {
+          "burned": 0,
+          "head": "d51d217b90edb232180ad4b673a426d8776e181edb861c724963c60f60b8a766",
+          "state_hash": "7b08a2c75d520d737bedcfe5131b5321bae1ec7565d48f7fa59047ca3ab60411",
+          "supply": 1024000000000,
+          "transactions": 599936
+        }
+      },
+      "resources": [
+        {
+          "node": "node01",
+          "node_clock_seconds": 10.012369,
+          "cpu_core_equivalents": 3.8432508829828387,
+          "network_received_bytes_per_second": 35629402.59193404,
+          "network_sent_bytes_per_second": 27574037.073543735,
+          "db_write_ms_per_second": 352.9554384182206,
+          "peak_resident_bytes": 415408128
+        },
+        {
+          "node": "node02",
+          "node_clock_seconds": 10.645732,
+          "cpu_core_equivalents": 3.7347294671705056,
+          "network_received_bytes_per_second": 33755117.73168815,
+          "network_sent_bytes_per_second": 21323445.86544166,
+          "db_write_ms_per_second": 486.37235081627074,
+          "peak_resident_bytes": 445255680
+        },
+        {
+          "node": "node03",
+          "node_clock_seconds": 9.999875,
+          "cpu_core_equivalents": 3.9234792434905437,
+          "network_received_bytes_per_second": 30724256.353204418,
+          "network_sent_bytes_per_second": 29200953.41191765,
+          "db_write_ms_per_second": 342.4516332454156,
+          "peak_resident_bytes": 406511616
+        },
+        {
+          "node": "node04",
+          "node_clock_seconds": 10.007161,
+          "cpu_core_equivalents": 3.903364100967297,
+          "network_received_bytes_per_second": 33347038.885454126,
+          "network_sent_bytes_per_second": 21727073.342779234,
+          "db_write_ms_per_second": 383.66601256839976,
+          "peak_resident_bytes": 430260224
+        },
+        {
+          "node": "node05",
+          "node_clock_seconds": 10.000246,
+          "cpu_core_equivalents": 3.906865191116298,
+          "network_received_bytes_per_second": 32090062.2844678,
+          "network_sent_bytes_per_second": 28347522.350950167,
+          "db_write_ms_per_second": 408.049198289722,
+          "peak_resident_bytes": 445014016
+        },
+        {
+          "node": "node06",
+          "node_clock_seconds": 9.999938,
+          "cpu_core_equivalents": 3.9200406042517457,
+          "network_received_bytes_per_second": 34044976.87885665,
+          "network_sent_bytes_per_second": 22069600.331522055,
+          "db_write_ms_per_second": 422.5946225866601,
+          "peak_resident_bytes": 454950912
+        },
+        {
+          "node": "node07",
+          "node_clock_seconds": 9.95243,
+          "cpu_core_equivalents": 3.9089043580311547,
+          "network_received_bytes_per_second": 38131084.368340194,
+          "network_sent_bytes_per_second": 16734831.895326067,
+          "db_write_ms_per_second": 427.77686052551996,
+          "peak_resident_bytes": 461225984
+        },
+        {
+          "node": "node08",
+          "node_clock_seconds": 10.003932,
+          "cpu_core_equivalents": 3.8827841892567836,
+          "network_received_bytes_per_second": 30526731.189296365,
+          "network_sent_bytes_per_second": 42892183.19356829,
+          "db_write_ms_per_second": 384.83931098292146,
+          "peak_resident_bytes": 413741056
+        },
+        {
+          "node": "node09",
+          "node_clock_seconds": 9.990893,
+          "cpu_core_equivalents": 3.9083741563441823,
+          "network_received_bytes_per_second": 42473432.555027865,
+          "network_sent_bytes_per_second": 17857848.442576654,
+          "db_write_ms_per_second": 431.5168482937411,
+          "peak_resident_bytes": 454688768
+        },
+        {
+          "node": "node10",
+          "node_clock_seconds": 9.998995,
+          "cpu_core_equivalents": 3.91020917602219,
+          "network_received_bytes_per_second": 32147699.443794098,
+          "network_sent_bytes_per_second": 28332795.545952365,
+          "db_write_ms_per_second": 386.07873661302955,
+          "peak_resident_bytes": 423800832
+        }
+      ],
+      "timing": "RPC intervals bound each snapshot; TPS uses limiting stats snapshot, never later prefix query completion",
+      "measurement_quality": "TPS unresolved: canonical boundary proof unavailable/failed"
+    },
+    "state_audit": {
+      "method": "live fully drained shared dataset",
+      "passed": true,
+      "checks": {
+        "accounts_checked_per_node": 1024,
+        "state": {
+          "burned": 0,
+          "head": "d51d217b90edb232180ad4b673a426d8776e181edb861c724963c60f60b8a766",
+          "state_hash": "7b08a2c75d520d737bedcfe5131b5321bae1ec7565d48f7fa59047ca3ab60411",
+          "supply": 1024000000000,
+          "transactions": 599936
+        }
+      }
+    },
+    "finished_utc": 1792596390.385941
+  },
+  {
+    "case": {
+      "suite": "throughput",
+      "mode": "throughput",
+      "rate": 50000,
+      "nodes": 10,
+      "repeat": 1,
+      "pattern": "steady",
+      "group": "A",
+      "clock_control": "robust",
+      "join_current": false,
+      "revision": "070fbb46ff25bce38d9599c5165dce66d63fc561"
+    },
+    "status": "complete",
+    "dataset_sha256": "142f5e5d6024c1be4f6e646ec2fb240c4e7789ad546b1543f37752132821f613",
+    "started_utc": 1792596390.3902264,
+    "metrics": {
+      "offered_tps": 50000,
+      "common_commit_tps": null,
+      "achieved_send_tps": 49996.8,
+      "common_commit_tps_rpc_interval_bounds": null,
+      "common_observation_tps": 46094.87086165127,
+      "common_observation_tps_acquisition_interval_bounds": [
+        42378.30366710892,
+        50525.98804653611
+      ],
+      "common_observation_note": "net common-prefix observation rate; interval spans stats acquisition through prefix checks, no atomic global snapshot or finality claimed",
+      "common_observation_boundary_targets": [
+        2,
+        12
+      ],
+      "measurement_seconds": 9.994957588991383,
+      "measurement_samples": 11,
+      "boundary_canonical_proof_passed": false,
+      "skipped_stats_targets": [],
+      "diagnostic_prefix_observed_tps": 49484.65614197833,
+      "diagnostic_prefix_rpc_interval_bounds": [
+        49398.4897527532,
+        49571.12365863473
+      ],
+      "diagnostic_prefix_note": "snapshot time corrected, but boundaries may be reorganized; not used as proven TPS",
+      "sent_unique_completed_all_ingress": 599936,
+      "sent_unique_attempted_upper_bound": 600000,
+      "sent_unique": 599936,
+      "sent_wire_copies_completed": 5999424,
+      "completed_per_ingress": [
+        600000,
+        599936,
+        599936,
+        599936,
+        599936,
+        599936,
+        599936,
+        599936,
+        599936,
+        599936
+      ],
+      "partial_batch": {
+        "begin": 599936,
+        "end": 600000,
+        "completed_ingress_indices": [
+          0
+        ],
+        "cutoff_expected": true,
+        "reason": "Stopped: "
+      },
+      "load_error": null,
+      "cutoff_seconds": 12.00020501500694,
+      "generator_finished_seconds": 12.003086209995672,
+      "p50_ms": 851.0724469961133,
+      "p95_ms": 1807.9508559894748,
+      "p99_ms": 2020.110546000069,
+      "p99_after_send_ms": 2019.6173340082169,
+      "latency_label": "first observed identical transaction position on all ten nodes; no finality guarantee",
+      "latency_poll_seconds": 0.05,
+      "latency_sample_hz_total": 2,
+      "latency_note": "upper observation latency includes query/round-trip/polling delay; not node commit timestamp",
+      "samples": 20,
+      "unresolved_samples": 0,
+      "drained": true,
+      "drained_observed_seconds": 13.153255479002837,
+      "checks": {
+        "accounts_checked_per_node": 1024,
+        "state": {
+          "burned": 0,
+          "head": "8e523e52c05550ac19504535418069cfd05491528ff98a77b92c604f97a4f525",
+          "state_hash": "4d53f861384bac205dcdaaccaaa90ef0042f2004dd79e945072815f76980dbd3",
+          "supply": 1024000000000,
+          "transactions": 600000
+        }
+      },
+      "resources": [
+        {
+          "node": "node01",
+          "node_clock_seconds": 9.999681,
+          "cpu_core_equivalents": 3.847583837924429,
+          "network_received_bytes_per_second": 28531810.164744254,
+          "network_sent_bytes_per_second": 35158233.147637405,
+          "db_write_ms_per_second": 318.51632317070914,
+          "peak_resident_bytes": 395063296
+        },
+        {
+          "node": "node02",
+          "node_clock_seconds": 9.990187,
+          "cpu_core_equivalents": 3.9154080899586754,
+          "network_received_bytes_per_second": 29731983.49540404,
+          "network_sent_bytes_per_second": 26878173.45160806,
+          "db_write_ms_per_second": 376.38931693671003,
+          "peak_resident_bytes": 422912000
+        },
+        {
+          "node": "node03",
+          "node_clock_seconds": 10.000229,
+          "cpu_core_equivalents": 3.91563803188907,
+          "network_received_bytes_per_second": 31425123.764665794,
+          "network_sent_bytes_per_second": 27602516.602369808,
+          "db_write_ms_per_second": 378.3723464732658,
+          "peak_resident_bytes": 408387584
+        },
+        {
+          "node": "node04",
+          "node_clock_seconds": 9.999734,
+          "cpu_core_equivalents": 3.9098784027655133,
+          "network_received_bytes_per_second": 36842235.40346173,
+          "network_sent_bytes_per_second": 18899122.316653624,
+          "db_write_ms_per_second": 471.9269234561639,
+          "peak_resident_bytes": 430698496
+        },
+        {
+          "node": "node05",
+          "node_clock_seconds": 9.986356,
+          "cpu_core_equivalents": 3.9169097316378467,
+          "network_received_bytes_per_second": 36211669.501868345,
+          "network_sent_bytes_per_second": 22939964.18713693,
+          "db_write_ms_per_second": 425.4992226393691,
+          "peak_resident_bytes": 408621056
+        },
+        {
+          "node": "node06",
+          "node_clock_seconds": 10.212633,
+          "cpu_core_equivalents": 3.896199834068256,
+          "network_received_bytes_per_second": 32933911.362525217,
+          "network_sent_bytes_per_second": 20303475.01961541,
+          "db_write_ms_per_second": 438.16657672903756,
+          "peak_resident_bytes": 414404608
+        },
+        {
+          "node": "node07",
+          "node_clock_seconds": 10.000437,
+          "cpu_core_equivalents": 3.922424590045415,
+          "network_received_bytes_per_second": 28701285.253834408,
+          "network_sent_bytes_per_second": 29288937.97341056,
+          "db_write_ms_per_second": 336.63084573204156,
+          "peak_resident_bytes": 390250496
+        },
+        {
+          "node": "node08",
+          "node_clock_seconds": 9.958332,
+          "cpu_core_equivalents": 3.9168351687812777,
+          "network_received_bytes_per_second": 32064580.49400241,
+          "network_sent_bytes_per_second": 21328499.49168194,
+          "db_write_ms_per_second": 374.4568453833433,
+          "peak_resident_bytes": 384540672
+        },
+        {
+          "node": "node09",
+          "node_clock_seconds": 9.99935,
+          "cpu_core_equivalents": 3.902487361678509,
+          "network_received_bytes_per_second": 41660952.26189703,
+          "network_sent_bytes_per_second": 18799968.797971867,
+          "db_write_ms_per_second": 443.734568446949,
+          "peak_resident_bytes": 420126720
+        },
+        {
+          "node": "node10",
+          "node_clock_seconds": 9.991476,
+          "cpu_core_equivalents": 3.9246267518432703,
+          "network_received_bytes_per_second": 34444885.72058823,
+          "network_sent_bytes_per_second": 23764053.27901503,
+          "db_write_ms_per_second": 377.4887744313253,
+          "peak_resident_bytes": 399040512
+        }
+      ],
+      "timing": "RPC intervals bound each snapshot; TPS uses limiting stats snapshot, never later prefix query completion",
+      "measurement_quality": "TPS unresolved: canonical boundary proof unavailable/failed"
+    },
+    "state_audit": {
+      "method": "live fully drained shared dataset",
+      "passed": true,
+      "checks": {
+        "accounts_checked_per_node": 1024,
+        "state": {
+          "burned": 0,
+          "head": "8e523e52c05550ac19504535418069cfd05491528ff98a77b92c604f97a4f525",
+          "state_hash": "4d53f861384bac205dcdaaccaaa90ef0042f2004dd79e945072815f76980dbd3",
+          "supply": 1024000000000,
+          "transactions": 600000
+        }
+      }
+    },
+    "finished_utc": 1792596407.0613165
+  },
+  {
+    "case": {
+      "suite": "throughput",
+      "mode": "throughput",
+      "rate": 50000,
+      "nodes": 10,
+      "repeat": 1,
+      "pattern": "steady",
+      "group": "B",
+      "clock_control": "robust",
+      "join_current": true,
+      "revision": "070fbb46ff25bce38d9599c5165dce66d63fc561"
+    },
+    "status": "complete",
+    "dataset_sha256": "142f5e5d6024c1be4f6e646ec2fb240c4e7789ad546b1543f37752132821f613",
+    "started_utc": 1792596407.0659401,
+    "metrics": {
+      "offered_tps": 50000,
+      "common_commit_tps": null,
+      "achieved_send_tps": 49996.8,
+      "common_commit_tps_rpc_interval_bounds": null,
+      "common_observation_tps": 44442.07920459345,
+      "common_observation_tps_acquisition_interval_bounds": [
+        42289.58102479858,
+        46825.44859303655
+      ],
+      "common_observation_note": "net common-prefix observation rate; interval spans stats acquisition through prefix checks, no atomic global snapshot or finality claimed",
+      "common_observation_boundary_targets": [
+        2,
+        12
+      ],
+      "measurement_seconds": 10.000250236480497,
+      "measurement_samples": 11,
+      "boundary_canonical_proof_passed": false,
+      "skipped_stats_targets": [],
+      "diagnostic_prefix_observed_tps": 45455.86659473416,
+      "diagnostic_prefix_rpc_interval_bounds": [
+        45444.084902457114,
+        45467.65439739986
+      ],
+      "diagnostic_prefix_note": "snapshot time corrected, but boundaries may be reorganized; not used as proven TPS",
+      "sent_unique_completed_all_ingress": 599936,
+      "sent_unique_attempted_upper_bound": 600000,
+      "sent_unique": 599936,
+      "sent_wire_copies_completed": 5999424,
+      "completed_per_ingress": [
+        600000,
+        599936,
+        599936,
+        599936,
+        599936,
+        599936,
+        599936,
+        599936,
+        599936,
+        599936
+      ],
+      "partial_batch": {
+        "begin": 599936,
+        "end": 600000,
+        "completed_ingress_indices": [
+          0
+        ],
+        "cutoff_expected": true,
+        "reason": "Stopped: "
+      },
+      "load_error": null,
+      "cutoff_seconds": 12.000197237997781,
+      "generator_finished_seconds": 12.002843694994226,
+      "p50_ms": 1175.1377879991196,
+      "p95_ms": 1682.8731449786574,
+      "p99_ms": 1993.575342989061,
+      "p99_after_send_ms": 1993.0698839889374,
+      "latency_label": "first observed identical transaction position on all ten nodes; no finality guarantee",
+      "latency_poll_seconds": 0.05,
+      "latency_sample_hz_total": 2,
+      "latency_note": "upper observation latency includes query/round-trip/polling delay; not node commit timestamp",
+      "samples": 20,
+      "unresolved_samples": 0,
+      "drained": true,
+      "drained_observed_seconds": 14.003246709995437,
+      "checks": {
+        "accounts_checked_per_node": 1024,
+        "state": {
+          "burned": 0,
+          "head": "a3efa35f09b887ca3be9ddc949ff54c4ac80649ec3582ec9ce1ee1a0a556275c",
+          "state_hash": "4d53f861384bac205dcdaaccaaa90ef0042f2004dd79e945072815f76980dbd3",
+          "supply": 1024000000000,
+          "transactions": 600000
+        }
+      },
+      "resources": [
+        {
+          "node": "node01",
+          "node_clock_seconds": 10.07377,
+          "cpu_core_equivalents": 3.8483173628145173,
+          "network_received_bytes_per_second": 35516828.45647658,
+          "network_sent_bytes_per_second": 22984212.166845184,
+          "db_write_ms_per_second": 387.524504728617,
+          "peak_resident_bytes": 417964032
+        },
+        {
+          "node": "node02",
+          "node_clock_seconds": 10.38723,
+          "cpu_core_equivalents": 3.864617612202676,
+          "network_received_bytes_per_second": 35870755.533477165,
+          "network_sent_bytes_per_second": 18372609.05939312,
+          "db_write_ms_per_second": 452.1477613377195,
+          "peak_resident_bytes": 441602048
+        },
+        {
+          "node": "node03",
+          "node_clock_seconds": 10.000163,
+          "cpu_core_equivalents": 3.9114487433854825,
+          "network_received_bytes_per_second": 33660554.43296274,
+          "network_sent_bytes_per_second": 21437235.07306831,
+          "db_write_ms_per_second": 421.98838308935564,
+          "peak_resident_bytes": 442675200
+        },
+        {
+          "node": "node04",
+          "node_clock_seconds": 10.00733,
+          "cpu_core_equivalents": 3.8828868439433895,
+          "network_received_bytes_per_second": 33373905.02761476,
+          "network_sent_bytes_per_second": 27086915.590871893,
+          "db_write_ms_per_second": 402.8805612486048,
+          "peak_resident_bytes": 427364352
+        },
+        {
+          "node": "node05",
+          "node_clock_seconds": 10.016678,
+          "cpu_core_equivalents": 3.921783649229815,
+          "network_received_bytes_per_second": 29682148.91204449,
+          "network_sent_bytes_per_second": 33321531.54968144,
+          "db_write_ms_per_second": 322.00516897917646,
+          "peak_resident_bytes": 420552704
+        },
+        {
+          "node": "node06",
+          "node_clock_seconds": 10.000153,
+          "cpu_core_equivalents": 3.9319096417824806,
+          "network_received_bytes_per_second": 28643180.259342033,
+          "network_sent_bytes_per_second": 40612405.43019692,
+          "db_write_ms_per_second": 300.31558337157446,
+          "peak_resident_bytes": 404176896
+        },
+        {
+          "node": "node07",
+          "node_clock_seconds": 10.008343,
+          "cpu_core_equivalents": 3.9088514452392373,
+          "network_received_bytes_per_second": 32338820.122371905,
+          "network_sent_bytes_per_second": 28147597.45943959,
+          "db_write_ms_per_second": 403.57543161740165,
+          "peak_resident_bytes": 410034176
+        },
+        {
+          "node": "node08",
+          "node_clock_seconds": 10.00546,
+          "cpu_core_equivalents": 3.92597901545756,
+          "network_received_bytes_per_second": 37745268.68329892,
+          "network_sent_bytes_per_second": 17337322.62184847,
+          "db_write_ms_per_second": 446.64367535325715,
+          "peak_resident_bytes": 435453952
+        },
+        {
+          "node": "node09",
+          "node_clock_seconds": 10.000167,
+          "cpu_core_equivalents": 3.8952191498401985,
+          "network_received_bytes_per_second": 43975977.601174064,
+          "network_sent_bytes_per_second": 16636459.171131844,
+          "db_write_ms_per_second": 472.4956002234763,
+          "peak_resident_bytes": 481943552
+        },
+        {
+          "node": "node10",
+          "node_clock_seconds": 10.355913,
+          "cpu_core_equivalents": 3.859685669433492,
+          "network_received_bytes_per_second": 31578808.164958514,
+          "network_sent_bytes_per_second": 28509259.106367543,
+          "db_write_ms_per_second": 392.5548432088991,
+          "peak_resident_bytes": 401670144
+        }
+      ],
+      "timing": "RPC intervals bound each snapshot; TPS uses limiting stats snapshot, never later prefix query completion",
+      "measurement_quality": "TPS unresolved: canonical boundary proof unavailable/failed"
+    },
+    "state_audit": {
+      "method": "live fully drained shared dataset",
+      "passed": true,
+      "checks": {
+        "accounts_checked_per_node": 1024,
+        "state": {
+          "burned": 0,
+          "head": "a3efa35f09b887ca3be9ddc949ff54c4ac80649ec3582ec9ce1ee1a0a556275c",
+          "state_hash": "4d53f861384bac205dcdaaccaaa90ef0042f2004dd79e945072815f76980dbd3",
+          "supply": 1024000000000,
+          "transactions": 600000
+        }
+      }
+    },
+    "finished_utc": 1792596424.7330174
+  },
+  {
+    "case": {
+      "suite": "throughput",
+      "mode": "throughput",
+      "rate": 50000,
+      "nodes": 10,
+      "repeat": 1,
+      "pattern": "steady",
+      "group": "C",
+      "clock_control": "learned",
+      "join_current": false,
+      "revision": "070fbb46ff25bce38d9599c5165dce66d63fc561"
+    },
+    "status": "complete",
+    "dataset_sha256": "142f5e5d6024c1be4f6e646ec2fb240c4e7789ad546b1543f37752132821f613",
+    "started_utc": 1792596424.7376783,
+    "metrics": {
+      "offered_tps": 50000,
+      "common_commit_tps": null,
+      "achieved_send_tps": 49996.8,
+      "common_commit_tps_rpc_interval_bounds": null,
+      "common_observation_tps": 42945.8990652509,
+      "common_observation_tps_acquisition_interval_bounds": [
+        41084.17359838782,
+        44984.361165296286
+      ],
+      "common_observation_note": "net common-prefix observation rate; interval spans stats acquisition through prefix checks, no atomic global snapshot or finality claimed",
+      "common_observation_boundary_targets": [
+        2,
+        12
+      ],
+      "measurement_seconds": 9.990523802989628,
+      "measurement_samples": 9,
+      "boundary_canonical_proof_passed": false,
+      "skipped_stats_targets": [
+        8,
+        9
+      ],
+      "diagnostic_prefix_observed_tps": 46445.88118006536,
+      "diagnostic_prefix_rpc_interval_bounds": [
+        45522.76167041742,
+        47407.213983854475
+      ],
+      "diagnostic_prefix_note": "snapshot time corrected, but boundaries may be reorganized; not used as proven TPS",
+      "sent_unique_completed_all_ingress": 599936,
+      "sent_unique_attempted_upper_bound": 600000,
+      "sent_unique": 599936,
+      "sent_wire_copies_completed": 5999360,
+      "completed_per_ingress": [
+        599936,
+        599936,
+        599936,
+        599936,
+        599936,
+        599936,
+        599936,
+        599936,
+        599936,
+        599936
+      ],
+      "partial_batch": {
+        "begin": 599936,
+        "end": 600000,
+        "completed_ingress_indices": [],
+        "cutoff_expected": true,
+        "reason": "Stopped: "
+      },
+      "load_error": null,
+      "cutoff_seconds": 12.000156416004756,
+      "generator_finished_seconds": 12.003808526991634,
+      "p50_ms": 1365.0482509983703,
+      "p95_ms": 2065.5906939937267,
+      "p99_ms": 2224.5047769974917,
+      "p99_after_send_ms": 2223.213143006433,
+      "latency_label": "first observed identical transaction position on all ten nodes; no finality guarantee",
+      "latency_poll_seconds": 0.05,
+      "latency_sample_hz_total": 2,
+      "latency_note": "upper observation latency includes query/round-trip/polling delay; not node commit timestamp",
+      "samples": 20,
+      "unresolved_samples": 0,
+      "drained": true,
+      "drained_observed_seconds": 13.002865424001357,
+      "checks": {
+        "accounts_checked_per_node": 1024,
+        "state": {
+          "burned": 0,
+          "head": "f84c34674ed5968d220eb8d20cd073b3e48d07456071137f51e164bc56a0859e",
+          "state_hash": "7b08a2c75d520d737bedcfe5131b5321bae1ec7565d48f7fa59047ca3ab60411",
+          "supply": 1024000000000,
+          "transactions": 599936
+        }
+      },
+      "resources": [
+        {
+          "node": "node01",
+          "node_clock_seconds": 9.960002,
+          "cpu_core_equivalents": 3.8466033440555534,
+          "network_received_bytes_per_second": 31315509.97680523,
+          "network_sent_bytes_per_second": 40931784.250645734,
+          "db_write_ms_per_second": 389.8078163036514,
+          "peak_resident_bytes": 449261568
+        },
+        {
+          "node": "node02",
+          "node_clock_seconds": 9.980885,
+          "cpu_core_equivalents": 3.912874659912422,
+          "network_received_bytes_per_second": 31512761.744073793,
+          "network_sent_bytes_per_second": 32432970.322771978,
+          "db_write_ms_per_second": 328.30366936398923,
+          "peak_resident_bytes": 437067776
+        },
+        {
+          "node": "node03",
+          "node_clock_seconds": 10.000671,
+          "cpu_core_equivalents": 3.9261609545999465,
+          "network_received_bytes_per_second": 33039008.58252411,
+          "network_sent_bytes_per_second": 25184277.13500424,
+          "db_write_ms_per_second": 345.46669458479334,
+          "peak_resident_bytes": 450953216
+        },
+        {
+          "node": "node04",
+          "node_clock_seconds": 9.993753,
+          "cpu_core_equivalents": 3.9014357268985935,
+          "network_received_bytes_per_second": 36877562.113052025,
+          "network_sent_bytes_per_second": 18405642.00456025,
+          "db_write_ms_per_second": 429.9498246554623,
+          "peak_resident_bytes": 495448064
+        },
+        {
+          "node": "node05",
+          "node_clock_seconds": 9.99992,
+          "cpu_core_equivalents": 3.9015654125233,
+          "network_received_bytes_per_second": 40696418.57134857,
+          "network_sent_bytes_per_second": 15869753.058024464,
+          "db_write_ms_per_second": 456.60624644997165,
+          "peak_resident_bytes": 516788224
+        },
+        {
+          "node": "node06",
+          "node_clock_seconds": 10.005331,
+          "cpu_core_equivalents": 3.8958223371120853,
+          "network_received_bytes_per_second": 35127383.49186049,
+          "network_sent_bytes_per_second": 19901424.150785215,
+          "db_write_ms_per_second": 421.25661709742536,
+          "peak_resident_bytes": 465260544
+        },
+        {
+          "node": "node07",
+          "node_clock_seconds": 9.999901,
+          "cpu_core_equivalents": 3.900280312775097,
+          "network_received_bytes_per_second": 35525832.00573686,
+          "network_sent_bytes_per_second": 25933940.746013388,
+          "db_write_ms_per_second": 404.0698738917515,
+          "peak_resident_bytes": 484839424
+        },
+        {
+          "node": "node08",
+          "node_clock_seconds": 9.999928,
+          "cpu_core_equivalents": 3.901537291068495,
+          "network_received_bytes_per_second": 35095104.58475301,
+          "network_sent_bytes_per_second": 25487612.410809357,
+          "db_write_ms_per_second": 445.87262688291355,
+          "peak_resident_bytes": 509825024
+        },
+        {
+          "node": "node09",
+          "node_clock_seconds": 10.018535,
+          "cpu_core_equivalents": 3.910345275032727,
+          "network_received_bytes_per_second": 39203627.476472355,
+          "network_sent_bytes_per_second": 15518895.02806548,
+          "db_write_ms_per_second": 418.2753557281578,
+          "peak_resident_bytes": 492978176
+        },
+        {
+          "node": "node10",
+          "node_clock_seconds": 9.997168,
+          "cpu_core_equivalents": 3.9102912944946007,
+          "network_received_bytes_per_second": 29855669.225524668,
+          "network_sent_bytes_per_second": 41319128.97732638,
+          "db_write_ms_per_second": 377.1934685903048,
+          "peak_resident_bytes": 477290496
+        }
+      ],
+      "timing": "RPC intervals bound each snapshot; TPS uses limiting stats snapshot, never later prefix query completion",
+      "measurement_quality": "TPS unresolved: canonical boundary proof unavailable/failed"
+    },
+    "state_audit": {
+      "method": "live fully drained shared dataset",
+      "passed": true,
+      "checks": {
+        "accounts_checked_per_node": 1024,
+        "state": {
+          "burned": 0,
+          "head": "f84c34674ed5968d220eb8d20cd073b3e48d07456071137f51e164bc56a0859e",
+          "state_hash": "7b08a2c75d520d737bedcfe5131b5321bae1ec7565d48f7fa59047ca3ab60411",
+          "supply": 1024000000000,
+          "transactions": 599936
+        }
+      }
+    },
+    "finished_utc": 1792596441.4028597
+  },
+  {
+    "case": {
+      "suite": "throughput",
+      "mode": "throughput",
+      "rate": 60000,
+      "nodes": 10,
+      "repeat": 1,
+      "pattern": "steady",
+      "group": "A",
+      "clock_control": "robust",
+      "join_current": false,
+      "revision": "070fbb46ff25bce38d9599c5165dce66d63fc561"
+    },
+    "status": "complete",
+    "dataset_sha256": "142f5e5d6024c1be4f6e646ec2fb240c4e7789ad546b1543f37752132821f613",
+    "started_utc": 1792596441.4078643,
+    "metrics": {
+      "offered_tps": 60000,
+      "common_commit_tps": null,
+      "achieved_send_tps": 51059.2,
+      "common_commit_tps_rpc_interval_bounds": null,
+      "common_observation_tps": 46448.69451521276,
+      "common_observation_tps_acquisition_interval_bounds": [
+        43269.417787565886,
+        50132.22491938573
+      ],
+      "common_observation_note": "net common-prefix observation rate; interval spans stats acquisition through prefix checks, no atomic global snapshot or finality claimed",
+      "common_observation_boundary_targets": [
+        2,
+        12
+      ],
+      "measurement_seconds": 10.000345530483173,
+      "measurement_samples": 11,
+      "boundary_canonical_proof_passed": false,
+      "skipped_stats_targets": [],
+      "diagnostic_prefix_observed_tps": 49409.02419184389,
+      "diagnostic_prefix_rpc_interval_bounds": [
+        49337.19127025652,
+        49481.066589980175
+      ],
+      "diagnostic_prefix_note": "snapshot time corrected, but boundaries may be reorganized; not used as proven TPS",
+      "sent_unique_completed_all_ingress": 630528,
+      "sent_unique_attempted_upper_bound": 630656,
+      "sent_unique": 630528,
+      "sent_wire_copies_completed": 6306304,
+      "completed_per_ingress": [
+        630656,
+        630656,
+        630656,
+        630656,
+        630656,
+        630656,
+        630656,
+        630656,
+        630528,
+        630528
+      ],
+      "partial_batch": {
+        "begin": 630528,
+        "end": 630656,
+        "completed_ingress_indices": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7
+        ],
+        "cutoff_expected": true,
+        "reason": "OSError: [Errno 9] Bad file descriptor"
+      },
+      "load_error": null,
+      "cutoff_seconds": 12.00019122401136,
+      "generator_finished_seconds": 12.004319297004258,
+      "p50_ms": 2473.2227090280503,
+      "p95_ms": 3755.686484015314,
+      "p99_ms": 3755.686484015314,
+      "p99_after_send_ms": 2949.1366110160016,
+      "latency_label": "first observed identical transaction position on all ten nodes; no finality guarantee",
+      "latency_poll_seconds": 0.05,
+      "latency_sample_hz_total": 2,
+      "latency_note": "upper observation latency includes query/round-trip/polling delay; not node commit timestamp",
+      "samples": 18,
+      "unresolved_samples": 0,
+      "drained": true,
+      "drained_observed_seconds": 14.003003402001923,
+      "checks": {
+        "accounts_checked_per_node": 1024,
+        "state": {
+          "burned": 0,
+          "head": "e3c275a1037b61ea9f42e271d2f8e4967708e5dee171c921a5c275cf2516e533",
+          "state_hash": "0e024500fd5d4a712c21563ce45a7cecb0319b15c831ce6dc0d022eed58d5c22",
+          "supply": 1024000000000,
+          "transactions": 630656
+        }
+      },
+      "resources": [
+        {
+          "node": "node01",
+          "node_clock_seconds": 10.007124,
+          "cpu_core_equivalents": 3.852005331401909,
+          "network_received_bytes_per_second": 40910642.75809913,
+          "network_sent_bytes_per_second": 20333452.148689274,
+          "db_write_ms_per_second": 420.7421711772534,
+          "peak_resident_bytes": 475160576
+        },
+        {
+          "node": "node02",
+          "node_clock_seconds": 10.000072,
+          "cpu_core_equivalents": 3.912490930065304,
+          "network_received_bytes_per_second": 29243272.048441254,
+          "network_sent_bytes_per_second": 39814044.53887932,
+          "db_write_ms_per_second": 314.48711919274183,
+          "peak_resident_bytes": 431120384
+        },
+        {
+          "node": "node03",
+          "node_clock_seconds": 10.000268,
+          "cpu_core_equivalents": 3.923796842244628,
+          "network_received_bytes_per_second": 33311964.739344984,
+          "network_sent_bytes_per_second": 29549663.86900831,
+          "db_write_ms_per_second": 378.83229609446465,
+          "peak_resident_bytes": 441380864
+        },
+        {
+          "node": "node04",
+          "node_clock_seconds": 10.000051,
+          "cpu_core_equivalents": 3.9127056452012092,
+          "network_received_bytes_per_second": 32389519.713449463,
+          "network_sent_bytes_per_second": 28883466.994318333,
+          "db_write_ms_per_second": 424.8575076267112,
+          "peak_resident_bytes": 473800704
+        },
+        {
+          "node": "node05",
+          "node_clock_seconds": 10.000176,
+          "cpu_core_equivalents": 3.9165883680447227,
+          "network_received_bytes_per_second": 36405722.05929176,
+          "network_sent_bytes_per_second": 23432315.291250873,
+          "db_write_ms_per_second": 420.3816730825538,
+          "peak_resident_bytes": 494985216
+        },
+        {
+          "node": "node06",
+          "node_clock_seconds": 10.000131,
+          "cpu_core_equivalents": 3.924117494060828,
+          "network_received_bytes_per_second": 36682623.057637945,
+          "network_sent_bytes_per_second": 20783134.340940133,
+          "db_write_ms_per_second": 444.3749827877254,
+          "peak_resident_bytes": 454635520
+        },
+        {
+          "node": "node07",
+          "node_clock_seconds": 9.970648,
+          "cpu_core_equivalents": 3.901635480462252,
+          "network_received_bytes_per_second": 36763958.27031503,
+          "network_sent_bytes_per_second": 19393796.27081409,
+          "db_write_ms_per_second": 475.4920258944052,
+          "peak_resident_bytes": 437972992
+        },
+        {
+          "node": "node08",
+          "node_clock_seconds": 10.000144,
+          "cpu_core_equivalents": 3.9230703077875675,
+          "network_received_bytes_per_second": 30031837.94153364,
+          "network_sent_bytes_per_second": 36585135.87404341,
+          "db_write_ms_per_second": 404.42192582426816,
+          "peak_resident_bytes": 481718272
+        },
+        {
+          "node": "node09",
+          "node_clock_seconds": 9.966973,
+          "cpu_core_equivalents": 3.9118839792181643,
+          "network_received_bytes_per_second": 39773481.577606365,
+          "network_sent_bytes_per_second": 14836680.103377426,
+          "db_write_ms_per_second": 460.1233946354626,
+          "peak_resident_bytes": 501342208
+        },
+        {
+          "node": "node10",
+          "node_clock_seconds": 10.02054,
+          "cpu_core_equivalents": 3.9157561368948173,
+          "network_received_bytes_per_second": 31772681.51217399,
+          "network_sent_bytes_per_second": 25893762.012825657,
+          "db_write_ms_per_second": 429.63497825466493,
+          "peak_resident_bytes": 470888448
+        }
+      ],
+      "timing": "RPC intervals bound each snapshot; TPS uses limiting stats snapshot, never later prefix query completion",
+      "measurement_quality": "TPS unresolved: canonical boundary proof unavailable/failed"
+    },
+    "state_audit": {
+      "method": "live fully drained shared dataset",
+      "passed": true,
+      "checks": {
+        "accounts_checked_per_node": 1024,
+        "state": {
+          "burned": 0,
+          "head": "e3c275a1037b61ea9f42e271d2f8e4967708e5dee171c921a5c275cf2516e533",
+          "state_hash": "0e024500fd5d4a712c21563ce45a7cecb0319b15c831ce6dc0d022eed58d5c22",
+          "supply": 1024000000000,
+          "transactions": 630656
+        }
+      }
+    },
+    "finished_utc": 1792596459.0616786
+  },
+  {
+    "case": {
+      "suite": "throughput",
+      "mode": "throughput",
+      "rate": 60000,
+      "nodes": 10,
+      "repeat": 1,
+      "pattern": "steady",
+      "group": "B",
+      "clock_control": "robust",
+      "join_current": true,
+      "revision": "070fbb46ff25bce38d9599c5165dce66d63fc561"
+    },
+    "status": "complete",
+    "dataset_sha256": "142f5e5d6024c1be4f6e646ec2fb240c4e7789ad546b1543f37752132821f613",
+    "started_utc": 1792596459.0668914,
+    "metrics": {
+      "offered_tps": 60000,
+      "common_commit_tps": null,
+      "achieved_send_tps": 51366.4,
+      "common_commit_tps_rpc_interval_bounds": null,
+      "common_observation_tps": 46029.48808876282,
+      "common_observation_tps_acquisition_interval_bounds": [
+        44128.053691912864,
+        48102.16294131968
+      ],
+      "common_observation_note": "net common-prefix observation rate; interval spans stats acquisition through prefix checks, no atomic global snapshot or finality claimed",
+      "common_observation_boundary_targets": [
+        2,
+        12
+      ],
+      "measurement_seconds": 10.0611023324891,
+      "measurement_samples": 11,
+      "boundary_canonical_proof_passed": false,
+      "skipped_stats_targets": [],
+      "diagnostic_prefix_observed_tps": 45236.0115539503,
+      "diagnostic_prefix_rpc_interval_bounds": [
+        45170.567706851216,
+        45301.6453083928
+      ],
+      "diagnostic_prefix_note": "snapshot time corrected, but boundaries may be reorganized; not used as proven TPS",
+      "sent_unique_completed_all_ingress": 633600,
+      "sent_unique_attempted_upper_bound": 633728,
+      "sent_unique": 633600,
+      "sent_wire_copies_completed": 6336768,
+      "completed_per_ingress": [
+        633728,
+        633728,
+        633728,
+        633728,
+        633728,
+        633728,
+        633600,
+        633600,
+        633600,
+        633600
+      ],
+      "partial_batch": {
+        "begin": 633600,
+        "end": 633728,
+        "completed_ingress_indices": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5
+        ],
+        "cutoff_expected": true,
+        "reason": "OSError: [Errno 9] Bad file descriptor"
+      },
+      "load_error": null,
+      "cutoff_seconds": 12.000091185007477,
+      "generator_finished_seconds": 12.003016770002432,
+      "p50_ms": 2849.67133399914,
+      "p95_ms": 3714.122205012245,
+      "p99_ms": 3714.122205012245,
+      "p99_after_send_ms": 2806.1526370001957,
+      "latency_label": "first observed identical transaction position on all ten nodes; no finality guarantee",
+      "latency_poll_seconds": 0.05,
+      "latency_sample_hz_total": 2,
+      "latency_note": "upper observation latency includes query/round-trip/polling delay; not node commit timestamp",
+      "samples": 18,
+      "unresolved_samples": 0,
+      "drained": true,
+      "drained_observed_seconds": 14.003074481006479,
+      "checks": {
+        "accounts_checked_per_node": 1024,
+        "state": {
+          "burned": 0,
+          "head": "ba33d510481f477c316ac159dcd2c6d4b566a406b3ebf9c4b1567c354eca0b99",
+          "state_hash": "fb0fa4330cf0600ddfbfda7d8e719063a54512177f842266f2cb59bb85910419",
+          "supply": 1024000000000,
+          "transactions": 633728
+        }
+      },
+      "resources": [
+        {
+          "node": "node01",
+          "node_clock_seconds": 10.045561,
+          "cpu_core_equivalents": 3.860528645438518,
+          "network_received_bytes_per_second": 33141551.079128385,
+          "network_sent_bytes_per_second": 27146935.049222242,
+          "db_write_ms_per_second": 376.6086728257387,
+          "peak_resident_bytes": 425381888
+        },
+        {
+          "node": "node02",
+          "node_clock_seconds": 10.038727,
+          "cpu_core_equivalents": 3.912716721950901,
+          "network_received_bytes_per_second": 31518657.096661758,
+          "network_sent_bytes_per_second": 25431312.75509335,
+          "db_write_ms_per_second": 442.6004854001906,
+          "peak_resident_bytes": 455114752
+        },
+        {
+          "node": "node03",
+          "node_clock_seconds": 10.04867,
+          "cpu_core_equivalents": 3.92004842431884,
+          "network_received_bytes_per_second": 29269712.708248954,
+          "network_sent_bytes_per_second": 40864233.77422087,
+          "db_write_ms_per_second": 350.75138580528574,
+          "peak_resident_bytes": 425103360
+        },
+        {
+          "node": "node04",
+          "node_clock_seconds": 10.488594,
+          "cpu_core_equivalents": 3.8902749024321084,
+          "network_received_bytes_per_second": 35892141.88288725,
+          "network_sent_bytes_per_second": 15549746.038410867,
+          "db_write_ms_per_second": 486.58863800047936,
+          "peak_resident_bytes": 520581120
+        },
+        {
+          "node": "node05",
+          "node_clock_seconds": 10.048671,
+          "cpu_core_equivalents": 3.9166233027233153,
+          "network_received_bytes_per_second": 32576836.87723481,
+          "network_sent_bytes_per_second": 22686854.012834135,
+          "db_write_ms_per_second": 473.5318229644497,
+          "peak_resident_bytes": 481792000
+        },
+        {
+          "node": "node06",
+          "node_clock_seconds": 10.047605,
+          "cpu_core_equivalents": 3.9115323502466506,
+          "network_received_bytes_per_second": 31641550.1007454,
+          "network_sent_bytes_per_second": 25580658.276275788,
+          "db_write_ms_per_second": 381.5304017225995,
+          "peak_resident_bytes": 420524032
+        },
+        {
+          "node": "node07",
+          "node_clock_seconds": 10.048632,
+          "cpu_core_equivalents": 3.8962279641646744,
+          "network_received_bytes_per_second": 37671765.47016549,
+          "network_sent_bytes_per_second": 18276529.68085606,
+          "db_write_ms_per_second": 493.17794282843676,
+          "peak_resident_bytes": 463142912
+        },
+        {
+          "node": "node08",
+          "node_clock_seconds": 10.042493,
+          "cpu_core_equivalents": 3.911477160103572,
+          "network_received_bytes_per_second": 30894199.876464937,
+          "network_sent_bytes_per_second": 26600679.034578364,
+          "db_write_ms_per_second": 417.6621170659516,
+          "peak_resident_bytes": 445046784
+        },
+        {
+          "node": "node09",
+          "node_clock_seconds": 10.072268,
+          "cpu_core_equivalents": 3.9064739937420256,
+          "network_received_bytes_per_second": 38878795.619814724,
+          "network_sent_bytes_per_second": 16462867.44951584,
+          "db_write_ms_per_second": 432.54011867039287,
+          "peak_resident_bytes": 504881152
+        },
+        {
+          "node": "node10",
+          "node_clock_seconds": 10.04864,
+          "cpu_core_equivalents": 3.898072574995223,
+          "network_received_bytes_per_second": 33037426.457709696,
+          "network_sent_bytes_per_second": 29662152.191739377,
+          "db_write_ms_per_second": 421.87907139672626,
+          "peak_resident_bytes": 434614272
+        }
+      ],
+      "timing": "RPC intervals bound each snapshot; TPS uses limiting stats snapshot, never later prefix query completion",
+      "measurement_quality": "TPS unresolved: canonical boundary proof unavailable/failed"
+    },
+    "state_audit": {
+      "method": "live fully drained shared dataset",
+      "passed": true,
+      "checks": {
+        "accounts_checked_per_node": 1024,
+        "state": {
+          "burned": 0,
+          "head": "ba33d510481f477c316ac159dcd2c6d4b566a406b3ebf9c4b1567c354eca0b99",
+          "state_hash": "fb0fa4330cf0600ddfbfda7d8e719063a54512177f842266f2cb59bb85910419",
+          "supply": 1024000000000,
+          "transactions": 633728
+        }
+      }
+    },
+    "finished_utc": 1792596476.762989
+  },
+  {
+    "case": {
+      "suite": "throughput",
+      "mode": "throughput",
+      "rate": 60000,
+      "nodes": 10,
+      "repeat": 1,
+      "pattern": "steady",
+      "group": "C",
+      "clock_control": "learned",
+      "join_current": false,
+      "revision": "070fbb46ff25bce38d9599c5165dce66d63fc561"
+    },
+    "status": "complete",
+    "dataset_sha256": "142f5e5d6024c1be4f6e646ec2fb240c4e7789ad546b1543f37752132821f613",
+    "started_utc": 1792596476.768359,
+    "metrics": {
+      "offered_tps": 60000,
+      "common_commit_tps": null,
+      "achieved_send_tps": 50368.0,
+      "common_commit_tps_rpc_interval_bounds": null,
+      "common_observation_tps": 44338.25016148113,
+      "common_observation_tps_acquisition_interval_bounds": [
+        41408.86632390551,
+        47713.65297402076
+      ],
+      "common_observation_note": "net common-prefix observation rate; interval spans stats acquisition through prefix checks, no atomic global snapshot or finality claimed",
+      "common_observation_boundary_targets": [
+        2,
+        12
+      ],
+      "measurement_seconds": 10.013749420992099,
+      "measurement_samples": 11,
+      "boundary_canonical_proof_passed": false,
+      "skipped_stats_targets": [
+        13
+      ],
+      "diagnostic_prefix_observed_tps": 47553.81625605146,
+      "diagnostic_prefix_rpc_interval_bounds": [
+        47487.16722637578,
+        47620.652634581165
+      ],
+      "diagnostic_prefix_note": "snapshot time corrected, but boundaries may be reorganized; not used as proven TPS",
+      "sent_unique_completed_all_ingress": 623616,
+      "sent_unique_attempted_upper_bound": 623744,
+      "sent_unique": 623616,
+      "sent_wire_copies_completed": 6237184,
+      "completed_per_ingress": [
+        623744,
+        623744,
+        623744,
+        623744,
+        623744,
+        623744,
+        623744,
+        623744,
+        623616,
+        623616
+      ],
+      "partial_batch": {
+        "begin": 623616,
+        "end": 623744,
+        "completed_ingress_indices": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7
+        ],
+        "cutoff_expected": true,
+        "reason": "OSError: [Errno 9] Bad file descriptor"
+      },
+      "load_error": null,
+      "cutoff_seconds": 12.000189098005649,
+      "generator_finished_seconds": 12.003774671989959,
+      "p50_ms": 2300.7454900071025,
+      "p95_ms": 3901.7096379830036,
+      "p99_ms": 3901.7096379830036,
+      "p99_after_send_ms": 2480.361615977017,
+      "latency_label": "first observed identical transaction position on all ten nodes; no finality guarantee",
+      "latency_poll_seconds": 0.05,
+      "latency_sample_hz_total": 2,
+      "latency_note": "upper observation latency includes query/round-trip/polling delay; not node commit timestamp",
+      "samples": 17,
+      "unresolved_samples": 0,
+      "drained": true,
+      "drained_observed_seconds": 14.0030781509995,
+      "checks": {
+        "accounts_checked_per_node": 1024,
+        "state": {
+          "burned": 0,
+          "head": "44d3baa9134df0ad399df80274e421e018c390f4439f6f4b7b6f2626b7d9dd00",
+          "state_hash": "954c4d6bd1543cedb41e6f262c64fdac448994adc5af541a90a97cb85ecf9f38",
+          "supply": 1024000000000,
+          "transactions": 623744
+        }
+      },
+      "resources": [
+        {
+          "node": "node01",
+          "node_clock_seconds": 10.011667,
+          "cpu_core_equivalents": 3.8526991558948183,
+          "network_received_bytes_per_second": 36257167.26295432,
+          "network_sent_bytes_per_second": 27842197.308400292,
+          "db_write_ms_per_second": 385.9680946240023,
+          "peak_resident_bytes": 454254592
+        },
+        {
+          "node": "node02",
+          "node_clock_seconds": 10.000089,
+          "cpu_core_equivalents": 3.9094293060791756,
+          "network_received_bytes_per_second": 33952755.420476764,
+          "network_sent_bytes_per_second": 23263627.153718334,
+          "db_write_ms_per_second": 406.18797252704456,
+          "peak_resident_bytes": 430153728
+        },
+        {
+          "node": "node03",
+          "node_clock_seconds": 10.000084,
+          "cpu_core_equivalents": 3.9159252062282683,
+          "network_received_bytes_per_second": 32867001.517187256,
+          "network_sent_bytes_per_second": 29046340.710738033,
+          "db_write_ms_per_second": 362.534083213701,
+          "peak_resident_bytes": 457023488
+        },
+        {
+          "node": "node04",
+          "node_clock_seconds": 10.014512,
+          "cpu_core_equivalents": 3.905104112911343,
+          "network_received_bytes_per_second": 33202110.497246396,
+          "network_sent_bytes_per_second": 23056604.45561401,
+          "db_write_ms_per_second": 388.62287408512765,
+          "peak_resident_bytes": 430686208
+        },
+        {
+          "node": "node05",
+          "node_clock_seconds": 9.99337,
+          "cpu_core_equivalents": 3.920716835261778,
+          "network_received_bytes_per_second": 33109666.709028084,
+          "network_sent_bytes_per_second": 26237872.209274746,
+          "db_write_ms_per_second": 374.87927345830286,
+          "peak_resident_bytes": 461033472
+        },
+        {
+          "node": "node06",
+          "node_clock_seconds": 10.000117,
+          "cpu_core_equivalents": 3.9197566388473253,
+          "network_received_bytes_per_second": 33778402.49269084,
+          "network_sent_bytes_per_second": 20569798.133361842,
+          "db_write_ms_per_second": 390.2389729040171,
+          "peak_resident_bytes": 431046656
+        },
+        {
+          "node": "node07",
+          "node_clock_seconds": 10.000103,
+          "cpu_core_equivalents": 3.8998564314787556,
+          "network_received_bytes_per_second": 35728597.09544992,
+          "network_sent_bytes_per_second": 21788035.883230403,
+          "db_write_ms_per_second": 424.0158316369342,
+          "peak_resident_bytes": 483684352
+        },
+        {
+          "node": "node08",
+          "node_clock_seconds": 10.26088,
+          "cpu_core_equivalents": 3.925219474353077,
+          "network_received_bytes_per_second": 29083749.736864675,
+          "network_sent_bytes_per_second": 35105455.964790545,
+          "db_write_ms_per_second": 360.84402458658525,
+          "peak_resident_bytes": 435228672
+        },
+        {
+          "node": "node09",
+          "node_clock_seconds": 10.02712,
+          "cpu_core_equivalents": 3.9164112925745385,
+          "network_received_bytes_per_second": 39041890.592712566,
+          "network_sent_bytes_per_second": 23618199.542839818,
+          "db_write_ms_per_second": 332.7412640917831,
+          "peak_resident_bytes": 438956032
+        },
+        {
+          "node": "node10",
+          "node_clock_seconds": 10.000171,
+          "cpu_core_equivalents": 3.9176968073845932,
+          "network_received_bytes_per_second": 34401906.527398385,
+          "network_sent_bytes_per_second": 22888279.31042379,
+          "db_write_ms_per_second": 383.3933328740079,
+          "peak_resident_bytes": 437895168
+        }
+      ],
+      "timing": "RPC intervals bound each snapshot; TPS uses limiting stats snapshot, never later prefix query completion",
+      "measurement_quality": "TPS unresolved: canonical boundary proof unavailable/failed"
+    },
+    "state_audit": {
+      "method": "live fully drained shared dataset",
+      "passed": true,
+      "checks": {
+        "accounts_checked_per_node": 1024,
+        "state": {
+          "burned": 0,
+          "head": "44d3baa9134df0ad399df80274e421e018c390f4439f6f4b7b6f2626b7d9dd00",
+          "state_hash": "954c4d6bd1543cedb41e6f262c64fdac448994adc5af541a90a97cb85ecf9f38",
+          "supply": 1024000000000,
+          "transactions": 623744
+        }
+      }
+    },
+    "finished_utc": 1792596494.4478114
+  },
+  {
+    "case": {
+      "suite": "throughput",
+      "mode": "throughput",
+      "rate": 60000,
+      "nodes": 10,
+      "repeat": 1,
+      "pattern": "steady",
+      "group": "D",
+      "clock_control": "learned",
+      "join_current": true,
+      "revision": "070fbb46ff25bce38d9599c5165dce66d63fc561"
+    },
+    "status": "complete",
+    "dataset_sha256": "142f5e5d6024c1be4f6e646ec2fb240c4e7789ad546b1543f37752132821f613",
+    "started_utc": 1792596494.453735,
+    "metrics": {
+      "offered_tps": 60000,
+      "common_commit_tps": null,
+      "achieved_send_tps": 51020.8,
+      "common_commit_tps_rpc_interval_bounds": null,
+      "common_observation_tps": 44508.206131246494,
+      "common_observation_tps_acquisition_interval_bounds": [
+        43309.85879000453,
+        45774.75507821847
+      ],
+      "common_observation_note": "net common-prefix observation rate; interval spans stats acquisition through prefix checks, no atomic global snapshot or finality claimed",
+      "common_observation_boundary_targets": [
+        2,
+        12
+      ],
+      "measurement_seconds": 10.040246434014989,
+      "measurement_samples": 10,
+      "boundary_canonical_proof_passed": false,
+      "skipped_stats_targets": [
+        9
+      ],
+      "diagnostic_prefix_observed_tps": 49356.1369374596,
+      "diagnostic_prefix_rpc_interval_bounds": [
+        49341.24693229674,
+        49371.03593222833
+      ],
+      "diagnostic_prefix_note": "snapshot time corrected, but boundaries may be reorganized; not used as proven TPS",
+      "sent_unique_completed_all_ingress": 630144,
+      "sent_unique_attempted_upper_bound": 630272,
+      "sent_unique": 630144,
+      "sent_wire_copies_completed": 6302208,
+      "completed_per_ingress": [
+        630272,
+        630272,
+        630272,
+        630272,
+        630272,
+        630272,
+        630144,
+        630144,
+        630144,
+        630144
+      ],
+      "partial_batch": {
+        "begin": 630144,
+        "end": 630272,
+        "completed_ingress_indices": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5
+        ],
+        "cutoff_expected": true,
+        "reason": "OSError: [Errno 9] Bad file descriptor"
+      },
+      "load_error": null,
+      "cutoff_seconds": 12.000081142003182,
+      "generator_finished_seconds": 12.002729401981924,
+      "p50_ms": 2421.42378599965,
+      "p95_ms": 3824.4792689802125,
+      "p99_ms": 3824.4792689802125,
+      "p99_after_send_ms": 2839.256283012219,
+      "latency_label": "first observed identical transaction position on all ten nodes; no finality guarantee",
+      "latency_poll_seconds": 0.05,
+      "latency_sample_hz_total": 2,
+      "latency_note": "upper observation latency includes query/round-trip/polling delay; not node commit timestamp",
+      "samples": 18,
+      "unresolved_samples": 0,
+      "drained": true,
+      "drained_observed_seconds": 14.0034793879895,
+      "checks": {
+        "accounts_checked_per_node": 1024,
+        "state": {
+          "burned": 0,
+          "head": "4129573181c62c28004e897fd564ca7e56c2cbee354e83dafd9170ee11b88925",
+          "state_hash": "9afc5ff10c0e8cd2da33686dc16236eda2dca7af7f323463eb225226155a282f",
+          "supply": 1024000000000,
+          "transactions": 630272
+        }
+      },
+      "resources": [
+        {
+          "node": "node01",
+          "node_clock_seconds": 10.027331,
+          "cpu_core_equivalents": 3.862682502452546,
+          "network_received_bytes_per_second": 29643874.4268041,
+          "network_sent_bytes_per_second": 35039944.92652132,
+          "db_write_ms_per_second": 357.169574735291,
+          "peak_resident_bytes": 460976128
+        },
+        {
+          "node": "node02",
+          "node_clock_seconds": 10.055825,
+          "cpu_core_equivalents": 3.9229562964749283,
+          "network_received_bytes_per_second": 34534665.13190116,
+          "network_sent_bytes_per_second": 22986164.13869573,
+          "db_write_ms_per_second": 450.6448866204414,
+          "peak_resident_bytes": 474234880
+        },
+        {
+          "node": "node03",
+          "node_clock_seconds": 10.038839,
+          "cpu_core_equivalents": 3.9214484862243535,
+          "network_received_bytes_per_second": 35321952.568419516,
+          "network_sent_bytes_per_second": 25260815.81744662,
+          "db_write_ms_per_second": 434.3731864810263,
+          "peak_resident_bytes": 461529088
+        },
+        {
+          "node": "node04",
+          "node_clock_seconds": 10.028665,
+          "cpu_core_equivalents": 3.9100326912904158,
+          "network_received_bytes_per_second": 36039281.39986728,
+          "network_sent_bytes_per_second": 18315130.777625933,
+          "db_write_ms_per_second": 503.10480936395817,
+          "peak_resident_bytes": 515854336
+        },
+        {
+          "node": "node05",
+          "node_clock_seconds": 10.027395,
+          "cpu_core_equivalents": 3.9263632279370664,
+          "network_received_bytes_per_second": 32922951.474435784,
+          "network_sent_bytes_per_second": 23311390.44587353,
+          "db_write_ms_per_second": 371.25793468792244,
+          "peak_resident_bytes": 432869376
+        },
+        {
+          "node": "node06",
+          "node_clock_seconds": 10.026347,
+          "cpu_core_equivalents": 3.916787839080375,
+          "network_received_bytes_per_second": 39498210.76409983,
+          "network_sent_bytes_per_second": 21705935.17260075,
+          "db_write_ms_per_second": 381.28163298158347,
+          "peak_resident_bytes": 455405568
+        },
+        {
+          "node": "node07",
+          "node_clock_seconds": 10.028016,
+          "cpu_core_equivalents": 3.9055582879006177,
+          "network_received_bytes_per_second": 39534228.20625735,
+          "network_sent_bytes_per_second": 18233572.523218952,
+          "db_write_ms_per_second": 440.47319270332247,
+          "peak_resident_bytes": 467513344
+        },
+        {
+          "node": "node08",
+          "node_clock_seconds": 10.027371,
+          "cpu_core_equivalents": 3.9239241272712455,
+          "network_received_bytes_per_second": 28123022.97381836,
+          "network_sent_bytes_per_second": 39156657.91163008,
+          "db_write_ms_per_second": 309.3645975600185,
+          "peak_resident_bytes": 423460864
+        },
+        {
+          "node": "node09",
+          "node_clock_seconds": 10.027343,
+          "cpu_core_equivalents": 3.902815032855663,
+          "network_received_bytes_per_second": 42264687.16588233,
+          "network_sent_bytes_per_second": 16414550.29512803,
+          "db_write_ms_per_second": 440.73402136538067,
+          "peak_resident_bytes": 505982976
+        },
+        {
+          "node": "node10",
+          "node_clock_seconds": 10.028669,
+          "cpu_core_equivalents": 3.928819666896973,
+          "network_received_bytes_per_second": 29349928.78915437,
+          "network_sent_bytes_per_second": 39996031.37764343,
+          "db_write_ms_per_second": 337.22470808439283,
+          "peak_resident_bytes": 411889664
+        }
+      ],
+      "timing": "RPC intervals bound each snapshot; TPS uses limiting stats snapshot, never later prefix query completion",
+      "measurement_quality": "TPS unresolved: canonical boundary proof unavailable/failed"
+    },
+    "state_audit": {
+      "method": "live fully drained shared dataset",
+      "passed": true,
+      "checks": {
+        "accounts_checked_per_node": 1024,
+        "state": {
+          "burned": 0,
+          "head": "4129573181c62c28004e897fd564ca7e56c2cbee354e83dafd9170ee11b88925",
+          "state_hash": "9afc5ff10c0e8cd2da33686dc16236eda2dca7af7f323463eb225226155a282f",
+          "supply": 1024000000000,
+          "transactions": 630272
+        }
+      }
+    },
+    "finished_utc": 1792596512.2219641
+  }
+]

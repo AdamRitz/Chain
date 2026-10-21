@@ -1,0 +1,53 @@
+- name: Stage the verified clock release on ten nodes
+  hosts: chain
+  gather_facts: false
+  vars:
+    clock_revision: 070fbb46ff25bce38d9599c5165dce66d63fc561
+    clock_release: '/opt/chain/releases/{{ clock_revision }}'
+    clock_validation: "{{ lookup('file', clock_release + '/validation.json') | from_json }}"
+  tasks:
+    - name: Require the exact tested revision
+      ansible.builtin.assert:
+        that:
+          - clock_validation.revision == clock_revision
+          - clock_validation.ctest_passed
+          - clock_validation.tests == 14
+    - name: Prepare independent release directories
+      ansible.builtin.file:
+        path: '{{ clock_release }}/{{ item }}'
+        state: directory
+        mode: '0755'
+      loop: [source, build]
+    - name: Install the exact source archive
+      ansible.builtin.unarchive:
+        src: '/opt/chain-control/packages/chain-source-{{ clock_revision }}.tar.gz'
+        dest: '{{ clock_release }}/source'
+        creates: '{{ clock_release }}/source/main.cpp'
+    - name: Install the tested matching binaries
+      ansible.builtin.unarchive:
+        src: '/opt/chain-control/packages/chain-binaries-{{ clock_revision }}.tar.gz'
+        dest: '{{ clock_release }}/build'
+        creates: '{{ clock_release }}/build/boost'
+    - name: Save public revision metadata
+      ansible.builtin.copy:
+        content: "{{ clock_revision }}\n"
+        dest: '{{ clock_release }}/REVISION'
+        mode: '0644'
+    - name: Copy the build validation record
+      ansible.builtin.copy:
+        src: '{{ clock_release }}/validation.json'
+        dest: '{{ clock_release }}/validation.json'
+        mode: '0644'
+    - name: Verify every binary and the shared model
+      ansible.builtin.shell: |
+        set -euo pipefail
+        printf '%s  %s\n' '{{ clock_validation.binaries.boost }}' '{{ clock_release }}/build/boost' | sha256sum --check
+        printf '%s  %s\n' '{{ clock_validation.binaries.sender }}' '{{ clock_release }}/build/sender' | sha256sum --check
+        printf '%s  %s\n' '{{ clock_validation.binaries.evm_sender }}' '{{ clock_release }}/build/evm_sender' | sha256sum --check
+        printf '%s  %s\n' '{{ clock_validation.model_sha256 }}' '{{ clock_release }}/source/Time/Models/simulation-v1.json' | sha256sum --check
+        ldd '{{ clock_release }}/build/boost'
+      args:
+        executable: /bin/bash
+      register: clock_integrity
+      changed_when: false
+      failed_when: clock_integrity.rc != 0 or 'not found' in clock_integrity.stdout
