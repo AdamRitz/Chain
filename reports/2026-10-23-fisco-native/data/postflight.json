@@ -1,0 +1,282 @@
+[
+  {
+    "node": "node01",
+    "ip": "182.151.5.57",
+    "private_ip": "192.168.0.176",
+    "services": {
+      "chain-node": {
+        "MainPID": "280389",
+        "ActiveState": "active",
+        "SubState": "running",
+        "UnitFileState": "enabled"
+      },
+      "fisco-bcos": {
+        "MainPID": "280034",
+        "ActiveState": "active",
+        "SubState": "running",
+        "UnitFileState": "enabled"
+      }
+    },
+    "sha256": {
+      "/opt/fisco/bin/fisco-bcos": "7c29bd2afe615a57af02a440fc4d665c3beec3cf7301ec4007cc07caf5b683f4",
+      "/opt/fisco/nodes/node0/config.ini": "7867a2b0e3d674260954dd354b8eea47a3b780570d5e7c6b54ddb90cf0548676",
+      "/opt/fisco/nodes/node0/config.genesis": "3e76abec0b7bc8a98aca9415063bf8c746742772afbdd8f9d50a6a16e42f0729"
+    },
+    "remaining_native_databases": [],
+    "benchmark_processes": [],
+    "normal_fisco_data_exists": true,
+    "normal_chain_data_exists": true
+  },
+  {
+    "node": "node02",
+    "ip": "118.122.78.54",
+    "private_ip": "192.168.0.111",
+    "services": {
+      "chain-node": {
+        "MainPID": "154521",
+        "ActiveState": "active",
+        "SubState": "running",
+        "UnitFileState": "enabled"
+      },
+      "fisco-bcos": {
+        "MainPID": "154310",
+        "ActiveState": "active",
+        "SubState": "running",
+        "UnitFileState": "enabled"
+      }
+    },
+    "sha256": {
+      "/opt/fisco/bin/fisco-bcos": "7c29bd2afe615a57af02a440fc4d665c3beec3cf7301ec4007cc07caf5b683f4",
+      "/opt/fisco/nodes/node0/config.ini": "7867a2b0e3d674260954dd354b8eea47a3b780570d5e7c6b54ddb90cf0548676",
+      "/opt/fisco/nodes/node0/config.genesis": "3e76abec0b7bc8a98aca9415063bf8c746742772afbdd8f9d50a6a16e42f0729"
+    },
+    "remaining_native_databases": [],
+    "benchmark_processes": [],
+    "normal_fisco_data_exists": true,
+    "normal_chain_data_exists": true
+  },
+  {
+    "node": "node03",
+    "ip": "182.151.27.42",
+    "private_ip": "192.168.0.108",
+    "services": {
+      "chain-node": {
+        "MainPID": "142766",
+        "ActiveState": "active",
+        "SubState": "running",
+        "UnitFileState": "enabled"
+      },
+      "fisco-bcos": {
+        "MainPID": "142508",
+        "ActiveState": "active",
+        "SubState": "running",
+        "UnitFileState": "enabled"
+      }
+    },
+    "sha256": {
+      "/opt/fisco/bin/fisco-bcos": "7c29bd2afe615a57af02a440fc4d665c3beec3cf7301ec4007cc07caf5b683f4",
+      "/opt/fisco/nodes/node0/config.ini": "7867a2b0e3d674260954dd354b8eea47a3b780570d5e7c6b54ddb90cf0548676",
+      "/opt/fisco/nodes/node0/config.genesis": "3e76abec0b7bc8a98aca9415063bf8c746742772afbdd8f9d50a6a16e42f0729"
+    },
+    "remaining_native_databases": [],
+    "benchmark_processes": [],
+    "normal_fisco_data_exists": true,
+    "normal_chain_data_exists": true
+  },
+  {
+    "node": "node04",
+    "ip": "118.121.202.17",
+    "private_ip": "192.168.0.167",
+    "services": {
+      "chain-node": {
+        "MainPID": "75414",
+        "ActiveState": "active",
+        "SubState": "running",
+        "UnitFileState": "enabled"
+      },
+      "fisco-bcos": {
+        "MainPID": "75204",
+        "ActiveState": "active",
+        "SubState": "running",
+        "UnitFileState": "enabled"
+      }
+    },
+    "sha256": {
+      "/opt/fisco/bin/fisco-bcos": "7c29bd2afe615a57af02a440fc4d665c3beec3cf7301ec4007cc07caf5b683f4",
+      "/opt/fisco/nodes/node0/config.ini": "7867a2b0e3d674260954dd354b8eea47a3b780570d5e7c6b54ddb90cf0548676",
+      "/opt/fisco/nodes/node0/config.genesis": "3e76abec0b7bc8a98aca9415063bf8c746742772afbdd8f9d50a6a16e42f0729"
+    },
+    "remaining_native_databases": [],
+    "benchmark_processes": [],
+    "normal_fisco_data_exists": true,
+    "normal_chain_data_exists": true
+  },
+  {
+    "node": "node05",
+    "ip": "110.185.105.122",
+    "private_ip": "192.168.0.249",
+    "services": {
+      "chain-node": {
+        "MainPID": "148137",
+        "ActiveState": "active",
+        "SubState": "running",
+        "UnitFileState": "enabled"
+      },
+      "fisco-bcos": {
+        "MainPID": "147904",
+        "ActiveState": "active",
+        "SubState": "running",
+        "UnitFileState": "enabled"
+      }
+    },
+    "sha256": {
+      "/opt/fisco/bin/fisco-bcos": "7c29bd2afe615a57af02a440fc4d665c3beec3cf7301ec4007cc07caf5b683f4",
+      "/opt/fisco/nodes/node0/config.ini": "7867a2b0e3d674260954dd354b8eea47a3b780570d5e7c6b54ddb90cf0548676",
+      "/opt/fisco/nodes/node0/config.genesis": "3e76abec0b7bc8a98aca9415063bf8c746742772afbdd8f9d50a6a16e42f0729"
+    },
+    "remaining_native_databases": [],
+    "benchmark_processes": [],
+    "normal_fisco_data_exists": true,
+    "normal_chain_data_exists": true
+  },
+  {
+    "node": "node06",
+    "ip": "110.185.104.206",
+    "private_ip": "192.168.0.138",
+    "services": {
+      "chain-node": {
+        "MainPID": "139599",
+        "ActiveState": "active",
+        "SubState": "running",
+        "UnitFileState": "enabled"
+      },
+      "fisco-bcos": {
+        "MainPID": "139349",
+        "ActiveState": "active",
+        "SubState": "running",
+        "UnitFileState": "enabled"
+      }
+    },
+    "sha256": {
+      "/opt/fisco/bin/fisco-bcos": "7c29bd2afe615a57af02a440fc4d665c3beec3cf7301ec4007cc07caf5b683f4",
+      "/opt/fisco/nodes/node0/config.ini": "7867a2b0e3d674260954dd354b8eea47a3b780570d5e7c6b54ddb90cf0548676",
+      "/opt/fisco/nodes/node0/config.genesis": "3e76abec0b7bc8a98aca9415063bf8c746742772afbdd8f9d50a6a16e42f0729"
+    },
+    "remaining_native_databases": [],
+    "benchmark_processes": [],
+    "normal_fisco_data_exists": true,
+    "normal_chain_data_exists": true
+  },
+  {
+    "node": "node07",
+    "ip": "182.151.9.116",
+    "private_ip": "192.168.0.162",
+    "services": {
+      "chain-node": {
+        "MainPID": "173769",
+        "ActiveState": "active",
+        "SubState": "running",
+        "UnitFileState": "enabled"
+      },
+      "fisco-bcos": {
+        "MainPID": "173554",
+        "ActiveState": "active",
+        "SubState": "running",
+        "UnitFileState": "enabled"
+      }
+    },
+    "sha256": {
+      "/opt/fisco/bin/fisco-bcos": "7c29bd2afe615a57af02a440fc4d665c3beec3cf7301ec4007cc07caf5b683f4",
+      "/opt/fisco/nodes/node0/config.ini": "7867a2b0e3d674260954dd354b8eea47a3b780570d5e7c6b54ddb90cf0548676",
+      "/opt/fisco/nodes/node0/config.genesis": "3e76abec0b7bc8a98aca9415063bf8c746742772afbdd8f9d50a6a16e42f0729"
+    },
+    "remaining_native_databases": [],
+    "benchmark_processes": [],
+    "normal_fisco_data_exists": true,
+    "normal_chain_data_exists": true
+  },
+  {
+    "node": "node08",
+    "ip": "182.151.38.203",
+    "private_ip": "192.168.0.61",
+    "services": {
+      "chain-node": {
+        "MainPID": "166545",
+        "ActiveState": "active",
+        "SubState": "running",
+        "UnitFileState": "enabled"
+      },
+      "fisco-bcos": {
+        "MainPID": "166319",
+        "ActiveState": "active",
+        "SubState": "running",
+        "UnitFileState": "enabled"
+      }
+    },
+    "sha256": {
+      "/opt/fisco/bin/fisco-bcos": "7c29bd2afe615a57af02a440fc4d665c3beec3cf7301ec4007cc07caf5b683f4",
+      "/opt/fisco/nodes/node0/config.ini": "7867a2b0e3d674260954dd354b8eea47a3b780570d5e7c6b54ddb90cf0548676",
+      "/opt/fisco/nodes/node0/config.genesis": "3e76abec0b7bc8a98aca9415063bf8c746742772afbdd8f9d50a6a16e42f0729"
+    },
+    "remaining_native_databases": [],
+    "benchmark_processes": [],
+    "normal_fisco_data_exists": true,
+    "normal_chain_data_exists": true
+  },
+  {
+    "node": "node09",
+    "ip": "118.121.198.136",
+    "private_ip": "192.168.0.12",
+    "services": {
+      "chain-node": {
+        "MainPID": "106518",
+        "ActiveState": "active",
+        "SubState": "running",
+        "UnitFileState": "enabled"
+      },
+      "fisco-bcos": {
+        "MainPID": "106270",
+        "ActiveState": "active",
+        "SubState": "running",
+        "UnitFileState": "enabled"
+      }
+    },
+    "sha256": {
+      "/opt/fisco/bin/fisco-bcos": "7c29bd2afe615a57af02a440fc4d665c3beec3cf7301ec4007cc07caf5b683f4",
+      "/opt/fisco/nodes/node0/config.ini": "7867a2b0e3d674260954dd354b8eea47a3b780570d5e7c6b54ddb90cf0548676",
+      "/opt/fisco/nodes/node0/config.genesis": "3e76abec0b7bc8a98aca9415063bf8c746742772afbdd8f9d50a6a16e42f0729"
+    },
+    "remaining_native_databases": [],
+    "benchmark_processes": [],
+    "normal_fisco_data_exists": true,
+    "normal_chain_data_exists": true
+  },
+  {
+    "node": "node10",
+    "ip": "118.122.72.173",
+    "private_ip": "192.168.0.11",
+    "services": {
+      "chain-node": {
+        "MainPID": "89975",
+        "ActiveState": "active",
+        "SubState": "running",
+        "UnitFileState": "enabled"
+      },
+      "fisco-bcos": {
+        "MainPID": "89718",
+        "ActiveState": "active",
+        "SubState": "running",
+        "UnitFileState": "enabled"
+      }
+    },
+    "sha256": {
+      "/opt/fisco/bin/fisco-bcos": "7c29bd2afe615a57af02a440fc4d665c3beec3cf7301ec4007cc07caf5b683f4",
+      "/opt/fisco/nodes/node0/config.ini": "7867a2b0e3d674260954dd354b8eea47a3b780570d5e7c6b54ddb90cf0548676",
+      "/opt/fisco/nodes/node0/config.genesis": "3e76abec0b7bc8a98aca9415063bf8c746742772afbdd8f9d50a6a16e42f0729"
+    },
+    "remaining_native_databases": [],
+    "benchmark_processes": [],
+    "normal_fisco_data_exists": true,
+    "normal_chain_data_exists": true
+  }
+]

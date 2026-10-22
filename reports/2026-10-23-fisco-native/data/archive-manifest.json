@@ -1,0 +1,12 @@
+{
+  "archive": "/opt/fisco-control/results/native-retest-20261023-evidence.tar.gz",
+  "bytes": 75534557,
+  "sha256": "1566e7cdcc5810089bca2e97d143341106772aed49138c7a1320ac386b7775c2",
+  "batches": [
+    "native-smoke-20261023",
+    "native-aligned-20261023",
+    "native-aligned-20261022",
+    "native-aligned-20261022b"
+  ],
+  "excludes": "private keys, certificates, databases, GB-scale presigned input; hashes and retained input locations inside each node evidence archive"
+}

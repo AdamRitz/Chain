@@ -1,0 +1,1217 @@
+[
+  {
+    "name": "native-aligned-20261023-r20000",
+    "boundary": {
+      "passed": true,
+      "checks": [
+        {
+          "target": 2,
+          "host": "192.168.0.176",
+          "height": 10,
+          "matches": true
+        },
+        {
+          "target": 2,
+          "host": "192.168.0.111",
+          "height": 14,
+          "matches": true
+        },
+        {
+          "target": 2,
+          "host": "192.168.0.108",
+          "height": 14,
+          "matches": true
+        },
+        {
+          "target": 2,
+          "host": "192.168.0.167",
+          "height": 14,
+          "matches": true
+        },
+        {
+          "target": 2,
+          "host": "192.168.0.249",
+          "height": 14,
+          "matches": true
+        },
+        {
+          "target": 2,
+          "host": "192.168.0.138",
+          "height": 14,
+          "matches": true
+        },
+        {
+          "target": 2,
+          "host": "192.168.0.162",
+          "height": 14,
+          "matches": true
+        },
+        {
+          "target": 2,
+          "host": "192.168.0.61",
+          "height": 14,
+          "matches": true
+        },
+        {
+          "target": 2,
+          "host": "192.168.0.12",
+          "height": 14,
+          "matches": true
+        },
+        {
+          "target": 2,
+          "host": "192.168.0.11",
+          "height": 14,
+          "matches": true
+        },
+        {
+          "target": 12,
+          "host": "192.168.0.176",
+          "height": 24,
+          "matches": true
+        },
+        {
+          "target": 12,
+          "host": "192.168.0.111",
+          "height": 31,
+          "matches": true
+        },
+        {
+          "target": 12,
+          "host": "192.168.0.108",
+          "height": 31,
+          "matches": true
+        },
+        {
+          "target": 12,
+          "host": "192.168.0.167",
+          "height": 31,
+          "matches": true
+        },
+        {
+          "target": 12,
+          "host": "192.168.0.249",
+          "height": 31,
+          "matches": true
+        },
+        {
+          "target": 12,
+          "host": "192.168.0.138",
+          "height": 31,
+          "matches": true
+        },
+        {
+          "target": 12,
+          "host": "192.168.0.162",
+          "height": 31,
+          "matches": true
+        },
+        {
+          "target": 12,
+          "host": "192.168.0.61",
+          "height": 31,
+          "matches": true
+        },
+        {
+          "target": 12,
+          "host": "192.168.0.12",
+          "height": 31,
+          "matches": true
+        },
+        {
+          "target": 12,
+          "host": "192.168.0.11",
+          "height": 31,
+          "matches": true
+        }
+      ]
+    },
+    "state": {
+      "passed": true,
+      "all_heads_equal": false,
+      "nodes": [
+        {
+          "host": "192.168.0.176",
+          "count": 22034,
+          "failed": 0,
+          "height": 24,
+          "hash": "0x3033ed1eb46e645a006818ad552c33651ad4d7c6251ae94883bec9ae3c5a2db7",
+          "state_root": "0x5d025f0817f0f5d8a7ee8074426c41f942bcf08d9f7268bc9a4863def8f56498",
+          "canonical_prefix_matches": true
+        },
+        {
+          "host": "192.168.0.111",
+          "count": 44034,
+          "failed": 0,
+          "height": 46,
+          "hash": "0xb3db5d44831087656ec0431a643766db81be3b6a651b6fc520600ae252ed1a57",
+          "state_root": "0x52c2e3ac87c1e2ba06c08ac4e46574fb4f08665610f6ece02578418e86b2040a",
+          "canonical_prefix_matches": true
+        },
+        {
+          "host": "192.168.0.108",
+          "count": 44034,
+          "failed": 0,
+          "height": 46,
+          "hash": "0xb3db5d44831087656ec0431a643766db81be3b6a651b6fc520600ae252ed1a57",
+          "state_root": "0x52c2e3ac87c1e2ba06c08ac4e46574fb4f08665610f6ece02578418e86b2040a",
+          "canonical_prefix_matches": true
+        },
+        {
+          "host": "192.168.0.167",
+          "count": 44034,
+          "failed": 0,
+          "height": 46,
+          "hash": "0xb3db5d44831087656ec0431a643766db81be3b6a651b6fc520600ae252ed1a57",
+          "state_root": "0x52c2e3ac87c1e2ba06c08ac4e46574fb4f08665610f6ece02578418e86b2040a",
+          "canonical_prefix_matches": true
+        },
+        {
+          "host": "192.168.0.249",
+          "count": 44034,
+          "failed": 0,
+          "height": 46,
+          "hash": "0xb3db5d44831087656ec0431a643766db81be3b6a651b6fc520600ae252ed1a57",
+          "state_root": "0x52c2e3ac87c1e2ba06c08ac4e46574fb4f08665610f6ece02578418e86b2040a",
+          "canonical_prefix_matches": true
+        },
+        {
+          "host": "192.168.0.138",
+          "count": 44034,
+          "failed": 0,
+          "height": 46,
+          "hash": "0xb3db5d44831087656ec0431a643766db81be3b6a651b6fc520600ae252ed1a57",
+          "state_root": "0x52c2e3ac87c1e2ba06c08ac4e46574fb4f08665610f6ece02578418e86b2040a",
+          "canonical_prefix_matches": true
+        },
+        {
+          "host": "192.168.0.162",
+          "count": 44034,
+          "failed": 0,
+          "height": 46,
+          "hash": "0xb3db5d44831087656ec0431a643766db81be3b6a651b6fc520600ae252ed1a57",
+          "state_root": "0x52c2e3ac87c1e2ba06c08ac4e46574fb4f08665610f6ece02578418e86b2040a",
+          "canonical_prefix_matches": true
+        },
+        {
+          "host": "192.168.0.61",
+          "count": 44034,
+          "failed": 0,
+          "height": 46,
+          "hash": "0xb3db5d44831087656ec0431a643766db81be3b6a651b6fc520600ae252ed1a57",
+          "state_root": "0x52c2e3ac87c1e2ba06c08ac4e46574fb4f08665610f6ece02578418e86b2040a",
+          "canonical_prefix_matches": true
+        },
+        {
+          "host": "192.168.0.12",
+          "count": 44034,
+          "failed": 0,
+          "height": 46,
+          "hash": "0xb3db5d44831087656ec0431a643766db81be3b6a651b6fc520600ae252ed1a57",
+          "state_root": "0x52c2e3ac87c1e2ba06c08ac4e46574fb4f08665610f6ece02578418e86b2040a",
+          "canonical_prefix_matches": true
+        },
+        {
+          "host": "192.168.0.11",
+          "count": 44034,
+          "failed": 0,
+          "height": 46,
+          "hash": "0xb3db5d44831087656ec0431a643766db81be3b6a651b6fc520600ae252ed1a57",
+          "state_root": "0x52c2e3ac87c1e2ba06c08ac4e46574fb4f08665610f6ece02578418e86b2040a",
+          "canonical_prefix_matches": true
+        }
+      ],
+      "canonical_host": "192.168.0.111",
+      "common_height": 24,
+      "method": "each stopped validator reopened without quorum; longest ledger balance reconstruction; every persisted head and state root matched at its own canonical height; terminal lag reported separately"
+    },
+    "balance": {
+      "passed": true,
+      "accounts": 1024,
+      "mismatches": 0,
+      "confirmed_workload_transactions": 43010,
+      "additional_receipts_checked": 5103,
+      "callback_business_success_reused": 37907,
+      "ledger": {
+        "host": "192.168.0.111",
+        "count": 44034,
+        "failed": 0,
+        "height": 46,
+        "hash": "0xb3db5d44831087656ec0431a643766db81be3b6a651b6fc520600ae252ed1a57",
+        "state_root": "0x52c2e3ac87c1e2ba06c08ac4e46574fb4f08665610f6ece02578418e86b2040a"
+      }
+    }
+  },
+  {
+    "name": "native-aligned-20261023-r30000",
+    "boundary": {
+      "passed": true,
+      "checks": [
+        {
+          "target": 2,
+          "host": "192.168.0.176",
+          "height": 14,
+          "matches": true
+        },
+        {
+          "target": 2,
+          "host": "192.168.0.111",
+          "height": 14,
+          "matches": true
+        },
+        {
+          "target": 2,
+          "host": "192.168.0.108",
+          "height": 14,
+          "matches": true
+        },
+        {
+          "target": 2,
+          "host": "192.168.0.167",
+          "height": 14,
+          "matches": true
+        },
+        {
+          "target": 2,
+          "host": "192.168.0.249",
+          "height": 14,
+          "matches": true
+        },
+        {
+          "target": 2,
+          "host": "192.168.0.138",
+          "height": 14,
+          "matches": true
+        },
+        {
+          "target": 2,
+          "host": "192.168.0.162",
+          "height": 14,
+          "matches": true
+        },
+        {
+          "target": 2,
+          "host": "192.168.0.61",
+          "height": 14,
+          "matches": true
+        },
+        {
+          "target": 2,
+          "host": "192.168.0.12",
+          "height": 14,
+          "matches": true
+        },
+        {
+          "target": 2,
+          "host": "192.168.0.11",
+          "height": 14,
+          "matches": true
+        },
+        {
+          "target": 12,
+          "host": "192.168.0.176",
+          "height": 51,
+          "matches": true
+        },
+        {
+          "target": 12,
+          "host": "192.168.0.111",
+          "height": 52,
+          "matches": true
+        },
+        {
+          "target": 12,
+          "host": "192.168.0.108",
+          "height": 52,
+          "matches": true
+        },
+        {
+          "target": 12,
+          "host": "192.168.0.167",
+          "height": 52,
+          "matches": true
+        },
+        {
+          "target": 12,
+          "host": "192.168.0.249",
+          "height": 52,
+          "matches": true
+        },
+        {
+          "target": 12,
+          "host": "192.168.0.138",
+          "height": 52,
+          "matches": true
+        },
+        {
+          "target": 12,
+          "host": "192.168.0.162",
+          "height": 52,
+          "matches": true
+        },
+        {
+          "target": 12,
+          "host": "192.168.0.61",
+          "height": 52,
+          "matches": true
+        },
+        {
+          "target": 12,
+          "host": "192.168.0.12",
+          "height": 52,
+          "matches": true
+        },
+        {
+          "target": 12,
+          "host": "192.168.0.11",
+          "height": 52,
+          "matches": true
+        }
+      ]
+    },
+    "state": {
+      "passed": true,
+      "all_heads_equal": true,
+      "nodes": [
+        {
+          "host": "192.168.0.176",
+          "count": 59030,
+          "failed": 0,
+          "height": 61,
+          "hash": "0x9e6b823ce180c6c67f2655c9f3c5111877ec2352078581f66368ba5355d1838f",
+          "state_root": "0xf4d286772a0725ed784939a8f7fe73df45b95ed152ae16f07707e8a375cde64f",
+          "canonical_prefix_matches": true
+        },
+        {
+          "host": "192.168.0.111",
+          "count": 59030,
+          "failed": 0,
+          "height": 61,
+          "hash": "0x9e6b823ce180c6c67f2655c9f3c5111877ec2352078581f66368ba5355d1838f",
+          "state_root": "0xf4d286772a0725ed784939a8f7fe73df45b95ed152ae16f07707e8a375cde64f",
+          "canonical_prefix_matches": true
+        },
+        {
+          "host": "192.168.0.108",
+          "count": 59030,
+          "failed": 0,
+          "height": 61,
+          "hash": "0x9e6b823ce180c6c67f2655c9f3c5111877ec2352078581f66368ba5355d1838f",
+          "state_root": "0xf4d286772a0725ed784939a8f7fe73df45b95ed152ae16f07707e8a375cde64f",
+          "canonical_prefix_matches": true
+        },
+        {
+          "host": "192.168.0.167",
+          "count": 59030,
+          "failed": 0,
+          "height": 61,
+          "hash": "0x9e6b823ce180c6c67f2655c9f3c5111877ec2352078581f66368ba5355d1838f",
+          "state_root": "0xf4d286772a0725ed784939a8f7fe73df45b95ed152ae16f07707e8a375cde64f",
+          "canonical_prefix_matches": true
+        },
+        {
+          "host": "192.168.0.249",
+          "count": 59030,
+          "failed": 0,
+          "height": 61,
+          "hash": "0x9e6b823ce180c6c67f2655c9f3c5111877ec2352078581f66368ba5355d1838f",
+          "state_root": "0xf4d286772a0725ed784939a8f7fe73df45b95ed152ae16f07707e8a375cde64f",
+          "canonical_prefix_matches": true
+        },
+        {
+          "host": "192.168.0.138",
+          "count": 59030,
+          "failed": 0,
+          "height": 61,
+          "hash": "0x9e6b823ce180c6c67f2655c9f3c5111877ec2352078581f66368ba5355d1838f",
+          "state_root": "0xf4d286772a0725ed784939a8f7fe73df45b95ed152ae16f07707e8a375cde64f",
+          "canonical_prefix_matches": true
+        },
+        {
+          "host": "192.168.0.162",
+          "count": 59030,
+          "failed": 0,
+          "height": 61,
+          "hash": "0x9e6b823ce180c6c67f2655c9f3c5111877ec2352078581f66368ba5355d1838f",
+          "state_root": "0xf4d286772a0725ed784939a8f7fe73df45b95ed152ae16f07707e8a375cde64f",
+          "canonical_prefix_matches": true
+        },
+        {
+          "host": "192.168.0.61",
+          "count": 59030,
+          "failed": 0,
+          "height": 61,
+          "hash": "0x9e6b823ce180c6c67f2655c9f3c5111877ec2352078581f66368ba5355d1838f",
+          "state_root": "0xf4d286772a0725ed784939a8f7fe73df45b95ed152ae16f07707e8a375cde64f",
+          "canonical_prefix_matches": true
+        },
+        {
+          "host": "192.168.0.12",
+          "count": 59030,
+          "failed": 0,
+          "height": 61,
+          "hash": "0x9e6b823ce180c6c67f2655c9f3c5111877ec2352078581f66368ba5355d1838f",
+          "state_root": "0xf4d286772a0725ed784939a8f7fe73df45b95ed152ae16f07707e8a375cde64f",
+          "canonical_prefix_matches": true
+        },
+        {
+          "host": "192.168.0.11",
+          "count": 59030,
+          "failed": 0,
+          "height": 61,
+          "hash": "0x9e6b823ce180c6c67f2655c9f3c5111877ec2352078581f66368ba5355d1838f",
+          "state_root": "0xf4d286772a0725ed784939a8f7fe73df45b95ed152ae16f07707e8a375cde64f",
+          "canonical_prefix_matches": true
+        }
+      ],
+      "canonical_host": "192.168.0.176",
+      "common_height": 61,
+      "method": "each stopped validator reopened without quorum; longest ledger balance reconstruction; every persisted head and state root matched at its own canonical height; terminal lag reported separately"
+    },
+    "balance": {
+      "passed": true,
+      "accounts": 1024,
+      "mismatches": 0,
+      "confirmed_workload_transactions": 58006,
+      "additional_receipts_checked": 7309,
+      "callback_business_success_reused": 50697,
+      "ledger": {
+        "host": "192.168.0.176",
+        "count": 59030,
+        "failed": 0,
+        "height": 61,
+        "hash": "0x9e6b823ce180c6c67f2655c9f3c5111877ec2352078581f66368ba5355d1838f",
+        "state_root": "0xf4d286772a0725ed784939a8f7fe73df45b95ed152ae16f07707e8a375cde64f"
+      }
+    }
+  },
+  {
+    "name": "native-aligned-20261023-r40000",
+    "boundary": {
+      "passed": true,
+      "checks": [
+        {
+          "target": 2,
+          "host": "192.168.0.176",
+          "height": 10,
+          "matches": true
+        },
+        {
+          "target": 2,
+          "host": "192.168.0.111",
+          "height": 14,
+          "matches": true
+        },
+        {
+          "target": 2,
+          "host": "192.168.0.108",
+          "height": 14,
+          "matches": true
+        },
+        {
+          "target": 2,
+          "host": "192.168.0.167",
+          "height": 14,
+          "matches": true
+        },
+        {
+          "target": 2,
+          "host": "192.168.0.249",
+          "height": 14,
+          "matches": true
+        },
+        {
+          "target": 2,
+          "host": "192.168.0.138",
+          "height": 14,
+          "matches": true
+        },
+        {
+          "target": 2,
+          "host": "192.168.0.162",
+          "height": 14,
+          "matches": true
+        },
+        {
+          "target": 2,
+          "host": "192.168.0.61",
+          "height": 14,
+          "matches": true
+        },
+        {
+          "target": 2,
+          "host": "192.168.0.12",
+          "height": 14,
+          "matches": true
+        },
+        {
+          "target": 2,
+          "host": "192.168.0.11",
+          "height": 14,
+          "matches": true
+        },
+        {
+          "target": 12,
+          "host": "192.168.0.176",
+          "height": 16,
+          "matches": true
+        },
+        {
+          "target": 12,
+          "host": "192.168.0.111",
+          "height": 41,
+          "matches": true
+        },
+        {
+          "target": 12,
+          "host": "192.168.0.108",
+          "height": 41,
+          "matches": true
+        },
+        {
+          "target": 12,
+          "host": "192.168.0.167",
+          "height": 41,
+          "matches": true
+        },
+        {
+          "target": 12,
+          "host": "192.168.0.249",
+          "height": 41,
+          "matches": true
+        },
+        {
+          "target": 12,
+          "host": "192.168.0.138",
+          "height": 41,
+          "matches": true
+        },
+        {
+          "target": 12,
+          "host": "192.168.0.162",
+          "height": 41,
+          "matches": true
+        },
+        {
+          "target": 12,
+          "host": "192.168.0.61",
+          "height": 41,
+          "matches": true
+        },
+        {
+          "target": 12,
+          "host": "192.168.0.12",
+          "height": 41,
+          "matches": true
+        },
+        {
+          "target": 12,
+          "host": "192.168.0.11",
+          "height": 41,
+          "matches": true
+        }
+      ]
+    },
+    "state": {
+      "passed": true,
+      "all_heads_equal": false,
+      "nodes": [
+        {
+          "host": "192.168.0.176",
+          "count": 14028,
+          "failed": 0,
+          "height": 16,
+          "hash": "0x57a6ecbac69b0cc1d1449beb4211f786fb20e2783fb2da512618659bcceefce2",
+          "state_root": "0x3965dcad741c03f11f642124dd355291c1b6fa105b73ac47d70acb12637acb35",
+          "canonical_prefix_matches": true
+        },
+        {
+          "host": "192.168.0.111",
+          "count": 48028,
+          "failed": 0,
+          "height": 50,
+          "hash": "0xb53baa6a20faf5de39d49c71ee4c1660303d898a8e43da26c3d3b1cdf17429cd",
+          "state_root": "0x1115eb03a6f4a1f427922616528d4edc7ecb022e286132939610635c752b62d3",
+          "canonical_prefix_matches": true
+        },
+        {
+          "host": "192.168.0.108",
+          "count": 48028,
+          "failed": 0,
+          "height": 50,
+          "hash": "0xb53baa6a20faf5de39d49c71ee4c1660303d898a8e43da26c3d3b1cdf17429cd",
+          "state_root": "0x1115eb03a6f4a1f427922616528d4edc7ecb022e286132939610635c752b62d3",
+          "canonical_prefix_matches": true
+        },
+        {
+          "host": "192.168.0.167",
+          "count": 48028,
+          "failed": 0,
+          "height": 50,
+          "hash": "0xb53baa6a20faf5de39d49c71ee4c1660303d898a8e43da26c3d3b1cdf17429cd",
+          "state_root": "0x1115eb03a6f4a1f427922616528d4edc7ecb022e286132939610635c752b62d3",
+          "canonical_prefix_matches": true
+        },
+        {
+          "host": "192.168.0.249",
+          "count": 48028,
+          "failed": 0,
+          "height": 50,
+          "hash": "0xb53baa6a20faf5de39d49c71ee4c1660303d898a8e43da26c3d3b1cdf17429cd",
+          "state_root": "0x1115eb03a6f4a1f427922616528d4edc7ecb022e286132939610635c752b62d3",
+          "canonical_prefix_matches": true
+        },
+        {
+          "host": "192.168.0.138",
+          "count": 48028,
+          "failed": 0,
+          "height": 50,
+          "hash": "0xb53baa6a20faf5de39d49c71ee4c1660303d898a8e43da26c3d3b1cdf17429cd",
+          "state_root": "0x1115eb03a6f4a1f427922616528d4edc7ecb022e286132939610635c752b62d3",
+          "canonical_prefix_matches": true
+        },
+        {
+          "host": "192.168.0.162",
+          "count": 48028,
+          "failed": 0,
+          "height": 50,
+          "hash": "0xb53baa6a20faf5de39d49c71ee4c1660303d898a8e43da26c3d3b1cdf17429cd",
+          "state_root": "0x1115eb03a6f4a1f427922616528d4edc7ecb022e286132939610635c752b62d3",
+          "canonical_prefix_matches": true
+        },
+        {
+          "host": "192.168.0.61",
+          "count": 48028,
+          "failed": 0,
+          "height": 50,
+          "hash": "0xb53baa6a20faf5de39d49c71ee4c1660303d898a8e43da26c3d3b1cdf17429cd",
+          "state_root": "0x1115eb03a6f4a1f427922616528d4edc7ecb022e286132939610635c752b62d3",
+          "canonical_prefix_matches": true
+        },
+        {
+          "host": "192.168.0.12",
+          "count": 48028,
+          "failed": 0,
+          "height": 50,
+          "hash": "0xb53baa6a20faf5de39d49c71ee4c1660303d898a8e43da26c3d3b1cdf17429cd",
+          "state_root": "0x1115eb03a6f4a1f427922616528d4edc7ecb022e286132939610635c752b62d3",
+          "canonical_prefix_matches": true
+        },
+        {
+          "host": "192.168.0.11",
+          "count": 48028,
+          "failed": 0,
+          "height": 50,
+          "hash": "0xb53baa6a20faf5de39d49c71ee4c1660303d898a8e43da26c3d3b1cdf17429cd",
+          "state_root": "0x1115eb03a6f4a1f427922616528d4edc7ecb022e286132939610635c752b62d3",
+          "canonical_prefix_matches": true
+        }
+      ],
+      "canonical_host": "192.168.0.111",
+      "common_height": 16,
+      "method": "each stopped validator reopened without quorum; longest ledger balance reconstruction; every persisted head and state root matched at its own canonical height; terminal lag reported separately"
+    },
+    "balance": {
+      "passed": true,
+      "accounts": 1024,
+      "mismatches": 0,
+      "confirmed_workload_transactions": 47004,
+      "additional_receipts_checked": 4354,
+      "callback_business_success_reused": 42650,
+      "ledger": {
+        "host": "192.168.0.111",
+        "count": 48028,
+        "failed": 0,
+        "height": 50,
+        "hash": "0xb53baa6a20faf5de39d49c71ee4c1660303d898a8e43da26c3d3b1cdf17429cd",
+        "state_root": "0x1115eb03a6f4a1f427922616528d4edc7ecb022e286132939610635c752b62d3"
+      }
+    }
+  },
+  {
+    "name": "native-aligned-20261023-r50000",
+    "boundary": {
+      "passed": true,
+      "checks": [
+        {
+          "target": 2,
+          "host": "192.168.0.176",
+          "height": 14,
+          "matches": true
+        },
+        {
+          "target": 2,
+          "host": "192.168.0.111",
+          "height": 14,
+          "matches": true
+        },
+        {
+          "target": 2,
+          "host": "192.168.0.108",
+          "height": 14,
+          "matches": true
+        },
+        {
+          "target": 2,
+          "host": "192.168.0.167",
+          "height": 14,
+          "matches": true
+        },
+        {
+          "target": 2,
+          "host": "192.168.0.249",
+          "height": 14,
+          "matches": true
+        },
+        {
+          "target": 2,
+          "host": "192.168.0.138",
+          "height": 14,
+          "matches": true
+        },
+        {
+          "target": 2,
+          "host": "192.168.0.162",
+          "height": 14,
+          "matches": true
+        },
+        {
+          "target": 2,
+          "host": "192.168.0.61",
+          "height": 14,
+          "matches": true
+        },
+        {
+          "target": 2,
+          "host": "192.168.0.12",
+          "height": 14,
+          "matches": true
+        },
+        {
+          "target": 2,
+          "host": "192.168.0.11",
+          "height": 14,
+          "matches": true
+        },
+        {
+          "target": 12,
+          "host": "192.168.0.176",
+          "height": 35,
+          "matches": true
+        },
+        {
+          "target": 12,
+          "host": "192.168.0.111",
+          "height": 41,
+          "matches": true
+        },
+        {
+          "target": 12,
+          "host": "192.168.0.108",
+          "height": 41,
+          "matches": true
+        },
+        {
+          "target": 12,
+          "host": "192.168.0.167",
+          "height": 41,
+          "matches": true
+        },
+        {
+          "target": 12,
+          "host": "192.168.0.249",
+          "height": 41,
+          "matches": true
+        },
+        {
+          "target": 12,
+          "host": "192.168.0.138",
+          "height": 41,
+          "matches": true
+        },
+        {
+          "target": 12,
+          "host": "192.168.0.162",
+          "height": 41,
+          "matches": true
+        },
+        {
+          "target": 12,
+          "host": "192.168.0.61",
+          "height": 41,
+          "matches": true
+        },
+        {
+          "target": 12,
+          "host": "192.168.0.12",
+          "height": 41,
+          "matches": true
+        },
+        {
+          "target": 12,
+          "host": "192.168.0.11",
+          "height": 41,
+          "matches": true
+        }
+      ]
+    },
+    "state": {
+      "passed": true,
+      "all_heads_equal": true,
+      "nodes": [
+        {
+          "host": "192.168.0.176",
+          "count": 65397,
+          "failed": 0,
+          "height": 71,
+          "hash": "0xa092e447ac5462a78a2ba2c8cfde188336ca170f8ffdbfa5601227df8816a4d6",
+          "state_root": "0xe7f430789aadcdf5df95af1c7b273faf55e739d971266851bea59eaafabb556d",
+          "canonical_prefix_matches": true
+        },
+        {
+          "host": "192.168.0.111",
+          "count": 65397,
+          "failed": 0,
+          "height": 71,
+          "hash": "0xa092e447ac5462a78a2ba2c8cfde188336ca170f8ffdbfa5601227df8816a4d6",
+          "state_root": "0xe7f430789aadcdf5df95af1c7b273faf55e739d971266851bea59eaafabb556d",
+          "canonical_prefix_matches": true
+        },
+        {
+          "host": "192.168.0.108",
+          "count": 65397,
+          "failed": 0,
+          "height": 71,
+          "hash": "0xa092e447ac5462a78a2ba2c8cfde188336ca170f8ffdbfa5601227df8816a4d6",
+          "state_root": "0xe7f430789aadcdf5df95af1c7b273faf55e739d971266851bea59eaafabb556d",
+          "canonical_prefix_matches": true
+        },
+        {
+          "host": "192.168.0.167",
+          "count": 65397,
+          "failed": 0,
+          "height": 71,
+          "hash": "0xa092e447ac5462a78a2ba2c8cfde188336ca170f8ffdbfa5601227df8816a4d6",
+          "state_root": "0xe7f430789aadcdf5df95af1c7b273faf55e739d971266851bea59eaafabb556d",
+          "canonical_prefix_matches": true
+        },
+        {
+          "host": "192.168.0.249",
+          "count": 65397,
+          "failed": 0,
+          "height": 71,
+          "hash": "0xa092e447ac5462a78a2ba2c8cfde188336ca170f8ffdbfa5601227df8816a4d6",
+          "state_root": "0xe7f430789aadcdf5df95af1c7b273faf55e739d971266851bea59eaafabb556d",
+          "canonical_prefix_matches": true
+        },
+        {
+          "host": "192.168.0.138",
+          "count": 65397,
+          "failed": 0,
+          "height": 71,
+          "hash": "0xa092e447ac5462a78a2ba2c8cfde188336ca170f8ffdbfa5601227df8816a4d6",
+          "state_root": "0xe7f430789aadcdf5df95af1c7b273faf55e739d971266851bea59eaafabb556d",
+          "canonical_prefix_matches": true
+        },
+        {
+          "host": "192.168.0.162",
+          "count": 65397,
+          "failed": 0,
+          "height": 71,
+          "hash": "0xa092e447ac5462a78a2ba2c8cfde188336ca170f8ffdbfa5601227df8816a4d6",
+          "state_root": "0xe7f430789aadcdf5df95af1c7b273faf55e739d971266851bea59eaafabb556d",
+          "canonical_prefix_matches": true
+        },
+        {
+          "host": "192.168.0.61",
+          "count": 65397,
+          "failed": 0,
+          "height": 71,
+          "hash": "0xa092e447ac5462a78a2ba2c8cfde188336ca170f8ffdbfa5601227df8816a4d6",
+          "state_root": "0xe7f430789aadcdf5df95af1c7b273faf55e739d971266851bea59eaafabb556d",
+          "canonical_prefix_matches": true
+        },
+        {
+          "host": "192.168.0.12",
+          "count": 65397,
+          "failed": 0,
+          "height": 71,
+          "hash": "0xa092e447ac5462a78a2ba2c8cfde188336ca170f8ffdbfa5601227df8816a4d6",
+          "state_root": "0xe7f430789aadcdf5df95af1c7b273faf55e739d971266851bea59eaafabb556d",
+          "canonical_prefix_matches": true
+        },
+        {
+          "host": "192.168.0.11",
+          "count": 65397,
+          "failed": 0,
+          "height": 71,
+          "hash": "0xa092e447ac5462a78a2ba2c8cfde188336ca170f8ffdbfa5601227df8816a4d6",
+          "state_root": "0xe7f430789aadcdf5df95af1c7b273faf55e739d971266851bea59eaafabb556d",
+          "canonical_prefix_matches": true
+        }
+      ],
+      "canonical_host": "192.168.0.176",
+      "common_height": 71,
+      "method": "each stopped validator reopened without quorum; longest ledger balance reconstruction; every persisted head and state root matched at its own canonical height; terminal lag reported separately"
+    },
+    "balance": {
+      "passed": true,
+      "accounts": 1024,
+      "mismatches": 0,
+      "confirmed_workload_transactions": 64373,
+      "additional_receipts_checked": 11628,
+      "callback_business_success_reused": 52745,
+      "ledger": {
+        "host": "192.168.0.176",
+        "count": 65397,
+        "failed": 0,
+        "height": 71,
+        "hash": "0xa092e447ac5462a78a2ba2c8cfde188336ca170f8ffdbfa5601227df8816a4d6",
+        "state_root": "0xe7f430789aadcdf5df95af1c7b273faf55e739d971266851bea59eaafabb556d"
+      }
+    }
+  },
+  {
+    "name": "native-aligned-20261023-r60000",
+    "boundary": {
+      "passed": true,
+      "checks": [
+        {
+          "target": 2,
+          "host": "192.168.0.176",
+          "height": 14,
+          "matches": true
+        },
+        {
+          "target": 2,
+          "host": "192.168.0.111",
+          "height": 14,
+          "matches": true
+        },
+        {
+          "target": 2,
+          "host": "192.168.0.108",
+          "height": 14,
+          "matches": true
+        },
+        {
+          "target": 2,
+          "host": "192.168.0.167",
+          "height": 14,
+          "matches": true
+        },
+        {
+          "target": 2,
+          "host": "192.168.0.249",
+          "height": 14,
+          "matches": true
+        },
+        {
+          "target": 2,
+          "host": "192.168.0.138",
+          "height": 14,
+          "matches": true
+        },
+        {
+          "target": 2,
+          "host": "192.168.0.162",
+          "height": 14,
+          "matches": true
+        },
+        {
+          "target": 2,
+          "host": "192.168.0.61",
+          "height": 14,
+          "matches": true
+        },
+        {
+          "target": 2,
+          "host": "192.168.0.12",
+          "height": 14,
+          "matches": true
+        },
+        {
+          "target": 2,
+          "host": "192.168.0.11",
+          "height": 14,
+          "matches": true
+        },
+        {
+          "target": 12,
+          "host": "192.168.0.176",
+          "height": 36,
+          "matches": true
+        },
+        {
+          "target": 12,
+          "host": "192.168.0.111",
+          "height": 41,
+          "matches": true
+        },
+        {
+          "target": 12,
+          "host": "192.168.0.108",
+          "height": 41,
+          "matches": true
+        },
+        {
+          "target": 12,
+          "host": "192.168.0.167",
+          "height": 41,
+          "matches": true
+        },
+        {
+          "target": 12,
+          "host": "192.168.0.249",
+          "height": 41,
+          "matches": true
+        },
+        {
+          "target": 12,
+          "host": "192.168.0.138",
+          "height": 41,
+          "matches": true
+        },
+        {
+          "target": 12,
+          "host": "192.168.0.162",
+          "height": 41,
+          "matches": true
+        },
+        {
+          "target": 12,
+          "host": "192.168.0.61",
+          "height": 41,
+          "matches": true
+        },
+        {
+          "target": 12,
+          "host": "192.168.0.12",
+          "height": 41,
+          "matches": true
+        },
+        {
+          "target": 12,
+          "host": "192.168.0.11",
+          "height": 41,
+          "matches": true
+        }
+      ]
+    },
+    "state": {
+      "passed": true,
+      "all_heads_equal": true,
+      "nodes": [
+        {
+          "host": "192.168.0.176",
+          "count": 49028,
+          "failed": 0,
+          "height": 51,
+          "hash": "0x6845132d3cb5f55daaf3fe6acd26552841e2c3c9e2e9c4b896930374d701d27f",
+          "state_root": "0xa4aacf76a967502cf0e33ee3bcc28674a4e1a25a3fd3b07fc6b4e67735e1a458",
+          "canonical_prefix_matches": true
+        },
+        {
+          "host": "192.168.0.111",
+          "count": 49028,
+          "failed": 0,
+          "height": 51,
+          "hash": "0x6845132d3cb5f55daaf3fe6acd26552841e2c3c9e2e9c4b896930374d701d27f",
+          "state_root": "0xa4aacf76a967502cf0e33ee3bcc28674a4e1a25a3fd3b07fc6b4e67735e1a458",
+          "canonical_prefix_matches": true
+        },
+        {
+          "host": "192.168.0.108",
+          "count": 49028,
+          "failed": 0,
+          "height": 51,
+          "hash": "0x6845132d3cb5f55daaf3fe6acd26552841e2c3c9e2e9c4b896930374d701d27f",
+          "state_root": "0xa4aacf76a967502cf0e33ee3bcc28674a4e1a25a3fd3b07fc6b4e67735e1a458",
+          "canonical_prefix_matches": true
+        },
+        {
+          "host": "192.168.0.167",
+          "count": 49028,
+          "failed": 0,
+          "height": 51,
+          "hash": "0x6845132d3cb5f55daaf3fe6acd26552841e2c3c9e2e9c4b896930374d701d27f",
+          "state_root": "0xa4aacf76a967502cf0e33ee3bcc28674a4e1a25a3fd3b07fc6b4e67735e1a458",
+          "canonical_prefix_matches": true
+        },
+        {
+          "host": "192.168.0.249",
+          "count": 49028,
+          "failed": 0,
+          "height": 51,
+          "hash": "0x6845132d3cb5f55daaf3fe6acd26552841e2c3c9e2e9c4b896930374d701d27f",
+          "state_root": "0xa4aacf76a967502cf0e33ee3bcc28674a4e1a25a3fd3b07fc6b4e67735e1a458",
+          "canonical_prefix_matches": true
+        },
+        {
+          "host": "192.168.0.138",
+          "count": 49028,
+          "failed": 0,
+          "height": 51,
+          "hash": "0x6845132d3cb5f55daaf3fe6acd26552841e2c3c9e2e9c4b896930374d701d27f",
+          "state_root": "0xa4aacf76a967502cf0e33ee3bcc28674a4e1a25a3fd3b07fc6b4e67735e1a458",
+          "canonical_prefix_matches": true
+        },
+        {
+          "host": "192.168.0.162",
+          "count": 49028,
+          "failed": 0,
+          "height": 51,
+          "hash": "0x6845132d3cb5f55daaf3fe6acd26552841e2c3c9e2e9c4b896930374d701d27f",
+          "state_root": "0xa4aacf76a967502cf0e33ee3bcc28674a4e1a25a3fd3b07fc6b4e67735e1a458",
+          "canonical_prefix_matches": true
+        },
+        {
+          "host": "192.168.0.61",
+          "count": 49028,
+          "failed": 0,
+          "height": 51,
+          "hash": "0x6845132d3cb5f55daaf3fe6acd26552841e2c3c9e2e9c4b896930374d701d27f",
+          "state_root": "0xa4aacf76a967502cf0e33ee3bcc28674a4e1a25a3fd3b07fc6b4e67735e1a458",
+          "canonical_prefix_matches": true
+        },
+        {
+          "host": "192.168.0.12",
+          "count": 49028,
+          "failed": 0,
+          "height": 51,
+          "hash": "0x6845132d3cb5f55daaf3fe6acd26552841e2c3c9e2e9c4b896930374d701d27f",
+          "state_root": "0xa4aacf76a967502cf0e33ee3bcc28674a4e1a25a3fd3b07fc6b4e67735e1a458",
+          "canonical_prefix_matches": true
+        },
+        {
+          "host": "192.168.0.11",
+          "count": 49028,
+          "failed": 0,
+          "height": 51,
+          "hash": "0x6845132d3cb5f55daaf3fe6acd26552841e2c3c9e2e9c4b896930374d701d27f",
+          "state_root": "0xa4aacf76a967502cf0e33ee3bcc28674a4e1a25a3fd3b07fc6b4e67735e1a458",
+          "canonical_prefix_matches": true
+        }
+      ],
+      "canonical_host": "192.168.0.176",
+      "common_height": 51,
+      "method": "each stopped validator reopened without quorum; longest ledger balance reconstruction; every persisted head and state root matched at its own canonical height; terminal lag reported separately"
+    },
+    "balance": {
+      "passed": true,
+      "accounts": 1024,
+      "mismatches": 0,
+      "confirmed_workload_transactions": 48004,
+      "additional_receipts_checked": 5015,
+      "callback_business_success_reused": 42989,
+      "ledger": {
+        "host": "192.168.0.176",
+        "count": 49028,
+        "failed": 0,
+        "height": 51,
+        "hash": "0x6845132d3cb5f55daaf3fe6acd26552841e2c3c9e2e9c4b896930374d701d27f",
+        "state_root": "0xa4aacf76a967502cf0e33ee3bcc28674a4e1a25a3fd3b07fc6b4e67735e1a458"
+      }
+    }
+  }
+]

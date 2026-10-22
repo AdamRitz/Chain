@@ -312,9 +312,9 @@ def Main():
     if not 5000<=args.inflight<=50000:raise ValueError('Bounded global inflight range required')
     if not re.fullmatch(r'[A-Za-z0-9_-]{1,40}',args.name):raise ValueError('Safe unique batch name required')
     c=Native(args);batch=c.root/'results'/args.name;batch.mkdir(exist_ok=False)
-    Save(batch/'protocol.json',{'nodes':10,'sender':c.sender,'native_precompiled':'0x100c','accounts':1024,
-        'initial_balance':1_000_000_000,'amount':1,'routing':'ring','warmup':2,'measurement':10,'drain':5,
-        'rates':[20000,30000,40000,50000,60000],'global_inflight':args.inflight,
+    Save(batch/'protocol.json',{'nodes':10,'sender':c.sender,'native_precompiled':'0x100c','accounts':4 if args.smoke else 1024,
+        'initial_balance':1_000_000_000,'amount':1,'routing':'ring','warmup':0 if args.smoke else 2,'measurement':10,'drain':5,
+        'rates':[1] if args.smoke else [20000,30000,40000,50000,60000],'global_inflight':args.inflight,
         'sdk_ingress_peers':c.hosts,'node_defaults_preserved':True,'driver_sha256':hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
         'java_source_sha256':hashlib.sha256((c.driver/'NativeAlignedBench.java').read_bytes()).hexdigest(),
         'java_class_sha256':hashlib.sha256((c.driver/'classes/NativeAlignedBench.class').read_bytes()).hexdigest()})

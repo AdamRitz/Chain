@@ -1,0 +1,82 @@
+[
+  {
+    "node": "node01",
+    "ip": "182.151.5.57",
+    "private_ip": "192.168.0.176",
+    "stdout": "7c29bd2afe615a57af02a440fc4d665c3beec3cf7301ec4007cc07caf5b683f4  /opt/fisco/bin/fisco-bcos\n7867a2b0e3d674260954dd354b8eea47a3b780570d5e7c6b54ddb90cf0548676  /opt/fisco/nodes/node0/config.ini\n3e76abec0b7bc8a98aca9415063bf8c746742772afbdd8f9d50a6a16e42f0729  /opt/fisco/nodes/node0/config.genesis\n",
+    "stderr": "",
+    "exit_code": 0
+  },
+  {
+    "node": "node02",
+    "ip": "118.122.78.54",
+    "private_ip": "192.168.0.111",
+    "stdout": "7c29bd2afe615a57af02a440fc4d665c3beec3cf7301ec4007cc07caf5b683f4  /opt/fisco/bin/fisco-bcos\n7867a2b0e3d674260954dd354b8eea47a3b780570d5e7c6b54ddb90cf0548676  /opt/fisco/nodes/node0/config.ini\n3e76abec0b7bc8a98aca9415063bf8c746742772afbdd8f9d50a6a16e42f0729  /opt/fisco/nodes/node0/config.genesis\n",
+    "stderr": "",
+    "exit_code": 0
+  },
+  {
+    "node": "node03",
+    "ip": "182.151.27.42",
+    "private_ip": "192.168.0.108",
+    "stdout": "7c29bd2afe615a57af02a440fc4d665c3beec3cf7301ec4007cc07caf5b683f4  /opt/fisco/bin/fisco-bcos\n7867a2b0e3d674260954dd354b8eea47a3b780570d5e7c6b54ddb90cf0548676  /opt/fisco/nodes/node0/config.ini\n3e76abec0b7bc8a98aca9415063bf8c746742772afbdd8f9d50a6a16e42f0729  /opt/fisco/nodes/node0/config.genesis\n",
+    "stderr": "",
+    "exit_code": 0
+  },
+  {
+    "node": "node04",
+    "ip": "118.121.202.17",
+    "private_ip": "192.168.0.167",
+    "stdout": "7c29bd2afe615a57af02a440fc4d665c3beec3cf7301ec4007cc07caf5b683f4  /opt/fisco/bin/fisco-bcos\n7867a2b0e3d674260954dd354b8eea47a3b780570d5e7c6b54ddb90cf0548676  /opt/fisco/nodes/node0/config.ini\n3e76abec0b7bc8a98aca9415063bf8c746742772afbdd8f9d50a6a16e42f0729  /opt/fisco/nodes/node0/config.genesis\n",
+    "stderr": "",
+    "exit_code": 0
+  },
+  {
+    "node": "node05",
+    "ip": "110.185.105.122",
+    "private_ip": "192.168.0.249",
+    "stdout": "7c29bd2afe615a57af02a440fc4d665c3beec3cf7301ec4007cc07caf5b683f4  /opt/fisco/bin/fisco-bcos\n7867a2b0e3d674260954dd354b8eea47a3b780570d5e7c6b54ddb90cf0548676  /opt/fisco/nodes/node0/config.ini\n3e76abec0b7bc8a98aca9415063bf8c746742772afbdd8f9d50a6a16e42f0729  /opt/fisco/nodes/node0/config.genesis\n",
+    "stderr": "",
+    "exit_code": 0
+  },
+  {
+    "node": "node06",
+    "ip": "110.185.104.206",
+    "private_ip": "192.168.0.138",
+    "stdout": "7c29bd2afe615a57af02a440fc4d665c3beec3cf7301ec4007cc07caf5b683f4  /opt/fisco/bin/fisco-bcos\n7867a2b0e3d674260954dd354b8eea47a3b780570d5e7c6b54ddb90cf0548676  /opt/fisco/nodes/node0/config.ini\n3e76abec0b7bc8a98aca9415063bf8c746742772afbdd8f9d50a6a16e42f0729  /opt/fisco/nodes/node0/config.genesis\n",
+    "stderr": "",
+    "exit_code": 0
+  },
+  {
+    "node": "node07",
+    "ip": "182.151.9.116",
+    "private_ip": "192.168.0.162",
+    "stdout": "7c29bd2afe615a57af02a440fc4d665c3beec3cf7301ec4007cc07caf5b683f4  /opt/fisco/bin/fisco-bcos\n7867a2b0e3d674260954dd354b8eea47a3b780570d5e7c6b54ddb90cf0548676  /opt/fisco/nodes/node0/config.ini\n3e76abec0b7bc8a98aca9415063bf8c746742772afbdd8f9d50a6a16e42f0729  /opt/fisco/nodes/node0/config.genesis\n",
+    "stderr": "",
+    "exit_code": 0
+  },
+  {
+    "node": "node08",
+    "ip": "182.151.38.203",
+    "private_ip": "192.168.0.61",
+    "stdout": "7c29bd2afe615a57af02a440fc4d665c3beec3cf7301ec4007cc07caf5b683f4  /opt/fisco/bin/fisco-bcos\n7867a2b0e3d674260954dd354b8eea47a3b780570d5e7c6b54ddb90cf0548676  /opt/fisco/nodes/node0/config.ini\n3e76abec0b7bc8a98aca9415063bf8c746742772afbdd8f9d50a6a16e42f0729  /opt/fisco/nodes/node0/config.genesis\n",
+    "stderr": "",
+    "exit_code": 0
+  },
+  {
+    "node": "node09",
+    "ip": "118.121.198.136",
+    "private_ip": "192.168.0.12",
+    "stdout": "7c29bd2afe615a57af02a440fc4d665c3beec3cf7301ec4007cc07caf5b683f4  /opt/fisco/bin/fisco-bcos\n7867a2b0e3d674260954dd354b8eea47a3b780570d5e7c6b54ddb90cf0548676  /opt/fisco/nodes/node0/config.ini\n3e76abec0b7bc8a98aca9415063bf8c746742772afbdd8f9d50a6a16e42f0729  /opt/fisco/nodes/node0/config.genesis\n",
+    "stderr": "",
+    "exit_code": 0
+  },
+  {
+    "node": "node10",
+    "ip": "118.122.72.173",
+    "private_ip": "192.168.0.11",
+    "stdout": "7c29bd2afe615a57af02a440fc4d665c3beec3cf7301ec4007cc07caf5b683f4  /opt/fisco/bin/fisco-bcos\n7867a2b0e3d674260954dd354b8eea47a3b780570d5e7c6b54ddb90cf0548676  /opt/fisco/nodes/node0/config.ini\n3e76abec0b7bc8a98aca9415063bf8c746742772afbdd8f9d50a6a16e42f0729  /opt/fisco/nodes/node0/config.genesis\n",
+    "stderr": "",
+    "exit_code": 0
+  }
+]

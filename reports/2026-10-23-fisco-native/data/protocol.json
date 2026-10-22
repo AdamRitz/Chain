@@ -1,0 +1,36 @@
+{
+  "nodes": 10,
+  "sender": "192.168.0.176",
+  "native_precompiled": "0x100c",
+  "accounts": 1024,
+  "initial_balance": 1000000000,
+  "amount": 1,
+  "routing": "ring",
+  "warmup": 2,
+  "measurement": 10,
+  "drain": 5,
+  "rates": [
+    20000,
+    30000,
+    40000,
+    50000,
+    60000
+  ],
+  "global_inflight": 50000,
+  "sdk_ingress_peers": [
+    "192.168.0.176",
+    "192.168.0.111",
+    "192.168.0.108",
+    "192.168.0.167",
+    "192.168.0.249",
+    "192.168.0.138",
+    "192.168.0.162",
+    "192.168.0.61",
+    "192.168.0.12",
+    "192.168.0.11"
+  ],
+  "node_defaults_preserved": true,
+  "driver_sha256": "4af12b97fc9c831df47036a2397c0ea2352bcb28552761d487f2b352cd63cd5b",
+  "java_source_sha256": "a61bcf3cfde786c02fae81685ba51238948c104ae6a5e81a2b59767ffbbfeeec",
+  "java_class_sha256": "e23eec814d0091163aea7000b7f55fa6a46e5a6fb4af3559de045ca76c87b6a8"
+}
