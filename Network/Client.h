@@ -367,11 +367,29 @@ bool ProcessTimedForks() {
     if (changed) RecordClockWork(false,int64_t((GetSteadyTime()-start)/1000));
     return changed;
 }
-void RunBoundedCandidateRound(int64_t& lastRound) {
-    auto [uncertainty,prepare]=GetCandidateBudgets();
+void RunBoundedCandidateRound(int64_t& lastRound,CandidateRiskModel& risk) {
+    size_t ready=0;
+    { lock_guard lock(txpoolMutex); ready=readyPoolTx; }
+    auto pendingBlock=pendingBlockVerify.load()+pendingMetadata.load();
+    ClockFeatures features;
+    auto [uncertainty,prepare]=GetDecisionBudgets(ready,pendingTxVerify.load(),pendingBlock,features);
     auto mapping=GetClockMapping();
+    auto bucket=CandidateRiskModel::Bucket(pendingBlock>0,ready>=maxBlockTx/2);
+    auto period=int64_t(nodeClock.roundMs)*1000;
+    auto current=mapping.logicalUs/period;
+    auto remaining=mapping.ToSteady(current*period+int64_t(nodeClock.candidateMs)*1000)-mapping.steadyUs-uncertainty-nodeClock.guardUs;
+    if (nodeClock.candidateRisk&&risk.ShouldDefer(bucket,blockReady,prepare,remaining)) {
+        // Leave the already verified candidate to the ordinary main-loop commit
+        // path. No received-block validation or branch ranking is bypassed.
+        risk.consecutiveSkips++;
+        { lock_guard lock(nodeClock.lock); nodeClock.riskDeferrals++; }
+        WriteClockTrace({{"kind","candidate_defer"},{"round",current},{"risk_bucket",bucket},
+            {"predicted_failure",risk.cells[bucket].failure},{"risk_samples",risk.cells[bucket].samples},
+            {"prepare_budget_us",prepare},{"remaining_us",remaining},{"features",features}});
+        return;
+    }
     auto planned=PlanCandidateRound(mapping,lastRound,int64_t(nodeClock.roundMs)*1000,
-        int64_t(nodeClock.candidateMs)*1000,prepare,uncertainty,nodeClock.guardUs,nodeClock.joinCurrentRound);
+        int64_t(nodeClock.candidateMs)*1000,prepare,uncertainty,nodeClock.guardUs,nodeClock.joinCurrentRound,nodeClock.candidateTiming);
     if (!planned) {
         { lock_guard lock(nodeClock.lock); nodeClock.budgetSkips++; }
         if (!blockReady) WaitSteadyDeadline(mapping.steadyUs+int64_t(nodeClock.roundMs)*1000);
@@ -379,8 +397,7 @@ void RunBoundedCandidateRound(int64_t& lastRound) {
     }
     auto round=*planned;
     auto head=ReadChainHead(); round.parent=head.hash; round.height=head.height+1; round.stateVersion=head.version;
-    ClockFeatures features;
-    { lock_guard lock(nodeClock.lock); features=nodeClock.features; round.featureVersion=nodeClock.featureVersion; }
+    { lock_guard lock(nodeClock.lock); round.featureVersion=nodeClock.featureVersion; }
     if (!WaitSteadyDeadline(round.startUs-prepare)) return;
     if (!produceBlocks) { WaitSteadyDeadline(round.collectionDeadlineUs); return; }
     if (forkReady||syncOwner.load()) return;
@@ -418,6 +435,8 @@ void RunBoundedCandidateRound(int64_t& lastRound) {
         else if (int64_t(finished/1000)>=round.proposalDeadlineUs) outcome="late";
     }
     bool late=outcome=="late";
+    // Empty and invalid attempts do not teach an outcome model for valid work.
+    if (valid) risk.Observe(bucket,!accepted);
     RecordClockWork(true,workUs,late);
     {
         lock_guard lock(nodeClock.lock);
@@ -426,7 +445,9 @@ void RunBoundedCandidateRound(int64_t& lastRound) {
         if (outcome=="cancelled") nodeClock.cancelledCandidates++;
     }
     WriteClockTrace({{"kind","candidate"},{"round",round.id},{"clock_version",round.clockVersion},{"feature_version",round.featureVersion},
-        {"features",features},{"parent",U32ToHex(round.parent)},{"height",round.height},{"state_version",round.stateVersion},
+        {"features",features},{"risk_bucket",bucket},{"predicted_failure_after",risk.cells[bucket].failure},
+        {"candidate_timing",nodeClock.candidateTiming},{"candidate_risk",nodeClock.candidateRisk},
+        {"parent",U32ToHex(round.parent)},{"height",round.height},{"state_version",round.stateVersion},
         {"start_us",round.startUs},{"proposal_deadline_us",round.proposalDeadlineUs},{"collection_deadline_us",round.collectionDeadlineUs},
         {"offered_us",round.offeredUs},{"joined_current",round.joinedCurrent},{"outcome",outcome},{"prepare_us",workUs},
         {"prepare_start_us",start/1000},{"prepare_end_us",prepared/1000},{"prepare_completed",valid},
@@ -437,6 +458,7 @@ void RunBoundedCandidateRound(int64_t& lastRound) {
 void MainLoop() {
     try {
         int64_t lastRound=-1;
+        CandidateRiskModel risk;
         while (true) {
             if (ProcessTimedForks()) AnnounceBlock(DBReadBlockByHash(DBReadCurrentBlock()));
             {
@@ -451,7 +473,7 @@ void MainLoop() {
                 if (forkReady) continue;
             }
             if (nodeClock.roundMs&&nodeRunning&&nodeClock.scheduler=="bounded") {
-                RunBoundedCandidateRound(lastRound);
+                RunBoundedCandidateRound(lastRound,risk);
             } else if (nodeClock.roundMs&&nodeRunning) {
                 auto period=int64_t(nodeClock.roundMs)*1000;
                 auto round=max(lastRound+1,GetLogicalTimeUs()/period+1);

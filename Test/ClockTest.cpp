@@ -32,6 +32,19 @@ void TestServoAndRounds() {
     mapping.rate=1.01; mapping.version++;
     Require(frozen.clockVersion==7&&frozen.proposalDeadlineUs==10500&&frozen.collectionDeadlineUs==12000,"later model or rate changes cannot move frozen deadlines");
     Require(!CandidateRoundFits(frozen,11000,0,0,{}),"strict local deadline");
+    ClockMapping late{49000,1049000,1,8};
+    auto feasible=PlanCandidateRound(late,19,50000,12000,60000,1000,500,true,true);
+    Require(feasible&&feasible->id==22,"expensive work moves beyond an infeasible next round");
+    Require(!PlanCandidateRound(late,19,50000,12000,200000,1000,500,true,true),"lookahead is bounded");
+    CandidateRiskModel risk;
+    for (int i=0;i<12;i++) risk.Observe(3,true);
+    Require(risk.ShouldDefer(3,true,10000,1000),"trained waste model can prefer a verified alternative");
+    Require(!risk.ShouldDefer(3,false,10000,1000),"cannot suppress the only progress path");
+    Require(!risk.ShouldDefer(0,true,10000,1000),"unseen context falls back");
+    risk.consecutiveSkips=2;
+    Require(!risk.ShouldDefer(3,true,10000,1000),"bounded abstention forces an ordinary attempt");
+    for (int i=0;i<30;i++) risk.Observe(3,false);
+    Require(!risk.ShouldDefer(3,true,10000,1000),"successful observations recover policy");
 }
 void TestModel(const filesystem::path& path,const filesystem::path& root) {
     ClockModel model; Require(model.Load(path.string()),"trained model loads");
@@ -97,8 +110,8 @@ void TestPreparedState(const filesystem::path& root) {
     Require(GetUser(users,owner.public_key).nonce==1&&GetUser(users,receiver.public_key).balance==1,"published chain and account state agree");
     db.reset();
 }
-void TestPreparationModel(const filesystem::path& base,const filesystem::path& root) {
-    auto path=base.parent_path()/"preparation-v1.json";
+void TestPreparationModel(const filesystem::path& base,const filesystem::path& root,const string& name) {
+    auto path=base.parent_path()/name;
     ClockModel model; Require(model.Load(path.string())&&model.preparation.loaded,"real work model loads independently of time reference");
     ifstream input(path); auto pack=nlohmann::json::parse(input);
     for (const auto& row:pack["preparation"]["parity_cases"]) {
@@ -122,13 +135,19 @@ void TestPreparationModel(const filesystem::path& base,const filesystem::path& r
     Require(budget.second==int64_t(ceil(prediction.prepareUs))&&budget.first>=1000000,"soft model lead may reduce historical work budget without bypassing source quorum");
     nodeClock.predictionAt-=3000000;
     Require(GetCandidateBudgets().second==100000,"expired preparation prediction returns to the same rule quantile");
+    nodeClock.candidateTiming=true; nodeClock.featureAt=0;
+    ClockFeatures currentFeatures;
+    Require(GetDecisionBudgets(123,4,5,currentFeatures).second==100000,"decision model expires to historical work budget");
+    Require(currentFeatures[13]==123&&currentFeatures[11]==4&&currentFeatures[12]==5,"decision refresh reads actual queues");
+    nodeClock.candidateTiming=false;
     nodeClock.prepareQuantile=.95;
 }
 int main(int argc,char** argv) {
     try {
         if (argc!=3||sodium_init()<0) return 1;
         auto root=filesystem::path(argv[2])/to_string(GetSteadyTime()); filesystem::create_directories(root);
-        TestServoAndRounds(); TestModel(argv[1],root); TestSourceAndFallback(); TestPreparationModel(argv[1],root); TestPreparedState(root);
+        TestServoAndRounds(); TestModel(argv[1],root); TestSourceAndFallback();
+        TestPreparationModel(argv[1],root,"preparation-v1.json"); TestPreparationModel(argv[1],root,"preparation-v2.json"); TestPreparedState(root);
         cout<<"{\"checks\":[\"continuous slew and expiry\",\"frozen rounds\",\"model schema and domain\",\"source quorum\",\"local deadline vs received validity\",\"parent state binding\"]}"<<endl;
         return 0;
     } catch (const exception& error) { cerr<<error.what()<<endl; return 1; }

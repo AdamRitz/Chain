@@ -13,6 +13,7 @@
 #include "../Tool/Tool.h"
 #include "ClockModel.h"
 #include "Round.h"
+#include "CandidatePolicy.h"
 using namespace std;
 using namespace std::chrono;
 
@@ -33,6 +34,8 @@ struct ClockState {
     map<uint64_t,pair<int64_t,int64_t>> offsets;
     string control="legacy",scheduler="legacy";
     bool joinCurrentRound=true;
+    bool candidateTiming=false,candidateRisk=false;
+    uint64_t decisionPredictions=0,decisionFallbacks=0,riskDeferrals=0;
     double maxSlewPpm=1000,prepareQuantile=.95;
     int minPeers=3,modelPeriodMs=500,modelTtlMs=2000;
     int64_t guardUs=500;
@@ -287,6 +290,8 @@ nlohmann::json GetClockStats() {
         {"prediction_reason",nodeClock.prediction.reason},{"predicted_time_us",nodeClock.prediction.timeUs},
         {"time_prediction_valid",nodeClock.prediction.HasTime()},{"prepare_prediction_valid",nodeClock.prediction.HasPrepare()},
         {"prepare_model_loaded",nodeClock.model.preparation.loaded},{"prepare_quantile",nodeClock.prepareQuantile},
+        {"candidate_timing",nodeClock.candidateTiming},{"candidate_risk",nodeClock.candidateRisk},
+        {"decision_predictions",nodeClock.decisionPredictions},{"decision_fallbacks",nodeClock.decisionFallbacks},{"risk_deferrals",nodeClock.riskDeferrals},
         {"learned_prepare_uses",nodeClock.learnedPrepareUses},{"learned_prepare_reductions",nodeClock.learnedPrepareReductions},
         {"selected_prepare_us",nodeClock.selectedPrepareUs},{"selected_time_us",nodeClock.selectedTimeUs},
         {"predicted_prepare_us",nodeClock.prediction.prepareUs},{"model_runs",nodeClock.modelRuns},
@@ -325,6 +330,34 @@ pair<int64_t,int64_t> GetCandidateBudgets() {
     }
     nodeClock.selectedPrepareUs=prepare; nodeClock.selectedTimeUs=uncertainty;
     return {int64_t(ceil(uncertainty)),int64_t(ceil(prepare))};
+}
+pair<int64_t,int64_t> GetDecisionBudgets(size_t ready,size_t pendingTx,size_t pendingBlock,ClockFeatures& features) {
+    auto budgets=GetCandidateBudgets();
+    double fallback=1000; bool fresh=false;
+    {
+        lock_guard lock(nodeClock.lock);
+        features=nodeClock.features;
+        if (!nodeClock.candidateTiming) return budgets;
+        auto now=int64_t(GetSteadyTime()/1000);
+        fresh=nodeClock.featureAt&&now-nodeClock.featureAt<=int64_t(nodeClock.modelTtlMs)*1000;
+        features[11]=double(pendingTx); features[12]=double(pendingBlock); features[13]=double(ready);
+        vector<double> work,commits;
+        for (const auto& value:nodeClock.preparations) if (now-value.at<=30000000) work.push_back(value.duration);
+        for (const auto& value:nodeClock.commits) if (now-value.at<=30000000) commits.push_back(value.duration);
+        features[14]=max(1000.0,ClockPercentile(work,.95))/1000;
+        features[15]=ClockPercentile(commits,.95)/1000;
+        fallback=nodeClock.baselinePrepareUs;
+    }
+    // Model is immutable after startup. Never run inference holding pool/DB locks.
+    auto predicted=fresh?nodeClock.model.Predict(features):ClockPrediction{};
+    bool used=fresh&&nodeClock.control=="learned"&&predicted.HasPrepare();
+    budgets.second=int64_t(ceil(used?predicted.prepareUs:fallback));
+    {
+        lock_guard lock(nodeClock.lock);
+        if (used) nodeClock.decisionPredictions++; else nodeClock.decisionFallbacks++;
+        nodeClock.selectedPrepareUs=double(budgets.second);
+    }
+    return budgets;
 }
 vector<uint8_t> GetTime() {
     vector<uint8_t> data(8);

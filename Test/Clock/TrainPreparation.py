@@ -113,4 +113,5 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
     for field in ['raw', 'base', 'output', 'report']:
         parser.add_argument('--' + field, type=Path, required=True)
-    args = parser.parse_args(); Train(args.raw, args.base, args.output, args.report)
+    parser.add_argument('--quantile', type=float, choices=[.75,.95], default=.75)
+    args = parser.parse_args(); Train(args.raw, args.base, args.output, args.report, args.quantile)

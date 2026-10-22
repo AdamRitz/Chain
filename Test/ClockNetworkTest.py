@@ -17,7 +17,7 @@ def Wait(predicate, timeout=12):
     raise AssertionError('Local clock test condition timed out')
 
 
-def Case(binary, root, control, scheduler, model, dataset, genesis, count, join_current=1):
+def Case(binary, root, control, scheduler, model, dataset, genesis, count, join_current=1, timing=0, risk=0):
     root.mkdir()
     nodes = LocalInventory(binary, root/'nodes', 2)
     for node in nodes:
@@ -25,6 +25,7 @@ def Case(binary, root, control, scheduler, model, dataset, genesis, count, join_
     settings = {'produce': 1, 'sync': 1, 'experiment-index': 1, 'clock-sync': 1,
                 'clock-control': control, 'round-scheduler': scheduler, 'clock-model': str(model),
                 'join-current-round': join_current,
+                'candidate-timing': timing, 'candidate-risk': risk,
                 'clock-min-peers': 1, 'sync-period-ms': 50, 'clock-model-period-ms': 100,
                 'round-ms': 50, 'candidate-ms': 12, 'io-threads': 2, 'verify-threads': 2,
                 'run-seconds': 60, 'max-block-txs': 64}
@@ -43,6 +44,7 @@ def Case(binary, root, control, scheduler, model, dataset, genesis, count, join_
             VerifyAccounts(node['port'], dataset, count, Path(str(dataset)+'.genesis.json'))
             assert row['clock']['control'] == control and row['clock']['scheduler'] == scheduler
             assert row['clock']['join_current_round'] == bool(join_current)
+            assert row['clock']['candidate_timing'] == bool(timing) and row['clock']['candidate_risk'] == bool(risk)
             assert abs(row['clock']['slew_ppm']) <= row['clock']['max_slew_ppm']
         if not model.exists():
             assert all(not row['clock']['model_loaded'] and row['clock']['model_fallbacks'] > 0 for row in stats)
@@ -110,4 +112,8 @@ if __name__ == '__main__':
             ('shadow', model, 1), ('learned', work/'missing.json', 1)]):
         results.append(Case(binary, work/str(index), control, 'bounded', pack, dataset, genesis, count, join_current))
     results.append(NoQuorum(binary, work/'no-quorum', dataset, genesis, count))
+    preparation = model.parent/'preparation-v2.json'
+    for timing, risk in [(1,0),(0,1),(1,1)]:
+        results.append(Case(binary, work/f'policy-{timing}-{risk}', 'learned' if timing else 'robust',
+                            'bounded', preparation, dataset, genesis, count, 1, timing, risk))
     print(json.dumps({'checks': results, 'scope': 'local correctness; no TPS comparison'}))

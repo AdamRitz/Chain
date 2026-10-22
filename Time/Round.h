@@ -14,13 +14,19 @@ struct CandidateRound {
 };
 // All deadlines are frozen on the steady clock. Predictions only reserve local work time.
 std::optional<CandidateRound> PlanCandidateRound(const ClockMapping& mapping,int64_t lastRound,
-    int64_t periodUs,int64_t windowUs,int64_t prepareUs,int64_t uncertaintyUs,int64_t guardUs,bool joinCurrent) {
+    int64_t periodUs,int64_t windowUs,int64_t prepareUs,int64_t uncertaintyUs,int64_t guardUs,bool joinCurrent,bool feasible=false) {
     if (periodUs<=0||windowUs<=0||windowUs>=periodUs||prepareUs<0||uncertaintyUs<0||guardUs<0) return {};
     auto reserve=uncertaintyUs+guardUs;
     if (reserve>=windowUs) return {};
     auto current=mapping.logicalUs/periodUs;
     auto round=std::max(lastRound+1,current+1);
     if (joinCurrent&&current>lastRound&&mapping.logicalUs+prepareUs+reserve<current*periodUs+windowUs) round=current;
+    if (feasible) {
+        // Work is measured in steady microseconds. Select at most two rounds
+        // ahead; never silently prepare against an already infeasible deadline.
+        while (round<=current+2&&mapping.steadyUs+prepareUs>=mapping.ToSteady(round*periodUs+windowUs)-reserve) ++round;
+        if (round>current+2) return {};
+    }
     auto start=mapping.ToSteady(round*periodUs);
     auto close=mapping.ToSteady(round*periodUs+windowUs);
     return CandidateRound{round,start,close-reserve,close,mapping.version,0,0,0,{},round==current};
