@@ -34,7 +34,7 @@ class Native(Formal):
         directory = self.driver/'runs'/name
         directory.mkdir(parents=True,exist_ok=False)
         command = self.Java('native',rate,warm,seconds,directory/'driver.json',users,
-                            directory/'go',5000,'short-budget')
+                            directory/'go',self.args.inflight,'short-budget')
         args = ['systemd-run','--quiet','--unit',unit,'--uid=root','--gid=root',
                 '--working-directory='+str(self.driver),'--property=TimeoutStopSec=2',
                 '--property=KillMode=control-group','--property=Restart=no','--property=RuntimeMaxSec=700',
@@ -62,6 +62,8 @@ print(json.dumps({{'host':{host!r},'command':args}}))
         for line in (directory/'transaction-hashes.jsonl').open():
             r=json.loads(line);manifest[r['hash'].lower().removeprefix('0x')]=r['index']
         outcomes=(directory/'outcomes.bin').read_bytes()
+        if len(manifest)!=driver['requested'] or len(outcomes)!=driver['requested']:
+            raise AssertionError('Prepared hashes must be unique and complete')
         expected=[1_000_000_000]*driver['users'];ledger={};confirmed=[];unknown=[];nodes=[]
         for host in self.hosts:
             unit='fisco-audit-'+name
@@ -166,7 +168,7 @@ def Case(c, rate, batch, smoke=False):
             'send_cutoff':sender_end,'maximum_drain':5,'sender':c.sender,'clock_scope':'sender and observer share one host'})
         # Independent snapshot scheduling preserves explicit 2s/12s endpoints.
         snapshot_pool=CF.ThreadPoolExecutor(3);sample_pool=CF.ThreadPoolExecutor(4)
-        snapshots={};pending={};confirmed=set();cursor=0;target=0
+        snapshots={};pending={};confirmed=set();attempted=set();cursor=0;target=0
         with (out/'chain.jsonl').open('w',buffering=1) as timeline,(out/'observations.jsonl').open('w',buffering=1) as trace:
             while time.monotonic()<deadline:
                 now=time.monotonic()
@@ -187,11 +189,15 @@ def Case(c, rate, batch, smoke=False):
                             observations.append(r);confirmed.add(sample['hash'])
                     except Exception as exc:errors.append({'phase':'sample','error':repr(exc),'hash':sample['hash']})
                 active={s['hash'] for s in pending.values()}
+                sent_file=directory/'sent-samples.jsonl'
+                if sent_file.exists():
+                    for line in sent_file.read_text().split('\n')[:-1]:
+                        if line:attempted.add(json.loads(line)['hash'])
                 for _ in range(len(selected)):
                     if len(pending)>=4:break
                     if not selected:break
                     sample=selected[cursor%len(selected)];cursor+=1
-                    if sample['hash'] in confirmed or sample['hash'] in active or start+sample['scheduled_offset_ms']/1000>now:continue
+                    if sample['hash'] not in attempted or sample['hash'] in confirmed or sample['hash'] in active or start+sample['scheduled_offset_ms']/1000>now:continue
                     sample={**sample,'sender':c.sender};pending[sample_pool.submit(c.Observe,sample,deadline)]=sample;active.add(sample['hash'])
                 time.sleep(.05)
         snapshot_pool.shutdown(wait=True,cancel_futures=True);sample_pool.shutdown(wait=True,cancel_futures=True)
@@ -252,7 +258,8 @@ def Case(c, rate, batch, smoke=False):
         c.rpc_log.close();c.rpc_log=None
         summary['cleanup_ok']=all('error' not in r for r in cleanup)
         summary.setdefault('status','complete');Save(out/'summary.json',summary)
-        print(json.dumps(summary),flush=True)
+        print(json.dumps({k:summary.get(k) for k in ['name','target_tps','actual_send_tps','tps',
+            'state_audit_passed','boundary_proof_passed','cleanup_ok','status']}),flush=True)
     return summary
 
 
@@ -261,12 +268,17 @@ def Main():
     p.add_argument('--root',default='/opt/fisco-control');p.add_argument('--hosts',required=True)
     p.add_argument('--generated',default='default-v3.7.3');p.add_argument('--key',default='/root/.ssh/chain_ansible_ed25519')
     p.add_argument('--known-hosts',default='/opt/chain-control/known_hosts');p.add_argument('--name',required=True)
+    p.add_argument('--inflight',type=int,default=50000)
     p.add_argument('--smoke',action='store_true');args=p.parse_args()
+    if not 5000<=args.inflight<=50000:raise ValueError('Bounded global inflight range required')
     if not re.fullmatch(r'[A-Za-z0-9_-]{1,40}',args.name):raise ValueError('Safe unique batch name required')
     c=Native(args);batch=c.root/'results'/args.name;batch.mkdir(exist_ok=False)
     Save(batch/'protocol.json',{'nodes':10,'sender':c.sender,'native_precompiled':'0x100c','accounts':1024,
         'initial_balance':1_000_000_000,'amount':1,'routing':'ring','warmup':2,'measurement':10,'drain':5,
-        'rates':[20000,30000,40000,50000,60000],'node_defaults_preserved':True,'driver_sha256':hashlib.sha256(Path(__file__).read_bytes()).hexdigest()})
+        'rates':[20000,30000,40000,50000,60000],'global_inflight':args.inflight,
+        'node_defaults_preserved':True,'driver_sha256':hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
+        'java_source_sha256':hashlib.sha256((c.driver/'NativeAlignedBench.java').read_bytes()).hexdigest(),
+        'java_class_sha256':hashlib.sha256((c.driver/'classes/NativeAlignedBench.class').read_bytes()).hexdigest()})
     rows=[]
     try:
         Save(batch/'defaults-stopped.json',c.SetDefaults('stop'))

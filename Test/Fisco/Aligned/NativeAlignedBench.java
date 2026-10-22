@@ -191,6 +191,7 @@ public class NativeAlignedBench {
                         signedInspection.put(field,decodedInspection.getAsJsonObject("data").get(field));
             result.put("signed_transaction_inspection",signedInspection);
             result.put("submitted_semantics","SDK submission attempts; not admission acknowledgements");
+            BufferedWriter sentSamples=Files.newBufferedWriter(output.resolveSibling("sent-samples.jsonl"));
             long[] sent=new long[total], completed=new long[total]; byte[] outcomes=new byte[total];
             AtomicInteger next=new AtomicInteger(), submitted=new AtomicInteger(), success=new AtomicInteger(), failure=new AtomicInteger();
             Object statisticsLock=new Object();AtomicBoolean statisticsFrozen=new AtomicBoolean();
@@ -252,6 +253,12 @@ public class NativeAlignedBench {
                         long attemptTime=System.nanoTime();
                         if(statisticsFrozen.get() || (shortBudget && attemptTime>=sendDeadline))break;
                         sent[index]=attemptTime;submitted.incrementAndGet();
+                        if(index>=rate*warm && index%Math.max(1,rate/2)==0) {
+                            try {
+                                sentSamples.write(JSON.toJson(Map.of("index",index,"hash",hashes[index],"sent_offset_ns",attemptTime-start)).replace("\n",""));
+                                sentSamples.newLine();sentSamples.flush();
+                            } catch(IOException e) {throw new UncheckedIOException(e);}
+                        }
                     }
                     TransactionCallback callback=new TransactionCallback(){
                         final AtomicBoolean done=new AtomicBoolean();
@@ -327,6 +334,7 @@ public class NativeAlignedBench {
                 drainFinished=received.getCount()==0;
             }
             synchronized(statisticsLock) { statisticsFrozen.set(true); }
+            sentSamples.close();
             result.put("queried_receipts",recovered.get());
             result.put("recovered_callback_failures",recoveredFailures.get());
             monitor.shutdownNow();if(!shortBudget)monitor.awaitTermination(10,TimeUnit.SECONDS);
@@ -406,5 +414,3 @@ public class NativeAlignedBench {
         } finally { sdk.stopAll(); }
     }
 }
-
-
