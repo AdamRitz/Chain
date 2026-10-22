@@ -69,6 +69,45 @@ void TestModel(const filesystem::path& path,const filesystem::path& root) {
     }
     Require(!model.Load((root/"missing.json").string()),"missing file is a baseline fallback");
 }
+void TestAdaptivePolicies() {
+    AdaptivePreparation policy; AdaptivePreparation::Key key{7,2,3,9,4,5,6};
+    policy.key=key; policy.cached=true; policy.cachedAt=10000; policy.rawUs=40000; policy.modelUsed=true;
+    Require(policy.Hit(key,19999)&&!policy.Hit(key,20000),"cache expires at ten milliseconds");
+    auto changed=key; ++changed.state; Require(!policy.Hit(changed,10001),"parent state invalidates prediction cache");
+    changed=key; ++changed.work; Require(!policy.Hit(changed,10001),"observed work invalidates cached calibration");
+    for (int i=0;i<32;++i) policy.Observe(0,40000,100000,true);
+    Require(policy.Budget(0)==50000&&policy.Budget(1)==40000,"bounded residual correction and independent congestion cells");
+    for (int i=0;i<200;++i) policy.Observe(0,40000,1000,true);
+    Require(policy.residuals[0].size()==128&&policy.Budget(0)==30000,"bounded history and maximum downward adjustment");
+    auto count=policy.residuals[0].size(); policy.Observe(0,40000,1000000,false);
+    Require(policy.residuals[0].size()==count,"incomplete work cannot train calibration");
+    CandidateValueModel value;
+    auto x=CandidateValueModel::Features(40000,50000,5000,6000,6000,3,true);
+    Require(!value.ShouldDefer(x,true,40000,60000),"cold value model cannot suppress work");
+    for (int i=0;i<80;++i) { value.survival.Observe(x,true); value.retention.Observe(x,false); }
+    Require(value.ShouldDefer(x,true,40000,60000),"observed low retention can prioritize an existing valid alternative");
+    Require(!value.ShouldDefer(x,false,40000,60000)&&!value.ShouldDefer(x,true,40000,-1000),"alternative and selected future deadline are mandatory");
+    value.consecutiveSkips=2; Require(!value.ShouldDefer(x,true,40000,60000),"value controller forces progress after two deferrals");
+    value.consecutiveSkips=0;
+    for (int i=0;i<150;++i) value.retention.Observe(x,true);
+    Require(!value.ShouldDefer(x,true,40000,60000),"successful observations recover the value controller");
+}
+void TestOutcomeLabels() {
+    CandidatePolicies policies;
+    auto now=int64_t(GetSteadyTime()/1000);
+    array<uint8_t,32> parent{},hash{},other{}; parent[0]=1;hash[0]=2;other[0]=3;
+    CandidateValueFeatures x{1,0,0,0,0,0,0,0};
+    { lock_guard lock(chainHeadMutex); publishedChain.head.height=2; publishedChain.tail={{2,1,hash},{1,0,parent}}; }
+    policies.pending.push_back({hash,parent,2,now-300000,x}); policies.ObservePending();
+    Require(policies.value.survival.samples==1&&policies.value.retention.samples==1,"delayed retained candidate trains both outcome heads");
+    { lock_guard lock(chainHeadMutex); publishedChain.tail[1].hash=other; }
+    policies.pending.push_back({hash,parent,2,now-300000,x}); policies.ObservePending();
+    Require(policies.value.survival.samples==2&&policies.value.retention.samples==1,"parent loss does not teach the conditional retention head");
+    policies.pending.push_back({hash,parent,2,now-600000,x}); policies.ObservePending();
+    policies.pending.push_back({hash,parent,2,now,x}); policies.ObservePending(true);
+    Require(policies.value.survival.samples==2&&policies.pending.empty(),"late observation and shutdown censoring do not invent failures");
+    { lock_guard lock(chainHeadMutex); publishedChain={}; }
+}
 void TestSourceAndFallback() {
     nodeClock.control="learned"; nodeClock.enabled=true; nodeClock.members={1,2,3}; nodeClock.minPeers=3;
     InitTime();
@@ -146,7 +185,7 @@ int main(int argc,char** argv) {
     try {
         if (argc!=3||sodium_init()<0) return 1;
         auto root=filesystem::path(argv[2])/to_string(GetSteadyTime()); filesystem::create_directories(root);
-        TestServoAndRounds(); TestModel(argv[1],root); TestSourceAndFallback();
+        TestServoAndRounds(); TestAdaptivePolicies(); TestOutcomeLabels(); TestModel(argv[1],root); TestSourceAndFallback();
         TestPreparationModel(argv[1],root,"preparation-v1.json"); TestPreparationModel(argv[1],root,"preparation-v2.json"); TestPreparedState(root);
         cout<<"{\"checks\":[\"continuous slew and expiry\",\"frozen rounds\",\"model schema and domain\",\"source quorum\",\"local deadline vs received validity\",\"parent state binding\"]}"<<endl;
         return 0;

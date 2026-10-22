@@ -29,6 +29,28 @@ class Stopped(Exception):
     pass
 
 
+def CommonSnapshot(stats):
+    """Intersection of immutable per-node canonical tails, captured in one RPC each.
+
+    Each tail belongs to its own published head. This is not an atomic global
+    snapshot or finality proof; RPC intervals and stopped-state checks still apply.
+    """
+    if not stats or any(not row or not row.get('canonical_tail') for row in stats):
+        return None
+    tails=[]
+    for row in stats:
+        tail=row['canonical_tail']
+        if tail[0] != {'height':row['height'],'hash':row['head'],'transactions':row['chain_transactions']}:
+            raise ValueError('Head and ancestor snapshot disagree')
+        if len(tail)>256 or any(a['height']!=b['height']+1 or a['transactions']<b['transactions'] for a,b in zip(tail,tail[1:])):
+            raise ValueError('Invalid canonical tail ordering')
+        tails.append({a['height']:a for a in tail})
+    for anchor in stats[0]['canonical_tail']:
+        if all(tail.get(anchor['height'])==anchor for tail in tails[1:]):
+            return anchor
+    return None
+
+
 def Main(args):
     sys.path.insert(0, str(args.source / 'Test'))
     import Experiments as E
@@ -226,6 +248,16 @@ def Main(args):
                 # the 12s endpoint under congestion. Keep one-second stats, but
                 # reserve full common-prefix probes for endpoints and drain.
                 if upper and target in (2,12,16):
+                    if all('canonical_tail' in stat for stat in stats):
+                        point['common']=CommonSnapshot(stats)
+                        point['prefix_rpc']=[]
+                        point['common_observation_interval_seconds']=[min(r['start_seconds'] for r in rows),max(r['end_seconds'] for r in rows)]
+                        point['common_method']='intersection_of_atomically_published_local_ancestor_snapshots'
+                        point['limiting_head_matches_prefix']=bool(point['common'] and point['common']['hash']==stats[limit]['head'])
+                        self.points.append(point)
+                        with (self.output/'timeline.jsonl').open('a',encoding='utf-8') as f:
+                            f.write(json.dumps(point)+'\n')
+                        return point
                     probes = []
                     def At(height):
                         round_rows = self.Parallel(self.stats_pool, self.prefix_clients, 29, struct.pack('<Q', height))
@@ -261,7 +293,7 @@ def Main(args):
         def Latency(self):
             while not self.stop.is_set():
                 with self.load.lock:
-                    pending = [s for s in self.load.samples if s['included_at'] is None][:8]
+                    pending = [s for s in self.load.samples if s['included_at'] is None][:64]
                 if pending:
                     payload = b''.join(bytes.fromhex(s['hash']) for s in pending)
                     rows = self.Parallel(self.latency_pool, self.latency_clients, 31, payload)
@@ -304,7 +336,7 @@ def Main(args):
             'application_source_commit': args.source_revision,
             'expected_binary_sha256': args.expected_binary_sha256,
             'workload': 'native transfer, 1024 accounts, batch128, same signed dataset, sequential broadcast10',
-            'stats_cadence_seconds': 1, 'latency_samples_per_second_total': 2,
+            'stats_cadence_seconds': 1, 'latency_samples_per_second_total': plan.get('sample_hz',2),
             'application_settings_changed': True, 'group': case.get('group'), 'clock_control': case.get('clock_control'), 'join_current': case.get('join_current'),
             'send_cutoff_seconds': 12, 'node_stop_request_deadline_seconds': 17})
         abort = threading.Event()
@@ -313,7 +345,7 @@ def Main(args):
         cluster.clients = [BoundedClient(n) for n in cluster.nodes]
         for client in cluster.clients:
             client.cancel = abort
-        load = CutoffLoad(cluster, dataset, case['rate'], 12, 'steady', 'broadcast', 2, 128, False)
+        load = CutoffLoad(cluster, dataset, case['rate'], 12, 'steady', 'broadcast', plan.get('sample_hz',2), 128, False)
         observer = Observe(cluster, load, output)
         for clients in (observer.stats_clients, observer.prefix_clients, observer.latency_clients):
             for client in clients:
@@ -508,7 +540,7 @@ def Main(args):
                 'p50_ms': E.Percentile(scheduled_ms, .5), 'p95_ms': E.Percentile(scheduled_ms, .95),
                 'p99_ms': E.Percentile(scheduled_ms, .99), 'p99_after_send_ms': E.Percentile(after_send_ms, .99),
                 'latency_label': 'first observed identical transaction position on all ten nodes; no finality guarantee',
-                'latency_poll_seconds': .05, 'latency_sample_hz_total': 2,
+                'latency_poll_seconds': .05, 'latency_sample_hz_total': plan.get('sample_hz',2),
                 'latency_note': 'upper observation latency includes query/round-trip/polling delay; not node commit timestamp',
                 'samples': len(samples), 'unresolved_samples': len(samples) - len(completed),
                 'drained': bool(checks), 'drained_observed_seconds': max((r['end_seconds'] for r in final_point.get('prefix_rpc', [])), default=None) if checks and final_point else None,

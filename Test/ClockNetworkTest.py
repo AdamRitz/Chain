@@ -17,7 +17,7 @@ def Wait(predicate, timeout=12):
     raise AssertionError('Local clock test condition timed out')
 
 
-def Case(binary, root, control, scheduler, model, dataset, genesis, count, join_current=1, timing=0, risk=0):
+def Case(binary, root, control, scheduler, model, dataset, genesis, count, join_current=1, timing=0, risk=0, adaptive=0, value=0):
     root.mkdir()
     nodes = LocalInventory(binary, root/'nodes', 2)
     for node in nodes:
@@ -26,6 +26,7 @@ def Case(binary, root, control, scheduler, model, dataset, genesis, count, join_
                 'clock-control': control, 'round-scheduler': scheduler, 'clock-model': str(model),
                 'join-current-round': join_current,
                 'candidate-timing': timing, 'candidate-risk': risk,
+                'candidate-adaptive': adaptive, 'candidate-value': value, 'candidate-lifecycle': 1,
                 'clock-min-peers': 1, 'sync-period-ms': 50, 'clock-model-period-ms': 100,
                 'round-ms': 50, 'candidate-ms': 12, 'io-threads': 2, 'verify-threads': 2,
                 'run-seconds': 60, 'max-block-txs': 64}
@@ -45,6 +46,8 @@ def Case(binary, root, control, scheduler, model, dataset, genesis, count, join_
             assert row['clock']['control'] == control and row['clock']['scheduler'] == scheduler
             assert row['clock']['join_current_round'] == bool(join_current)
             assert row['clock']['candidate_timing'] == bool(timing) and row['clock']['candidate_risk'] == bool(risk)
+            assert row['clock']['candidate_adaptive'] == bool(adaptive) and row['clock']['candidate_value'] == value
+            assert row['canonical_tail'][0] == {'height':row['height'],'hash':row['head'],'transactions':row['chain_transactions']}
             assert abs(row['clock']['slew_ppm']) <= row['clock']['max_slew_ppm']
         if not model.exists():
             assert all(not row['clock']['model_loaded'] and row['clock']['model_fallbacks'] > 0 for row in stats)
@@ -116,4 +119,7 @@ if __name__ == '__main__':
     for timing, risk in [(1,0),(0,1),(1,1)]:
         results.append(Case(binary, work/f'policy-{timing}-{risk}', 'learned' if timing else 'robust',
                             'bounded', preparation, dataset, genesis, count, 1, timing, risk))
+    for adaptive, value in [(1,1),(0,2),(1,2)]:
+        results.append(Case(binary, work/f'adaptive-{adaptive}-{value}', 'learned' if adaptive else 'robust',
+                            'bounded', preparation, dataset, genesis, count, adaptive=adaptive, value=value))
     print(json.dumps({'checks': results, 'scope': 'local correctness; no TPS comparison'}))

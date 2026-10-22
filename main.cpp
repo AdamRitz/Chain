@@ -123,6 +123,9 @@ int main(int argc,char* argv[]) {
             else if (name=="--join-current-round") nodeClock.joinCurrentRound=ParseNumber(value,0,1)!=0;
             else if (name=="--candidate-timing") nodeClock.candidateTiming=ParseNumber(value,0,1)!=0;
             else if (name=="--candidate-risk") nodeClock.candidateRisk=ParseNumber(value,0,1)!=0;
+            else if (name=="--candidate-adaptive") nodeClock.candidateAdaptive=ParseNumber(value,0,1)!=0;
+            else if (name=="--candidate-value") nodeClock.candidateValue=int(ParseNumber(value,0,2));
+            else if (name=="--candidate-lifecycle") nodeClock.candidateLifecycle=ParseNumber(value,0,1)!=0;
             else if (name=="--round-scheduler") {
                 if (value!="legacy"&&value!="bounded") throw invalid_argument("Invalid round scheduler");
                 nodeClock.scheduler=value;

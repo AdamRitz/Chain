@@ -40,8 +40,13 @@ struct ChainHead {
     array<uint8_t,32> hash{};
 };
 ChainHead publishedHead;
+struct ChainAnchor { uint64_t height=0,transactions=0; array<uint8_t,32> hash{}; };
+struct PublishedChain { ChainHead head; vector<ChainAnchor> tail; int64_t atUs=0; };
+PublishedChain publishedChain;
 mutex chainHeadMutex;
 ChainHead ReadChainHead() { lock_guard lock(chainHeadMutex); return publishedHead; }
+PublishedChain ReadPublishedChain() { lock_guard lock(chainHeadMutex); return publishedChain; }
+pair<ChainHead,int64_t> ReadPublishedHead() { lock_guard lock(chainHeadMutex); return {publishedHead,publishedChain.atUs}; }
 void PublishChainHead();
 UserMap users;
 uint64_t userBurned=0;
@@ -444,7 +449,27 @@ array<uint8_t,32> DBReadCurrentBlock() {
 // 调用方持有提交锁，在原子写入和账户发布完成后更新。
 void PublishChainHead() {
     ChainHead head{DBReadBlockHeight(),DBReadNumber("ChainTx"),dbStateVersion,userBurned,users.size(),evmState.get_accounts().size(),DBReadCurrentBlock()};
-    lock_guard lock(chainHeadMutex); publishedHead=head;
+    PublishedChain next; next.head=head; next.atUs=int64_t(GetSteadyTime()/1000);
+    if (experimentIndex||nodeClock.candidateLifecycle||nodeClock.candidateValue) {
+        auto previous=ReadPublishedChain();
+        auto hash=head.hash; auto height=head.height;
+        while (height&&next.tail.size()<256) {
+            auto old=find_if(previous.tail.begin(),previous.tail.end(),[&](const auto& a) { return a.height==height&&a.hash==hash; });
+            if (old!=previous.tail.end()) {
+                // Previous tail is newest first. Reuse unchanged ancestors after
+                // locating the common parent, including grouped appends/reorgs.
+                for (;old!=previous.tail.end()&&next.tail.size()<256;++old) next.tail.push_back(*old);
+                break;
+            }
+            auto total=height==head.height?head.transactions:DBReadNumber(DBHashKey("score/",hash));
+            next.tail.push_back({height,total,hash});
+            if (height==1) break;
+            string header;
+            if (!DBGet(DBHashKey("header/",hash),header)||header.size()!=112) break;
+            memcpy(hash.data(),header.data(),32); --height;
+        }
+    }
+    lock_guard lock(chainHeadMutex); publishedHead=head; publishedChain=std::move(next);
 }
 void DBWriteCurrentBlock(const array<uint8_t,32>& hash) {
     CheckDBStatus(db->Put(rocksdb::WriteOptions(),"CurrentBlock",rocksdb::Slice(reinterpret_cast<const char*>(hash.data()),32)));

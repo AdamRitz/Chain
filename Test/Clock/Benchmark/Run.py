@@ -28,6 +28,10 @@ def Main(args):
     groups={'N95':('robust',.95,0,0,'preparation-v1.json'), 'M75':('learned',.75,0,0,'preparation-v1.json'),
             'A':('learned',.95,1,0,'preparation-v2.json'), 'B':('robust',.95,0,1,'preparation-v1.json'),
             'AB':('learned',.95,1,1,'preparation-v2.json')}
+    if args.policy_v2:
+        groups={'N95':('robust',.95,0,0,'preparation-v2.json'), 'A':('learned',.95,1,0,'preparation-v2.json'),
+                'A2':('learned',.95,0,0,'preparation-v2.json'), 'B2':('robust',.95,0,0,'preparation-v2.json'),
+                'A2B2':('learned',.95,0,0,'preparation-v2.json')}
     if args.groups:groups={name:value for name,value in groups.items() if name in args.groups}
     if not re.fullmatch(r'[A-Za-z0-9_-]{1,16}',args.run_tag):raise ValueError('Invalid run tag')
 
@@ -141,6 +145,8 @@ def Main(args):
             order=list(groups);order=order[rate_index%len(groups):]+order[:rate_index%len(groups)]
             for group in order:
                 control,quantile,timing,risk,model=groups[group];join=1
+                adaptive=int(args.policy_v2 and group in ['A2','A2B2'])
+                value=(2 if group in ['B2','A2B2'] else 1) if args.policy_v2 else 0
                 name=f'{group}-{rate}-r{repeat}'
                 output=args.work/name;output.mkdir()
                 run=f'clock-{args.phase}-{args.run_tag}-{args.source_revision[:7]}-{group}-{rate}-r{repeat}'
@@ -149,12 +155,14 @@ def Main(args):
                 settings={'io-threads':4,'verify-threads':8,'query-threads':2,'sync':1,'produce':1,'experiment-index':1,
                           'clock-sync':1,'sync-period-ms':250,'sync-gain':.25,'round-ms':50,'candidate-ms':12,
                           'candidate-timing':timing,'candidate-risk':risk,'round-scheduler':'bounded','join-current-round':join,'clock-control':control,
+                          'candidate-adaptive':adaptive,'candidate-value':value,'candidate-lifecycle':int(args.policy_v2),
                           'clock-model':str(args.source/'Time/Models'/model),'clock-prepare-quantile':quantile,'clock-min-peers':3,
                           'clock-model-period-ms':500,'clock-model-ttl-ms':2000,'clock-max-slew-ppm':1000,
                           'relay-transactions':0,'block-ms':50,'max-block-txs':6000,'run-seconds':90}
                 case={'suite':'throughput','mode':'throughput','rate':rate,'nodes':10,'repeat':repeat,'pattern':'steady',
                       'group':group,'clock_control':control,'join_current':bool(join),'prepare_quantile':quantile,'revision':args.source_revision,'phase':args.phase,'candidate_timing':timing,'candidate_risk':risk,'model':model,'run_tag':args.run_tag}
                 row={'case':case,'status':'failed','dataset_sha256':dataset_hash,'started_utc':time.time()}
+                case.update({'candidate_adaptive':adaptive,'candidate_value':value,'policy_v2':args.policy_v2})
                 Save(output/'case.json',case)
                 cluster=C.Cluster(nodes,run,genesis,settings,output)
                 print(json.dumps({'starting':name}),flush=True)
@@ -170,6 +178,8 @@ def Main(args):
                     if any(s['clock']['control']!=control or s['clock']['join_current_round']!=bool(join) or s['clock']['candidate_timing']!=bool(timing) or s['clock']['candidate_risk']!=bool(risk) for s in stats):raise RuntimeError('Ablation flags differ from the case')
                     Save(output/'calibration.json',{'seconds':time.monotonic()-began,'nodes':stats,
                         'note':'Startup calibration is outside the fixed two-second traffic warmup'})
+                    if any(s['clock']['candidate_adaptive']!=bool(adaptive) or s['clock']['candidate_value']!=value for s in stats):
+                        raise RuntimeError('Adaptive/value controls differ from the case')
                     row['metrics']=E.LoadCase(cluster,case,plan,dataset,genesis,output)
                     row['state_audit']=PartialAudit(cluster,run,output,genesis,dataset,row['metrics']['sent_unique_attempted_upper_bound'])
                     OfflineProof(cluster,output,row['metrics'])
@@ -202,7 +212,8 @@ if __name__=='__main__':
     for field in ['source','bin','inventory','plan','work','known-hosts']:
         parser.add_argument('--'+field,type=Path,required=True)
     parser.add_argument('--cycles',type=int,choices=[1,2,3],default=1)
-    parser.add_argument('--groups',nargs='+',choices=['N95','M75','A','B','AB'])
+    parser.add_argument('--groups',nargs='+',choices=['N95','M75','A','B','AB','A2','B2','A2B2'])
+    parser.add_argument('--policy-v2',action='store_true')
     parser.add_argument('--dataset',type=Path,help='Reuse the exact signed dataset for failed-case diagnostics')
     parser.add_argument('--run-tag',default='main',help='Separate guarded directories for diagnostic retries')
     parser.add_argument('--rates',type=int,nargs='+',choices=[20000,30000,40000,50000,60000],default=[20000,30000,40000,50000,60000])

@@ -14,6 +14,7 @@
 #include "ClockModel.h"
 #include "Round.h"
 #include "CandidatePolicy.h"
+#include "AdaptivePolicy.h"
 using namespace std;
 using namespace std::chrono;
 
@@ -35,6 +36,11 @@ struct ClockState {
     string control="legacy",scheduler="legacy";
     bool joinCurrentRound=true;
     bool candidateTiming=false,candidateRisk=false;
+    bool candidateAdaptive=false,candidateLifecycle=false;
+    int candidateValue=0; // 0 disabled, 1 shadow, 2 bounded action.
+    uint64_t workVersion=0,decisionCacheHits=0,decisionInferenceNs=0,decisionBudgetNs=0;
+    uint64_t valuePredictions=0,valueSuggestions=0,valueDeferrals=0,valueSurvivalLabels=0,valueRetentionLabels=0,valueCensored=0;
+    double valueSurvivalBrier=0,valueRetentionBrier=0;
     uint64_t decisionPredictions=0,decisionFallbacks=0,riskDeferrals=0;
     double maxSlewPpm=1000,prepareQuantile=.95;
     int minPeers=3,modelPeriodMs=500,modelTtlMs=2000;
@@ -147,6 +153,7 @@ void RecordClockWork(bool prepare,int64_t durationUs,bool late=false) {
     auto& work=prepare?nodeClock.preparations:nodeClock.commits;
     work.push_back({int64_t(GetSteadyTime()/1000),double(max(int64_t(0),durationUs)),late});
     if (work.size()>256) work.pop_front();
+    ++nodeClock.workVersion;
 }
 ClockFeatures BuildClockFeaturesLocked(int64_t now,double cpu,size_t pendingTx,size_t pendingBlock,size_t ready) {
     vector<double> targets,rtts,jitters,ages;
@@ -291,6 +298,13 @@ nlohmann::json GetClockStats() {
         {"time_prediction_valid",nodeClock.prediction.HasTime()},{"prepare_prediction_valid",nodeClock.prediction.HasPrepare()},
         {"prepare_model_loaded",nodeClock.model.preparation.loaded},{"prepare_quantile",nodeClock.prepareQuantile},
         {"candidate_timing",nodeClock.candidateTiming},{"candidate_risk",nodeClock.candidateRisk},
+        {"candidate_adaptive",nodeClock.candidateAdaptive},{"candidate_value",nodeClock.candidateValue},
+        {"decision_cache_hits",nodeClock.decisionCacheHits},{"decision_inference_ms",nodeClock.decisionInferenceNs/1e6},
+        {"decision_budget_ms",nodeClock.decisionBudgetNs/1e6},{"value_predictions",nodeClock.valuePredictions},
+        {"value_suggestions",nodeClock.valueSuggestions},{"value_deferrals",nodeClock.valueDeferrals},
+        {"value_survival_labels",nodeClock.valueSurvivalLabels},{"value_retention_labels",nodeClock.valueRetentionLabels},
+        {"value_censored",nodeClock.valueCensored},{"value_survival_brier_sum",nodeClock.valueSurvivalBrier},
+        {"value_retention_brier_sum",nodeClock.valueRetentionBrier},
         {"decision_predictions",nodeClock.decisionPredictions},{"decision_fallbacks",nodeClock.decisionFallbacks},{"risk_deferrals",nodeClock.riskDeferrals},
         {"learned_prepare_uses",nodeClock.learnedPrepareUses},{"learned_prepare_reductions",nodeClock.learnedPrepareReductions},
         {"selected_prepare_us",nodeClock.selectedPrepareUs},{"selected_time_us",nodeClock.selectedTimeUs},
@@ -302,7 +316,7 @@ nlohmann::json GetClockStats() {
         {"trace_dropped",nodeClock.traceDropped.load()}};
     return result;
 }
-pair<int64_t,int64_t> GetCandidateBudgets() {
+pair<int64_t,int64_t> GetCandidateBudgets(bool reuseWork=false) {
     lock_guard lock(nodeClock.lock);
     auto now=int64_t(GetSteadyTime()/1000);
     vector<double> targets,rtts,deviations;
@@ -315,8 +329,10 @@ pair<int64_t,int64_t> GetCandidateBudgets() {
     nodeClock.baselineTimeUs=targets.size()<size_t(nodeClock.minPeers)?1000000:
         max(250.0,abs(center-correction)+3*ClockPercentile(deviations,0.5)+ClockPercentile(rtts,0.95)/2);
     while (!nodeClock.preparations.empty()&&now-nodeClock.preparations.front().at>30000000) nodeClock.preparations.pop_front();
-    vector<double> work; for (const auto& value:nodeClock.preparations) work.push_back(value.duration);
-    nodeClock.baselinePrepareUs=max(1000.0,ClockPercentile(work,nodeClock.prepareQuantile));
+    if (!reuseWork) {
+        vector<double> work; for (const auto& value:nodeClock.preparations) work.push_back(value.duration);
+        nodeClock.baselinePrepareUs=max(1000.0,ClockPercentile(work,nodeClock.prepareQuantile));
+    }
     auto uncertainty=nodeClock.baselineTimeUs,prepare=nodeClock.baselinePrepareUs;
     if (nodeClock.control=="learned"&&nodeClock.prediction.valid&&now-nodeClock.predictionAt<=int64_t(nodeClock.modelTtlMs)*1000) {
         if (nodeClock.prediction.HasTime()) uncertainty=max(uncertainty,nodeClock.prediction.timeUs);
@@ -331,13 +347,17 @@ pair<int64_t,int64_t> GetCandidateBudgets() {
     nodeClock.selectedPrepareUs=prepare; nodeClock.selectedTimeUs=uncertainty;
     return {int64_t(ceil(uncertainty)),int64_t(ceil(prepare))};
 }
-pair<int64_t,int64_t> GetDecisionBudgets(size_t ready,size_t pendingTx,size_t pendingBlock,ClockFeatures& features) {
+pair<int64_t,int64_t> GetDecisionBudgets(size_t ready,size_t pendingTx,size_t pendingBlock,ClockFeatures& features,bool recordBudget=true) {
+    auto began=GetSteadyTime();
     auto budgets=GetCandidateBudgets();
     double fallback=1000; bool fresh=false;
     {
         lock_guard lock(nodeClock.lock);
         features=nodeClock.features;
-        if (!nodeClock.candidateTiming) return budgets;
+        if (!nodeClock.candidateTiming&&!nodeClock.candidateAdaptive) {
+            if (recordBudget) nodeClock.decisionBudgetNs+=GetSteadyTime()-began;
+            return budgets;
+        }
         auto now=int64_t(GetSteadyTime()/1000);
         fresh=nodeClock.featureAt&&now-nodeClock.featureAt<=int64_t(nodeClock.modelTtlMs)*1000;
         features[11]=double(pendingTx); features[12]=double(pendingBlock); features[13]=double(ready);
@@ -349,14 +369,45 @@ pair<int64_t,int64_t> GetDecisionBudgets(size_t ready,size_t pendingTx,size_t pe
         fallback=nodeClock.baselinePrepareUs;
     }
     // Model is immutable after startup. Never run inference holding pool/DB locks.
+    auto inferStart=GetSteadyTime();
     auto predicted=fresh?nodeClock.model.Predict(features):ClockPrediction{};
+    auto inference=GetSteadyTime()-inferStart;
     bool used=fresh&&nodeClock.control=="learned"&&predicted.HasPrepare();
     budgets.second=int64_t(ceil(used?predicted.prepareUs:fallback));
     {
         lock_guard lock(nodeClock.lock);
         if (used) nodeClock.decisionPredictions++; else nodeClock.decisionFallbacks++;
         nodeClock.selectedPrepareUs=double(budgets.second);
+        nodeClock.decisionInferenceNs+=inference;
+        if (recordBudget) nodeClock.decisionBudgetNs+=GetSteadyTime()-began;
     }
+    return budgets;
+}
+pair<int64_t,int64_t> GetAdaptiveBudgets(AdaptivePreparation& policy,uint64_t state,int64_t round,
+        size_t ready,size_t pendingTx,size_t pendingBlock,ClockFeatures& features) {
+    auto began=GetSteadyTime();
+    auto now=int64_t(GetSteadyTime()/1000); AdaptivePreparation::Key key;
+    {
+        lock_guard lock(nodeClock.lock);
+        key={state,nodeClock.featureVersion,nodeClock.workVersion,round,
+            ready/512,AdaptivePreparation::QueueBucket(pendingTx),AdaptivePreparation::QueueBucket(pendingBlock)};
+        // A stale feature frame invalidates even a recent cached decision.
+        if (!nodeClock.featureAt||now-nodeClock.featureAt>int64_t(nodeClock.modelTtlMs)*1000) policy.cached=false;
+    }
+    auto bucket=size_t(pendingBlock>0);
+    if (policy.Hit(key,now)) {
+        auto budgets=GetCandidateBudgets(true); features=policy.features;
+        budgets.second=policy.Budget(bucket);
+        { lock_guard lock(nodeClock.lock); ++nodeClock.decisionCacheHits; nodeClock.selectedPrepareUs=double(budgets.second); nodeClock.decisionBudgetNs+=GetSteadyTime()-began; }
+        return budgets;
+    }
+    uint64_t predictions;
+    { lock_guard lock(nodeClock.lock); predictions=nodeClock.decisionPredictions; }
+    auto budgets=GetDecisionBudgets(ready,pendingTx,pendingBlock,features,false);
+    { lock_guard lock(nodeClock.lock); policy.modelUsed=nodeClock.decisionPredictions>predictions; }
+    policy.key=key; policy.cachedAt=now; policy.cached=true; policy.rawUs=budgets.second; policy.features=features;
+    budgets.second=policy.Budget(bucket);
+    { lock_guard lock(nodeClock.lock); nodeClock.selectedPrepareUs=double(budgets.second); nodeClock.decisionBudgetNs+=GetSteadyTime()-began; }
     return budgets;
 }
 vector<uint8_t> GetTime() {

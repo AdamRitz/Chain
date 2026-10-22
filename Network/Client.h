@@ -367,13 +367,67 @@ bool ProcessTimedForks() {
     if (changed) RecordClockWork(false,int64_t((GetSteadyTime()-start)/1000));
     return changed;
 }
-void RunBoundedCandidateRound(int64_t& lastRound,CandidateRiskModel& risk) {
+struct PendingCandidateOutcome {
+    array<uint8_t,32> hash{};
+    array<uint8_t,32> parent{};
+    uint64_t height=0;
+    int64_t preparedUs=0;
+    CandidateValueFeatures features{};
+    double survivalPrediction=.5,retentionPrediction=.5;
+};
+struct CandidatePolicies {
+    AdaptivePreparation preparation;
+    CandidateValueModel value;
+    deque<PendingCandidateOutcome> pending;
+    void ObservePending(bool closing=false) {
+        if (pending.empty()) return;
+        auto now=int64_t(GetSteadyTime()/1000);
+        if (!closing&&now-pending.front().preparedUs<250000) return;
+        auto snapshot=ReadPublishedChain();
+        while (!pending.empty()&&(closing||now-pending.front().preparedUs>=250000)) {
+            auto row=pending.front(); pending.pop_front();
+            auto found=find_if(snapshot.tail.begin(),snapshot.tail.end(),[&](const auto& a) { return a.height==row.height; });
+            auto parent=find_if(snapshot.tail.begin(),snapshot.tail.end(),[&](const auto& a) { return a.height+1==row.height; });
+            bool censored=closing||now-row.preparedUs>500000||
+                (snapshot.head.height>=row.height&&found==snapshot.tail.end())||parent==snapshot.tail.end();
+            bool parentSurvived=parent!=snapshot.tail.end()&&parent->hash==row.parent;
+            bool retained=found!=snapshot.tail.end()&&found->hash==row.hash;
+            auto before=row.retentionPrediction;
+            auto survivalBefore=row.survivalPrediction;
+            if (!censored) {
+                value.survival.Observe(row.features,parentSurvived);
+                if (parentSurvived) value.retention.Observe(row.features,retained);
+            }
+            {
+                lock_guard lock(nodeClock.lock);
+                if (censored) ++nodeClock.valueCensored;
+                else {
+                    ++nodeClock.valueSurvivalLabels; nodeClock.valueSurvivalBrier+=(survivalBefore-double(parentSurvived))*(survivalBefore-double(parentSurvived));
+                    if (parentSurvived) { ++nodeClock.valueRetentionLabels; nodeClock.valueRetentionBrier+=(before-double(retained))*(before-double(retained)); }
+                }
+            }
+            WriteClockTrace({{"kind","candidate_outcome"},{"hash",U32ToHex(row.hash)},{"height",row.height},
+                {"observed_us",now},{"prepared_us",row.preparedUs},{"age_us",now-row.preparedUs},
+                {"retained",retained},{"censored",censored},{"prediction_before_update",before},
+                {"parent_survived",parentSurvived},{"survival_prediction_before_update",survivalBefore},
+                {"features",row.features},{"label_source","local_canonical_250_to_500ms"}});
+        }
+    }
+};
+void RunBoundedCandidateRound(int64_t& lastRound,CandidateRiskModel& risk,CandidatePolicies& policies) {
     size_t ready=0;
     { lock_guard lock(txpoolMutex); ready=readyPoolTx; }
     auto pendingBlock=pendingBlockVerify.load()+pendingMetadata.load();
     ClockFeatures features;
-    auto [uncertainty,prepare]=GetDecisionBudgets(ready,pendingTxVerify.load(),pendingBlock,features);
     auto mapping=GetClockMapping();
+    auto [decisionHead,headAt]=ReadPublishedHead();
+    auto logicalRound=mapping.logicalUs/(int64_t(nodeClock.roundMs)*1000);
+    auto [uncertainty,prepare]=nodeClock.candidateAdaptive?
+        GetAdaptiveBudgets(policies.preparation,decisionHead.version,logicalRound,ready,pendingTxVerify.load(),pendingBlock,features):
+        GetDecisionBudgets(ready,pendingTxVerify.load(),pendingBlock,features);
+    // Feature extraction and inference consume real time. Re-read the mapping
+    // before checking feasibility instead of planning from a stale timestamp.
+    mapping=GetClockMapping();
     auto bucket=CandidateRiskModel::Bucket(pendingBlock>0,ready>=maxBlockTx/2);
     auto period=int64_t(nodeClock.roundMs)*1000;
     auto current=mapping.logicalUs/period;
@@ -389,7 +443,7 @@ void RunBoundedCandidateRound(int64_t& lastRound,CandidateRiskModel& risk) {
         return;
     }
     auto planned=PlanCandidateRound(mapping,lastRound,int64_t(nodeClock.roundMs)*1000,
-        int64_t(nodeClock.candidateMs)*1000,prepare,uncertainty,nodeClock.guardUs,nodeClock.joinCurrentRound,nodeClock.candidateTiming);
+        int64_t(nodeClock.candidateMs)*1000,prepare,uncertainty,nodeClock.guardUs,nodeClock.joinCurrentRound,nodeClock.candidateTiming||nodeClock.candidateAdaptive);
     if (!planned) {
         { lock_guard lock(nodeClock.lock); nodeClock.budgetSkips++; }
         if (!blockReady) WaitSteadyDeadline(mapping.steadyUs+int64_t(nodeClock.roundMs)*1000);
@@ -397,6 +451,28 @@ void RunBoundedCandidateRound(int64_t& lastRound,CandidateRiskModel& risk) {
     }
     auto round=*planned;
     auto head=ReadChainHead(); round.parent=head.hash; round.height=head.height+1; round.stateVersion=head.version;
+    bool alternative=false;
+    {
+        lock_guard lock(blockBufferLock);
+        alternative=!BlockBuffer[0].second.empty()&&BlockBuffer[0].first.height==round.height&&
+            BlockBuffer[0].first.previousHash==round.parent;
+    }
+    auto valueFeatures=CandidateValueModel::Features(prepare,max(round.startUs,mapping.steadyUs+prepare)-mapping.steadyUs,
+        max(int64_t(0),mapping.steadyUs-headAt),ready,maxBlockTx,pendingBlock,alternative);
+    auto survivePrediction=policies.value.survival.Predict(valueFeatures);
+    auto retainPrediction=policies.value.retention.Predict(valueFeatures);
+    if (nodeClock.candidateValue) {
+        bool suggest=policies.value.ShouldDefer(valueFeatures,alternative,prepare,round.proposalDeadlineUs-mapping.steadyUs);
+        {
+            lock_guard lock(nodeClock.lock); ++nodeClock.valuePredictions;
+            if (suggest) ++nodeClock.valueSuggestions;
+            if (suggest&&nodeClock.candidateValue==2) ++nodeClock.valueDeferrals;
+        }
+        if (suggest) WriteClockTrace({{"kind","value_decision"},{"round",round.id},{"features",valueFeatures},
+            {"survival",survivePrediction},{"retention",retainPrediction},{"action",nodeClock.candidateValue==2?"defer":"shadow"},
+            {"remaining_us",round.proposalDeadlineUs-mapping.steadyUs}});
+        if (suggest&&nodeClock.candidateValue==2) { ++policies.value.consecutiveSkips; return; }
+    }
     { lock_guard lock(nodeClock.lock); round.featureVersion=nodeClock.featureVersion; }
     if (!WaitSteadyDeadline(round.startUs-prepare)) return;
     if (!produceBlocks) { WaitSteadyDeadline(round.collectionDeadlineUs); return; }
@@ -411,8 +487,12 @@ void RunBoundedCandidateRound(int64_t& lastRound,CandidateRiskModel& risk) {
     }
     lastRound=round.id;
     auto start=GetSteadyTime(); auto data=GenerateBlock(); Block preparedBlock;
-    bool valid=!data.empty()&&VerifyBlock(data,&preparedBlock)&&DBCheckBlockUsers(data);
+    bool verified=!data.empty()&&VerifyBlock(data,&preparedBlock);
+    bool valid=verified&&DBCheckBlockUsers(data);
     auto prepared=GetSteadyTime();
+    auto preparedHash=preparedBlock.hash;
+    auto afterPreparation=ReadChainHead();
+    bool survived=afterPreparation.hash==round.parent&&afterPreparation.version==round.stateVersion;
     string outcome=data.empty()?"empty":"invalid"; bool accepted=false; uint64_t verifyStart=prepared,finished=prepared;
     if (valid) {
         if (!WaitSteadyDeadline(round.startUs)) outcome="cancelled";
@@ -437,6 +517,16 @@ void RunBoundedCandidateRound(int64_t& lastRound,CandidateRiskModel& risk) {
     bool late=outcome=="late";
     // Empty and invalid attempts do not teach an outcome model for valid work.
     if (valid) risk.Observe(bucket,!accepted);
+    if (nodeClock.candidateAdaptive) policies.preparation.Observe(size_t(pendingBlock>0),policies.preparation.rawUs,workUs,valid);
+    if (nodeClock.candidateValue||nodeClock.candidateLifecycle) {
+        policies.value.consecutiveSkips=0;
+        if (valid&&survived) {
+            if (policies.pending.size()>=64) {
+                policies.pending.pop_front(); lock_guard lock(nodeClock.lock); ++nodeClock.valueCensored;
+            }
+            policies.pending.push_back({preparedHash,round.parent,round.height,int64_t(prepared/1000),valueFeatures,survivePrediction,retainPrediction});
+        }
+    }
     RecordClockWork(true,workUs,late);
     {
         lock_guard lock(nodeClock.lock);
@@ -447,6 +537,10 @@ void RunBoundedCandidateRound(int64_t& lastRound,CandidateRiskModel& risk) {
     WriteClockTrace({{"kind","candidate"},{"round",round.id},{"clock_version",round.clockVersion},{"feature_version",round.featureVersion},
         {"features",features},{"risk_bucket",bucket},{"predicted_failure_after",risk.cells[bucket].failure},
         {"candidate_timing",nodeClock.candidateTiming},{"candidate_risk",nodeClock.candidateRisk},
+        {"candidate_adaptive",nodeClock.candidateAdaptive},{"candidate_value",nodeClock.candidateValue},
+        {"hash",U32ToHex(preparedHash)},{"parent_valid_after_prepare",survived},
+        {"value_features",valueFeatures},{"survival_prediction",survivePrediction},{"retention_prediction",retainPrediction},
+        {"uncalibrated_prepare_us",nodeClock.candidateAdaptive?policies.preparation.rawUs:prepare},
         {"parent",U32ToHex(round.parent)},{"height",round.height},{"state_version",round.stateVersion},
         {"start_us",round.startUs},{"proposal_deadline_us",round.proposalDeadlineUs},{"collection_deadline_us",round.collectionDeadlineUs},
         {"offered_us",round.offeredUs},{"joined_current",round.joinedCurrent},{"outcome",outcome},{"prepare_us",workUs},
@@ -459,7 +553,9 @@ void MainLoop() {
     try {
         int64_t lastRound=-1;
         CandidateRiskModel risk;
+        CandidatePolicies policies;
         while (true) {
+            policies.ObservePending();
             if (ProcessTimedForks()) AnnounceBlock(DBReadBlockByHash(DBReadCurrentBlock()));
             {
                 unique_lock lock(txpoolMutex);
@@ -473,7 +569,7 @@ void MainLoop() {
                 if (forkReady) continue;
             }
             if (nodeClock.roundMs&&nodeRunning&&nodeClock.scheduler=="bounded") {
-                RunBoundedCandidateRound(lastRound,risk);
+                RunBoundedCandidateRound(lastRound,risk,policies);
             } else if (nodeClock.roundMs&&nodeRunning) {
                 auto period=int64_t(nodeClock.roundMs)*1000;
                 auto round=max(lastRound+1,GetLogicalTimeUs()/period+1);
@@ -512,6 +608,7 @@ void MainLoop() {
             forkReady=true;
             spdlog::debug("Local block committed. Height:{}, TxNum:{}",selected.first.height,selected.first.txNum);
         }
+        policies.ObservePending(true);
     } catch (const exception& e) {
         spdlog::error("MainLoop stopped: {}",e.what());
         nodeFailed=true;
@@ -535,10 +632,13 @@ nlohmann::json GetNodeStats() {
     auto first=firstTxTime.load();
     auto last=lastCommitTime.load();
     double elapsed=last>first&&first?double(last-first)/1e9:0;
-    auto snapshot=ReadChainHead();
+    auto published=ReadPublishedChain(); auto snapshot=published.head;
     auto height=snapshot.height,chainTx=snapshot.transactions,burned=snapshot.burned;
     auto userCount=snapshot.users,evmCount=snapshot.contracts; auto head=snapshot.hash;
-    nlohmann::json stats={{"received",receivedTx.load()},{"valid",validTx.load()},{"invalid",invalidTx.load()},
+    auto tail=nlohmann::json::array();
+    for (const auto& anchor:published.tail) tail.push_back({{"height",anchor.height},{"hash",U32ToHex(anchor.hash)},{"transactions",anchor.transactions}});
+    nlohmann::json stats={{"canonical_tail",tail},{"published_state_version",snapshot.version},{"published_at_us",published.atUs},
+        {"received",receivedTx.load()},{"valid",validTx.load()},{"invalid",invalidTx.load()},
         {"duplicate",duplicateTx.load()},{"rejected",rejectedTx.load()},{"committed",committedTx.load()},
         {"pool",poolSize},{"ready_pool",readySize},{"pending",pendingVerify.load()},{"peak_pending",peakPendingVerify.load()},
         {"blocks",blockCount.load()},{"height",height},{"head",U32ToHex(head)},

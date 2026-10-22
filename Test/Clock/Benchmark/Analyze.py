@@ -13,7 +13,10 @@ def Analyze(root):
               'db_write_ms','db_writes','block_build_ms','block_verify_ms','candidate_execute_ms',
               'commit_execute_ms','candidate_lock_wait_ms','commit_lock_wait_ms','tx_queue_wait_ms']
     clock_counters=['rounds','joined_current_rounds','late_candidates','cancelled_candidates','stale_candidates',
-                    'risk_deferrals','decision_predictions','decision_fallbacks','skipped_rounds','budget_skips']
+                    'risk_deferrals','decision_predictions','decision_fallbacks','skipped_rounds','budget_skips',
+                    'decision_cache_hits','decision_inference_ms','decision_budget_ms','value_predictions','value_suggestions',
+                    'value_deferrals','value_survival_labels','value_retention_labels','value_censored',
+                    'value_survival_brier_sum','value_retention_brier_sum']
     for record in records:
         case=record['case'];name=f"{case['group']}-{case['rate']}-r{case['repeat']}"
         directory=root/name;metrics=record.get('metrics',{})
@@ -35,7 +38,7 @@ def Analyze(root):
         if all(pair):
             a,b=pair
             row['counters_all10']= {key:sum(y[key]-x[key] for x,y in zip(a['nodes'],b['nodes'])) for key in counters}
-            row['clock_counters_all10']={key:sum(y['clock'][key]-x['clock'][key] for x,y in zip(a['nodes'],b['nodes'])) for key in clock_counters}
+            row['clock_counters_all10']={key:sum(y['clock'].get(key,0)-x['clock'].get(key,0) for x,y in zip(a['nodes'],b['nodes'])) for key in clock_counters}
             cpu=[(y['process_cpu_seconds']-x['process_cpu_seconds'])/((y['clock']['raw_us']-x['clock']['raw_us'])/1e6)
                  for x,y in zip(a['nodes'],b['nodes'])]
             row['cpu_cores_per_node_median']=statistics.median(cpu)

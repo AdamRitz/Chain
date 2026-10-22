@@ -12,6 +12,21 @@ from LabelTrace import Label
 
 
 class ClockToolsTest(unittest.TestCase):
+    def test_atomic_snapshot_intersection(self):
+        sys.path.insert(0,str(Path(__file__).parent/'Clock'/'Benchmark'))
+        from Observe import CommonSnapshot
+        def Node(tail):
+            a=tail[0]
+            return {'height':a['height'],'head':a['hash'],'chain_transactions':a['transactions'],'canonical_tail':tail}
+        genesis={'height':1,'hash':'g','transactions':0}
+        a={'height':2,'hash':'a','transactions':10}; b={'height':2,'hash':'b','transactions':20}
+        c={'height':3,'hash':'c','transactions':30}
+        self.assertEqual(CommonSnapshot([Node([c,a,genesis]),Node([a,genesis])]),a)
+        self.assertEqual(CommonSnapshot([Node([a,genesis]),Node([b,genesis])]),genesis)
+        self.assertIsNone(CommonSnapshot([Node([a]),Node([b])]))
+        broken=Node([a,genesis]);broken['head']='wrong'
+        with self.assertRaises(ValueError):CommonSnapshot([broken])
+
     def test_reference_join(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory); trace, reference, output = [root/name for name in ['trace', 'reference', 'output']]
