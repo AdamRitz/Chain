@@ -1,6 +1,8 @@
 """Reference joins must reject absent/remote truth; split isolation is by whole run."""
 import importlib.util
 import json
+import io
+import struct
 from pathlib import Path
 import sys
 import tempfile
@@ -12,6 +14,19 @@ from LabelTrace import Label
 
 
 class ClockToolsTest(unittest.TestCase):
+    def test_bounded_large_ancestor_response(self):
+        from Cluster import ReadMeasurementResponse
+        class Connection:
+            def __init__(self,data):self.data=io.BytesIO(data)
+            def recv(self,count):return self.data.read(min(count,997))
+        body=json.dumps({'canonical_tail':[{'height':i,'hash':'a'*64,'transactions':6000*i} for i in range(256,0,-1)]}).encode()
+        self.assertGreater(len(body),16384)
+        self.assertEqual(ReadMeasurementResponse(Connection(struct.pack('<BI',14,len(body))+body),13),body)
+        for kind,response,size in [(13,14,65537),(29,30,16385),(13,30,1)]:
+            conn=Connection(struct.pack('<BI',response,size))
+            with self.assertRaises(ValueError):ReadMeasurementResponse(conn,kind)
+            self.assertEqual(conn.data.tell(),5)
+
     def test_atomic_snapshot_intersection(self):
         sys.path.insert(0,str(Path(__file__).parent/'Clock'/'Benchmark'))
         from Observe import CommonSnapshot

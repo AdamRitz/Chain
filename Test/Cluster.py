@@ -69,6 +69,15 @@ def Worker(node, request):
     return response['result']
 
 
+def ReadMeasurementResponse(connection,kind):
+    response,size=struct.unpack('<BI',ReadAll(connection,5))
+    # Stats may contain 256 canonical anchors; other query limits stay small.
+    limit=65536 if kind==13 else 16384
+    if response!=kind+1 or size>limit:
+        raise ValueError('Invalid measurement response')
+    return ReadAll(connection,size)
+
+
 class NodeClient:
     def __init__(self, node):
         self.node, self.socket = node, None
@@ -86,10 +95,7 @@ class NodeClient:
                     self.socket.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
                     self.socket.sendall(b'\x02')
                 self.socket.sendall(Frame(kind, payload))
-                response, size = struct.unpack('<BI', ReadAll(self.socket, 5))
-                if response != kind+1 or size > 16384:
-                    raise ValueError('Invalid measurement response')
-                data = ReadAll(self.socket, size)
+                data=ReadMeasurementResponse(self.socket,kind)
                 return data if raw else json.loads(data)
             except BaseException:
                 self.Close()

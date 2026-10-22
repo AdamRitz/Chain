@@ -95,10 +95,7 @@ def Main(args):
                         self.socket.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
                         self.socket.sendall(b'\x02')
                     self.socket.sendall(Frame(kind, payload))
-                    response, size = struct.unpack('<BI', ReadAll(self.socket, 5))
-                    if response != kind + 1 or size > 16384:
-                        raise ValueError('Invalid measurement response')
-                    data = ReadAll(self.socket, size)
+                    data=C.ReadMeasurementResponse(self.socket,kind)
                     return data if raw else json.loads(data)
                 except BaseException:
                     self.Close()
