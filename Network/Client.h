@@ -429,6 +429,8 @@ void RunBoundedCandidateRound(int64_t& lastRound) {
         {"features",features},{"parent",U32ToHex(round.parent)},{"height",round.height},{"state_version",round.stateVersion},
         {"start_us",round.startUs},{"proposal_deadline_us",round.proposalDeadlineUs},{"collection_deadline_us",round.collectionDeadlineUs},
         {"offered_us",round.offeredUs},{"joined_current",round.joinedCurrent},{"outcome",outcome},{"prepare_us",workUs},
+        {"prepare_start_us",start/1000},{"prepare_end_us",prepared/1000},{"prepare_completed",valid},
+        {"prepare_budget_us",prepare},{"time_budget_us",uncertainty},
         {"censored",outcome=="cancelled"||outcome=="empty"},{"label_source","local_monotonic"}});
     WaitSteadyDeadline(round.collectionDeadlineUs);
 }

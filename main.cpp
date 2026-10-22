@@ -117,6 +117,7 @@ int main(int argc,char* argv[]) {
             else if (name=="--clock-model") clockModelPath=value;
             else if (name=="--clock-model-period-ms") nodeClock.modelPeriodMs=int(ParseNumber(value,100,10000));
             else if (name=="--clock-model-ttl-ms") nodeClock.modelTtlMs=int(ParseNumber(value,100,60000));
+            else if (name=="--clock-prepare-quantile") nodeClock.prepareQuantile=ParseReal(value,.5,.99);
             else if (name=="--clock-trace") nodeClock.tracePath=value;
             else if (name=="--proposal-guard-us") nodeClock.guardUs=int64_t(ParseNumber(value,100,1000000));
             else if (name=="--join-current-round") nodeClock.joinCurrentRound=ParseNumber(value,0,1)!=0;

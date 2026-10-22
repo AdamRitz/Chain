@@ -33,7 +33,7 @@ struct ClockState {
     map<uint64_t,pair<int64_t,int64_t>> offsets;
     string control="legacy",scheduler="legacy";
     bool joinCurrentRound=true;
-    double maxSlewPpm=1000;
+    double maxSlewPpm=1000,prepareQuantile=.95;
     int minPeers=3,modelPeriodMs=500,modelTtlMs=2000;
     int64_t guardUs=500;
     set<uint64_t> members;
@@ -50,6 +50,8 @@ struct ClockState {
     uint64_t featureVersion=0,modelRuns=0,modelFallbacks=0,unboundSamples=0;
     uint64_t rounds=0,joinedRounds=0,skippedRounds=0,budgetSkips=0,lateCandidates=0,staleCandidates=0,cancelledCandidates=0;
     uint64_t inferenceNs=0,maxInferenceNs=0;
+    uint64_t learnedPrepareUses=0,learnedPrepareReductions=0;
+    double selectedPrepareUs=1000,selectedTimeUs=1000000;
     atomic<uint64_t> traceDropped{0};
     int64_t featureAt=0,predictionAt=0,lastAdjust=0,lastSamples=0;
     double center=0,lastCenter=0,mad=0,driftEstimatePpm=0,baselineTimeUs=1000000,baselinePrepareUs=1000;
@@ -99,6 +101,7 @@ void InitTime() {
     nodeClock.servo.Init(nodeClock.steadyStart,nodeClock.wallStart+nodeClock.offsetUs,nodeClock.driftPpm,nodeClock.maxSlewPpm);
     nodeClock.featureAt=0; nodeClock.predictionAt=0; nodeClock.lastAdjust=0; nodeClock.featureVersion=0;
     nodeClock.modelRuns=0; nodeClock.modelFallbacks=0; nodeClock.lastSamples=0; nodeClock.driftEstimatePpm=0;
+    nodeClock.learnedPrepareUses=0; nodeClock.learnedPrepareReductions=0;
     if (!nodeClock.tracePath.empty()) {
         nodeClock.trace.open(nodeClock.tracePath,ios::out|ios::trunc);
         if (!nodeClock.trace) throw runtime_error("Cannot open clock trace");
@@ -213,7 +216,8 @@ void UpdateClockModel(double cpu,size_t pendingTx,size_t pendingBlock,size_t rea
         if (!prediction.valid) nodeClock.modelFallbacks++;
     }
     WriteClockTrace({{"kind","observation"},{"steady_us",now},{"feature_version",version},{"features",features},
-        {"prediction_valid",prediction.valid},{"reason",prediction.reason},{"time_us",prediction.timeUs},{"prepare_us",prediction.prepareUs},
+        {"prediction_valid",prediction.valid},{"time_valid",prediction.HasTime()},{"prepare_valid",prediction.HasPrepare()},
+        {"reason",prediction.reason},{"time_us",prediction.timeUs},{"prepare_us",prediction.prepareUs},
         {"model_id",nodeClock.model.id},{"model_sha256",nodeClock.model.sha256},{"logical_us",logical},{"label_source","unlabeled"}});
 }
 void AdjustClock() {
@@ -238,7 +242,7 @@ void AdjustClock() {
         nodeClock.baselineTimeUs=max(250.0,abs(center-correction)+3*ClockPercentile(deviations,0.5)+ClockPercentile(rtts,0.95)/2);
         double uncertainty=nodeClock.baselineTimeUs;
         if (nodeClock.control=="learned") {
-            if (!nodeClock.prediction.valid) nodeClock.fallback=nodeClock.prediction.reason;
+            if (!nodeClock.prediction.HasTime()) nodeClock.fallback=nodeClock.prediction.reason;
             else if (now-nodeClock.predictionAt>int64_t(nodeClock.modelTtlMs)*1000) nodeClock.fallback="prediction_stale";
             else uncertainty=max(uncertainty,nodeClock.prediction.timeUs);
         }
@@ -281,6 +285,10 @@ nlohmann::json GetClockStats() {
         {"model_loaded",nodeClock.model.loaded},{"model_id",nodeClock.model.id},{"model_sha256",nodeClock.model.sha256},
         {"model_training_kind",nodeClock.model.trainingKind},{"prediction_valid",nodeClock.prediction.valid},{"prediction_fresh",predictionFresh},
         {"prediction_reason",nodeClock.prediction.reason},{"predicted_time_us",nodeClock.prediction.timeUs},
+        {"time_prediction_valid",nodeClock.prediction.HasTime()},{"prepare_prediction_valid",nodeClock.prediction.HasPrepare()},
+        {"prepare_model_loaded",nodeClock.model.preparation.loaded},{"prepare_quantile",nodeClock.prepareQuantile},
+        {"learned_prepare_uses",nodeClock.learnedPrepareUses},{"learned_prepare_reductions",nodeClock.learnedPrepareReductions},
+        {"selected_prepare_us",nodeClock.selectedPrepareUs},{"selected_time_us",nodeClock.selectedTimeUs},
         {"predicted_prepare_us",nodeClock.prediction.prepareUs},{"model_runs",nodeClock.modelRuns},
         {"model_fallbacks",nodeClock.modelFallbacks},{"inference_ms",nodeClock.inferenceNs/1e6},{"max_inference_us",nodeClock.maxInferenceNs/1000.0},
         {"feature_version",nodeClock.featureVersion},{"rounds",nodeClock.rounds},{"joined_current_rounds",nodeClock.joinedRounds},
@@ -303,11 +311,19 @@ pair<int64_t,int64_t> GetCandidateBudgets() {
         max(250.0,abs(center-correction)+3*ClockPercentile(deviations,0.5)+ClockPercentile(rtts,0.95)/2);
     while (!nodeClock.preparations.empty()&&now-nodeClock.preparations.front().at>30000000) nodeClock.preparations.pop_front();
     vector<double> work; for (const auto& value:nodeClock.preparations) work.push_back(value.duration);
-    nodeClock.baselinePrepareUs=max(1000.0,ClockPercentile(work,0.95));
+    nodeClock.baselinePrepareUs=max(1000.0,ClockPercentile(work,nodeClock.prepareQuantile));
     auto uncertainty=nodeClock.baselineTimeUs,prepare=nodeClock.baselinePrepareUs;
     if (nodeClock.control=="learned"&&nodeClock.prediction.valid&&now-nodeClock.predictionAt<=int64_t(nodeClock.modelTtlMs)*1000) {
-        uncertainty=max(uncertainty,nodeClock.prediction.timeUs); prepare=max(prepare,nodeClock.prediction.prepareUs);
+        if (nodeClock.prediction.HasTime()) uncertainty=max(uncertainty,nodeClock.prediction.timeUs);
+        if (nodeClock.prediction.HasPrepare()) {
+            // Preparation lead is a performance prediction, not a validity bound.
+            // Frozen deadlines and parent/version validation still reject late work.
+            prepare=nodeClock.model.preparation.loaded?nodeClock.prediction.prepareUs:max(prepare,nodeClock.prediction.prepareUs);
+            nodeClock.learnedPrepareUses++;
+            if (prepare<nodeClock.baselinePrepareUs) nodeClock.learnedPrepareReductions++;
+        }
     }
+    nodeClock.selectedPrepareUs=prepare; nodeClock.selectedTimeUs=uncertainty;
     return {int64_t(ceil(uncertainty)),int64_t(ceil(prepare))};
 }
 vector<uint8_t> GetTime() {

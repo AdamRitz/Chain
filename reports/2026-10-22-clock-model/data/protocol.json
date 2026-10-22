@@ -1,0 +1,66 @@
+{
+  "date": "2026-10-22",
+  "purpose": "prospective test of locally trained clock/candidate preparation model",
+  "nodes": 10,
+  "groups": {
+    "N95": {
+      "control": "robust",
+      "prepare_quantile": 0.95
+    },
+    "R75": {
+      "control": "robust",
+      "prepare_quantile": 0.75
+    },
+    "M75": {
+      "control": "learned",
+      "prepare_quantile": 0.75
+    }
+  },
+  "cycles": 3,
+  "rates": [
+    20000,
+    30000,
+    40000,
+    50000,
+    60000
+  ],
+  "warmup_seconds": 2,
+  "measurement_seconds": 10,
+  "maximum_drain_seconds": 5,
+  "case_count": 45,
+  "order": "rotate all three groups at each rate and cycle",
+  "fixed": {
+    "round_ms": 50,
+    "candidate_ms": 12,
+    "io_threads": 4,
+    "verify_threads": 8,
+    "block_max_transactions": 6000,
+    "sync_write": true,
+    "clock_probe_ms": 250,
+    "model_period_ms": 500,
+    "model_ttl_ms": 2000,
+    "max_slew_ppm": 1000,
+    "ingress": "sequential broadcast to all ten",
+    "wallets": 1024,
+    "batch": 128
+  },
+  "primary_metric": "common-prefix transactions per second at exact 2s and 12s observation boundaries, only if both hashes and counts match final shared canonical chain",
+  "missing": "retain all failed/missing proofs; no success imputation",
+  "comparisons": [
+    "M75 vs N95",
+    "M75 vs R75"
+  ],
+  "secondary": [
+    "achieved ingress",
+    "observed common-position latency",
+    "CPU",
+    "model preparation use",
+    "late/cancelled work",
+    "reorganizations",
+    "state audit"
+  ],
+  "claims": "Three repeats are exploratory; no finality or long-term sustainable capacity claim. P75 preparation lead is not a safety bound. New runs never enter this frozen model training. Report all rates and repetitions.",
+  "faults": "no injected faults in this throughput phase",
+  "restore": "restore previous Chain and FISCO services after experiment",
+  "cleanup": "stop and verify identity before deleting each isolated experimental database; retain logs and source"
+}

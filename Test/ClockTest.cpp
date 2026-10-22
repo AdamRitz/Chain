@@ -97,11 +97,38 @@ void TestPreparedState(const filesystem::path& root) {
     Require(GetUser(users,owner.public_key).nonce==1&&GetUser(users,receiver.public_key).balance==1,"published chain and account state agree");
     db.reset();
 }
+void TestPreparationModel(const filesystem::path& base,const filesystem::path& root) {
+    auto path=base.parent_path()/"preparation-v1.json";
+    ClockModel model; Require(model.Load(path.string())&&model.preparation.loaded,"real work model loads independently of time reference");
+    ifstream input(path); auto pack=nlohmann::json::parse(input);
+    for (const auto& row:pack["preparation"]["parity_cases"]) {
+        auto prediction=model.Predict(row["features"].get<ClockFeatures>());
+        Require(prediction.HasPrepare()&&abs(prediction.prepareUs-row["prepare_us"].get<double>())<1e-5,"exported tree inference agrees with offline training");
+    }
+    auto features=pack["preparation"]["parity_cases"].back()["features"].get<ClockFeatures>();
+    features[3]=model.maximum[3]+1;
+    auto prediction=model.Predict(features);
+    Require(prediction.HasPrepare()&&!prediction.HasTime(),"time domain failure does not disable locally labelled work prediction");
+    features[14]=model.preparation.maximum[14]+1;
+    Require(!model.Predict(features).HasPrepare(),"unseen work domain keeps preparation fallback");
+    auto broken=pack; broken["preparation"]["trees"][0][0]["left"]=0;
+    auto invalid=root/"cyclic-tree.json"; { ofstream out(invalid); out<<broken; }
+    Require(!model.Load(invalid.string()),"cyclic trees cannot hang inference");
+    nodeClock.model.Load(path.string()); nodeClock.control="learned";
+    nodeClock.prediction=prediction; nodeClock.predictionAt=int64_t(GetSteadyTime()/1000);
+    nodeClock.preparations.clear(); nodeClock.prepareQuantile=.75;
+    for (int i=0;i<10;i++) RecordClockWork(true,100000);
+    auto budget=GetCandidateBudgets();
+    Require(budget.second==int64_t(ceil(prediction.prepareUs))&&budget.first>=1000000,"soft model lead may reduce historical work budget without bypassing source quorum");
+    nodeClock.predictionAt-=3000000;
+    Require(GetCandidateBudgets().second==100000,"expired preparation prediction returns to the same rule quantile");
+    nodeClock.prepareQuantile=.95;
+}
 int main(int argc,char** argv) {
     try {
         if (argc!=3||sodium_init()<0) return 1;
         auto root=filesystem::path(argv[2])/to_string(GetSteadyTime()); filesystem::create_directories(root);
-        TestServoAndRounds(); TestModel(argv[1],root); TestSourceAndFallback(); TestPreparedState(root);
+        TestServoAndRounds(); TestModel(argv[1],root); TestSourceAndFallback(); TestPreparationModel(argv[1],root); TestPreparedState(root);
         cout<<"{\"checks\":[\"continuous slew and expiry\",\"frozen rounds\",\"model schema and domain\",\"source quorum\",\"local deadline vs received validity\",\"parent state binding\"]}"<<endl;
         return 0;
     } catch (const exception& error) { cerr<<error.what()<<endl; return 1; }
