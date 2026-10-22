@@ -103,9 +103,9 @@ def Train(root, base, output, report, quantile=.75):
             'median_prediction_ms': float(np.median(predictions[mask])),
             'median_previous_p95_ms': float(np.median(x[mask, 14]))})
     output.parent.mkdir(parents=True, exist_ok=True); report.parent.mkdir(parents=True, exist_ok=True)
-    output.write_text(json.dumps(pack, indent=2, allow_nan=False) + '\n', encoding='utf-8')
+    output.write_text(json.dumps(pack, indent=2, allow_nan=False) + '\n', encoding='utf-8', newline='\n')
     metrics['model_sha256'] = hashlib.sha256(output.read_bytes()).hexdigest()
-    report.write_text(json.dumps(metrics, indent=2) + '\n', encoding='utf-8')
+    report.write_text(json.dumps(metrics, indent=2) + '\n', encoding='utf-8', newline='\n')
     print(json.dumps({key: value for key, value in metrics.items() if key != 'manifest'}))
 
 
