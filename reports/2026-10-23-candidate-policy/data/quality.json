@@ -1,0 +1,157 @@
+{
+  "proof_counts": {
+    "passed": 20,
+    "acquisition span > 0.5s": 9,
+    "missing endpoint/common anchor": 4
+  },
+  "rejected": [
+    {
+      "path": "raw-original\\AB-40000-r1\\offline-common-proof.json",
+      "reason": "acquisition span > 0.5s",
+      "intervals": [
+        [
+          2.000153945002239,
+          2.0855901489849202
+        ],
+        [
+          12.000195588974748,
+          12.734078855952248
+        ]
+      ]
+    },
+    {
+      "path": "raw-original\\AB-50000-r1\\offline-common-proof.json",
+      "reason": "acquisition span > 0.5s",
+      "intervals": [
+        [
+          2.0002560800057836,
+          2.1197439359966666
+        ],
+        [
+          12.000249209988397,
+          12.883539028989617
+        ]
+      ]
+    },
+    {
+      "path": "raw-original\\AB-60000-r1\\offline-common-proof.json",
+      "reason": "acquisition span > 0.5s",
+      "intervals": [
+        [
+          2.000172375002876,
+          2.037311961990781
+        ],
+        [
+          12.000224396004342,
+          12.906865163007751
+        ]
+      ]
+    },
+    {
+      "path": "raw-original\\B-60000-r1\\offline-common-proof.json",
+      "reason": "acquisition span > 0.5s",
+      "intervals": [
+        [
+          2.0001230989582837,
+          2.086261347983964
+        ],
+        [
+          12.000136084971018,
+          12.80501752794953
+        ]
+      ]
+    },
+    {
+      "path": "raw-original\\M75-40000-r1\\offline-common-proof.json",
+      "reason": "missing endpoint/common anchor",
+      "intervals": null
+    },
+    {
+      "path": "raw-original\\M75-60000-r1\\offline-common-proof.json",
+      "reason": "acquisition span > 0.5s",
+      "intervals": [
+        [
+          2.0001901509822346,
+          2.223569308000151
+        ],
+        [
+          12.000202248978894,
+          12.880981235997751
+        ]
+      ]
+    },
+    {
+      "path": "raw-original\\N95-40000-r1\\offline-common-proof.json",
+      "reason": "acquisition span > 0.5s",
+      "intervals": [
+        [
+          2.000203345029149,
+          2.0115851960144937
+        ],
+        [
+          12.000235821004026,
+          12.650356159021612
+        ]
+      ]
+    },
+    {
+      "path": "raw-original\\N95-60000-r1\\offline-common-proof.json",
+      "reason": "missing endpoint/common anchor",
+      "intervals": null
+    },
+    {
+      "path": "raw-retry\\AB-40000\\AB-40000-r1\\offline-common-proof.json",
+      "reason": "missing endpoint/common anchor",
+      "intervals": null
+    },
+    {
+      "path": "raw-retry\\AB-60000\\AB-60000-r1\\offline-common-proof.json",
+      "reason": "acquisition span > 0.5s",
+      "intervals": [
+        [
+          2.0002132970257662,
+          2.034933694987558
+        ],
+        [
+          12.000323622021824,
+          12.813292352017015
+        ]
+      ]
+    },
+    {
+      "path": "raw-retry\\M75-60000\\M75-60000-r1\\offline-common-proof.json",
+      "reason": "acquisition span > 0.5s",
+      "intervals": [
+        [
+          2.0001576769864187,
+          2.1261326969834045
+        ],
+        [
+          12.000316113000736,
+          13.343852291000076
+        ]
+      ]
+    },
+    {
+      "path": "raw-retry\\N95-40000\\N95-40000-r1\\offline-common-proof.json",
+      "reason": "missing endpoint/common anchor",
+      "intervals": null
+    },
+    {
+      "path": "raw-retry\\N95-60000\\N95-60000-r1\\offline-common-proof.json",
+      "reason": "acquisition span > 0.5s",
+      "intervals": [
+        [
+          2.0001599440001883,
+          2.114311840967275
+        ],
+        [
+          12.000353019975591,
+          12.577270701003727
+        ]
+      ]
+    }
+  ],
+  "cleanup_records": 330,
+  "removed_databases": 330
+}

@@ -1,0 +1,142 @@
+[
+  {
+    "node": "node01",
+    "services_active": [
+      "active",
+      "active"
+    ],
+    "services_enabled": [
+      "enabled",
+      "enabled"
+    ],
+    "remaining_test_databases": [],
+    "remaining_test_pids": [],
+    "passed": true
+  },
+  {
+    "node": "node02",
+    "services_active": [
+      "active",
+      "active"
+    ],
+    "services_enabled": [
+      "enabled",
+      "enabled"
+    ],
+    "remaining_test_databases": [],
+    "remaining_test_pids": [],
+    "passed": true
+  },
+  {
+    "node": "node03",
+    "services_active": [
+      "active",
+      "active"
+    ],
+    "services_enabled": [
+      "enabled",
+      "enabled"
+    ],
+    "remaining_test_databases": [],
+    "remaining_test_pids": [],
+    "passed": true
+  },
+  {
+    "node": "node04",
+    "services_active": [
+      "active",
+      "active"
+    ],
+    "services_enabled": [
+      "enabled",
+      "enabled"
+    ],
+    "remaining_test_databases": [],
+    "remaining_test_pids": [],
+    "passed": true
+  },
+  {
+    "node": "node05",
+    "services_active": [
+      "active",
+      "active"
+    ],
+    "services_enabled": [
+      "enabled",
+      "enabled"
+    ],
+    "remaining_test_databases": [],
+    "remaining_test_pids": [],
+    "passed": true
+  },
+  {
+    "node": "node06",
+    "services_active": [
+      "active",
+      "active"
+    ],
+    "services_enabled": [
+      "enabled",
+      "enabled"
+    ],
+    "remaining_test_databases": [],
+    "remaining_test_pids": [],
+    "passed": true
+  },
+  {
+    "node": "node07",
+    "services_active": [
+      "active",
+      "active"
+    ],
+    "services_enabled": [
+      "enabled",
+      "enabled"
+    ],
+    "remaining_test_databases": [],
+    "remaining_test_pids": [],
+    "passed": true
+  },
+  {
+    "node": "node08",
+    "services_active": [
+      "active",
+      "active"
+    ],
+    "services_enabled": [
+      "enabled",
+      "enabled"
+    ],
+    "remaining_test_databases": [],
+    "remaining_test_pids": [],
+    "passed": true
+  },
+  {
+    "node": "node09",
+    "services_active": [
+      "active",
+      "active"
+    ],
+    "services_enabled": [
+      "enabled",
+      "enabled"
+    ],
+    "remaining_test_databases": [],
+    "remaining_test_pids": [],
+    "passed": true
+  },
+  {
+    "node": "node10",
+    "services_active": [
+      "active",
+      "active"
+    ],
+    "services_enabled": [
+      "enabled",
+      "enabled"
+    ],
+    "remaining_test_databases": [],
+    "remaining_test_pids": [],
+    "passed": true
+  }
+]

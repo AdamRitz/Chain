@@ -1,0 +1,15 @@
+{
+  "runtime_revision": "0e3c1397fcd53fe6104ba4d240406bb4028696d5",
+  "evidence": {
+    "evidence-original.tar.gz": {
+      "sha256": "a2ad21fa3dd2f0bae31f1dcf19a614856b80326c6ba04f1af97013318d94cd27",
+      "bytes": 14448268
+    },
+    "evidence-retry.tar.gz": {
+      "sha256": "15aee50abbfdc563816b517d31709e4a680a50bd2eb1c8b568dbe16fb165bbac",
+      "bytes": 4537085
+    }
+  },
+  "full_raw_evidence_location": "Codex workspace outputs/candidate-policy-20261023",
+  "raw_datasets_in_git": false
+}

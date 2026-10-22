@@ -1,0 +1,36 @@
+{
+  "application_revision": "0e3c1397fcd53fe6104ba4d240406bb4028696d5",
+  "driver_revision": "0796ae154d10e7fa74d64f87d4d46154f2d8a5e9",
+  "versions": [
+    "N95",
+    "M75",
+    "A",
+    "B",
+    "AB"
+  ],
+  "rates": [
+    20000,
+    30000,
+    40000,
+    50000,
+    60000
+  ],
+  "repeats_per_cell": 1,
+  "warmup_seconds": 2,
+  "measurement_seconds": 10,
+  "max_drain_seconds": 5,
+  "nodes": 10,
+  "state_checks": "independent persisted balance/nonce/fee reconstruction after stopping production",
+  "throughput": "two observed all-node common-prefix anchors with RPC acquisition interval bounds, rechecked against all stopped persistent chains",
+  "finality": "not established; common visibility can be reorganized",
+  "training": "P95 artifact frozen from historical experiments; current data held out; risk model resets and updates causally each run",
+  "first_attempt": "N95-20000 failed before traffic because one SSH management connection closed; isolated databases checked and cleaned; no TPS from this attempt",
+  "services": "normal chain-node and fisco-bcos paused only during experiments, restored and verified on wrapper exit",
+  "normal_service_version": "not switched by this experiment",
+  "retry_driver_revision": "2f73c2a566acf7020daca3d465eef32a3f8c6e1d",
+  "completed_load_runs": 33,
+  "valid_version_rate_cells": 20,
+  "total_version_rate_cells": 25,
+  "independent_state_audits_passed": 33,
+  "deleted_test_databases": 330
+}
