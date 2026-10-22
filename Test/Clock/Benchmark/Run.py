@@ -3,6 +3,7 @@ import argparse
 import concurrent.futures
 import hashlib
 import json
+import re
 from pathlib import Path
 import shlex
 import subprocess
@@ -27,6 +28,8 @@ def Main(args):
     groups={'N95':('robust',.95,0,0,'preparation-v1.json'), 'M75':('learned',.75,0,0,'preparation-v1.json'),
             'A':('learned',.95,1,0,'preparation-v2.json'), 'B':('robust',.95,0,1,'preparation-v1.json'),
             'AB':('learned',.95,1,1,'preparation-v2.json')}
+    if args.groups:groups={name:value for name,value in groups.items() if name in args.groups}
+    if not re.fullmatch(r'[A-Za-z0-9_-]{1,16}',args.run_tag):raise ValueError('Invalid run tag')
 
     def PartialAudit(cluster,run,output,genesis,dataset,maximum):
         # Nodes have already stopped at the fixed 17s guard. Reopen the same database
@@ -127,8 +130,9 @@ def Main(args):
             'rates':args.rates,'driver_sha256':hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
             'observer_sha256':hashlib.sha256(Path(Observe.__file__).read_bytes()).hexdigest()})
         Save(args.work/'inventory.json',inventory)
-        dataset=args.work/'transactions.bin'
-        E.Run([args.bin/'sender','--prepare',dataset,'--count',720000,'--wallets',1024],timeout=180)
+        dataset=args.dataset.resolve() if args.dataset else args.work/'transactions.bin'
+        if not args.dataset:E.Run([args.bin/'sender','--prepare',dataset,'--count',720000,'--wallets',1024],timeout=180)
+        if dataset.stat().st_size!=720000*176:raise ValueError('Shared dataset must contain exactly 720000 transactions')
         genesis=json.loads(Path(str(dataset)+'.genesis.json').read_text())
         dataset_hash=hashlib.sha256(dataset.read_bytes()).hexdigest()
         Save(args.work/'dataset.json',{'sha256':dataset_hash,'count':720000,'wallets':1024,'shared_across_all_cases':True})
@@ -139,7 +143,7 @@ def Main(args):
                 control,quantile,timing,risk,model=groups[group];join=1
                 name=f'{group}-{rate}-r{repeat}'
                 output=args.work/name;output.mkdir()
-                run=f'clock-{args.phase}-{args.source_revision[:7]}-{group}-{rate}-r{repeat}'
+                run=f'clock-{args.phase}-{args.run_tag}-{args.source_revision[:7]}-{group}-{rate}-r{repeat}'
                 nodes=[{**node,'binary':str(args.bin/'boost'),'worker':str(args.source/'Test/ClusterWorker.py'),
                         'options':{'clock-trace':str(Path(node['root'])/run/node['id']/'clock.jsonl')}} for node in inventory]
                 settings={'io-threads':4,'verify-threads':8,'query-threads':2,'sync':1,'produce':1,'experiment-index':1,
@@ -149,7 +153,7 @@ def Main(args):
                           'clock-model-period-ms':500,'clock-model-ttl-ms':2000,'clock-max-slew-ppm':1000,
                           'relay-transactions':0,'block-ms':50,'max-block-txs':6000,'run-seconds':90}
                 case={'suite':'throughput','mode':'throughput','rate':rate,'nodes':10,'repeat':repeat,'pattern':'steady',
-                      'group':group,'clock_control':control,'join_current':bool(join),'prepare_quantile':quantile,'revision':args.source_revision,'phase':args.phase,'candidate_timing':timing,'candidate_risk':risk,'model':model}
+                      'group':group,'clock_control':control,'join_current':bool(join),'prepare_quantile':quantile,'revision':args.source_revision,'phase':args.phase,'candidate_timing':timing,'candidate_risk':risk,'model':model,'run_tag':args.run_tag}
                 row={'case':case,'status':'failed','dataset_sha256':dataset_hash,'started_utc':time.time()}
                 Save(output/'case.json',case)
                 cluster=C.Cluster(nodes,run,genesis,settings,output)
@@ -198,6 +202,9 @@ if __name__=='__main__':
     for field in ['source','bin','inventory','plan','work','known-hosts']:
         parser.add_argument('--'+field,type=Path,required=True)
     parser.add_argument('--cycles',type=int,choices=[1,2,3],default=1)
+    parser.add_argument('--groups',nargs='+',choices=['N95','M75','A','B','AB'])
+    parser.add_argument('--dataset',type=Path,help='Reuse the exact signed dataset for failed-case diagnostics')
+    parser.add_argument('--run-tag',default='main',help='Separate guarded directories for diagnostic retries')
     parser.add_argument('--rates',type=int,nargs='+',choices=[20000,30000,40000,50000,60000],default=[20000,30000,40000,50000,60000])
     parser.add_argument('--phase',choices=['grid','endpoint'],default='grid')
     parser.add_argument('--dry-run',action='store_true')
