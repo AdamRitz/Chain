@@ -109,6 +109,7 @@ def Main(args):
     def ReadTrace(node,run,output):
         path=Path(node['root'])/run/node['id']/'clock.jsonl'
         command=['ssh','-o','BatchMode=yes','-o','StrictHostKeyChecking=yes','-o','ConnectTimeout=10',
+                 '-o','ControlMaster=auto','-o','ControlPersist=600','-o','ControlPath='+str(args.known_hosts.parent/'policy-ssh-%C'),
                  '-o','UserKnownHostsFile='+str(args.known_hosts),'-i',node['ssh_key'],node['ssh'],
                  shlex.join(['cat',str(path)])]
         result=subprocess.run(command,capture_output=True,timeout=30,check=True)

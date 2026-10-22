@@ -41,6 +41,8 @@ def Main(args):
             return original_worker(node, request)
         request = {**request, 'root': node['root'], 'node': node['id']}
         command = ['ssh', '-o', 'BatchMode=yes', '-o', 'ConnectTimeout=10',
+                   '-o', 'ControlMaster=auto', '-o', 'ControlPersist=600',
+                   '-o', 'ControlPath=' + str(args.known_hosts.parent / 'policy-ssh-%C'),
                    '-o', 'StrictHostKeyChecking=yes', '-o', 'UserKnownHostsFile=' + str(args.known_hosts),
                    '-p', str(node.get('ssh_port', 22))]
         if node.get('ssh_key'):
