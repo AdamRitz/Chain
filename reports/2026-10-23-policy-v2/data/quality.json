@@ -1,0 +1,17 @@
+{
+  "attempts": 26,
+  "valid_cells": 25,
+  "expected_cells": 25,
+  "selection": "original valid result first; first eligible diagnostic retry only when original invalid",
+  "state_audits_passed": 26,
+  "invalid_attempts": [
+    {
+      "case": "A2-40000-r1",
+      "error": null,
+      "tps_interval": [
+        34398.95435171818,
+        36731.477203371636
+      ]
+    }
+  ]
+}

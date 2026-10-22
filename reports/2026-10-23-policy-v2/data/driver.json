@@ -1,0 +1,7 @@
+{
+  "driver_revision": "c2c0c38536768f2d8a596c4c4f215e89470555a6",
+  "driver_source": "/opt/chain-control/policy-v2/driver-c2c0c38536768f2d8a596c4c4f215e89470555a6",
+  "sha256": "3520c78fc1669868563e07f52f7fc2a38ba8d7830b85fd0c41108798704d443a",
+  "runtime_revision": "d28a2fb2146a9afcff4f8f0758cd7c248e1023b6",
+  "results": "/opt/chain-control/results/policy-v2-d28a2fb-20261023-b"
+}

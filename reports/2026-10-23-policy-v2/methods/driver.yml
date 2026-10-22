@@ -1,0 +1,17 @@
+- name: Install immutable measurement driver sources
+  hosts: chain
+  gather_facts: false
+  tasks:
+    - name: Create separate driver directory
+      ansible.builtin.file:
+        path: /opt/chain-control/policy-v2/driver-c2c0c38536768f2d8a596c4c4f215e89470555a6
+        state: directory
+        mode: '0755'
+    - name: Unpack committed driver source
+      ansible.builtin.unarchive:
+        src: /opt/chain-control/packages/policy-v2-driver-c2c0c38536768f2d8a596c4c4f215e89470555a6.tar.gz
+        dest: /opt/chain-control/policy-v2/driver-c2c0c38536768f2d8a596c4c4f215e89470555a6
+        creates: /opt/chain-control/policy-v2/driver-c2c0c38536768f2d8a596c4c4f215e89470555a6/Test/Cluster.py
+    - name: Verify measurement response implementation
+      ansible.builtin.command: sha256sum /opt/chain-control/policy-v2/driver-c2c0c38536768f2d8a596c4c4f215e89470555a6/Test/Cluster.py /opt/chain-control/policy-v2/driver-c2c0c38536768f2d8a596c4c4f215e89470555a6/Test/Clock/Benchmark/Observe.py
+      changed_when: false

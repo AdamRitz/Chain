@@ -1,0 +1,23 @@
+[
+  {
+    "root": "/opt/chain-control/results/policy-v2-d28a2fb-20261023",
+    "path": "/opt/chain-control/results/policy-v2-d28a2fb-20261023-evidence.tar.gz",
+    "bytes": 10958483,
+    "sha256": "e1e9635354b33f7e4ce3f32b83625dc4ac1a7a3e8f41c2dd7f038bd6d440ecf9",
+    "databases_removed": 100
+  },
+  {
+    "root": "/opt/chain-control/results/policy-v2-d28a2fb-20261023-b",
+    "path": "/opt/chain-control/results/policy-v2-d28a2fb-20261023-b-evidence.tar.gz",
+    "bytes": 40297563,
+    "sha256": "2799fcabb07d8bb52f06360be0c2a4854fa3f43e88f0e64ecad7d4208b277dae",
+    "databases_removed": 250
+  },
+  {
+    "root": "/opt/chain-control/results/policy-v2-d28a2fb-20261023-retry",
+    "path": "/opt/chain-control/results/policy-v2-d28a2fb-20261023-retry-evidence.tar.gz",
+    "bytes": 1153759,
+    "sha256": "1b556c27cac9343620336565046af1e517d45f696968c716143c6212498093b4",
+    "databases_removed": 10
+  }
+]

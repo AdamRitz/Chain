@@ -1,0 +1,41 @@
+{
+  "runtime_revision": "d28a2fb2146a9afcff4f8f0758cd7c248e1023b6",
+  "measurement_driver_revision": "c2c0c38536768f2d8a596c4c4f215e89470555a6",
+  "dataset": {
+    "sha256": "95e24fe020ff9a03a59845dc7a73ae6fc6f9ce5fc01d45d8a9b8fe322d085675",
+    "count": 720000,
+    "wallets": 1024,
+    "shared_across_all_cases": true
+  },
+  "groups": [
+    "N95",
+    "A",
+    "A2",
+    "B2",
+    "A2B2"
+  ],
+  "rates": [
+    20000,
+    30000,
+    40000,
+    50000,
+    60000
+  ],
+  "warmup_seconds": 2,
+  "measurement_seconds": 10,
+  "max_drain_seconds": 5,
+  "per_cell_runs": 1,
+  "model": "frozen preparation-v2; B2 bounded online heads reset per process",
+  "measurement": "intersection of ten locally atomic published canonical tails; RPC intervals <=0.5s; persisted anchors rechecked after stopping",
+  "latency": "20Hz planned sampling; first all-node identical transaction position; no irreversible finality claim",
+  "completed_load_attempts": 35,
+  "initial_invalid_measurement_loads": 9,
+  "pretraffic_interrupted_cases": 1,
+  "corrected_grid_attempts": 25,
+  "invalid_endpoint_retries": 1,
+  "state_audited_load_attempts": 35,
+  "removed_databases": 360,
+  "services_restored_nodes": 10,
+  "new_policy_enabled_in_resident_services": false,
+  "one_retry_cell": "A2/40000: original 12s endpoint interval 0.67549s exceeds 0.5s bound"
+}

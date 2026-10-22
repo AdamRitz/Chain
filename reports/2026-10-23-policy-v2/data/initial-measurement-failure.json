@@ -1,0 +1,78 @@
+{
+  "reason": "legacy 16KiB stats response limit rejects >100 ancestor snapshots; no TPS from this batch",
+  "completed_loads": 9,
+  "audits_passed": 9,
+  "eligible_tps": 0,
+  "cases": [
+    {
+      "case": "A-20000-r1",
+      "finished": true,
+      "sender_started": true,
+      "cleanups": 10,
+      "all_removed": true
+    },
+    {
+      "case": "A-30000-r1",
+      "finished": true,
+      "sender_started": true,
+      "cleanups": 10,
+      "all_removed": true
+    },
+    {
+      "case": "A2-20000-r1",
+      "finished": true,
+      "sender_started": true,
+      "cleanups": 10,
+      "all_removed": true
+    },
+    {
+      "case": "A2-30000-r1",
+      "finished": true,
+      "sender_started": true,
+      "cleanups": 10,
+      "all_removed": true
+    },
+    {
+      "case": "A2B2-20000-r1",
+      "finished": true,
+      "sender_started": true,
+      "cleanups": 10,
+      "all_removed": true
+    },
+    {
+      "case": "A2B2-30000-r1",
+      "finished": true,
+      "sender_started": true,
+      "cleanups": 10,
+      "all_removed": true
+    },
+    {
+      "case": "B2-20000-r1",
+      "finished": true,
+      "sender_started": true,
+      "cleanups": 10,
+      "all_removed": true
+    },
+    {
+      "case": "B2-30000-r1",
+      "finished": true,
+      "sender_started": true,
+      "cleanups": 10,
+      "all_removed": true
+    },
+    {
+      "case": "N95-20000-r1",
+      "finished": true,
+      "sender_started": true,
+      "cleanups": 10,
+      "all_removed": true
+    },
+    {
+      "case": "N95-30000-r1",
+      "finished": false,
+      "sender_started": false,
+      "cleanups": 10,
+      "all_removed": true
+    }
+  ]
+}

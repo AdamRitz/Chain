@@ -1,0 +1,18 @@
+{
+  "revision": "d28a2fb2146a9afcff4f8f0758cd7c248e1023b6",
+  "tests": 14,
+  "ctest_passed": true,
+  "built_at": 1792695331.6403286,
+  "source_sha256": "c543ce52a4ef51a14438eb429e1866c527698ccc835b54a4ffbd336cf2dbe513",
+  "model_sha256": "7244025b6f7fe15f37870e95ca7527cd2e0bbb0171f11b3d8e4d4130565e3eaf",
+  "models": {
+    "preparation-v1.json": "7244025b6f7fe15f37870e95ca7527cd2e0bbb0171f11b3d8e4d4130565e3eaf",
+    "preparation-v2.json": "c971aba716d6be3a3ed048ca64f2c0dc6d4a43bac47e7e61ee036ae1454071c8"
+  },
+  "binaries": {
+    "boost": "68b866783f1d9b6a5cffc583bacf61570ba1c52cd4c62624297ca8a1beeb2131",
+    "sender": "be0f964682e6b485b4bbe409d8568ae5e91d6ae6bf7dfdd1a0b401020dcc25a1",
+    "evm_sender": "f9d334d75c4ef1b840668182c339c6ee5d27c9eb7952001c1de836623f42c1a7"
+  },
+  "binary_archive_sha256": "b0649f74975795faf5cca0fcfd22d18ae9c4b7fc2afed86911e658d25f086ab9"
+}

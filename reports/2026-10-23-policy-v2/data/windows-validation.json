@@ -1,0 +1,23 @@
+{
+  "revision": "d28a2fb2146a9afcff4f8f0758cd7c248e1023b6",
+  "tests": 14,
+  "passed": true,
+  "test_names": [
+    "ChainCorrectness",
+    "AccountCorrectness",
+    "ForkStateCorrectness",
+    "ThroughputCorrectness",
+    "FlowCorrectness",
+    "ClockCorrectness",
+    "ClockToolsCorrectness",
+    "ClockNetwork",
+    "ChainNetwork",
+    "AccountNetwork",
+    "ForkNetwork",
+    "EvmNetwork",
+    "ExperimentNetwork",
+    "AdmissionNetwork"
+  ],
+  "node_sha256": "2cba5cc43e1119a4c92003643616ee00d7118fb0111b1cf56c96da02f8101090",
+  "initial_attempt": "Two network tests rejected reused directories before execution; full suite rerun in a fresh root."
+}

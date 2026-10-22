@@ -1,0 +1,82 @@
+[
+  {
+    "node": "node01",
+    "ip": "182.151.5.57",
+    "private_ip": "192.168.0.176",
+    "stdout": "{\"services\": {\"chain-node\": {\"is-active\": \"active\", \"is-enabled\": \"enabled\"}, \"fisco-bcos\": {\"is-active\": \"active\", \"is-enabled\": \"enabled\"}}, \"remaining_experiment_processes\": [], \"remaining_experiment_databases\": [], \"passed\": true}\n",
+    "stderr": "",
+    "exit_code": 0
+  },
+  {
+    "node": "node02",
+    "ip": "118.122.78.54",
+    "private_ip": "192.168.0.111",
+    "stdout": "{\"services\": {\"chain-node\": {\"is-active\": \"active\", \"is-enabled\": \"enabled\"}, \"fisco-bcos\": {\"is-active\": \"active\", \"is-enabled\": \"enabled\"}}, \"remaining_experiment_processes\": [], \"remaining_experiment_databases\": [], \"passed\": true}\n",
+    "stderr": "",
+    "exit_code": 0
+  },
+  {
+    "node": "node03",
+    "ip": "182.151.27.42",
+    "private_ip": "192.168.0.108",
+    "stdout": "{\"services\": {\"chain-node\": {\"is-active\": \"active\", \"is-enabled\": \"enabled\"}, \"fisco-bcos\": {\"is-active\": \"active\", \"is-enabled\": \"enabled\"}}, \"remaining_experiment_processes\": [], \"remaining_experiment_databases\": [], \"passed\": true}\n",
+    "stderr": "",
+    "exit_code": 0
+  },
+  {
+    "node": "node04",
+    "ip": "118.121.202.17",
+    "private_ip": "192.168.0.167",
+    "stdout": "{\"services\": {\"chain-node\": {\"is-active\": \"active\", \"is-enabled\": \"enabled\"}, \"fisco-bcos\": {\"is-active\": \"active\", \"is-enabled\": \"enabled\"}}, \"remaining_experiment_processes\": [], \"remaining_experiment_databases\": [], \"passed\": true}\n",
+    "stderr": "",
+    "exit_code": 0
+  },
+  {
+    "node": "node05",
+    "ip": "110.185.105.122",
+    "private_ip": "192.168.0.249",
+    "stdout": "{\"services\": {\"chain-node\": {\"is-active\": \"active\", \"is-enabled\": \"enabled\"}, \"fisco-bcos\": {\"is-active\": \"active\", \"is-enabled\": \"enabled\"}}, \"remaining_experiment_processes\": [], \"remaining_experiment_databases\": [], \"passed\": true}\n",
+    "stderr": "",
+    "exit_code": 0
+  },
+  {
+    "node": "node06",
+    "ip": "110.185.104.206",
+    "private_ip": "192.168.0.138",
+    "stdout": "{\"services\": {\"chain-node\": {\"is-active\": \"active\", \"is-enabled\": \"enabled\"}, \"fisco-bcos\": {\"is-active\": \"active\", \"is-enabled\": \"enabled\"}}, \"remaining_experiment_processes\": [], \"remaining_experiment_databases\": [], \"passed\": true}\n",
+    "stderr": "",
+    "exit_code": 0
+  },
+  {
+    "node": "node07",
+    "ip": "182.151.9.116",
+    "private_ip": "192.168.0.162",
+    "stdout": "{\"services\": {\"chain-node\": {\"is-active\": \"active\", \"is-enabled\": \"enabled\"}, \"fisco-bcos\": {\"is-active\": \"active\", \"is-enabled\": \"enabled\"}}, \"remaining_experiment_processes\": [], \"remaining_experiment_databases\": [], \"passed\": true}\n",
+    "stderr": "",
+    "exit_code": 0
+  },
+  {
+    "node": "node08",
+    "ip": "182.151.38.203",
+    "private_ip": "192.168.0.61",
+    "stdout": "{\"services\": {\"chain-node\": {\"is-active\": \"active\", \"is-enabled\": \"enabled\"}, \"fisco-bcos\": {\"is-active\": \"active\", \"is-enabled\": \"enabled\"}}, \"remaining_experiment_processes\": [], \"remaining_experiment_databases\": [], \"passed\": true}\n",
+    "stderr": "",
+    "exit_code": 0
+  },
+  {
+    "node": "node09",
+    "ip": "118.121.198.136",
+    "private_ip": "192.168.0.12",
+    "stdout": "{\"services\": {\"chain-node\": {\"is-active\": \"active\", \"is-enabled\": \"enabled\"}, \"fisco-bcos\": {\"is-active\": \"active\", \"is-enabled\": \"enabled\"}}, \"remaining_experiment_processes\": [], \"remaining_experiment_databases\": [], \"passed\": true}\n",
+    "stderr": "",
+    "exit_code": 0
+  },
+  {
+    "node": "node10",
+    "ip": "118.122.72.173",
+    "private_ip": "192.168.0.11",
+    "stdout": "{\"services\": {\"chain-node\": {\"is-active\": \"active\", \"is-enabled\": \"enabled\"}, \"fisco-bcos\": {\"is-active\": \"active\", \"is-enabled\": \"enabled\"}}, \"remaining_experiment_processes\": [], \"remaining_experiment_databases\": [], \"passed\": true}\n",
+    "stderr": "",
+    "exit_code": 0
+  }
+]

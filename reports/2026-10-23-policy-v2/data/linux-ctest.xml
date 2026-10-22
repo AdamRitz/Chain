@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="(empty)"
+	tests="14"
+	failures="0"
+	disabled="0"
+	skipped="0"
+	hostname=""
+	time="51"
+	timestamp="2026-10-23T02:54:39"
+	>
+	<testcase name="ChainCorrectness" classname="ChainCorrectness" time="0.362686" status="run">
+		<properties/>
+		<system-out>PASS 2248 assertions. Database: /opt/chain/releases/d28a2fb2146a9afcff4f8f0758cd7c248e1023b6/build/check-policy-v2-20261023/test-data/293417618637794
+</system-out>
+	</testcase>
+	<testcase name="AccountCorrectness" classname="AccountCorrectness" time="0.177736" status="run">
+		<properties/>
+		<system-out>PASS 54 account checks. Database: /opt/chain/releases/d28a2fb2146a9afcff4f8f0758cd7c248e1023b6/build/check-policy-v2-20261023/user-test-data/293417950933387/chain
+</system-out>
+	</testcase>
+	<testcase name="ForkStateCorrectness" classname="ForkStateCorrectness" time="23.4483" status="run">
+		<properties/>
+		<system-out>[2026-10-23 02:54:40.470] [info] RocksDB Started. Path:/opt/chain/releases/d28a2fb2146a9afcff4f8f0758cd7c248e1023b6/build/check-policy-v2-20261023/fork-state-data/293418126761469, Sync:true
+[2026-10-23 02:54:40.473] [info] Genesis Block Generated. Height:1
+[2026-10-23 02:54:40.508] [info] RocksDB Started. Path:/opt/chain/releases/d28a2fb2146a9afcff4f8f0758cd7c248e1023b6/build/check-policy-v2-20261023/fork-state-data/293418126761469, Sync:true
+[2026-10-23 02:54:40.551] [info] RocksDB Started. Path:/opt/chain/releases/d28a2fb2146a9afcff4f8f0758cd7c248e1023b6/build/check-policy-v2-20261023/fork-state-data/293418126761469, Sync:true
+[2026-10-23 02:54:40.551] [info] Existing chain restored. Height:2
+[2026-10-23 02:54:40.577] [info] RocksDB Started. Path:/opt/chain/releases/d28a2fb2146a9afcff4f8f0758cd7c248e1023b6/build/check-policy-v2-20261023/fork-state-data/293418126761469/large-fork, Sync:true
+[2026-10-23 02:54:40.581] [info] Genesis Block Generated. Height:1
+[2026-10-23 02:55:03.811] [info] RocksDB Started. Pa...
+[This part of the test output was removed since it exceeds the threshold of 1024 bytes.]
+</system-out>
+	</testcase>
+	<testcase name="ThroughputCorrectness" classname="ThroughputCorrectness" time="0.0354201" status="run">
+		<properties/>
+		<system-out>Overlay, execution bounds and batch checks passed
+</system-out>
+	</testcase>
+	<testcase name="FlowCorrectness" classname="FlowCorrectness" time="0.16546" status="run">
+		<properties/>
+		<system-out>[2026-10-23 02:55:03.955] [info] RocksDB Started. Path:/opt/chain/releases/d28a2fb2146a9afcff4f8f0758cd7c248e1023b6/build/check-policy-v2-20261023/flow-test-data/293441611811437, Sync:true
+[2026-10-23 02:55:03.958] [info] Genesis Block Generated. Height:1
+[2026-10-23 02:55:04.001] [info] RocksDB Started. Path:/opt/chain/releases/d28a2fb2146a9afcff4f8f0758cd7c248e1023b6/build/check-policy-v2-20261023/flow-test-data/293441611811437, Sync:true
+[2026-10-23 02:55:04.001] [info] Existing chain restored. Height:2
+[2026-10-23 02:55:04.031] [info] RocksDB Started. Path:/opt/chain/releases/d28a2fb2146a9afcff4f8f0758cd7c248e1023b6/build/check-policy-v2-20261023/flow-test-data/293441611811437/deterministic, Sync:true
+[2026-10-23 02:55:04.034] [info] Genesis Block Generated. Height:1
+[2026-10-23 02:55:04.075] [info] RocksDB Started. Path:/opt/chain/releases/d28a2fb2146a9afcff4f8f0758cd7c248e1023b6/build/check-policy-v2-20261023/flow-test-data/293441611811437/ranked, Sync:true
+[2026-10-23 02:55:04.078] [info] Genesis Block...
+[This part of the test output was removed since it exceeds the threshold of 1024 bytes.]
+</system-out>
+	</testcase>
+	<testcase name="ClockCorrectness" classname="ClockCorrectness" time="0.0614682" status="run">
+		<properties/>
+		<system-out>[2026-10-23 02:55:04.142] [info] RocksDB Started. Path:/opt/chain/releases/d28a2fb2146a9afcff4f8f0758cd7c248e1023b6/build/check-policy-v2-20261023/clock-test-data/293441777715755/db, Sync:true
+[2026-10-23 02:55:04.144] [info] Genesis Block Generated. Height:1
+{"checks":["continuous slew and expiry","frozen rounds","model schema and domain","source quorum","local deadline vs received validity","parent state binding"]}
+</system-out>
+	</testcase>
+	<testcase name="ClockToolsCorrectness" classname="ClockToolsCorrectness" time="0.6588" status="run">
+		<properties/>
+		<system-out>....
+----------------------------------------------------------------------
+Ran 4 tests in 0.457s
+
+OK
+</system-out>
+	</testcase>
+	<testcase name="ClockNetwork" classname="ClockNetwork" time="12.2971" status="run">
+		<properties/>
+		<system-out>{"checks": [{"control": "robust", "scheduler": "bounded", "missing_model": false, "join_current": 0, "transactions": 80, "state_checked_nodes": 2, "bounded_attempts": 3}, {"control": "robust", "scheduler": "bounded", "missing_model": false, "join_current": 1, "transactions": 80, "state_checked_nodes": 2, "bounded_attempts": 4}, {"control": "learned", "scheduler": "bounded", "missing_model": false, "join_current": 0, "transactions": 80, "state_checked_nodes": 2, "bounded_attempts": 3}, {"control": "learned", "scheduler": "bounded", "missing_model": false, "join_current": 1, "transactions": 80, "state_checked_nodes": 2, "bounded_attempts": 4}, {"control": "shadow", "scheduler": "bounded", "missing_model": false, "join_current": 1, "transactions": 80, "state_checked_nodes": 2, "bounded_attempts": 6}, {"control": "learned", "scheduler": "bounded", "missing_model": true, "join_current": 1, "transactions": 80, "state_checked_nodes": 2, "bounded_attempts": 4}, {"control": "robust", "scheduler": "bounded", "quorum_ga...
+[This part of the test output was removed since it exceeds the threshold of 1024 bytes.]
+</system-out>
+	</testcase>
+	<testcase name="ChainNetwork" classname="ChainNetwork" time="3.47558" status="run">
+		<properties/>
+		<system-out>{
+  "passed": 10,
+  "checks": [
+    "slow handshake does not block accept loop",
+    "bad type, oversized and malformed length rejected before payload allocation",
+    "invalid signatures rejected in transaction and sync block paths",
+    "fragmented frame and complete batch handled; replay does not commit twice",
+    "4096 unique network transactions committed without loss",
+    "late follower verifies history and reaches same height/head",
+    "live block broadcast and bidirectional peer connection remain active",
+    "producer and follower balances and nonces match independent execution",
+    "process termination/restart restores committed head and rejects replay",
+    "timed graceful shutdown with an active peer exits cleanly and writes metrics"
+  ],
+  "work": "/opt/chain/releases/d28a2fb2146a9afcff4f8f0758cd7c248e1023b6/build/check-policy-v2-20261023/network-test-data/1792695317146655919"
+}
+</system-out>
+	</testcase>
+	<testcase name="AccountNetwork" classname="AccountNetwork" time="0.330725" status="run">
+		<properties/>
+		<system-out>{
+  "passed": 7,
+  "checks": [
+    "explicit genesis funding and zero balance for a new public key",
+    "out-of-order transfers execute in nonce order with exact balances and fees",
+    "account query CLI returns committed state",
+    "self transfer charges one nonrecoverable base fee",
+    "insufficient balance transaction is rejected over the network",
+    "historical synchronization replays balances, nonces and burned fees",
+    "restart restores genesis policy and account state without the external genesis file argument"
+  ]
+}
+</system-out>
+	</testcase>
+	<testcase name="ForkNetwork" classname="ForkNetwork" time="0.536711" status="run">
+		<properties/>
+		<system-out>{"checks": ["equal height chooses branch with more valid transactions; native state rolled back", "multi-block branch replay and parent-by-hash retrieval", "restart preserves selected head and rollback state", "invalid larger future candidate preserves valid alternative"]}
+</system-out>
+	</testcase>
+	<testcase name="EvmNetwork" classname="EvmNetwork" time="0.776671" status="run">
+		<properties/>
+		<system-out>{"checks": ["deploy and execute persistent storage with return value", "REVERT restores storage and consumes nonce and actual gas", "out of gas restores contract state", "SHA256 precompile returns the expected digest", "signature binds full contract input", "Solidity 0.8.28 Shanghai bytecode events nested CALL and revert", "modular exponentiation precompile", "follower independently replays code storage fees and receipts", "compact announcement fetches missing EVM transactions and replays consecutive calls", "restart recovers contract state and supply", "same height tie converges by hash; EVM storage receipts native balances and fees follow selected branch"]}
+</system-out>
+	</testcase>
+	<testcase name="ExperimentNetwork" classname="ExperimentNetwork" time="4.5388" status="run">
+		<properties/>
+		<system-out>{"checks": ["parallel directories", "network impairment scope/cleanup retry", "dynamic inventory", "canonical transaction index rollback/restart", "synchronized round execution"]}
+</system-out>
+	</testcase>
+	<testcase name="AdmissionNetwork" classname="AdmissionNetwork" time="4.83413" status="run">
+		<properties/>
+		<system-out>{"checks": ["gap capacity", "known/busy/invalid feedback", "malformed batch releases the connection", "four full blocks across bounded synchronization frames", "reliable sender", "complete balances and nonces"]}
+</system-out>
+	</testcase>
+</testsuite>
