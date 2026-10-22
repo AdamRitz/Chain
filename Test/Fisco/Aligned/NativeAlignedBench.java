@@ -23,7 +23,7 @@ import org.fisco.bcos.sdk.demo.contract.DagTransfer;
 public class NativeAlignedBench {
     static final BigInteger INITIAL = BigInteger.valueOf(1_000_000_000L);
     static int USERS = 1024;
-    static final Gson JSON = new GsonBuilder().setPrettyPrinting().create();
+    static final Gson JSON = new GsonBuilder().serializeNulls().setPrettyPrinting().create();
     static BcosSDK sdk;
     static Client client;
     static ParallelOk contract;

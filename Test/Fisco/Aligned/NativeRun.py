@@ -24,17 +24,27 @@ class Native(Formal):
         self.driver = self.root / 'native-aligned'
         self.sender = self.hosts[0]
 
-    def Java(self, *arguments):
+    def Java(self, *arguments, config=None):
         return [str(self.root/'toolchain/jdk/bin/java'), '-Xms64m', '-Xmx1g',
-                '-XX:ActiveProcessorCount=2', '-cp',
+                '-XX:ActiveProcessorCount=2',
+                '-Dlog4j.configurationFile='+str(self.driver/'sdk-log4j2.xml'), '-cp',
                 f'{self.driver}/classes:{self.root}/driver/classes:{self.root}/driver/lib/*',
-                'NativeAlignedBench', str(self.driver/'config.toml'), *map(str,arguments)]
+                'NativeAlignedBench', str(config or self.driver/'config.toml'), *map(str,arguments)]
+
+    def SdkConfig(self, path, hosts):
+        source=(self.driver/'config.toml').read_text()
+        peers=', '.join(json.dumps(host+':20200') for host in hosts)
+        updated,count=re.subn(r'(?m)^peers\s*=.*$', 'peers = ['+peers+']', source)
+        if count!=1:raise AssertionError('Exactly one SDK peer setting required')
+        path.write_text(updated)
+        return path
 
     def Launch(self, name, rate, users, unit, warm=2, seconds=10):
         directory = self.driver/'runs'/name
         directory.mkdir(parents=True,exist_ok=False)
+        config=self.SdkConfig(directory/'sdk-config.toml',self.hosts)
         command = self.Java('native',rate,warm,seconds,directory/'driver.json',users,
-                            directory/'go',self.args.inflight,'short-budget')
+                            directory/'go',self.args.inflight,'short-budget',config=config)
         args = ['systemd-run','--quiet','--unit',unit,'--uid=root','--gid=root',
                 '--working-directory='+str(self.driver),'--property=TimeoutStopSec=2',
                 '--property=KillMode=control-group','--property=Restart=no','--property=RuntimeMaxSec=700',
@@ -65,6 +75,8 @@ print(json.dumps({{'host':{host!r},'command':args}}))
         if len(manifest)!=driver['requested'] or len(outcomes)!=driver['requested']:
             raise AssertionError('Prepared hashes must be unique and complete')
         expected=[1_000_000_000]*driver['users'];ledger={};confirmed=[];unknown=[];nodes=[]
+        # First inventory stopped ledgers. Different terminal heights are lag,
+        # not automatically a fork: compare each height against the longest ledger.
         for host in self.hosts:
             unit='fisco-audit-'+name
             self.RestartAudit(host,name,unit)
@@ -81,52 +93,75 @@ print(json.dumps({{'host':{host!r},'command':args}}))
                 state={'host':host,'count':Number(count['transactionCount']),
                     'failed':Number(count['failedTransactionCount']),'height':height,
                     'hash':header['hash'],'state_root':header['stateRoot']}
-                if host==self.sender:
-                    total=0
-                    with (out/'canonical-blocks.jsonl').open('w') as f:
-                        for h in range(height+1):
-                            block=self.Rpc(host,'getBlockByNumber',h,False,True)['result']
-                            entries=block.get('transactions',block.get('transactionHashes',[]))
-                            hashes=[str(v.get('hash',v.get('transactionHash',''))) if isinstance(v,dict) else str(v) for v in entries]
-                            total+=len(hashes);ledger[h]={'hash':block['hash'],'transactions':total}
-                            f.write(json.dumps({'height':h,'hash':block['hash'],'hashes':hashes,'cumulative':total})+'\n')
-                            for txhash in hashes:
-                                key=txhash.lower().removeprefix('0x')
-                                if key not in manifest:continue
-                                i=manifest[key];confirmed.append(i)
-                                expected[i%driver['users']]-=1;expected[(i+1)%driver['users']]+=1
-                                if outcomes[i]!=1:unknown.append('0x'+key)
-                    if total!=state['count'] or len(confirmed)+setup!=state['count']:
-                        raise AssertionError('Canonical ledger count differs from setup plus known native requests')
-                    # Callback errors are not final rejection. Check every included
-                    # transaction whose business-success callback was absent.
-                    def Receipt(txhash):
-                        r=self.Rpc(host,'getTransactionReceipt',txhash,False)['result']
-                        return bool(r and r['transactionHash'].lower()==txhash.lower()
-                            and Number(r['status'])==0 and int(r.get('output','-1'),16)==0)
-                    with CF.ThreadPoolExecutor(12) as pool:
-                        if not all(pool.map(Receipt,unknown)):raise AssertionError('Native receipt business output failed')
-                    balance_file=directory/'balances-audit.json'
-                    subprocess.run(self.Java('balances',driver['prefix'],driver['users'],balance_file),
-                        cwd=self.driver,check=True,capture_output=True,timeout=120)
-                    balance=json.loads(balance_file.read_text())
-                    mismatches=sum(int(actual)!=wanted for actual,wanted in zip(balance['balances'],expected))
-                    if balance['errors'] or len(balance['balances'])!=driver['users'] or mismatches:
-                        raise AssertionError('Native balance reconstruction failed')
-                    if sum(expected)!=driver['users']*1_000_000_000:
-                        raise AssertionError('Native transfer supply is not conserved')
-                    Save(out/'balance-audit.json',{'passed':True,'accounts':driver['users'],'mismatches':mismatches,
-                        'prefix':driver['prefix'],'expected':expected,'observed':balance['balances'],
-                        'confirmed_workload_transactions':len(confirmed),'additional_receipts_checked':len(unknown),
-                        'callback_business_success_reused':len(confirmed)-len(unknown),'ledger':state})
                 after=self.Rpc(host,'getTotalTransactionCount')['result']
                 if after!=count:raise AssertionError('Audit unexpectedly advanced ledger')
                 nodes.append(state)
             finally:
                 self.Remote(host,f"import subprocess\nr=subprocess.run(['systemctl','stop',{unit!r}],capture_output=True,timeout=15)\nassert r.returncode==0\n")
+        host=max(nodes,key=lambda n:n['height'])['host']
+        canonical=next(n for n in nodes if n['host']==host)
+        self.RestartAudit(host,name,unit)
+        try:
+            deadline=time.monotonic()+25
+            while True:
+                try:
+                    count=self.Rpc(host,'getTotalTransactionCount')['result'];break
+                except Exception:
+                    if time.monotonic()>deadline:raise
+                    time.sleep(.15)
+            height=Number(count['blockNumber']);state=canonical
+            if height!=state['height'] or Number(count['transactionCount'])!=state['count']:
+                raise AssertionError('Canonical audit ledger changed on restart')
+            total=0
+            with (out/'canonical-blocks.jsonl').open('w') as f:
+                for h in range(height+1):
+                    block=self.Rpc(host,'getBlockByNumber',h,False,True)['result']
+                    entries=block.get('transactions',block.get('transactionHashes',[]))
+                    hashes=[str(v.get('hash',v.get('transactionHash',''))) if isinstance(v,dict) else str(v) for v in entries]
+                    total+=len(hashes);ledger[h]={'hash':block['hash'],'transactions':total,'state_root':block['stateRoot']}
+                    f.write(json.dumps({'height':h,'hash':block['hash'],'state_root':block['stateRoot'],'hashes':hashes,'cumulative':total})+'\n')
+                    for txhash in hashes:
+                        key=txhash.lower().removeprefix('0x')
+                        if key not in manifest:continue
+                        i=manifest[key];confirmed.append(i)
+                        expected[i%driver['users']]-=1;expected[(i+1)%driver['users']]+=1
+                        if outcomes[i]!=1:unknown.append('0x'+key)
+            if total!=state['count'] or len(confirmed)+setup!=state['count']:
+                raise AssertionError('Canonical ledger count differs from setup plus known native requests')
+            # Callback errors are not final rejection. Check every included
+            # transaction whose business-success callback was absent.
+            def Receipt(txhash):
+                r=self.Rpc(host,'getTransactionReceipt',txhash,False)['result']
+                return bool(r and r['transactionHash'].lower()==txhash.lower()
+                    and Number(r['status'])==0 and int(r.get('output','-1'),16)==0)
+            with CF.ThreadPoolExecutor(12) as pool:
+                if not all(pool.map(Receipt,unknown)):raise AssertionError('Native receipt business output failed')
+            balance_file=directory/'balances-audit.json'
+            config=self.SdkConfig(directory/'audit-sdk-config.toml',[host])
+            subprocess.run(self.Java('balances',driver['prefix'],driver['users'],balance_file,config=config),
+                cwd=self.driver,check=True,capture_output=True,timeout=120)
+            balance=json.loads(balance_file.read_text())
+            mismatches=sum(int(actual)!=wanted for actual,wanted in zip(balance['balances'],expected))
+            if balance['errors'] or len(balance['balances'])!=driver['users'] or mismatches:
+                raise AssertionError('Native balance reconstruction failed')
+            if sum(expected)!=driver['users']*1_000_000_000:
+                raise AssertionError('Native transfer supply is not conserved')
+            Save(out/'balance-audit.json',{'passed':True,'accounts':driver['users'],'mismatches':mismatches,
+                'prefix':driver['prefix'],'expected':expected,'observed':balance['balances'],
+                'confirmed_workload_transactions':len(confirmed),'additional_receipts_checked':len(unknown),
+                'callback_business_success_reused':len(confirmed)-len(unknown),'ledger':state})
+            after=self.Rpc(host,'getTotalTransactionCount')['result']
+            if after!=count:raise AssertionError('Audit unexpectedly advanced ledger')
+        finally:
+            self.Remote(host,f"import subprocess\nr=subprocess.run(['systemctl','stop',{unit!r}],capture_output=True,timeout=15)\nassert r.returncode==0\n")
         agree=len({(n['count'],n['height'],n['hash'],n['state_root'],n['failed']) for n in nodes})==1
-        audit={'passed':agree and all(n['failed']==0 for n in nodes),'nodes':nodes,
-            'method':'each persisted validator reopened separately without PBFT quorum; one full native balance reconstruction plus identical state roots'}
+        for n in nodes:
+            anchor=ledger[n['height']]
+            n['canonical_prefix_matches']=(anchor['hash']==n['hash'] and anchor['state_root']==n['state_root'] and anchor['transactions']==n['count'])
+        audit={'passed':all(n['canonical_prefix_matches'] and n['failed']==0 for n in nodes),
+            'all_heads_equal':agree,'nodes':nodes,'canonical_host':host,
+            'common_height':min(n['height'] for n in nodes),
+            'method':'each stopped validator reopened without quorum; longest ledger balance reconstruction; every persisted head and state root matched at its own canonical height; terminal lag reported separately'}
         Save(out/'state-audit.json',audit)
         return audit,ledger
 
@@ -137,6 +172,7 @@ def Case(c, rate, batch, smoke=False):
     users=4 if smoke else 1024;warm=0 if smoke else 2;seconds=10
     points=[];observations=[];errors=[];timers=[];stopped=[];directory=None;gate=None;ledger={};audit={}
     sender_end=warm+seconds;cutoff=sender_end+5
+    c.block_cache.clear()
     c.rpc_log=(out/'rpc.jsonl').open('w',buffering=1)
     stop_lock=threading.Lock()
     def Stop():
@@ -221,9 +257,10 @@ def Case(c, rate, batch, smoke=False):
             'setup_transactions':setup,'actual_send_tps':driver['actual_send_tps'],'submitted':driver['submitted'],
             'callback_success':driver['success'],'callback_errors':driver['failures'],'unresolved':driver['unresolved'],
             'unsubmitted':driver['unsubmitted'],'callback_error_classes':driver['errors'],
-            'receipt_p50_ms':driver['p50_ms'],'receipt_p95_ms':driver['p95_ms'],'receipt_p99_ms':driver['p99_ms'],
+            'receipt_p50_ms':driver.get('p50_ms'),'receipt_p95_ms':driver.get('p95_ms'),'receipt_p99_ms':driver.get('p99_ms'),
             'receipt_latency_samples':driver['latency_success_samples'],'native_attribute':driver['signed_transaction_inspection'],
-            'state_audit_passed':audit.get('passed',False),'boundary_proof_passed':proof['passed'],
+            'state_audit_passed':audit.get('passed',False),'all_heads_equal':audit.get('all_heads_equal'),
+            'boundary_proof_passed':proof['passed'],
             'sender_placement':'single controller','node_defaults_preserved':True,'errors':errors}
         if proof['passed']:
             a,b=endpoints;delta=b['count_min']-a['count_min']
@@ -242,7 +279,9 @@ def Case(c, rate, batch, smoke=False):
             all_node_latency_scope='query observation upper latency on the same controller clock; not pure PBFT execution time')
         if not summary['state_audit_passed']:raise AssertionError('Persisted validators do not agree')
     except Exception as exc:
-        errors.append({'phase':'case','error':repr(exc)});summary={'name':name,'target_tps':rate,'status':'failed','errors':errors}
+        errors.append({'phase':'case','error':repr(exc)})
+        if 'summary' not in locals():summary={'name':name,'target_tps':rate}
+        summary.update(status='failed',errors=errors)
     finally:
         Stop()
         for timer in timers:timer.cancel();timer.join(timeout=30)
@@ -276,7 +315,7 @@ def Main():
     Save(batch/'protocol.json',{'nodes':10,'sender':c.sender,'native_precompiled':'0x100c','accounts':1024,
         'initial_balance':1_000_000_000,'amount':1,'routing':'ring','warmup':2,'measurement':10,'drain':5,
         'rates':[20000,30000,40000,50000,60000],'global_inflight':args.inflight,
-        'node_defaults_preserved':True,'driver_sha256':hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
+        'sdk_ingress_peers':c.hosts,'node_defaults_preserved':True,'driver_sha256':hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
         'java_source_sha256':hashlib.sha256((c.driver/'NativeAlignedBench.java').read_bytes()).hexdigest(),
         'java_class_sha256':hashlib.sha256((c.driver/'classes/NativeAlignedBench.class').read_bytes()).hexdigest()})
     rows=[]
