@@ -1,0 +1,20 @@
+{
+  "checks": [
+    "deploy and execute persistent storage with return value",
+    "REVERT restores storage and consumes nonce and actual gas",
+    "out of gas restores contract state",
+    "SHA256 precompile returns the expected digest",
+    "signature binds full contract input",
+    "Solidity 0.8.28 Shanghai bytecode events nested CALL and revert",
+    "modular exponentiation precompile",
+    "follower independently replays code storage fees and receipts",
+    "compact announcement fetches missing EVM transactions and replays consecutive calls",
+    "restart recovers contract state and supply",
+    "same height tie converges by hash; EVM storage receipts native balances and fees follow selected branch"
+  ],
+  "gas": {
+    "deploy": 57454,
+    "call": 43230,
+    "revert": 43112
+  }
+}

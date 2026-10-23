@@ -13,7 +13,8 @@ def Analyze(root):
               'db_write_ms','db_writes','block_build_ms','block_verify_ms','candidate_execute_ms',
               'commit_execute_ms','candidate_lock_wait_ms','commit_lock_wait_ms','tx_queue_wait_ms',
               'metadata_queue_wait_ms','metadata_tasks','verification_waits','verification_wait_ms',
-              'pool_snapshot_chunks','pool_snapshot_lock_ms']
+              'pool_snapshot_chunks','pool_snapshot_lock_ms','tx_pool_wait_ms','signature_checks',
+              'signature_wait_ms','cold_signature_ms']
     clock_counters=['rounds','joined_current_rounds','late_candidates','cancelled_candidates','stale_candidates',
                     'risk_deferrals','decision_predictions','decision_fallbacks','skipped_rounds','budget_skips',
                     'decision_cache_hits','decision_inference_ms','decision_budget_ms','value_predictions','value_suggestions',
@@ -52,6 +53,13 @@ def Analyze(root):
             snapshots=[s['clock'] for p in points if 2<=p['target_seconds']<=12 for s in p.get('nodes',[]) if s]
             row['median_prepare_budget_ms']=statistics.median(s['selected_prepare_us']/1000 for s in snapshots)
             row['median_time_budget_ms']=statistics.median(s['selected_time_us']/1000 for s in snapshots)
+            observed=[s for p in points if 2<=p['target_seconds']<=12 for s in p.get('nodes',[]) if s]
+            if observed and 'verification_budget' in observed[0]:
+                row['observed_verification_peak']=max(s['verification_peak'] for s in observed)
+                row['verification_budget_respected']=all(not s['verification_budget'] or s['verification_peak']<=s['verification_budget'] for s in observed)
+                row['median_pending_tx_verify']=statistics.median(s['pending_tx_verify'] for s in observed)
+                row['median_pending_block_verify']=statistics.median(s['pending_block_verify'] for s in observed)
+                row['median_pending_metadata']=statistics.median(s['pending_metadata'] for s in observed)
         outcomes=Counter();wall=defaultdict(float);deferrals=0;coverage=[]
         for path in directory.glob('node*-clock.jsonl'):
             for line in path.read_text().splitlines():

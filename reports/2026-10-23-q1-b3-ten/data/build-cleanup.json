@@ -1,0 +1,11 @@
+[
+  {
+    "node": "node01",
+    "ip": "182.151.5.57",
+    "private_ip": "192.168.0.176",
+    "uploaded": "/opt/chain-control/q1-b3/clean_build_tests.py",
+    "stdout": "{\"databases_cleared\": 26, \"record\": \"/opt/chain/releases/6ca799a49ce1a3a7ab264ccdda2baaa0d0cd71dd/build-test-cleanup.json\"}\n",
+    "stderr": "",
+    "exit_code": 0
+  }
+]

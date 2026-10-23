@@ -1,0 +1,3018 @@
+{
+  "A-20000-r1": {
+    "labels_per_node_at_12_seconds": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "nodes_with_16_labels_at_12_seconds": 0,
+    "whole_run_decision_reasons": {},
+    "whole_run_targets": 0,
+    "whole_run_positive_targets": 0,
+    "measurement_per_node": [
+      {
+        "node": "node01",
+        "local_transaction_delta": 199040,
+        "end_transactions": 238208,
+        "cpu_seconds": 15.916125000000001,
+        "verification_wait_seconds": 0.0,
+        "signature_checks": 200004,
+        "reorganizations": 0,
+        "fork_reexecute_transactions": 0
+      },
+      {
+        "node": "node02",
+        "local_transaction_delta": 200064,
+        "end_transactions": 239232,
+        "cpu_seconds": 16.804505,
+        "verification_wait_seconds": 0.0,
+        "signature_checks": 200009,
+        "reorganizations": 0,
+        "fork_reexecute_transactions": 0
+      },
+      {
+        "node": "node03",
+        "local_transaction_delta": 200064,
+        "end_transactions": 239232,
+        "cpu_seconds": 15.780748,
+        "verification_wait_seconds": 0.0,
+        "signature_checks": 200008,
+        "reorganizations": 0,
+        "fork_reexecute_transactions": 0
+      },
+      {
+        "node": "node04",
+        "local_transaction_delta": 200064,
+        "end_transactions": 239232,
+        "cpu_seconds": 16.943696,
+        "verification_wait_seconds": 0.0,
+        "signature_checks": 200032,
+        "reorganizations": 0,
+        "fork_reexecute_transactions": 0
+      },
+      {
+        "node": "node05",
+        "local_transaction_delta": 200064,
+        "end_transactions": 239232,
+        "cpu_seconds": 15.817371000000001,
+        "verification_wait_seconds": 0.0,
+        "signature_checks": 199991,
+        "reorganizations": 0,
+        "fork_reexecute_transactions": 0
+      },
+      {
+        "node": "node06",
+        "local_transaction_delta": 200064,
+        "end_transactions": 239232,
+        "cpu_seconds": 17.352467,
+        "verification_wait_seconds": 0.0,
+        "signature_checks": 199982,
+        "reorganizations": 0,
+        "fork_reexecute_transactions": 0
+      },
+      {
+        "node": "node07",
+        "local_transaction_delta": 199040,
+        "end_transactions": 238208,
+        "cpu_seconds": 17.021126,
+        "verification_wait_seconds": 0.0,
+        "signature_checks": 199999,
+        "reorganizations": 0,
+        "fork_reexecute_transactions": 0
+      },
+      {
+        "node": "node08",
+        "local_transaction_delta": 200064,
+        "end_transactions": 239232,
+        "cpu_seconds": 15.832134000000002,
+        "verification_wait_seconds": 0.0,
+        "signature_checks": 199991,
+        "reorganizations": 0,
+        "fork_reexecute_transactions": 0
+      },
+      {
+        "node": "node09",
+        "local_transaction_delta": 200064,
+        "end_transactions": 239232,
+        "cpu_seconds": 17.353012,
+        "verification_wait_seconds": 0.0,
+        "signature_checks": 199975,
+        "reorganizations": 0,
+        "fork_reexecute_transactions": 0
+      },
+      {
+        "node": "node10",
+        "local_transaction_delta": 200064,
+        "end_transactions": 239232,
+        "cpu_seconds": 16.917659,
+        "verification_wait_seconds": 0.0,
+        "signature_checks": 199992,
+        "reorganizations": 0,
+        "fork_reexecute_transactions": 0
+      }
+    ]
+  },
+  "Q1-20000-r1": {
+    "labels_per_node_at_12_seconds": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "nodes_with_16_labels_at_12_seconds": 0,
+    "whole_run_decision_reasons": {},
+    "whole_run_targets": 0,
+    "whole_run_positive_targets": 0,
+    "measurement_per_node": [
+      {
+        "node": "node01",
+        "local_transaction_delta": 199936,
+        "end_transactions": 238848,
+        "cpu_seconds": 16.034281999999997,
+        "verification_wait_seconds": 0.007401904,
+        "signature_checks": 200020,
+        "reorganizations": 1,
+        "fork_reexecute_transactions": 896
+      },
+      {
+        "node": "node02",
+        "local_transaction_delta": 199936,
+        "end_transactions": 238848,
+        "cpu_seconds": 17.006351000000002,
+        "verification_wait_seconds": 0.008175746999999999,
+        "signature_checks": 200028,
+        "reorganizations": 0,
+        "fork_reexecute_transactions": 0
+      },
+      {
+        "node": "node03",
+        "local_transaction_delta": 199936,
+        "end_transactions": 238848,
+        "cpu_seconds": 15.860235000000001,
+        "verification_wait_seconds": 0.007299936000000001,
+        "signature_checks": 199996,
+        "reorganizations": 1,
+        "fork_reexecute_transactions": 2048
+      },
+      {
+        "node": "node04",
+        "local_transaction_delta": 199936,
+        "end_transactions": 238848,
+        "cpu_seconds": 16.913641000000002,
+        "verification_wait_seconds": 0.008259777,
+        "signature_checks": 200018,
+        "reorganizations": 0,
+        "fork_reexecute_transactions": 0
+      },
+      {
+        "node": "node05",
+        "local_transaction_delta": 199936,
+        "end_transactions": 238848,
+        "cpu_seconds": 15.949364,
+        "verification_wait_seconds": 0.007439914000000001,
+        "signature_checks": 200000,
+        "reorganizations": 4,
+        "fork_reexecute_transactions": 6784
+      },
+      {
+        "node": "node06",
+        "local_transaction_delta": 199936,
+        "end_transactions": 238848,
+        "cpu_seconds": 16.982846000000002,
+        "verification_wait_seconds": 0.009400285999999999,
+        "signature_checks": 200002,
+        "reorganizations": 0,
+        "fork_reexecute_transactions": 0
+      },
+      {
+        "node": "node07",
+        "local_transaction_delta": 199936,
+        "end_transactions": 238848,
+        "cpu_seconds": 17.31383,
+        "verification_wait_seconds": 0.00960568,
+        "signature_checks": 199951,
+        "reorganizations": 0,
+        "fork_reexecute_transactions": 0
+      },
+      {
+        "node": "node08",
+        "local_transaction_delta": 199936,
+        "end_transactions": 238848,
+        "cpu_seconds": 15.914029000000001,
+        "verification_wait_seconds": 0.009565143,
+        "signature_checks": 199998,
+        "reorganizations": 1,
+        "fork_reexecute_transactions": 2048
+      },
+      {
+        "node": "node09",
+        "local_transaction_delta": 199936,
+        "end_transactions": 238848,
+        "cpu_seconds": 17.469014,
+        "verification_wait_seconds": 0.012042111999999999,
+        "signature_checks": 200010,
+        "reorganizations": 0,
+        "fork_reexecute_transactions": 0
+      },
+      {
+        "node": "node10",
+        "local_transaction_delta": 199936,
+        "end_transactions": 238848,
+        "cpu_seconds": 16.836291,
+        "verification_wait_seconds": 0.010083762,
+        "signature_checks": 199997,
+        "reorganizations": 1,
+        "fork_reexecute_transactions": 2048
+      }
+    ]
+  },
+  "B3S-20000-r1": {
+    "labels_per_node_at_12_seconds": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "nodes_with_16_labels_at_12_seconds": 0,
+    "whole_run_decision_reasons": {},
+    "whole_run_targets": 0,
+    "whole_run_positive_targets": 0,
+    "measurement_per_node": [
+      {
+        "node": "node01",
+        "local_transaction_delta": 199936,
+        "end_transactions": 238464,
+        "cpu_seconds": 15.903888,
+        "verification_wait_seconds": 0.0,
+        "signature_checks": 200005,
+        "reorganizations": 2,
+        "fork_reexecute_transactions": 4096
+      },
+      {
+        "node": "node02",
+        "local_transaction_delta": 199936,
+        "end_transactions": 238464,
+        "cpu_seconds": 16.429276,
+        "verification_wait_seconds": 0.0,
+        "signature_checks": 200025,
+        "reorganizations": 1,
+        "fork_reexecute_transactions": 2048
+      },
+      {
+        "node": "node03",
+        "local_transaction_delta": 199936,
+        "end_transactions": 238464,
+        "cpu_seconds": 15.772549999999999,
+        "verification_wait_seconds": 0.0,
+        "signature_checks": 199998,
+        "reorganizations": 2,
+        "fork_reexecute_transactions": 4096
+      },
+      {
+        "node": "node04",
+        "local_transaction_delta": 199936,
+        "end_transactions": 238464,
+        "cpu_seconds": 16.913832000000003,
+        "verification_wait_seconds": 0.0,
+        "signature_checks": 199994,
+        "reorganizations": 1,
+        "fork_reexecute_transactions": 2048
+      },
+      {
+        "node": "node05",
+        "local_transaction_delta": 199936,
+        "end_transactions": 238464,
+        "cpu_seconds": 15.699077999999998,
+        "verification_wait_seconds": 0.0,
+        "signature_checks": 199997,
+        "reorganizations": 1,
+        "fork_reexecute_transactions": 2048
+      },
+      {
+        "node": "node06",
+        "local_transaction_delta": 199936,
+        "end_transactions": 238464,
+        "cpu_seconds": 16.986651000000002,
+        "verification_wait_seconds": 0.0,
+        "signature_checks": 200002,
+        "reorganizations": 1,
+        "fork_reexecute_transactions": 2048
+      },
+      {
+        "node": "node07",
+        "local_transaction_delta": 199936,
+        "end_transactions": 238464,
+        "cpu_seconds": 16.935667,
+        "verification_wait_seconds": 0.0,
+        "signature_checks": 199994,
+        "reorganizations": 0,
+        "fork_reexecute_transactions": 0
+      },
+      {
+        "node": "node08",
+        "local_transaction_delta": 199936,
+        "end_transactions": 238464,
+        "cpu_seconds": 15.734151,
+        "verification_wait_seconds": 0.0,
+        "signature_checks": 199995,
+        "reorganizations": 2,
+        "fork_reexecute_transactions": 4096
+      },
+      {
+        "node": "node09",
+        "local_transaction_delta": 199936,
+        "end_transactions": 238464,
+        "cpu_seconds": 17.288168999999996,
+        "verification_wait_seconds": 0.0,
+        "signature_checks": 199989,
+        "reorganizations": 1,
+        "fork_reexecute_transactions": 2048
+      },
+      {
+        "node": "node10",
+        "local_transaction_delta": 199936,
+        "end_transactions": 238464,
+        "cpu_seconds": 16.828384999999997,
+        "verification_wait_seconds": 0.0,
+        "signature_checks": 200005,
+        "reorganizations": 1,
+        "fork_reexecute_transactions": 2048
+      }
+    ]
+  },
+  "B3-20000-r1": {
+    "labels_per_node_at_12_seconds": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      1,
+      0,
+      0,
+      1
+    ],
+    "nodes_with_16_labels_at_12_seconds": 0,
+    "whole_run_decision_reasons": {},
+    "whole_run_targets": 2,
+    "whole_run_positive_targets": 2,
+    "measurement_per_node": [
+      {
+        "node": "node01",
+        "local_transaction_delta": 199936,
+        "end_transactions": 238976,
+        "cpu_seconds": 15.940415999999999,
+        "verification_wait_seconds": 0.0,
+        "signature_checks": 200012,
+        "reorganizations": 1,
+        "fork_reexecute_transactions": 3072
+      },
+      {
+        "node": "node02",
+        "local_transaction_delta": 199936,
+        "end_transactions": 238976,
+        "cpu_seconds": 16.618529,
+        "verification_wait_seconds": 0.0,
+        "signature_checks": 199992,
+        "reorganizations": 0,
+        "fork_reexecute_transactions": 0
+      },
+      {
+        "node": "node03",
+        "local_transaction_delta": 199936,
+        "end_transactions": 238976,
+        "cpu_seconds": 15.761325999999999,
+        "verification_wait_seconds": 0.0,
+        "signature_checks": 199994,
+        "reorganizations": 0,
+        "fork_reexecute_transactions": 0
+      },
+      {
+        "node": "node04",
+        "local_transaction_delta": 199936,
+        "end_transactions": 238976,
+        "cpu_seconds": 16.176067,
+        "verification_wait_seconds": 0.0,
+        "signature_checks": 199992,
+        "reorganizations": 0,
+        "fork_reexecute_transactions": 0
+      },
+      {
+        "node": "node05",
+        "local_transaction_delta": 199936,
+        "end_transactions": 238976,
+        "cpu_seconds": 15.716826999999999,
+        "verification_wait_seconds": 0.0,
+        "signature_checks": 199992,
+        "reorganizations": 0,
+        "fork_reexecute_transactions": 0
+      },
+      {
+        "node": "node06",
+        "local_transaction_delta": 199936,
+        "end_transactions": 238976,
+        "cpu_seconds": 16.855015,
+        "verification_wait_seconds": 0.0,
+        "signature_checks": 199992,
+        "reorganizations": 0,
+        "fork_reexecute_transactions": 0
+      },
+      {
+        "node": "node07",
+        "local_transaction_delta": 199936,
+        "end_transactions": 238976,
+        "cpu_seconds": 16.907647,
+        "verification_wait_seconds": 0.0,
+        "signature_checks": 199993,
+        "reorganizations": 0,
+        "fork_reexecute_transactions": 0
+      },
+      {
+        "node": "node08",
+        "local_transaction_delta": 199936,
+        "end_transactions": 238976,
+        "cpu_seconds": 15.955185,
+        "verification_wait_seconds": 0.0,
+        "signature_checks": 199993,
+        "reorganizations": 0,
+        "fork_reexecute_transactions": 0
+      },
+      {
+        "node": "node09",
+        "local_transaction_delta": 199936,
+        "end_transactions": 238976,
+        "cpu_seconds": 17.311711,
+        "verification_wait_seconds": 0.0,
+        "signature_checks": 199990,
+        "reorganizations": 0,
+        "fork_reexecute_transactions": 0
+      },
+      {
+        "node": "node10",
+        "local_transaction_delta": 199936,
+        "end_transactions": 238976,
+        "cpu_seconds": 16.764564999999997,
+        "verification_wait_seconds": 0.0,
+        "signature_checks": 199987,
+        "reorganizations": 0,
+        "fork_reexecute_transactions": 0
+      }
+    ]
+  },
+  "Q1B3-20000-r1": {
+    "labels_per_node_at_12_seconds": [
+      0,
+      0,
+      0,
+      0,
+      1,
+      0,
+      0,
+      0,
+      1,
+      0
+    ],
+    "nodes_with_16_labels_at_12_seconds": 0,
+    "whole_run_decision_reasons": {},
+    "whole_run_targets": 2,
+    "whole_run_positive_targets": 1,
+    "measurement_per_node": [
+      {
+        "node": "node01",
+        "local_transaction_delta": 199936,
+        "end_transactions": 238336,
+        "cpu_seconds": 15.872739999999999,
+        "verification_wait_seconds": 0.007783153,
+        "signature_checks": 200010,
+        "reorganizations": 0,
+        "fork_reexecute_transactions": 0
+      },
+      {
+        "node": "node02",
+        "local_transaction_delta": 199936,
+        "end_transactions": 238336,
+        "cpu_seconds": 16.440024,
+        "verification_wait_seconds": 0.0075911799999999995,
+        "signature_checks": 199994,
+        "reorganizations": 0,
+        "fork_reexecute_transactions": 0
+      },
+      {
+        "node": "node03",
+        "local_transaction_delta": 199936,
+        "end_transactions": 238336,
+        "cpu_seconds": 15.732912,
+        "verification_wait_seconds": 0.007542834000000001,
+        "signature_checks": 199991,
+        "reorganizations": 0,
+        "fork_reexecute_transactions": 0
+      },
+      {
+        "node": "node04",
+        "local_transaction_delta": 199936,
+        "end_transactions": 238336,
+        "cpu_seconds": 16.503763,
+        "verification_wait_seconds": 0.0076548960000000004,
+        "signature_checks": 199962,
+        "reorganizations": 0,
+        "fork_reexecute_transactions": 0
+      },
+      {
+        "node": "node05",
+        "local_transaction_delta": 199936,
+        "end_transactions": 238336,
+        "cpu_seconds": 16.096795,
+        "verification_wait_seconds": 0.007616923999999999,
+        "signature_checks": 199990,
+        "reorganizations": 0,
+        "fork_reexecute_transactions": 0
+      },
+      {
+        "node": "node06",
+        "local_transaction_delta": 199936,
+        "end_transactions": 238336,
+        "cpu_seconds": 16.838699000000002,
+        "verification_wait_seconds": 0.013268973,
+        "signature_checks": 199985,
+        "reorganizations": 0,
+        "fork_reexecute_transactions": 0
+      },
+      {
+        "node": "node07",
+        "local_transaction_delta": 199936,
+        "end_transactions": 238336,
+        "cpu_seconds": 17.154099,
+        "verification_wait_seconds": 0.013907288000000002,
+        "signature_checks": 199991,
+        "reorganizations": 0,
+        "fork_reexecute_transactions": 0
+      },
+      {
+        "node": "node08",
+        "local_transaction_delta": 199936,
+        "end_transactions": 238336,
+        "cpu_seconds": 15.769400000000001,
+        "verification_wait_seconds": 0.012764445000000001,
+        "signature_checks": 199992,
+        "reorganizations": 0,
+        "fork_reexecute_transactions": 0
+      },
+      {
+        "node": "node09",
+        "local_transaction_delta": 199936,
+        "end_transactions": 238336,
+        "cpu_seconds": 17.312029,
+        "verification_wait_seconds": 0.014876452,
+        "signature_checks": 199984,
+        "reorganizations": 1,
+        "fork_reexecute_transactions": 3072
+      },
+      {
+        "node": "node10",
+        "local_transaction_delta": 199936,
+        "end_transactions": 238336,
+        "cpu_seconds": 16.680198999999998,
+        "verification_wait_seconds": 0.016835212,
+        "signature_checks": 199993,
+        "reorganizations": 1,
+        "fork_reexecute_transactions": 1920
+      }
+    ]
+  },
+  "Q1-30000-r1": {
+    "labels_per_node_at_12_seconds": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "nodes_with_16_labels_at_12_seconds": 0,
+    "whole_run_decision_reasons": {},
+    "whole_run_targets": 0,
+    "whole_run_positive_targets": 0,
+    "measurement_per_node": [
+      {
+        "node": "node01",
+        "local_transaction_delta": 285056,
+        "end_transactions": 342528,
+        "cpu_seconds": 24.566449000000002,
+        "verification_wait_seconds": 0.024677473000000002,
+        "signature_checks": 299981,
+        "reorganizations": 4,
+        "fork_reexecute_transactions": 9472
+      },
+      {
+        "node": "node02",
+        "local_transaction_delta": 300032,
+        "end_transactions": 357504,
+        "cpu_seconds": 26.112214,
+        "verification_wait_seconds": 0.064683177,
+        "signature_checks": 300020,
+        "reorganizations": 37,
+        "fork_reexecute_transactions": 133120
+      },
+      {
+        "node": "node03",
+        "local_transaction_delta": 300032,
+        "end_transactions": 357504,
+        "cpu_seconds": 25.196347,
+        "verification_wait_seconds": 0.014994612999999999,
+        "signature_checks": 300037,
+        "reorganizations": 28,
+        "fork_reexecute_transactions": 105984
+      },
+      {
+        "node": "node04",
+        "local_transaction_delta": 300032,
+        "end_transactions": 357504,
+        "cpu_seconds": 26.025607,
+        "verification_wait_seconds": 0.396951503,
+        "signature_checks": 300018,
+        "reorganizations": 20,
+        "fork_reexecute_transactions": 76672
+      },
+      {
+        "node": "node05",
+        "local_transaction_delta": 298496,
+        "end_transactions": 355968,
+        "cpu_seconds": 25.55001,
+        "verification_wait_seconds": 0.047198465999999994,
+        "signature_checks": 300041,
+        "reorganizations": 30,
+        "fork_reexecute_transactions": 124160
+      },
+      {
+        "node": "node06",
+        "local_transaction_delta": 300032,
+        "end_transactions": 357504,
+        "cpu_seconds": 27.093760000000003,
+        "verification_wait_seconds": 0.117500166,
+        "signature_checks": 300026,
+        "reorganizations": 36,
+        "fork_reexecute_transactions": 120558
+      },
+      {
+        "node": "node07",
+        "local_transaction_delta": 300032,
+        "end_transactions": 357504,
+        "cpu_seconds": 26.804062000000002,
+        "verification_wait_seconds": 0.350193021,
+        "signature_checks": 299994,
+        "reorganizations": 29,
+        "fork_reexecute_transactions": 105856
+      },
+      {
+        "node": "node08",
+        "local_transaction_delta": 300032,
+        "end_transactions": 357504,
+        "cpu_seconds": 24.898252,
+        "verification_wait_seconds": 0.016217471,
+        "signature_checks": 300021,
+        "reorganizations": 23,
+        "fork_reexecute_transactions": 84985
+      },
+      {
+        "node": "node09",
+        "local_transaction_delta": 300032,
+        "end_transactions": 357504,
+        "cpu_seconds": 27.545807000000003,
+        "verification_wait_seconds": 0.31046549200000007,
+        "signature_checks": 300042,
+        "reorganizations": 30,
+        "fork_reexecute_transactions": 108406
+      },
+      {
+        "node": "node10",
+        "local_transaction_delta": 300032,
+        "end_transactions": 357504,
+        "cpu_seconds": 26.215766000000002,
+        "verification_wait_seconds": 0.283053407,
+        "signature_checks": 300009,
+        "reorganizations": 30,
+        "fork_reexecute_transactions": 100974
+      }
+    ]
+  },
+  "B3S-30000-r1": {
+    "labels_per_node_at_12_seconds": [
+      1,
+      2,
+      0,
+      3,
+      7,
+      0,
+      1,
+      0,
+      0,
+      0
+    ],
+    "nodes_with_16_labels_at_12_seconds": 0,
+    "whole_run_decision_reasons": {},
+    "whole_run_targets": 16,
+    "whole_run_positive_targets": 0,
+    "measurement_per_node": [
+      {
+        "node": "node01",
+        "local_transaction_delta": 300032,
+        "end_transactions": 358656,
+        "cpu_seconds": 23.955641,
+        "verification_wait_seconds": 0.0,
+        "signature_checks": 300073,
+        "reorganizations": 5,
+        "fork_reexecute_transactions": 39152
+      },
+      {
+        "node": "node02",
+        "local_transaction_delta": 300032,
+        "end_transactions": 358656,
+        "cpu_seconds": 24.985121,
+        "verification_wait_seconds": 0.0,
+        "signature_checks": 300014,
+        "reorganizations": 4,
+        "fork_reexecute_transactions": 31600
+      },
+      {
+        "node": "node03",
+        "local_transaction_delta": 298624,
+        "end_transactions": 357248,
+        "cpu_seconds": 24.247448999999996,
+        "verification_wait_seconds": 0.0,
+        "signature_checks": 300013,
+        "reorganizations": 10,
+        "fork_reexecute_transactions": 36992
+      },
+      {
+        "node": "node04",
+        "local_transaction_delta": 298624,
+        "end_transactions": 357248,
+        "cpu_seconds": 25.626199999999997,
+        "verification_wait_seconds": 0.0,
+        "signature_checks": 299971,
+        "reorganizations": 16,
+        "fork_reexecute_transactions": 66048
+      },
+      {
+        "node": "node05",
+        "local_transaction_delta": 300032,
+        "end_transactions": 358656,
+        "cpu_seconds": 24.422621000000003,
+        "verification_wait_seconds": 0.0,
+        "signature_checks": 300016,
+        "reorganizations": 16,
+        "fork_reexecute_transactions": 78064
+      },
+      {
+        "node": "node06",
+        "local_transaction_delta": 291072,
+        "end_transactions": 349696,
+        "cpu_seconds": 25.670904,
+        "verification_wait_seconds": 0.0,
+        "signature_checks": 300001,
+        "reorganizations": 1,
+        "fork_reexecute_transactions": 3072
+      },
+      {
+        "node": "node07",
+        "local_transaction_delta": 300032,
+        "end_transactions": 358656,
+        "cpu_seconds": 25.060042000000003,
+        "verification_wait_seconds": 0.0,
+        "signature_checks": 300031,
+        "reorganizations": 3,
+        "fork_reexecute_transactions": 14976
+      },
+      {
+        "node": "node08",
+        "local_transaction_delta": 300032,
+        "end_transactions": 358656,
+        "cpu_seconds": 24.064953000000003,
+        "verification_wait_seconds": 0.0,
+        "signature_checks": 300016,
+        "reorganizations": 7,
+        "fork_reexecute_transactions": 43136
+      },
+      {
+        "node": "node09",
+        "local_transaction_delta": 286848,
+        "end_transactions": 345472,
+        "cpu_seconds": 25.462484,
+        "verification_wait_seconds": 0.0,
+        "signature_checks": 299974,
+        "reorganizations": 1,
+        "fork_reexecute_transactions": 3072
+      },
+      {
+        "node": "node10",
+        "local_transaction_delta": 291072,
+        "end_transactions": 349696,
+        "cpu_seconds": 24.329557,
+        "verification_wait_seconds": 0.0,
+        "signature_checks": 300017,
+        "reorganizations": 1,
+        "fork_reexecute_transactions": 11904
+      }
+    ]
+  },
+  "B3-30000-r1": {
+    "labels_per_node_at_12_seconds": [
+      3,
+      1,
+      0,
+      0,
+      5,
+      7,
+      1,
+      3,
+      14,
+      1
+    ],
+    "nodes_with_16_labels_at_12_seconds": 0,
+    "whole_run_decision_reasons": {},
+    "whole_run_targets": 35,
+    "whole_run_positive_targets": 6,
+    "measurement_per_node": [
+      {
+        "node": "node01",
+        "local_transaction_delta": 300032,
+        "end_transactions": 357632,
+        "cpu_seconds": 24.142012,
+        "verification_wait_seconds": 0.0,
+        "signature_checks": 300131,
+        "reorganizations": 6,
+        "fork_reexecute_transactions": 28416
+      },
+      {
+        "node": "node02",
+        "local_transaction_delta": 299904,
+        "end_transactions": 357504,
+        "cpu_seconds": 24.823845,
+        "verification_wait_seconds": 0.0,
+        "signature_checks": 300022,
+        "reorganizations": 11,
+        "fork_reexecute_transactions": 43264
+      },
+      {
+        "node": "node03",
+        "local_transaction_delta": 300032,
+        "end_transactions": 357632,
+        "cpu_seconds": 24.07106,
+        "verification_wait_seconds": 0.0,
+        "signature_checks": 300027,
+        "reorganizations": 7,
+        "fork_reexecute_transactions": 30208
+      },
+      {
+        "node": "node04",
+        "local_transaction_delta": 284928,
+        "end_transactions": 342528,
+        "cpu_seconds": 24.478682999999997,
+        "verification_wait_seconds": 0.0,
+        "signature_checks": 300015,
+        "reorganizations": 2,
+        "fork_reexecute_transactions": 4736
+      },
+      {
+        "node": "node05",
+        "local_transaction_delta": 300032,
+        "end_transactions": 357632,
+        "cpu_seconds": 24.31436,
+        "verification_wait_seconds": 0.0,
+        "signature_checks": 300006,
+        "reorganizations": 13,
+        "fork_reexecute_transactions": 67712
+      },
+      {
+        "node": "node06",
+        "local_transaction_delta": 299904,
+        "end_transactions": 357504,
+        "cpu_seconds": 25.903155,
+        "verification_wait_seconds": 0.0,
+        "signature_checks": 300010,
+        "reorganizations": 19,
+        "fork_reexecute_transactions": 78208
+      },
+      {
+        "node": "node07",
+        "local_transaction_delta": 284928,
+        "end_transactions": 342528,
+        "cpu_seconds": 25.525029,
+        "verification_wait_seconds": 0.0,
+        "signature_checks": 300019,
+        "reorganizations": 4,
+        "fork_reexecute_transactions": 27264
+      },
+      {
+        "node": "node08",
+        "local_transaction_delta": 300032,
+        "end_transactions": 357632,
+        "cpu_seconds": 24.097448,
+        "verification_wait_seconds": 0.0,
+        "signature_checks": 300012,
+        "reorganizations": 4,
+        "fork_reexecute_transactions": 24064
+      },
+      {
+        "node": "node09",
+        "local_transaction_delta": 298496,
+        "end_transactions": 356096,
+        "cpu_seconds": 27.037373000000002,
+        "verification_wait_seconds": 0.0,
+        "signature_checks": 300026,
+        "reorganizations": 42,
+        "fork_reexecute_transactions": 157568
+      },
+      {
+        "node": "node10",
+        "local_transaction_delta": 284928,
+        "end_transactions": 342528,
+        "cpu_seconds": 24.867685,
+        "verification_wait_seconds": 0.0,
+        "signature_checks": 300017,
+        "reorganizations": 2,
+        "fork_reexecute_transactions": 16256
+      }
+    ]
+  },
+  "Q1B3-30000-r1": {
+    "labels_per_node_at_12_seconds": [
+      0,
+      3,
+      0,
+      0,
+      13,
+      1,
+      1,
+      1,
+      0,
+      3
+    ],
+    "nodes_with_16_labels_at_12_seconds": 0,
+    "whole_run_decision_reasons": {},
+    "whole_run_targets": 22,
+    "whole_run_positive_targets": 0,
+    "measurement_per_node": [
+      {
+        "node": "node01",
+        "local_transaction_delta": 300160,
+        "end_transactions": 357632,
+        "cpu_seconds": 24.19528,
+        "verification_wait_seconds": 0.081273025,
+        "signature_checks": 299998,
+        "reorganizations": 5,
+        "fork_reexecute_transactions": 40463
+      },
+      {
+        "node": "node02",
+        "local_transaction_delta": 300160,
+        "end_transactions": 357632,
+        "cpu_seconds": 25.249591000000002,
+        "verification_wait_seconds": 0.104010856,
+        "signature_checks": 300108,
+        "reorganizations": 10,
+        "fork_reexecute_transactions": 59894
+      },
+      {
+        "node": "node03",
+        "local_transaction_delta": 300160,
+        "end_transactions": 357632,
+        "cpu_seconds": 24.004726,
+        "verification_wait_seconds": 0.023572348,
+        "signature_checks": 300016,
+        "reorganizations": 3,
+        "fork_reexecute_transactions": 23823
+      },
+      {
+        "node": "node04",
+        "local_transaction_delta": 301568,
+        "end_transactions": 359040,
+        "cpu_seconds": 25.003681999999998,
+        "verification_wait_seconds": 0.16722301,
+        "signature_checks": 300018,
+        "reorganizations": 4,
+        "fork_reexecute_transactions": 28406
+      },
+      {
+        "node": "node05",
+        "local_transaction_delta": 300160,
+        "end_transactions": 357632,
+        "cpu_seconds": 24.900819,
+        "verification_wait_seconds": 0.024571923000000002,
+        "signature_checks": 300018,
+        "reorganizations": 30,
+        "fork_reexecute_transactions": 106383
+      },
+      {
+        "node": "node06",
+        "local_transaction_delta": 286464,
+        "end_transactions": 343936,
+        "cpu_seconds": 25.400866999999998,
+        "verification_wait_seconds": 0.08543392699999999,
+        "signature_checks": 300017,
+        "reorganizations": 1,
+        "fork_reexecute_transactions": 3072
+      },
+      {
+        "node": "node07",
+        "local_transaction_delta": 300160,
+        "end_transactions": 357632,
+        "cpu_seconds": 25.847537000000003,
+        "verification_wait_seconds": 0.08737853000000001,
+        "signature_checks": 300019,
+        "reorganizations": 8,
+        "fork_reexecute_transactions": 24079
+      },
+      {
+        "node": "node08",
+        "local_transaction_delta": 300160,
+        "end_transactions": 357632,
+        "cpu_seconds": 24.202327000000004,
+        "verification_wait_seconds": 0.035597459,
+        "signature_checks": 299997,
+        "reorganizations": 7,
+        "fork_reexecute_transactions": 60687
+      },
+      {
+        "node": "node09",
+        "local_transaction_delta": 286464,
+        "end_transactions": 343936,
+        "cpu_seconds": 25.817304,
+        "verification_wait_seconds": 0.202581765,
+        "signature_checks": 300122,
+        "reorganizations": 1,
+        "fork_reexecute_transactions": 2944
+      },
+      {
+        "node": "node10",
+        "local_transaction_delta": 300032,
+        "end_transactions": 357504,
+        "cpu_seconds": 25.197949,
+        "verification_wait_seconds": 0.196023833,
+        "signature_checks": 300005,
+        "reorganizations": 7,
+        "fork_reexecute_transactions": 28047
+      }
+    ]
+  },
+  "A-30000-r1": {
+    "labels_per_node_at_12_seconds": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "nodes_with_16_labels_at_12_seconds": 0,
+    "whole_run_decision_reasons": {},
+    "whole_run_targets": 0,
+    "whole_run_positive_targets": 0,
+    "measurement_per_node": [
+      {
+        "node": "node01",
+        "local_transaction_delta": 298368,
+        "end_transactions": 356608,
+        "cpu_seconds": 25.257626,
+        "verification_wait_seconds": 0.0,
+        "signature_checks": 299972,
+        "reorganizations": 30,
+        "fork_reexecute_transactions": 126464
+      },
+      {
+        "node": "node02",
+        "local_transaction_delta": 299904,
+        "end_transactions": 358144,
+        "cpu_seconds": 26.384383,
+        "verification_wait_seconds": 0.0,
+        "signature_checks": 300013,
+        "reorganizations": 44,
+        "fork_reexecute_transactions": 194544
+      },
+      {
+        "node": "node03",
+        "local_transaction_delta": 299904,
+        "end_transactions": 358144,
+        "cpu_seconds": 25.530034,
+        "verification_wait_seconds": 0.0,
+        "signature_checks": 300017,
+        "reorganizations": 40,
+        "fork_reexecute_transactions": 163840
+      },
+      {
+        "node": "node04",
+        "local_transaction_delta": 299904,
+        "end_transactions": 358144,
+        "cpu_seconds": 26.100221,
+        "verification_wait_seconds": 0.0,
+        "signature_checks": 300023,
+        "reorganizations": 21,
+        "fork_reexecute_transactions": 112640
+      },
+      {
+        "node": "node05",
+        "local_transaction_delta": 299904,
+        "end_transactions": 358144,
+        "cpu_seconds": 25.687896000000002,
+        "verification_wait_seconds": 0.0,
+        "signature_checks": 300019,
+        "reorganizations": 44,
+        "fork_reexecute_transactions": 153088
+      },
+      {
+        "node": "node06",
+        "local_transaction_delta": 299904,
+        "end_transactions": 358144,
+        "cpu_seconds": 26.752539999999996,
+        "verification_wait_seconds": 0.0,
+        "signature_checks": 300004,
+        "reorganizations": 32,
+        "fork_reexecute_transactions": 103552
+      },
+      {
+        "node": "node07",
+        "local_transaction_delta": 299904,
+        "end_transactions": 358144,
+        "cpu_seconds": 26.247541,
+        "verification_wait_seconds": 0.0,
+        "signature_checks": 300007,
+        "reorganizations": 23,
+        "fork_reexecute_transactions": 105216
+      },
+      {
+        "node": "node08",
+        "local_transaction_delta": 299904,
+        "end_transactions": 358144,
+        "cpu_seconds": 24.955987999999998,
+        "verification_wait_seconds": 0.0,
+        "signature_checks": 300018,
+        "reorganizations": 22,
+        "fork_reexecute_transactions": 88704
+      },
+      {
+        "node": "node09",
+        "local_transaction_delta": 299904,
+        "end_transactions": 358144,
+        "cpu_seconds": 27.040937999999997,
+        "verification_wait_seconds": 0.0,
+        "signature_checks": 300019,
+        "reorganizations": 39,
+        "fork_reexecute_transactions": 163712
+      },
+      {
+        "node": "node10",
+        "local_transaction_delta": 299904,
+        "end_transactions": 358144,
+        "cpu_seconds": 26.43263,
+        "verification_wait_seconds": 0.0,
+        "signature_checks": 300014,
+        "reorganizations": 43,
+        "fork_reexecute_transactions": 172032
+      }
+    ]
+  },
+  "B3S-40000-r1": {
+    "labels_per_node_at_12_seconds": [
+      4,
+      6,
+      6,
+      4,
+      4,
+      3,
+      9,
+      5,
+      3,
+      4
+    ],
+    "nodes_with_16_labels_at_12_seconds": 0,
+    "whole_run_decision_reasons": {
+      "full_alternative": 3
+    },
+    "whole_run_targets": 52,
+    "whole_run_positive_targets": 4,
+    "measurement_per_node": [
+      {
+        "node": "node01",
+        "local_transaction_delta": 381952,
+        "end_transactions": 458624,
+        "cpu_seconds": 34.440343,
+        "verification_wait_seconds": 0.0,
+        "signature_checks": 400008,
+        "reorganizations": 54,
+        "fork_reexecute_transactions": 438880
+      },
+      {
+        "node": "node02",
+        "local_transaction_delta": 369664,
+        "end_transactions": 446848,
+        "cpu_seconds": 33.354168,
+        "verification_wait_seconds": 0.0,
+        "signature_checks": 399998,
+        "reorganizations": 27,
+        "fork_reexecute_transactions": 178720
+      },
+      {
+        "node": "node03",
+        "local_transaction_delta": 397952,
+        "end_transactions": 474624,
+        "cpu_seconds": 33.561353,
+        "verification_wait_seconds": 0.0,
+        "signature_checks": 399983,
+        "reorganizations": 36,
+        "fork_reexecute_transactions": 279088
+      },
+      {
+        "node": "node04",
+        "local_transaction_delta": 395904,
+        "end_transactions": 472448,
+        "cpu_seconds": 34.195291999999995,
+        "verification_wait_seconds": 0.0,
+        "signature_checks": 400026,
+        "reorganizations": 40,
+        "fork_reexecute_transactions": 279952
+      },
+      {
+        "node": "node05",
+        "local_transaction_delta": 395264,
+        "end_transactions": 472448,
+        "cpu_seconds": 33.975704,
+        "verification_wait_seconds": 0.0,
+        "signature_checks": 399973,
+        "reorganizations": 40,
+        "fork_reexecute_transactions": 288912
+      },
+      {
+        "node": "node06",
+        "local_transaction_delta": 403968,
+        "end_transactions": 476800,
+        "cpu_seconds": 34.57083,
+        "verification_wait_seconds": 0.0,
+        "signature_checks": 400035,
+        "reorganizations": 38,
+        "fork_reexecute_transactions": 329360
+      },
+      {
+        "node": "node07",
+        "local_transaction_delta": 393840,
+        "end_transactions": 470512,
+        "cpu_seconds": 35.08397,
+        "verification_wait_seconds": 0.0,
+        "signature_checks": 400011,
+        "reorganizations": 49,
+        "fork_reexecute_transactions": 360592
+      },
+      {
+        "node": "node08",
+        "local_transaction_delta": 397952,
+        "end_transactions": 474624,
+        "cpu_seconds": 34.478503,
+        "verification_wait_seconds": 0.0,
+        "signature_checks": 399891,
+        "reorganizations": 53,
+        "fork_reexecute_transactions": 383376
+      },
+      {
+        "node": "node09",
+        "local_transaction_delta": 387968,
+        "end_transactions": 464512,
+        "cpu_seconds": 35.38482,
+        "verification_wait_seconds": 0.0,
+        "signature_checks": 399388,
+        "reorganizations": 45,
+        "fork_reexecute_transactions": 387792
+      },
+      {
+        "node": "node10",
+        "local_transaction_delta": 397440,
+        "end_transactions": 470272,
+        "cpu_seconds": 34.630694,
+        "verification_wait_seconds": 0.0,
+        "signature_checks": 400028,
+        "reorganizations": 54,
+        "fork_reexecute_transactions": 444320
+      }
+    ]
+  },
+  "B3-40000-r1": {
+    "labels_per_node_at_12_seconds": [
+      3,
+      1,
+      8,
+      10,
+      5,
+      3,
+      8,
+      7,
+      10,
+      5
+    ],
+    "nodes_with_16_labels_at_12_seconds": 0,
+    "whole_run_decision_reasons": {},
+    "whole_run_targets": 62,
+    "whole_run_positive_targets": 3,
+    "measurement_per_node": [
+      {
+        "node": "node01",
+        "local_transaction_delta": 397824,
+        "end_transactions": 475648,
+        "cpu_seconds": 34.471809,
+        "verification_wait_seconds": 0.0,
+        "signature_checks": 400013,
+        "reorganizations": 56,
+        "fork_reexecute_transactions": 346848
+      },
+      {
+        "node": "node02",
+        "local_transaction_delta": 399872,
+        "end_transactions": 477696,
+        "cpu_seconds": 34.490382,
+        "verification_wait_seconds": 0.0,
+        "signature_checks": 399994,
+        "reorganizations": 40,
+        "fork_reexecute_transactions": 244080
+      },
+      {
+        "node": "node03",
+        "local_transaction_delta": 393600,
+        "end_transactions": 469120,
+        "cpu_seconds": 34.575139,
+        "verification_wait_seconds": 0.0,
+        "signature_checks": 399499,
+        "reorganizations": 57,
+        "fork_reexecute_transactions": 411760
+      },
+      {
+        "node": "node04",
+        "local_transaction_delta": 398080,
+        "end_transactions": 473856,
+        "cpu_seconds": 35.587607000000006,
+        "verification_wait_seconds": 0.0,
+        "signature_checks": 400034,
+        "reorganizations": 66,
+        "fork_reexecute_transactions": 418672
+      },
+      {
+        "node": "node05",
+        "local_transaction_delta": 371824,
+        "end_transactions": 449648,
+        "cpu_seconds": 33.557030000000005,
+        "verification_wait_seconds": 0.0,
+        "signature_checks": 399604,
+        "reorganizations": 30,
+        "fork_reexecute_transactions": 258416
+      },
+      {
+        "node": "node06",
+        "local_transaction_delta": 400128,
+        "end_transactions": 475520,
+        "cpu_seconds": 35.297849,
+        "verification_wait_seconds": 0.0,
+        "signature_checks": 400006,
+        "reorganizations": 55,
+        "fork_reexecute_transactions": 415824
+      },
+      {
+        "node": "node07",
+        "local_transaction_delta": 400256,
+        "end_transactions": 475776,
+        "cpu_seconds": 35.306221,
+        "verification_wait_seconds": 0.0,
+        "signature_checks": 400085,
+        "reorganizations": 49,
+        "fork_reexecute_transactions": 377712
+      },
+      {
+        "node": "node08",
+        "local_transaction_delta": 400128,
+        "end_transactions": 475648,
+        "cpu_seconds": 34.739143,
+        "verification_wait_seconds": 0.0,
+        "signature_checks": 400026,
+        "reorganizations": 56,
+        "fork_reexecute_transactions": 415712
+      },
+      {
+        "node": "node09",
+        "local_transaction_delta": 397824,
+        "end_transactions": 475648,
+        "cpu_seconds": 35.957727999999996,
+        "verification_wait_seconds": 0.0,
+        "signature_checks": 399967,
+        "reorganizations": 57,
+        "fork_reexecute_transactions": 450000
+      },
+      {
+        "node": "node10",
+        "local_transaction_delta": 400000,
+        "end_transactions": 475776,
+        "cpu_seconds": 34.682179,
+        "verification_wait_seconds": 0.0,
+        "signature_checks": 400014,
+        "reorganizations": 46,
+        "fork_reexecute_transactions": 343168
+      }
+    ]
+  },
+  "Q1B3-40000-r1": {
+    "labels_per_node_at_12_seconds": [
+      4,
+      6,
+      7,
+      1,
+      3,
+      1,
+      2,
+      6,
+      0,
+      4
+    ],
+    "nodes_with_16_labels_at_12_seconds": 0,
+    "whole_run_decision_reasons": {
+      "full_alternative": 6
+    },
+    "whole_run_targets": 34,
+    "whole_run_positive_targets": 9,
+    "measurement_per_node": [
+      {
+        "node": "node01",
+        "local_transaction_delta": 290432,
+        "end_transactions": 365056,
+        "cpu_seconds": 26.175894,
+        "verification_wait_seconds": 28.383635208,
+        "signature_checks": 285811,
+        "reorganizations": 31,
+        "fork_reexecute_transactions": 175164
+      },
+      {
+        "node": "node02",
+        "local_transaction_delta": 290432,
+        "end_transactions": 365056,
+        "cpu_seconds": 26.892069,
+        "verification_wait_seconds": 29.036277206999998,
+        "signature_checks": 285368,
+        "reorganizations": 35,
+        "fork_reexecute_transactions": 221556
+      },
+      {
+        "node": "node03",
+        "local_transaction_delta": 290432,
+        "end_transactions": 365056,
+        "cpu_seconds": 26.509874999999997,
+        "verification_wait_seconds": 29.237927322000004,
+        "signature_checks": 285354,
+        "reorganizations": 33,
+        "fork_reexecute_transactions": 181276
+      },
+      {
+        "node": "node04",
+        "local_transaction_delta": 288384,
+        "end_transactions": 365056,
+        "cpu_seconds": 27.051981999999995,
+        "verification_wait_seconds": 30.191354023,
+        "signature_checks": 285397,
+        "reorganizations": 38,
+        "fork_reexecute_transactions": 190892
+      },
+      {
+        "node": "node05",
+        "local_transaction_delta": 290432,
+        "end_transactions": 365056,
+        "cpu_seconds": 26.342032000000003,
+        "verification_wait_seconds": 27.020551121,
+        "signature_checks": 285343,
+        "reorganizations": 34,
+        "fork_reexecute_transactions": 253652
+      },
+      {
+        "node": "node06",
+        "local_transaction_delta": 290432,
+        "end_transactions": 365056,
+        "cpu_seconds": 29.477663,
+        "verification_wait_seconds": 45.743164214,
+        "signature_checks": 286478,
+        "reorganizations": 42,
+        "fork_reexecute_transactions": 291703
+      },
+      {
+        "node": "node07",
+        "local_transaction_delta": 290432,
+        "end_transactions": 365056,
+        "cpu_seconds": 28.860677000000003,
+        "verification_wait_seconds": 41.367561445999996,
+        "signature_checks": 286017,
+        "reorganizations": 44,
+        "fork_reexecute_transactions": 260560
+      },
+      {
+        "node": "node08",
+        "local_transaction_delta": 290432,
+        "end_transactions": 365056,
+        "cpu_seconds": 26.733832999999997,
+        "verification_wait_seconds": 29.483235977,
+        "signature_checks": 285419,
+        "reorganizations": 38,
+        "fork_reexecute_transactions": 226764
+      },
+      {
+        "node": "node09",
+        "local_transaction_delta": 130944,
+        "end_transactions": 205568,
+        "cpu_seconds": 35.126257,
+        "verification_wait_seconds": 92.272421728,
+        "signature_checks": 262615,
+        "reorganizations": 22,
+        "fork_reexecute_transactions": 181376
+      },
+      {
+        "node": "node10",
+        "local_transaction_delta": 288384,
+        "end_transactions": 365056,
+        "cpu_seconds": 27.010861,
+        "verification_wait_seconds": 27.20436035,
+        "signature_checks": 285426,
+        "reorganizations": 41,
+        "fork_reexecute_transactions": 221200
+      }
+    ]
+  },
+  "A-40000-r1": {
+    "labels_per_node_at_12_seconds": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "nodes_with_16_labels_at_12_seconds": 0,
+    "whole_run_decision_reasons": {},
+    "whole_run_targets": 0,
+    "whole_run_positive_targets": 0,
+    "measurement_per_node": [
+      {
+        "node": "node01",
+        "local_transaction_delta": 395904,
+        "end_transactions": 470784,
+        "cpu_seconds": 34.30907,
+        "verification_wait_seconds": 0.0,
+        "signature_checks": 400124,
+        "reorganizations": 47,
+        "fork_reexecute_transactions": 386304
+      },
+      {
+        "node": "node02",
+        "local_transaction_delta": 365824,
+        "end_transactions": 440704,
+        "cpu_seconds": 34.845728,
+        "verification_wait_seconds": 0.0,
+        "signature_checks": 399993,
+        "reorganizations": 61,
+        "fork_reexecute_transactions": 397008
+      },
+      {
+        "node": "node03",
+        "local_transaction_delta": 401920,
+        "end_transactions": 476800,
+        "cpu_seconds": 34.39336,
+        "verification_wait_seconds": 0.0,
+        "signature_checks": 399944,
+        "reorganizations": 48,
+        "fork_reexecute_transactions": 354064
+      },
+      {
+        "node": "node04",
+        "local_transaction_delta": 401920,
+        "end_transactions": 476800,
+        "cpu_seconds": 34.116554,
+        "verification_wait_seconds": 0.0,
+        "signature_checks": 400087,
+        "reorganizations": 40,
+        "fork_reexecute_transactions": 241408
+      },
+      {
+        "node": "node05",
+        "local_transaction_delta": 383872,
+        "end_transactions": 460672,
+        "cpu_seconds": 33.147067,
+        "verification_wait_seconds": 0.0,
+        "signature_checks": 400098,
+        "reorganizations": 23,
+        "fork_reexecute_transactions": 130800
+      },
+      {
+        "node": "node06",
+        "local_transaction_delta": 360576,
+        "end_transactions": 430848,
+        "cpu_seconds": 35.395693,
+        "verification_wait_seconds": 0.0,
+        "signature_checks": 400157,
+        "reorganizations": 64,
+        "fork_reexecute_transactions": 465504
+      },
+      {
+        "node": "node07",
+        "local_transaction_delta": 390016,
+        "end_transactions": 466560,
+        "cpu_seconds": 35.842499,
+        "verification_wait_seconds": 0.0,
+        "signature_checks": 399235,
+        "reorganizations": 53,
+        "fork_reexecute_transactions": 485616
+      },
+      {
+        "node": "node08",
+        "local_transaction_delta": 378240,
+        "end_transactions": 450688,
+        "cpu_seconds": 34.612624000000004,
+        "verification_wait_seconds": 0.0,
+        "signature_checks": 400081,
+        "reorganizations": 58,
+        "fork_reexecute_transactions": 371888
+      },
+      {
+        "node": "node09",
+        "local_transaction_delta": 401408,
+        "end_transactions": 476032,
+        "cpu_seconds": 35.623931,
+        "verification_wait_seconds": 0.0,
+        "signature_checks": 400016,
+        "reorganizations": 42,
+        "fork_reexecute_transactions": 370912
+      },
+      {
+        "node": "node10",
+        "local_transaction_delta": 392192,
+        "end_transactions": 466560,
+        "cpu_seconds": 34.992688,
+        "verification_wait_seconds": 0.0,
+        "signature_checks": 399312,
+        "reorganizations": 48,
+        "fork_reexecute_transactions": 325744
+      }
+    ]
+  },
+  "Q1-40000-r1": {
+    "labels_per_node_at_12_seconds": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "nodes_with_16_labels_at_12_seconds": 0,
+    "whole_run_decision_reasons": {},
+    "whole_run_targets": 0,
+    "whole_run_positive_targets": 0,
+    "measurement_per_node": [
+      {
+        "node": "node01",
+        "local_transaction_delta": 252416,
+        "end_transactions": 328960,
+        "cpu_seconds": 22.820594,
+        "verification_wait_seconds": 23.981047625,
+        "signature_checks": 250076,
+        "reorganizations": 37,
+        "fork_reexecute_transactions": 167736
+      },
+      {
+        "node": "node02",
+        "local_transaction_delta": 253184,
+        "end_transactions": 329728,
+        "cpu_seconds": 24.041407999999997,
+        "verification_wait_seconds": 26.651624019,
+        "signature_checks": 250050,
+        "reorganizations": 41,
+        "fork_reexecute_transactions": 235231
+      },
+      {
+        "node": "node03",
+        "local_transaction_delta": 252928,
+        "end_transactions": 328960,
+        "cpu_seconds": 23.501990999999997,
+        "verification_wait_seconds": 25.347995818,
+        "signature_checks": 250053,
+        "reorganizations": 42,
+        "fork_reexecute_transactions": 222102
+      },
+      {
+        "node": "node04",
+        "local_transaction_delta": 252416,
+        "end_transactions": 328960,
+        "cpu_seconds": 23.082692,
+        "verification_wait_seconds": 22.225013530000002,
+        "signature_checks": 249965,
+        "reorganizations": 30,
+        "fork_reexecute_transactions": 168320
+      },
+      {
+        "node": "node05",
+        "local_transaction_delta": 253184,
+        "end_transactions": 329728,
+        "cpu_seconds": 22.5922,
+        "verification_wait_seconds": 17.331964618999997,
+        "signature_checks": 249994,
+        "reorganizations": 24,
+        "fork_reexecute_transactions": 125654
+      },
+      {
+        "node": "node06",
+        "local_transaction_delta": 83200,
+        "end_transactions": 157696,
+        "cpu_seconds": 34.706158,
+        "verification_wait_seconds": 106.96862242099999,
+        "signature_checks": 233591,
+        "reorganizations": 27,
+        "fork_reexecute_transactions": 113328
+      },
+      {
+        "node": "node07",
+        "local_transaction_delta": 254208,
+        "end_transactions": 328960,
+        "cpu_seconds": 25.158866,
+        "verification_wait_seconds": 35.024257586,
+        "signature_checks": 250939,
+        "reorganizations": 45,
+        "fork_reexecute_transactions": 268063
+      },
+      {
+        "node": "node08",
+        "local_transaction_delta": 252416,
+        "end_transactions": 328960,
+        "cpu_seconds": 22.816788,
+        "verification_wait_seconds": 21.904757088000004,
+        "signature_checks": 249958,
+        "reorganizations": 31,
+        "fork_reexecute_transactions": 164352
+      },
+      {
+        "node": "node09",
+        "local_transaction_delta": 82944,
+        "end_transactions": 157696,
+        "cpu_seconds": 34.116375,
+        "verification_wait_seconds": 104.799423562,
+        "signature_checks": 231882,
+        "reorganizations": 17,
+        "fork_reexecute_transactions": 116480
+      },
+      {
+        "node": "node10",
+        "local_transaction_delta": 254976,
+        "end_transactions": 329728,
+        "cpu_seconds": 28.574616,
+        "verification_wait_seconds": 55.618635751,
+        "signature_checks": 250742,
+        "reorganizations": 53,
+        "fork_reexecute_transactions": 339455
+      }
+    ]
+  },
+  "B3-50000-r1": {
+    "labels_per_node_at_12_seconds": [
+      2,
+      1,
+      0,
+      2,
+      2,
+      1,
+      3,
+      0,
+      2,
+      3
+    ],
+    "nodes_with_16_labels_at_12_seconds": 0,
+    "whole_run_decision_reasons": {
+      "full_alternative": 121
+    },
+    "whole_run_targets": 17,
+    "whole_run_positive_targets": 6,
+    "measurement_per_node": [
+      {
+        "node": "node01",
+        "local_transaction_delta": 470624,
+        "end_transactions": 546112,
+        "cpu_seconds": 38.338712,
+        "verification_wait_seconds": 0.0,
+        "signature_checks": 488760,
+        "reorganizations": 11,
+        "fork_reexecute_transactions": 120000
+      },
+      {
+        "node": "node02",
+        "local_transaction_delta": 494624,
+        "end_transactions": 576112,
+        "cpu_seconds": 39.102556,
+        "verification_wait_seconds": 0.0,
+        "signature_checks": 493940,
+        "reorganizations": 7,
+        "fork_reexecute_transactions": 60000
+      },
+      {
+        "node": "node03",
+        "local_transaction_delta": 476624,
+        "end_transactions": 552112,
+        "cpu_seconds": 39.091811,
+        "verification_wait_seconds": 0.0,
+        "signature_checks": 499949,
+        "reorganizations": 9,
+        "fork_reexecute_transactions": 78000
+      },
+      {
+        "node": "node04",
+        "local_transaction_delta": 464624,
+        "end_transactions": 540112,
+        "cpu_seconds": 39.195829,
+        "verification_wait_seconds": 0.0,
+        "signature_checks": 493682,
+        "reorganizations": 10,
+        "fork_reexecute_transactions": 104624
+      },
+      {
+        "node": "node05",
+        "local_transaction_delta": 488624,
+        "end_transactions": 570112,
+        "cpu_seconds": 39.164609999999996,
+        "verification_wait_seconds": 0.0,
+        "signature_checks": 489080,
+        "reorganizations": 10,
+        "fork_reexecute_transactions": 98624
+      },
+      {
+        "node": "node06",
+        "local_transaction_delta": 494624,
+        "end_transactions": 576112,
+        "cpu_seconds": 39.150265,
+        "verification_wait_seconds": 0.0,
+        "signature_checks": 490854,
+        "reorganizations": 6,
+        "fork_reexecute_transactions": 60000
+      },
+      {
+        "node": "node07",
+        "local_transaction_delta": 482624,
+        "end_transactions": 564112,
+        "cpu_seconds": 39.003274000000005,
+        "verification_wait_seconds": 0.0,
+        "signature_checks": 479365,
+        "reorganizations": 10,
+        "fork_reexecute_transactions": 146624
+      },
+      {
+        "node": "node08",
+        "local_transaction_delta": 494624,
+        "end_transactions": 576112,
+        "cpu_seconds": 38.958998,
+        "verification_wait_seconds": 0.0,
+        "signature_checks": 498843,
+        "reorganizations": 7,
+        "fork_reexecute_transactions": 54000
+      },
+      {
+        "node": "node09",
+        "local_transaction_delta": 488624,
+        "end_transactions": 570112,
+        "cpu_seconds": 39.156269,
+        "verification_wait_seconds": 0.0,
+        "signature_checks": 484698,
+        "reorganizations": 8,
+        "fork_reexecute_transactions": 72000
+      },
+      {
+        "node": "node10",
+        "local_transaction_delta": 494624,
+        "end_transactions": 576112,
+        "cpu_seconds": 39.156928,
+        "verification_wait_seconds": 0.0,
+        "signature_checks": 491141,
+        "reorganizations": 6,
+        "fork_reexecute_transactions": 66000
+      }
+    ]
+  },
+  "Q1B3-50000-r1": {
+    "labels_per_node_at_12_seconds": [
+      3,
+      3,
+      2,
+      2,
+      3,
+      2,
+      2,
+      2,
+      0,
+      4
+    ],
+    "nodes_with_16_labels_at_12_seconds": 0,
+    "whole_run_decision_reasons": {
+      "full_alternative": 12
+    },
+    "whole_run_targets": 26,
+    "whole_run_positive_targets": 8,
+    "measurement_per_node": [
+      {
+        "node": "node01",
+        "local_transaction_delta": 266256,
+        "end_transactions": 334464,
+        "cpu_seconds": 29.751230000000003,
+        "verification_wait_seconds": 58.800013261,
+        "signature_checks": 265947,
+        "reorganizations": 20,
+        "fork_reexecute_transactions": 215535
+      },
+      {
+        "node": "node02",
+        "local_transaction_delta": 266256,
+        "end_transactions": 340464,
+        "cpu_seconds": 25.020144000000002,
+        "verification_wait_seconds": 28.406116712999996,
+        "signature_checks": 264977,
+        "reorganizations": 36,
+        "fork_reexecute_transactions": 209807
+      },
+      {
+        "node": "node03",
+        "local_transaction_delta": 264480,
+        "end_transactions": 338688,
+        "cpu_seconds": 24.353927,
+        "verification_wait_seconds": 27.324619679,
+        "signature_checks": 264635,
+        "reorganizations": 26,
+        "fork_reexecute_transactions": 178464
+      },
+      {
+        "node": "node04",
+        "local_transaction_delta": 261120,
+        "end_transactions": 334464,
+        "cpu_seconds": 25.099393999999997,
+        "verification_wait_seconds": 28.391120489000002,
+        "signature_checks": 264791,
+        "reorganizations": 38,
+        "fork_reexecute_transactions": 270176
+      },
+      {
+        "node": "node05",
+        "local_transaction_delta": 270480,
+        "end_transactions": 338688,
+        "cpu_seconds": 24.466848999999996,
+        "verification_wait_seconds": 26.84875088,
+        "signature_checks": 264814,
+        "reorganizations": 34,
+        "fork_reexecute_transactions": 208639
+      },
+      {
+        "node": "node06",
+        "local_transaction_delta": 264480,
+        "end_transactions": 338688,
+        "cpu_seconds": 25.311028999999998,
+        "verification_wait_seconds": 33.089869242,
+        "signature_checks": 266275,
+        "reorganizations": 30,
+        "fork_reexecute_transactions": 203039
+      },
+      {
+        "node": "node07",
+        "local_transaction_delta": 265360,
+        "end_transactions": 333568,
+        "cpu_seconds": 26.321279,
+        "verification_wait_seconds": 38.419183530000005,
+        "signature_checks": 261725,
+        "reorganizations": 41,
+        "fork_reexecute_transactions": 259023
+      },
+      {
+        "node": "node08",
+        "local_transaction_delta": 267120,
+        "end_transactions": 340464,
+        "cpu_seconds": 24.031622,
+        "verification_wait_seconds": 27.023229884999996,
+        "signature_checks": 263911,
+        "reorganizations": 28,
+        "fork_reexecute_transactions": 155663
+      },
+      {
+        "node": "node09",
+        "local_transaction_delta": 133312,
+        "end_transactions": 198080,
+        "cpu_seconds": 33.728944999999996,
+        "verification_wait_seconds": 101.314726921,
+        "signature_checks": 225237,
+        "reorganizations": 11,
+        "fork_reexecute_transactions": 129744
+      },
+      {
+        "node": "node10",
+        "local_transaction_delta": 260256,
+        "end_transactions": 334464,
+        "cpu_seconds": 25.055549,
+        "verification_wait_seconds": 28.011898239,
+        "signature_checks": 264007,
+        "reorganizations": 34,
+        "fork_reexecute_transactions": 178975
+      }
+    ]
+  },
+  "A-50000-r1": {
+    "labels_per_node_at_12_seconds": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "nodes_with_16_labels_at_12_seconds": 0,
+    "whole_run_decision_reasons": {},
+    "whole_run_targets": 0,
+    "whole_run_positive_targets": 0,
+    "measurement_per_node": [
+      {
+        "node": "node01",
+        "local_transaction_delta": 474144,
+        "end_transactions": 551712,
+        "cpu_seconds": 38.088177,
+        "verification_wait_seconds": 0.0,
+        "signature_checks": 484673,
+        "reorganizations": 10,
+        "fork_reexecute_transactions": 117248
+      },
+      {
+        "node": "node02",
+        "local_transaction_delta": 499232,
+        "end_transactions": 557712,
+        "cpu_seconds": 39.179648,
+        "verification_wait_seconds": 0.0,
+        "signature_checks": 495213,
+        "reorganizations": 10,
+        "fork_reexecute_transactions": 150480
+      },
+      {
+        "node": "node03",
+        "local_transaction_delta": 474896,
+        "end_transactions": 563712,
+        "cpu_seconds": 38.938949,
+        "verification_wait_seconds": 0.0,
+        "signature_checks": 497610,
+        "reorganizations": 9,
+        "fork_reexecute_transactions": 68032
+      },
+      {
+        "node": "node04",
+        "local_transaction_delta": 474896,
+        "end_transactions": 563712,
+        "cpu_seconds": 39.116166,
+        "verification_wait_seconds": 0.0,
+        "signature_checks": 499316,
+        "reorganizations": 7,
+        "fork_reexecute_transactions": 50032
+      },
+      {
+        "node": "node05",
+        "local_transaction_delta": 485264,
+        "end_transactions": 557712,
+        "cpu_seconds": 39.155456,
+        "verification_wait_seconds": 0.0,
+        "signature_checks": 501062,
+        "reorganizations": 4,
+        "fork_reexecute_transactions": 48896
+      },
+      {
+        "node": "node06",
+        "local_transaction_delta": 462144,
+        "end_transactions": 545712,
+        "cpu_seconds": 39.059801,
+        "verification_wait_seconds": 0.0,
+        "signature_checks": 486727,
+        "reorganizations": 12,
+        "fork_reexecute_transactions": 126144
+      },
+      {
+        "node": "node07",
+        "local_transaction_delta": 432144,
+        "end_transactions": 515712,
+        "cpu_seconds": 39.180152,
+        "verification_wait_seconds": 0.0,
+        "signature_checks": 481588,
+        "reorganizations": 14,
+        "fork_reexecute_transactions": 180528
+      },
+      {
+        "node": "node08",
+        "local_transaction_delta": 474896,
+        "end_transactions": 563712,
+        "cpu_seconds": 38.940713,
+        "verification_wait_seconds": 0.0,
+        "signature_checks": 498803,
+        "reorganizations": 7,
+        "fork_reexecute_transactions": 50512
+      },
+      {
+        "node": "node09",
+        "local_transaction_delta": 486144,
+        "end_transactions": 563712,
+        "cpu_seconds": 39.072568,
+        "verification_wait_seconds": 0.0,
+        "signature_checks": 478168,
+        "reorganizations": 10,
+        "fork_reexecute_transactions": 146368
+      },
+      {
+        "node": "node10",
+        "local_transaction_delta": 474896,
+        "end_transactions": 563712,
+        "cpu_seconds": 38.87214,
+        "verification_wait_seconds": 0.0,
+        "signature_checks": 498358,
+        "reorganizations": 5,
+        "fork_reexecute_transactions": 44032
+      }
+    ]
+  },
+  "Q1-50000-r1": {
+    "labels_per_node_at_12_seconds": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "nodes_with_16_labels_at_12_seconds": 0,
+    "whole_run_decision_reasons": {},
+    "whole_run_targets": 0,
+    "whole_run_positive_targets": 0,
+    "measurement_per_node": [
+      {
+        "node": "node01",
+        "local_transaction_delta": 245248,
+        "end_transactions": 318848,
+        "cpu_seconds": 23.061671,
+        "verification_wait_seconds": 26.612343890000005,
+        "signature_checks": 244680,
+        "reorganizations": 36,
+        "fork_reexecute_transactions": 218577
+      },
+      {
+        "node": "node02",
+        "local_transaction_delta": 244096,
+        "end_transactions": 318848,
+        "cpu_seconds": 23.040804,
+        "verification_wait_seconds": 26.556566837,
+        "signature_checks": 243522,
+        "reorganizations": 34,
+        "fork_reexecute_transactions": 164801
+      },
+      {
+        "node": "node03",
+        "local_transaction_delta": 242480,
+        "end_transactions": 318848,
+        "cpu_seconds": 22.152664,
+        "verification_wait_seconds": 24.801847659,
+        "signature_checks": 240439,
+        "reorganizations": 24,
+        "fork_reexecute_transactions": 128642
+      },
+      {
+        "node": "node04",
+        "local_transaction_delta": 248480,
+        "end_transactions": 318848,
+        "cpu_seconds": 23.079392,
+        "verification_wait_seconds": 26.020908463,
+        "signature_checks": 242319,
+        "reorganizations": 30,
+        "fork_reexecute_transactions": 163808
+      },
+      {
+        "node": "node05",
+        "local_transaction_delta": 248480,
+        "end_transactions": 318848,
+        "cpu_seconds": 22.867891999999998,
+        "verification_wait_seconds": 25.279657645,
+        "signature_checks": 243387,
+        "reorganizations": 30,
+        "fork_reexecute_transactions": 172818
+      },
+      {
+        "node": "node06",
+        "local_transaction_delta": 243072,
+        "end_transactions": 318848,
+        "cpu_seconds": 23.363895,
+        "verification_wait_seconds": 25.91743462,
+        "signature_checks": 242049,
+        "reorganizations": 33,
+        "fork_reexecute_transactions": 209024
+      },
+      {
+        "node": "node07",
+        "local_transaction_delta": 248480,
+        "end_transactions": 318848,
+        "cpu_seconds": 23.700580000000002,
+        "verification_wait_seconds": 31.646524616999997,
+        "signature_checks": 244186,
+        "reorganizations": 33,
+        "fork_reexecute_transactions": 201393
+      },
+      {
+        "node": "node08",
+        "local_transaction_delta": 248480,
+        "end_transactions": 318848,
+        "cpu_seconds": 22.385838,
+        "verification_wait_seconds": 24.877117000000002,
+        "signature_checks": 241772,
+        "reorganizations": 21,
+        "fork_reexecute_transactions": 112224
+      },
+      {
+        "node": "node09",
+        "local_transaction_delta": 41216,
+        "end_transactions": 107776,
+        "cpu_seconds": 33.986715999999994,
+        "verification_wait_seconds": 108.34260801799999,
+        "signature_checks": 220930,
+        "reorganizations": 10,
+        "fork_reexecute_transactions": 62720
+      },
+      {
+        "node": "node10",
+        "local_transaction_delta": 248480,
+        "end_transactions": 318848,
+        "cpu_seconds": 22.847311,
+        "verification_wait_seconds": 25.230222814,
+        "signature_checks": 243195,
+        "reorganizations": 35,
+        "fork_reexecute_transactions": 177746
+      }
+    ]
+  },
+  "B3S-50000-r1": {
+    "labels_per_node_at_12_seconds": [
+      3,
+      11,
+      8,
+      3,
+      5,
+      11,
+      9,
+      8,
+      5,
+      9
+    ],
+    "nodes_with_16_labels_at_12_seconds": 0,
+    "whole_run_decision_reasons": {
+      "full_alternative": 85
+    },
+    "whole_run_targets": 75,
+    "whole_run_positive_targets": 6,
+    "measurement_per_node": [
+      {
+        "node": "node01",
+        "local_transaction_delta": 473584,
+        "end_transactions": 557968,
+        "cpu_seconds": 38.194099,
+        "verification_wait_seconds": 0.0,
+        "signature_checks": 477537,
+        "reorganizations": 14,
+        "fork_reexecute_transactions": 222864
+      },
+      {
+        "node": "node02",
+        "local_transaction_delta": 461584,
+        "end_transactions": 545968,
+        "cpu_seconds": 39.274407,
+        "verification_wait_seconds": 0.0,
+        "signature_checks": 499265,
+        "reorganizations": 9,
+        "fork_reexecute_transactions": 106416
+      },
+      {
+        "node": "node03",
+        "local_transaction_delta": 473744,
+        "end_transactions": 557968,
+        "cpu_seconds": 38.924462000000005,
+        "verification_wait_seconds": 0.0,
+        "signature_checks": 495824,
+        "reorganizations": 10,
+        "fork_reexecute_transactions": 109584
+      },
+      {
+        "node": "node04",
+        "local_transaction_delta": 515584,
+        "end_transactions": 575968,
+        "cpu_seconds": 39.178052,
+        "verification_wait_seconds": 0.0,
+        "signature_checks": 493858,
+        "reorganizations": 13,
+        "fork_reexecute_transactions": 151792
+      },
+      {
+        "node": "node05",
+        "local_transaction_delta": 485584,
+        "end_transactions": 569968,
+        "cpu_seconds": 39.186136999999995,
+        "verification_wait_seconds": 0.0,
+        "signature_checks": 497439,
+        "reorganizations": 6,
+        "fork_reexecute_transactions": 54384
+      },
+      {
+        "node": "node06",
+        "local_transaction_delta": 473584,
+        "end_transactions": 557968,
+        "cpu_seconds": 39.172828,
+        "verification_wait_seconds": 0.0,
+        "signature_checks": 492494,
+        "reorganizations": 14,
+        "fork_reexecute_transactions": 194480
+      },
+      {
+        "node": "node07",
+        "local_transaction_delta": 485584,
+        "end_transactions": 569968,
+        "cpu_seconds": 39.126032,
+        "verification_wait_seconds": 0.0,
+        "signature_checks": 485700,
+        "reorganizations": 10,
+        "fork_reexecute_transactions": 140736
+      },
+      {
+        "node": "node08",
+        "local_transaction_delta": 485584,
+        "end_transactions": 569968,
+        "cpu_seconds": 39.096923,
+        "verification_wait_seconds": 0.0,
+        "signature_checks": 493395,
+        "reorganizations": 14,
+        "fork_reexecute_transactions": 160160
+      },
+      {
+        "node": "node09",
+        "local_transaction_delta": 479584,
+        "end_transactions": 563968,
+        "cpu_seconds": 39.148364,
+        "verification_wait_seconds": 0.0,
+        "signature_checks": 484587,
+        "reorganizations": 7,
+        "fork_reexecute_transactions": 80976
+      },
+      {
+        "node": "node10",
+        "local_transaction_delta": 449584,
+        "end_transactions": 533968,
+        "cpu_seconds": 39.120233000000006,
+        "verification_wait_seconds": 0.0,
+        "signature_checks": 496537,
+        "reorganizations": 13,
+        "fork_reexecute_transactions": 177136
+      }
+    ]
+  },
+  "Q1B3-60000-r1": {
+    "labels_per_node_at_12_seconds": [
+      5,
+      1,
+      1,
+      1,
+      2,
+      3,
+      3,
+      1,
+      1,
+      1
+    ],
+    "nodes_with_16_labels_at_12_seconds": 0,
+    "whole_run_decision_reasons": {
+      "full_alternative": 5
+    },
+    "whole_run_targets": 20,
+    "whole_run_positive_targets": 5,
+    "measurement_per_node": [
+      {
+        "node": "node01",
+        "local_transaction_delta": 221312,
+        "end_transactions": 297216,
+        "cpu_seconds": 20.327877,
+        "verification_wait_seconds": 21.561609507,
+        "signature_checks": 221673,
+        "reorganizations": 26,
+        "fork_reexecute_transactions": 123664
+      },
+      {
+        "node": "node02",
+        "local_transaction_delta": 221312,
+        "end_transactions": 297216,
+        "cpu_seconds": 20.891002,
+        "verification_wait_seconds": 21.599142956000005,
+        "signature_checks": 220296,
+        "reorganizations": 28,
+        "fork_reexecute_transactions": 135760
+      },
+      {
+        "node": "node03",
+        "local_transaction_delta": 227184,
+        "end_transactions": 297088,
+        "cpu_seconds": 20.158707,
+        "verification_wait_seconds": 20.783403283,
+        "signature_checks": 220798,
+        "reorganizations": 20,
+        "fork_reexecute_transactions": 93952
+      },
+      {
+        "node": "node04",
+        "local_transaction_delta": 227312,
+        "end_transactions": 297216,
+        "cpu_seconds": 20.902478000000002,
+        "verification_wait_seconds": 21.772792232,
+        "signature_checks": 220366,
+        "reorganizations": 23,
+        "fork_reexecute_transactions": 107552
+      },
+      {
+        "node": "node05",
+        "local_transaction_delta": 221781,
+        "end_transactions": 297216,
+        "cpu_seconds": 20.606237,
+        "verification_wait_seconds": 21.611251003,
+        "signature_checks": 221144,
+        "reorganizations": 20,
+        "fork_reexecute_transactions": 99472
+      },
+      {
+        "node": "node06",
+        "local_transaction_delta": 227312,
+        "end_transactions": 297216,
+        "cpu_seconds": 21.164925999999998,
+        "verification_wait_seconds": 21.908935333000002,
+        "signature_checks": 221572,
+        "reorganizations": 29,
+        "fork_reexecute_transactions": 136368
+      },
+      {
+        "node": "node07",
+        "local_transaction_delta": 227312,
+        "end_transactions": 297216,
+        "cpu_seconds": 20.859284,
+        "verification_wait_seconds": 21.985391282000002,
+        "signature_checks": 220367,
+        "reorganizations": 25,
+        "fork_reexecute_transactions": 110736
+      },
+      {
+        "node": "node08",
+        "local_transaction_delta": 227312,
+        "end_transactions": 297216,
+        "cpu_seconds": 20.042439,
+        "verification_wait_seconds": 21.693916082,
+        "signature_checks": 220223,
+        "reorganizations": 16,
+        "fork_reexecute_transactions": 87408
+      },
+      {
+        "node": "node09",
+        "local_transaction_delta": 72656,
+        "end_transactions": 130560,
+        "cpu_seconds": 34.091822,
+        "verification_wait_seconds": 104.94460930700001,
+        "signature_checks": 216273,
+        "reorganizations": 8,
+        "fork_reexecute_transactions": 72976
+      },
+      {
+        "node": "node10",
+        "local_transaction_delta": 221312,
+        "end_transactions": 297216,
+        "cpu_seconds": 21.381655000000002,
+        "verification_wait_seconds": 21.985063677,
+        "signature_checks": 220256,
+        "reorganizations": 37,
+        "fork_reexecute_transactions": 169984
+      }
+    ]
+  },
+  "A-60000-r1": {
+    "labels_per_node_at_12_seconds": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "nodes_with_16_labels_at_12_seconds": 0,
+    "whole_run_decision_reasons": {},
+    "whole_run_targets": 0,
+    "whole_run_positive_targets": 0,
+    "measurement_per_node": [
+      {
+        "node": "node01",
+        "local_transaction_delta": 487360,
+        "end_transactions": 573152,
+        "cpu_seconds": 38.424699,
+        "verification_wait_seconds": 0.0,
+        "signature_checks": 489443,
+        "reorganizations": 7,
+        "fork_reexecute_transactions": 74256
+      },
+      {
+        "node": "node02",
+        "local_transaction_delta": 510544,
+        "end_transactions": 590336,
+        "cpu_seconds": 39.202601,
+        "verification_wait_seconds": 0.0,
+        "signature_checks": 496813,
+        "reorganizations": 8,
+        "fork_reexecute_transactions": 96880
+      },
+      {
+        "node": "node03",
+        "local_transaction_delta": 498544,
+        "end_transactions": 590336,
+        "cpu_seconds": 39.197933000000006,
+        "verification_wait_seconds": 0.0,
+        "signature_checks": 499258,
+        "reorganizations": 8,
+        "fork_reexecute_transactions": 78320
+      },
+      {
+        "node": "node04",
+        "local_transaction_delta": 487360,
+        "end_transactions": 573152,
+        "cpu_seconds": 39.201226,
+        "verification_wait_seconds": 0.0,
+        "signature_checks": 493343,
+        "reorganizations": 12,
+        "fork_reexecute_transactions": 150176
+      },
+      {
+        "node": "node05",
+        "local_transaction_delta": 511360,
+        "end_transactions": 591152,
+        "cpu_seconds": 39.239431,
+        "verification_wait_seconds": 0.0,
+        "signature_checks": 504147,
+        "reorganizations": 5,
+        "fork_reexecute_transactions": 42000
+      },
+      {
+        "node": "node06",
+        "local_transaction_delta": 487360,
+        "end_transactions": 573152,
+        "cpu_seconds": 39.18482,
+        "verification_wait_seconds": 0.0,
+        "signature_checks": 487175,
+        "reorganizations": 10,
+        "fork_reexecute_transactions": 98016
+      },
+      {
+        "node": "node07",
+        "local_transaction_delta": 499360,
+        "end_transactions": 579152,
+        "cpu_seconds": 39.178584,
+        "verification_wait_seconds": 0.0,
+        "signature_checks": 486408,
+        "reorganizations": 8,
+        "fork_reexecute_transactions": 110400
+      },
+      {
+        "node": "node08",
+        "local_transaction_delta": 499360,
+        "end_transactions": 579152,
+        "cpu_seconds": 39.109283000000005,
+        "verification_wait_seconds": 0.0,
+        "signature_checks": 498420,
+        "reorganizations": 8,
+        "fork_reexecute_transactions": 102496
+      },
+      {
+        "node": "node09",
+        "local_transaction_delta": 487360,
+        "end_transactions": 579152,
+        "cpu_seconds": 39.153588,
+        "verification_wait_seconds": 0.0,
+        "signature_checks": 488641,
+        "reorganizations": 9,
+        "fork_reexecute_transactions": 118688
+      },
+      {
+        "node": "node10",
+        "local_transaction_delta": 499360,
+        "end_transactions": 591152,
+        "cpu_seconds": 39.278701000000005,
+        "verification_wait_seconds": 0.0,
+        "signature_checks": 498801,
+        "reorganizations": 9,
+        "fork_reexecute_transactions": 97072
+      }
+    ]
+  },
+  "Q1-60000-r1": {
+    "labels_per_node_at_12_seconds": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "nodes_with_16_labels_at_12_seconds": 0,
+    "whole_run_decision_reasons": {},
+    "whole_run_targets": 0,
+    "whole_run_positive_targets": 0,
+    "measurement_per_node": [
+      {
+        "node": "node01",
+        "local_transaction_delta": 265847,
+        "end_transactions": 336896,
+        "cpu_seconds": 24.117991000000004,
+        "verification_wait_seconds": 27.533263725,
+        "signature_checks": 258819,
+        "reorganizations": 36,
+        "fork_reexecute_transactions": 175936
+      },
+      {
+        "node": "node02",
+        "local_transaction_delta": 270064,
+        "end_transactions": 336896,
+        "cpu_seconds": 24.892849,
+        "verification_wait_seconds": 29.830355933,
+        "signature_checks": 259002,
+        "reorganizations": 34,
+        "fork_reexecute_transactions": 206176
+      },
+      {
+        "node": "node03",
+        "local_transaction_delta": 270064,
+        "end_transactions": 336896,
+        "cpu_seconds": 24.008486,
+        "verification_wait_seconds": 25.585870077,
+        "signature_checks": 257523,
+        "reorganizations": 34,
+        "fork_reexecute_transactions": 210400
+      },
+      {
+        "node": "node04",
+        "local_transaction_delta": 270064,
+        "end_transactions": 336896,
+        "cpu_seconds": 27.220705999999996,
+        "verification_wait_seconds": 41.865895605000006,
+        "signature_checks": 260308,
+        "reorganizations": 43,
+        "fork_reexecute_transactions": 245583
+      },
+      {
+        "node": "node05",
+        "local_transaction_delta": 270064,
+        "end_transactions": 336896,
+        "cpu_seconds": 23.690639,
+        "verification_wait_seconds": 26.629743853,
+        "signature_checks": 257270,
+        "reorganizations": 20,
+        "fork_reexecute_transactions": 93504
+      },
+      {
+        "node": "node06",
+        "local_transaction_delta": 270064,
+        "end_transactions": 336896,
+        "cpu_seconds": 24.972327999999997,
+        "verification_wait_seconds": 29.831832391,
+        "signature_checks": 259095,
+        "reorganizations": 39,
+        "fork_reexecute_transactions": 217744
+      },
+      {
+        "node": "node07",
+        "local_transaction_delta": 270064,
+        "end_transactions": 336896,
+        "cpu_seconds": 25.756769,
+        "verification_wait_seconds": 36.073951781,
+        "signature_checks": 259613,
+        "reorganizations": 32,
+        "fork_reexecute_transactions": 177007
+      },
+      {
+        "node": "node08",
+        "local_transaction_delta": 270064,
+        "end_transactions": 336896,
+        "cpu_seconds": 23.884053,
+        "verification_wait_seconds": 27.846049823999998,
+        "signature_checks": 257797,
+        "reorganizations": 22,
+        "fork_reexecute_transactions": 173968
+      },
+      {
+        "node": "node09",
+        "local_transaction_delta": 140327,
+        "end_transactions": 211376,
+        "cpu_seconds": 33.883228,
+        "verification_wait_seconds": 97.272939384,
+        "signature_checks": 246313,
+        "reorganizations": 15,
+        "fork_reexecute_transactions": 137344
+      },
+      {
+        "node": "node10",
+        "local_transaction_delta": 270064,
+        "end_transactions": 336896,
+        "cpu_seconds": 25.078939999999996,
+        "verification_wait_seconds": 26.808205832,
+        "signature_checks": 258594,
+        "reorganizations": 56,
+        "fork_reexecute_transactions": 278768
+      }
+    ]
+  },
+  "B3S-60000-r1": {
+    "labels_per_node_at_12_seconds": [
+      4,
+      10,
+      6,
+      10,
+      17,
+      14,
+      14,
+      11,
+      5,
+      10
+    ],
+    "nodes_with_16_labels_at_12_seconds": 1,
+    "whole_run_decision_reasons": {
+      "full_alternative": 128
+    },
+    "whole_run_targets": 105,
+    "whole_run_positive_targets": 1,
+    "measurement_per_node": [
+      {
+        "node": "node01",
+        "local_transaction_delta": 486000,
+        "end_transactions": 571536,
+        "cpu_seconds": 38.491835,
+        "verification_wait_seconds": 0.0,
+        "signature_checks": 495424,
+        "reorganizations": 7,
+        "fork_reexecute_transactions": 66000
+      },
+      {
+        "node": "node02",
+        "local_transaction_delta": 504000,
+        "end_transactions": 589536,
+        "cpu_seconds": 39.161479,
+        "verification_wait_seconds": 0.0,
+        "signature_checks": 498329,
+        "reorganizations": 6,
+        "fork_reexecute_transactions": 42000
+      },
+      {
+        "node": "node03",
+        "local_transaction_delta": 486000,
+        "end_transactions": 571536,
+        "cpu_seconds": 39.178121999999995,
+        "verification_wait_seconds": 0.0,
+        "signature_checks": 499664,
+        "reorganizations": 7,
+        "fork_reexecute_transactions": 108000
+      },
+      {
+        "node": "node04",
+        "local_transaction_delta": 480000,
+        "end_transactions": 565536,
+        "cpu_seconds": 39.169133,
+        "verification_wait_seconds": 0.0,
+        "signature_checks": 493210,
+        "reorganizations": 9,
+        "fork_reexecute_transactions": 102000
+      },
+      {
+        "node": "node05",
+        "local_transaction_delta": 498000,
+        "end_transactions": 583536,
+        "cpu_seconds": 39.221886999999995,
+        "verification_wait_seconds": 0.0,
+        "signature_checks": 496267,
+        "reorganizations": 4,
+        "fork_reexecute_transactions": 24000
+      },
+      {
+        "node": "node06",
+        "local_transaction_delta": 492000,
+        "end_transactions": 577536,
+        "cpu_seconds": 39.077505,
+        "verification_wait_seconds": 0.0,
+        "signature_checks": 491488,
+        "reorganizations": 8,
+        "fork_reexecute_transactions": 102000
+      },
+      {
+        "node": "node07",
+        "local_transaction_delta": 492000,
+        "end_transactions": 577536,
+        "cpu_seconds": 39.150086,
+        "verification_wait_seconds": 0.0,
+        "signature_checks": 492634,
+        "reorganizations": 4,
+        "fork_reexecute_transactions": 42000
+      },
+      {
+        "node": "node08",
+        "local_transaction_delta": 498000,
+        "end_transactions": 583536,
+        "cpu_seconds": 39.216519000000005,
+        "verification_wait_seconds": 0.0,
+        "signature_checks": 506472,
+        "reorganizations": 4,
+        "fork_reexecute_transactions": 30000
+      },
+      {
+        "node": "node09",
+        "local_transaction_delta": 480000,
+        "end_transactions": 565536,
+        "cpu_seconds": 39.114128,
+        "verification_wait_seconds": 0.0,
+        "signature_checks": 482570,
+        "reorganizations": 5,
+        "fork_reexecute_transactions": 84000
+      },
+      {
+        "node": "node10",
+        "local_transaction_delta": 510000,
+        "end_transactions": 583536,
+        "cpu_seconds": 39.141292,
+        "verification_wait_seconds": 0.0,
+        "signature_checks": 493344,
+        "reorganizations": 8,
+        "fork_reexecute_transactions": 90000
+      }
+    ]
+  },
+  "B3-60000-r1": {
+    "labels_per_node_at_12_seconds": [
+      2,
+      1,
+      0,
+      2,
+      2,
+      1,
+      0,
+      0,
+      0,
+      0
+    ],
+    "nodes_with_16_labels_at_12_seconds": 0,
+    "whole_run_decision_reasons": {
+      "full_alternative": 131
+    },
+    "whole_run_targets": 8,
+    "whole_run_positive_targets": 3,
+    "measurement_per_node": [
+      {
+        "node": "node01",
+        "local_transaction_delta": 481728,
+        "end_transactions": 568160,
+        "cpu_seconds": 38.351319,
+        "verification_wait_seconds": 0.0,
+        "signature_checks": 487400,
+        "reorganizations": 8,
+        "fork_reexecute_transactions": 109728
+      },
+      {
+        "node": "node02",
+        "local_transaction_delta": 481728,
+        "end_transactions": 574160,
+        "cpu_seconds": 39.255948000000004,
+        "verification_wait_seconds": 0.0,
+        "signature_checks": 511511,
+        "reorganizations": 3,
+        "fork_reexecute_transactions": 37728
+      },
+      {
+        "node": "node03",
+        "local_transaction_delta": 493728,
+        "end_transactions": 580160,
+        "cpu_seconds": 39.286379,
+        "verification_wait_seconds": 0.0,
+        "signature_checks": 505487,
+        "reorganizations": 4,
+        "fork_reexecute_transactions": 49728
+      },
+      {
+        "node": "node04",
+        "local_transaction_delta": 493728,
+        "end_transactions": 574160,
+        "cpu_seconds": 39.261745000000005,
+        "verification_wait_seconds": 0.0,
+        "signature_checks": 505717,
+        "reorganizations": 4,
+        "fork_reexecute_transactions": 37728
+      },
+      {
+        "node": "node05",
+        "local_transaction_delta": 487728,
+        "end_transactions": 574160,
+        "cpu_seconds": 39.196612,
+        "verification_wait_seconds": 0.0,
+        "signature_checks": 502809,
+        "reorganizations": 4,
+        "fork_reexecute_transactions": 24000
+      },
+      {
+        "node": "node06",
+        "local_transaction_delta": 481728,
+        "end_transactions": 568160,
+        "cpu_seconds": 39.130696,
+        "verification_wait_seconds": 0.0,
+        "signature_checks": 491239,
+        "reorganizations": 5,
+        "fork_reexecute_transactions": 66000
+      },
+      {
+        "node": "node07",
+        "local_transaction_delta": 487728,
+        "end_transactions": 574160,
+        "cpu_seconds": 39.209861,
+        "verification_wait_seconds": 0.0,
+        "signature_checks": 497896,
+        "reorganizations": 2,
+        "fork_reexecute_transactions": 12000
+      },
+      {
+        "node": "node08",
+        "local_transaction_delta": 487728,
+        "end_transactions": 580160,
+        "cpu_seconds": 39.134353,
+        "verification_wait_seconds": 0.0,
+        "signature_checks": 504450,
+        "reorganizations": 6,
+        "fork_reexecute_transactions": 49728
+      },
+      {
+        "node": "node09",
+        "local_transaction_delta": 487728,
+        "end_transactions": 574160,
+        "cpu_seconds": 39.174375,
+        "verification_wait_seconds": 0.0,
+        "signature_checks": 498393,
+        "reorganizations": 3,
+        "fork_reexecute_transactions": 18000
+      },
+      {
+        "node": "node10",
+        "local_transaction_delta": 487728,
+        "end_transactions": 574160,
+        "cpu_seconds": 39.201589000000006,
+        "verification_wait_seconds": 0.0,
+        "signature_checks": 508600,
+        "reorganizations": 5,
+        "fork_reexecute_transactions": 79728
+      }
+    ]
+  }
+}

@@ -1,0 +1,51 @@
+{
+  "revision": "6ca799a49ce1a3a7ab264ccdda2baaa0d0cd71dd",
+  "runtime_base": "97dc3379431263167fd3068881a09a1252f367cc",
+  "source_sha256": "9791140e667b58adda6fa4717373a8977dab54a3d9facc97d8dff2cdfc833fdd",
+  "source_bytes": 6626528,
+  "remote_results": "/opt/chain-control/results/q1-b3-6ca799a-20261023",
+  "groups": [
+    "A",
+    "Q1",
+    "B3S",
+    "B3",
+    "Q1B3"
+  ],
+  "rates": [
+    20000,
+    30000,
+    40000,
+    50000,
+    60000
+  ],
+  "warmup_seconds": 2,
+  "measurement_seconds": 10,
+  "drain_max_seconds": 5,
+  "repeats": 1,
+  "nodes": 10,
+  "sample_hz": 20,
+  "dataset": {
+    "sha256": "95e24fe020ff9a03a59845dc7a73ae6fc6f9ce5fc01d45d8a9b8fe322d085675",
+    "count": 720000,
+    "wallets": 1024,
+    "shared_across_all_cases": true
+  },
+  "driver": {
+    "application_revision": "6ca799a49ce1a3a7ab264ccdda2baaa0d0cd71dd",
+    "phase": "endpoint",
+    "cycles": 1,
+    "rates": [
+      20000,
+      30000,
+      40000,
+      50000,
+      60000
+    ],
+    "driver_sha256": "9d98512d7d50cf9bbd8ac35a6530b7b0c094f52fdf19ac1f5256a50cc7350877",
+    "observer_sha256": "84c4b86f9f5d1a10853e982a3a93426f549669c230324c5e4bf65094f1bf0d28"
+  },
+  "all_verification_budget_checks_passed": true,
+  "all_learning_action_counts_zero": true,
+  "comparison_scope": "fixed prospective matrix; no additional performance runs",
+  "service_state": "original 070fbb4 services restored; new release retained independently"
+}

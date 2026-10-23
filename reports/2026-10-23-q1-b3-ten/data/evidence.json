@@ -1,0 +1,9 @@
+[
+  {
+    "root": "/opt/chain-control/results/q1-b3-6ca799a-20261023",
+    "path": "/opt/chain-control/results/q1-b3-6ca799a-20261023-evidence.tar.gz",
+    "bytes": 42244526,
+    "sha256": "9b2667ec49b6c02dd0fefe693f0b8660bc895d855a9aea34f5a80dab4c765bd6",
+    "databases_removed": 250
+  }
+]

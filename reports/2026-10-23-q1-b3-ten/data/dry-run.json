@@ -1,0 +1,10 @@
+[
+  {
+    "node": "node01",
+    "ip": "182.151.5.57",
+    "private_ip": "192.168.0.176",
+    "stdout": "\nplaybook: /opt/chain-control/q1-b3/deploy.yml\n{\"groups\": {\"A\": [\"learned\", 0.95, 1, 0, \"preparation-v2.json\"], \"Q1\": [\"learned\", 0.95, 1, 0, \"preparation-v2.json\"], \"B3S\": [\"learned\", 0.95, 1, 0, \"preparation-v2.json\"], \"B3\": [\"learned\", 0.95, 1, 0, \"preparation-v2.json\"], \"Q1B3\": [\"learned\", 0.95, 1, 0, \"preparation-v2.json\"]}, \"cycles\": 1, \"rates\": [20000, 30000, 40000, 50000, 60000], \"cases\": 25, \"warmup\": 2, \"measurement\": 10, \"drain\": 5, \"contacts_servers\": false}\n",
+    "stderr": "",
+    "exit_code": 0
+  }
+]
