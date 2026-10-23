@@ -17,7 +17,7 @@ def Wait(predicate, timeout=12):
     raise AssertionError('Local clock test condition timed out')
 
 
-def Case(binary, root, control, scheduler, model, dataset, genesis, count, join_current=1, timing=0, risk=0, adaptive=0, value=0):
+def Case(binary, root, control, scheduler, model, dataset, genesis, count, join_current=1, timing=0, risk=0, adaptive=0, value=0, marginal=0, work=0, snapshot=0):
     root.mkdir()
     nodes = LocalInventory(binary, root/'nodes', 2)
     for node in nodes:
@@ -27,6 +27,8 @@ def Case(binary, root, control, scheduler, model, dataset, genesis, count, join_
                 'join-current-round': join_current,
                 'candidate-timing': timing, 'candidate-risk': risk,
                 'candidate-adaptive': adaptive, 'candidate-value': value, 'candidate-lifecycle': 1,
+                'candidate-marginal': marginal, 'work-scheduler': work, 'pool-snapshot': snapshot,
+                'verification-budget': 1 if work else 0,
                 'clock-min-peers': 1, 'sync-period-ms': 50, 'clock-model-period-ms': 100,
                 'round-ms': 50, 'candidate-ms': 12, 'io-threads': 2, 'verify-threads': 2,
                 'run-seconds': 60, 'max-block-txs': 64}
@@ -47,6 +49,10 @@ def Case(binary, root, control, scheduler, model, dataset, genesis, count, join_
             assert row['clock']['join_current_round'] == bool(join_current)
             assert row['clock']['candidate_timing'] == bool(timing) and row['clock']['candidate_risk'] == bool(risk)
             assert row['clock']['candidate_adaptive'] == bool(adaptive) and row['clock']['candidate_value'] == value
+            assert row['clock']['candidate_marginal'] == marginal
+            assert row['work_scheduler'] == bool(work) and row['pool_snapshot'] == bool(snapshot)
+            if work:
+                assert row['verification_budget'] == 1 and row['verification_peak'] <= 1 and row['metadata_threads'] == 1
             assert row['canonical_tail'][0] == {'height':row['height'],'hash':row['head'],'transactions':row['chain_transactions']}
             assert abs(row['clock']['slew_ppm']) <= row['clock']['max_slew_ppm']
         if not model.exists():
@@ -70,8 +76,13 @@ def Case(binary, root, control, scheduler, model, dataset, genesis, count, join_
             attempts += len(proposals)
         if scheduler == 'bounded':
             assert attempts > 0
+        if marginal:
+            assert sum(row['clock']['marginal_predictions'] for row in stats) > 0
+        if snapshot:
+            assert sum(row['pool_snapshot_chunks'] for row in stats) > 0
         return {'control': control, 'scheduler': scheduler, 'missing_model': not model.exists(),
-                'join_current': join_current, 'transactions': count, 'state_checked_nodes': 2, 'bounded_attempts': attempts}
+                'join_current': join_current, 'transactions': count, 'state_checked_nodes': 2, 'bounded_attempts': attempts,
+                'marginal': marginal, 'work_scheduler': work, 'pool_snapshot': snapshot}
     finally:
         cluster.Close()
         assert not cluster.cleanup_errors, cluster.cleanup_errors
@@ -122,4 +133,8 @@ if __name__ == '__main__':
     for adaptive, value in [(1,1),(0,2),(1,2)]:
         results.append(Case(binary, work/f'adaptive-{adaptive}-{value}', 'learned' if adaptive else 'robust',
                             'bounded', preparation, dataset, genesis, count, adaptive=adaptive, value=value))
+    for work_mode, snapshot_mode, marginal_mode in [(1,1,0),(0,0,1),(0,0,2),(1,1,2)]:
+        results.append(Case(binary, work/f'local-v3-{work_mode}-{snapshot_mode}-{marginal_mode}', 'learned',
+                            'bounded', preparation, dataset, genesis, count, timing=1,
+                            marginal=marginal_mode, work=work_mode, snapshot=snapshot_mode))
     print(json.dumps({'checks': results, 'scope': 'local correctness; no TPS comparison'}))

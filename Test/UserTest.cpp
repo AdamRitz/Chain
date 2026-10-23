@@ -23,6 +23,24 @@ vector<uint8_t> MakeBlock(const vector<array<uint8_t,176>>& txs) {
     block.merkleRoot=MerkleCompute(hashes);
     return SerializeBlockALL(block);
 }
+vector<uint8_t> ComparePoolSelection() {
+    auto initialPool=txpool; auto initialUsers=txUserPool; auto initialInputs=evmPool;
+    auto initialBytes=evmPoolBytes,initialReady=readyPoolTx; auto initialInvalid=invalidUserTx.load();
+    poolSnapshot=false; auto baseline=GenerateBlock();
+    auto expectedPool=txpool; auto expectedUsers=txUserPool; auto expectedInputs=evmPool;
+    auto expectedBytes=evmPoolBytes,expectedReady=readyPoolTx; auto expectedInvalid=invalidUserTx.load();
+    // Both implementations must see the same overspending suffix, not the
+    // already-pruned pool left by the first implementation.
+    txpool=initialPool; txUserPool=initialUsers; evmPool=initialInputs;
+    evmPoolBytes=initialBytes; readyPoolTx=initialReady; invalidUserTx=initialInvalid;
+    poolSnapshot=true; auto snapshot=GenerateBlock(); poolSnapshot=false;
+    Require(snapshot==baseline&&txpool==expectedPool&&evmPool==expectedInputs&&evmPoolBytes==expectedBytes&&
+        readyPoolTx==expectedReady&&invalidUserTx==expectedInvalid&&txUserPool.size()==expectedUsers.size(),
+        "snapshot selection preserves gap and affordability behavior");
+    for (const auto& [key,pending]:expectedUsers)
+        Require(txUserPool.at(key).txs==pending.txs&&txUserPool.at(key).readyNonce==pending.readyNonce,"snapshot pruning preserves account nonce indexes");
+    return snapshot;
+}
 void Commit(const vector<uint8_t>& data) {
     Require(ProcessBlock(data),"candidate state accepted");
     Require(CommitBlock(UnSerializeBlock(data),data),"state committed");
@@ -65,12 +83,12 @@ int main(int argc,char* argv[]) {
         auto second=GenerateTx(wallet.public_key,receiver.public_key,20,2,wallet);
         auto conflict=GenerateTx(wallet.public_key,stranger.public_key,11,1,wallet);
         Require(ProcessTxPackage(second)==1&&readyPoolTx==0,"future nonce waits");
-        Require(GenerateBlock().empty(),"gap cannot produce a block");
+        Require(ComparePoolSelection().empty(),"gap cannot produce a block");
         Require(ProcessTxPackage(first)==1&&readyPoolTx==2,"gap filling makes prefix ready");
         Require(ProcessTxPackage(conflict)==0&&conflictTx==1,"pool allows one transaction per sender nonce");
         auto invalidOrder=MakeBlock({second,first});
         Require(VerifyBlock(invalidOrder)&&!ProcessBlock(invalidOrder),"cryptographic validity still requires ordered state execution");
-        auto data=GenerateBlock();
+        auto data=ComparePoolSelection();
         auto parsed=UnSerializeBlock(data);
         Require(parsed.txs.size()==2&&ReadU64(parsed.txs[0].data()+72)==1&&ReadU64(parsed.txs[1].data()+72)==2,"producer orders account nonces");
         Commit(data);
@@ -130,7 +148,7 @@ int main(int argc,char* argv[]) {
         auto spendSeven=GenerateTx(wallet.public_key,receiver.public_key,40,7,wallet);
         auto spendEight=GenerateTx(wallet.public_key,receiver.public_key,1,8,wallet);
         Require(ProcessTxPackage(spendSix)==1&&ProcessTxPackage(spendSeven)==1&&ProcessTxPackage(spendEight)==1&&readyPoolTx==3,"pool accepts individually affordable consecutive transactions");
-        auto affordable=GenerateBlock();
+        auto affordable=ComparePoolSelection();
         Require(UnSerializeBlock(affordable).txs.size()==1,"producer selects affordable prefix");
         Require(txpool.size()==1&&txUserPool.at(wallet.public_key).txs.size()==1&&readyPoolTx==1,"overspend suffix removed from both indexes and readiness");
         Commit(affordable);

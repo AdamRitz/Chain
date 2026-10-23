@@ -14,6 +14,7 @@
 #include "ClockModel.h"
 #include "Round.h"
 #include "CandidatePolicy.h"
+#include "MarginalPolicy.h"
 #include "AdaptivePolicy.h"
 using namespace std;
 using namespace std::chrono;
@@ -38,6 +39,10 @@ struct ClockState {
     bool candidateTiming=false,candidateRisk=false;
     bool candidateAdaptive=false,candidateLifecycle=false;
     int candidateValue=0; // 0 disabled, 1 shadow, 2 bounded action.
+    int candidateMarginal=0; // B3: 0 disabled, 1 shadow, 2 bounded action.
+    uint64_t marginalPredictions=0,marginalSuggestions=0,marginalDeferrals=0,marginalRuleSuggestions=0;
+    uint64_t marginalLabels=0,marginalCensored=0;
+    double marginalAbsoluteError=0;
     uint64_t workVersion=0,decisionCacheHits=0,decisionInferenceNs=0,decisionBudgetNs=0;
     uint64_t valuePredictions=0,valueSuggestions=0,valueDeferrals=0,valueSurvivalLabels=0,valueRetentionLabels=0,valueCensored=0;
     double valueSurvivalBrier=0,valueRetentionBrier=0;
@@ -299,6 +304,10 @@ nlohmann::json GetClockStats() {
         {"prepare_model_loaded",nodeClock.model.preparation.loaded},{"prepare_quantile",nodeClock.prepareQuantile},
         {"candidate_timing",nodeClock.candidateTiming},{"candidate_risk",nodeClock.candidateRisk},
         {"candidate_adaptive",nodeClock.candidateAdaptive},{"candidate_value",nodeClock.candidateValue},
+        {"candidate_marginal",nodeClock.candidateMarginal},{"marginal_predictions",nodeClock.marginalPredictions},
+        {"marginal_suggestions",nodeClock.marginalSuggestions},{"marginal_deferrals",nodeClock.marginalDeferrals},
+        {"marginal_rule_suggestions",nodeClock.marginalRuleSuggestions},{"marginal_labels",nodeClock.marginalLabels},
+        {"marginal_censored",nodeClock.marginalCensored},{"marginal_absolute_error",nodeClock.marginalAbsoluteError},
         {"decision_cache_hits",nodeClock.decisionCacheHits},{"decision_inference_ms",nodeClock.decisionInferenceNs/1e6},
         {"decision_budget_ms",nodeClock.decisionBudgetNs/1e6},{"value_predictions",nodeClock.valuePredictions},
         {"value_suggestions",nodeClock.valueSuggestions},{"value_deferrals",nodeClock.valueDeferrals},

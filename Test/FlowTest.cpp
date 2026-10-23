@@ -4,6 +4,59 @@
 #include "../Network/Server.h"
 using namespace std;
 void Require(bool ok,const char* label) { if (!ok) throw runtime_error(label); }
+void TestVerificationBudget() {
+    VerificationBudget budget; budget.limit=1;
+    auto held=make_unique<VerificationBudget::Lease>(budget,false);
+    vector<int> order; vector<future<void>> jobs;
+    jobs.push_back(async(launch::async,[&] { VerificationBudget::Lease permit(budget,false); order.push_back(0); }));
+    for (int i=0;i<5;++i) jobs.push_back(async(launch::async,[&] { VerificationBudget::Lease permit(budget,true); order.push_back(1); }));
+    auto deadline=std::chrono::steady_clock::now()+std::chrono::seconds(3); bool queued=false;
+    while (std::chrono::steady_clock::now()<deadline) {
+        auto stats=budget.Snapshot();
+        if (stats.normalWaiting==1&&stats.priorityWaiting==5) { queued=true; break; }
+        this_thread::sleep_for(std::chrono::milliseconds(1));
+    }
+    held.reset(); for (auto& job:jobs) job.get();
+    Require(queued&&order.size()==6&&order.front()==1&&find(order.begin(),order.end(),0)-order.begin()<=4,"priority crypto grants preserve bounded ordinary progress");
+    Require(budget.Snapshot().peak==1&&budget.Snapshot().active==0,"all signature lanes share one configured budget");
+    try { VerificationBudget::Lease permit(budget,true); throw runtime_error("test"); } catch (...) {}
+    Require(budget.Snapshot().active==0,"exception releases crypto capacity");
+}
+void TestMetadataLane() {
+    io_context io; auto peer=make_shared<Peer>(tcp::socket(io));
+    workScheduler=true; candidateThreads=make_unique<thread_pool>(1); metadataThreads=make_unique<thread_pool>(1);
+    promise<void> entered,release; auto unblock=release.get_future().share();
+    post(*candidateThreads,[&] { entered.set_value(); unblock.wait(); }); entered.get_future().wait();
+    pendingBlockBytes=16*1024*1024; auto before=metadataTasks.load();
+    exception_ptr error;
+    co_spawn(peer->strand,ProcessMessage(peer,39,vector<uint8_t>(112)),[&](exception_ptr value) { error=value; });
+    io.run();
+    auto deadline=std::chrono::steady_clock::now()+std::chrono::seconds(3);
+    while (metadataTasks==before&&std::chrono::steady_clock::now()<deadline) this_thread::sleep_for(std::chrono::milliseconds(1));
+    bool progressed=metadataTasks>before;
+    release.set_value(); metadataThreads->join(); candidateThreads->join(); metadataThreads.reset(); candidateThreads.reset();
+    pendingBlockBytes=0; workScheduler=false;
+    if (error) rethrow_exception(error);
+    Require(progressed&&pendingMetadata==0&&pendingMetadataBytes==0&&pendingVerify==0,"metadata executes despite a blocked full-block worker and full block-byte budget");
+}
+void TestPoolSnapshots(const filesystem::path& root) {
+    vector<Wallet> wallets; nlohmann::json config={{"base_fee",1},{"accounts",nlohmann::json::array()}};
+    for (size_t i=0;i<130;++i) {
+        wallets.push_back(GenerateWallet()); config["accounts"].push_back({{"public_key",U32ToHex(wallets.back().public_key)},{"balance",10000}});
+    }
+    db.reset(); SetGenesisUsers(config); InitDB((root/"snapshots").string()); GenerateGenesisBlock();
+    txpool.clear(); txUserPool.clear(); evmPool.clear(); evmPoolBytes=0; readyPoolTx=0;
+    for (auto& wallet:wallets) for (uint64_t nonce=1;nonce<=3;++nonce)
+        Require(ProcessTxPackage(GenerateTx(wallet.public_key,wallets[0].public_key,1,nonce,wallet))==1,"snapshot test admission");
+    for (auto maximum:{size_t(1),size_t(64),size_t(137),size_t(390),size_t(6000)}) {
+        maxBlockTx=maximum; poolSnapshot=false; auto baseline=GenerateBlock();
+        poolSnapshot=true; auto snapshot=GenerateBlock();
+        Require(snapshot==baseline&&VerifyBlock(snapshot),"chunked snapshots preserve quiescent multi-account order and block limits");
+    }
+    auto snapshot=GenerateBlock(); Require(ProcessBlock(snapshot)&&CommitBlock(UnSerializeBlock(snapshot),snapshot),"snapshot block commits with normal account validation");
+    Require(txpool.empty()&&readyPoolTx==0&&poolSnapshotChunks>6,"snapshot chunks maintain nonce indexes and clear committed transactions");
+    poolSnapshot=false;
+}
 ForkEntry Candidate(const Wallet& wallet,const Wallet& receiver,const array<uint8_t,32>& parent,size_t count,uint64_t amount,bool invalid=false) {
     Block block; block.height=2; block.previousHash=parent; vector<array<uint8_t,32>> hashes;
     for (size_t i=1;i<=count;i++) {
@@ -16,6 +69,7 @@ ForkEntry Candidate(const Wallet& wallet,const Wallet& receiver,const array<uint
 int main(int argc,char** argv) {
     try {
         if (sodium_init()<0) return 1;
+        TestVerificationBudget(); TestMetadataLane();
         auto root=filesystem::path(argc>1?argv[1]:"flow-test-data")/to_string(GetSteadyTime());
         filesystem::create_directories(root); auto wallet=GenerateWallet(),receiver=GenerateWallet();
         SetGenesisUsers({{"base_fee",1},{"accounts",nlohmann::json::array({{{"public_key",U32ToHex(wallet.public_key)},{"balance",10000}}})}});
@@ -191,6 +245,7 @@ int main(int argc,char** argv) {
         auto partialPool=txpool; auto partialReady=readyPoolTx; RefreshTxPool();
         Require(txpool==partialPool&&readyPoolTx==partialReady,"partial nonce rollback matches full refresh");
         maxBlockTx=6000;
+        TestPoolSnapshots(root);
         db.reset(); cout<<"Admission, compact indexes and changed-state fork checks passed\n"; return 0;
     } catch (const exception& e) { cerr<<e.what()<<'\n'; return 1; }
 }

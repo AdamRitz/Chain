@@ -100,13 +100,39 @@ void TestOutcomeLabels() {
     { lock_guard lock(chainHeadMutex); publishedChain.head.height=2; publishedChain.tail={{2,1,hash},{1,0,parent}}; }
     policies.pending.push_back({hash,parent,2,now-300000,x}); policies.ObservePending();
     Require(policies.value.survival.samples==1&&policies.value.retention.samples==1,"delayed retained candidate trains both outcome heads");
+    PendingCandidateOutcome marginal{hash,parent,2,now-300000,x}; marginal.marginalSample=true;
+    marginal.marginalFeatures[0]=1; marginal.marginalPrediction=.5;
+    marginal.candidateTransactions=90; marginal.alternativeTransactions=40; marginal.maximumTransactions=100;
+    policies.pending.push_back(marginal); policies.ObservePending();
+    Require(policies.marginal.samples==1&&policies.marginal.errors.back()==0,"retained count advantage is labelled against the decision-time alternative");
     { lock_guard lock(chainHeadMutex); publishedChain.tail[1].hash=other; }
     policies.pending.push_back({hash,parent,2,now-300000,x}); policies.ObservePending();
-    Require(policies.value.survival.samples==2&&policies.value.retention.samples==1,"parent loss does not teach the conditional retention head");
+    Require(policies.value.survival.samples==3&&policies.value.retention.samples==2,"parent loss does not teach the conditional retention head");
     policies.pending.push_back({hash,parent,2,now-600000,x}); policies.ObservePending();
     policies.pending.push_back({hash,parent,2,now,x}); policies.ObservePending(true);
-    Require(policies.value.survival.samples==2&&policies.pending.empty(),"late observation and shutdown censoring do not invent failures");
+    Require(policies.value.survival.samples==3&&policies.pending.empty(),"late observation and shutdown censoring do not invent failures");
+    marginal.preparedUs=now-600000; policies.pending.push_back(marginal); policies.ObservePending();
+    Require(policies.marginal.samples==1,"late marginal outcome remains censored");
     { lock_guard lock(chainHeadMutex); publishedChain={}; }
+}
+void TestMarginalPolicy() {
+    CandidateMarginalModel model;
+    auto features=CandidateMarginalModel::Features(6000,6000,32000,6000,10,50000,5000,6000,.8,60000);
+    auto loaded=CandidateMarginalModel::Features(30000,6000,64000,12000,20,50000,5000,6000,.8,60000);
+    Require(loaded[1]>features[1]&&loaded[2]>features[2]&&loaded[3]>features[3],"high-load marginal features distinguish several full blocks and separate queues");
+    Require(model.Decide(features,6000,6000,50000,60000,50000,true).defer,"full compatible alternative supports a bounded cold-start rule");
+    Require(!model.Decide(features,6000,6000,50000,60000,50000,false).defer,"no alternative cannot suppress local progress");
+    model.consecutiveSkips=2;
+    Require(!model.Decide(features,6000,6000,50000,60000,50000,true).defer,"marginal rule forces an attempt after two deferrals");
+    model.consecutiveSkips=0;
+    Require(!model.Decide(features,6000,6000,1000,60000,50000,true).defer&&
+        !model.Decide(features,6000,6000,50000,0,50000,true).defer,"cheap work and closed deadlines cannot trigger marginal deferral");
+    features=CandidateMarginalModel::Features(6000,6000,32000,6000,10,50000,5000,5500,.95,60000);
+    Require(!model.Decide(features,5500,6000,50000,60000,50000,true).defer,"partial alternatives require observed model evidence");
+    for (size_t i=0;i<3000;++i) model.Observe(features,0,model.Predict(features));
+    Require(model.Decide(features,5500,6000,50000,60000,50000,true).defer&&model.errors.size()==128,"low observed incremental benefit can defer with bounded calibration history");
+    for (size_t i=0;i<3000;++i) model.Observe(features,1./12,model.Predict(features));
+    Require(!model.Decide(features,5500,6000,50000,60000,50000,true).defer,"observed benefit recovers normal preparation");
 }
 void TestSourceAndFallback() {
     nodeClock.control="learned"; nodeClock.enabled=true; nodeClock.members={1,2,3}; nodeClock.minPeers=3;
@@ -143,6 +169,26 @@ void TestPreparedState(const filesystem::path& root) {
     Require(!SelectBlockCandidate(block,data,&round)&&!blockReady,"late local work never enters the candidate pool");
     // Deadline is a local scheduling policy, never a received-block validity rule.
     Require(ProcessBlock(data)&&blockReady,"equally late valid received block follows the ordinary consensus path");
+    auto maximum=maxBlockTx; maxBlockTx=1;
+    nodeClock.control="robust"; nodeClock.roundMs=50; nodeClock.candidateMs=12;
+    nodeClock.guardUs=500; nodeClock.offsetUs=0; nodeClock.driftPpm=0; nodeClock.candidateMarginal=2;
+    InitTime(); RecordClockWork(true,10000);
+    now=int64_t(GetSteadyTime()/1000);
+    for (uint64_t peer=1;peer<=3;++peer) nodeClock.sources[peer]={0,100,0,now};
+    auto alternative=ReadMarginalAlternative(round);
+    Require(alternative.transactions==1&&alternative.poolOverlap==1&&MarginalAlternativeUnchanged(round,alternative),"marginal scheduler reads a verified same-parent candidate");
+    auto wrongParent=round; wrongParent.parent[0]^=1;
+    Require(ReadMarginalAlternative(wrongParent).transactions==0,"unrelated parent cannot supply a marginal alternative");
+    CandidateRiskModel risk; CandidatePolicies policies; int64_t lastRound=-1;
+    auto deferrals=nodeClock.marginalDeferrals,attempts=nodeClock.rounds;
+    RunBoundedCandidateRound(lastRound,risk,policies);
+    RunBoundedCandidateRound(lastRound,risk,policies);
+    Require(nodeClock.marginalDeferrals==deferrals+2&&nodeClock.rounds==attempts&&policies.pending.empty()&&blockReady,
+        "active full-alternative deferral preserves the received candidate and creates no fabricated label");
+    RunBoundedCandidateRound(lastRound,risk,policies);
+    Require(nodeClock.marginalDeferrals==deferrals+2&&nodeClock.rounds==attempts+1&&policies.marginal.consecutiveSkips==0,
+        "third active opportunity performs normal preparation after two deferrals");
+    maxBlockTx=maximum; nodeClock.candidateMarginal=0;
     Require(CommitBlock(block,data),"received candidate commits atomically");
     round.proposalDeadlineUs=int64_t(GetSteadyTime()/1000)+100000;
     Require(!SelectBlockCandidate(block,data,&round),"parent change invalidates old prepared execution");
@@ -185,7 +231,7 @@ int main(int argc,char** argv) {
     try {
         if (argc!=3||sodium_init()<0) return 1;
         auto root=filesystem::path(argv[2])/to_string(GetSteadyTime()); filesystem::create_directories(root);
-        TestServoAndRounds(); TestAdaptivePolicies(); TestOutcomeLabels(); TestModel(argv[1],root); TestSourceAndFallback();
+        TestServoAndRounds(); TestAdaptivePolicies(); TestMarginalPolicy(); TestOutcomeLabels(); TestModel(argv[1],root); TestSourceAndFallback();
         TestPreparationModel(argv[1],root,"preparation-v1.json"); TestPreparationModel(argv[1],root,"preparation-v2.json"); TestPreparedState(root);
         cout<<"{\"checks\":[\"continuous slew and expiry\",\"frozen rounds\",\"model schema and domain\",\"source quorum\",\"local deadline vs received validity\",\"parent state binding\"]}"<<endl;
         return 0;

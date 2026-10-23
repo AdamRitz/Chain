@@ -16,6 +16,8 @@ using tcp=ip::tcp;
 io_context* nodeIO=nullptr;
 unique_ptr<thread_pool> verifyThreads;
 unique_ptr<thread_pool> candidateThreads;
+unique_ptr<thread_pool> metadataThreads;
+bool workScheduler=false;
 unique_ptr<thread_pool> queryThreads;
 atomic<size_t> pendingQueries{0};
 atomic<uint64_t> queryWaitNs{0},ingressWaitNs{0},syncOwner{0},syncOwnerSkips{0};
@@ -25,6 +27,7 @@ atomic<uint64_t> txQueueWaitNs{0},blockQueueWaitNs{0};
 atomic<size_t> pendingVerify{0},peakPendingVerify{0},connectionCount{0};
 atomic<size_t> pendingVerifyBytes{0};
 atomic<size_t> pendingMetadata{0},pendingBlockReplies{0};
+atomic<size_t> pendingMetadataBytes{0};
 atomic<uint64_t> metadataQueueWaitNs{0},metadataTasks{0},blockTasks{0},blockReplyWaitNs{0};
 atomic<uint64_t> duplicateBlockWork{0};
 atomic<uint64_t> blockReplyReadNs{0},blockReplyTasks{0};
@@ -374,10 +377,40 @@ struct PendingCandidateOutcome {
     int64_t preparedUs=0;
     CandidateValueFeatures features{};
     double survivalPrediction=.5,retentionPrediction=.5;
+    bool marginalSample=false;
+    MarginalFeatures marginalFeatures{};
+    double marginalPrediction=0;
+    uint64_t candidateTransactions=0,alternativeTransactions=0,maximumTransactions=1;
 };
+struct MarginalAlternative {
+    array<uint8_t,32> hash{};
+    size_t transactions=0;
+    double poolOverlap=0;
+};
+MarginalAlternative ReadMarginalAlternative(const CandidateRound& round) {
+    MarginalAlternative result; array<array<uint8_t,32>,64> sample{}; size_t count=0;
+    {
+        lock_guard lock(blockBufferLock); const auto& slot=BlockBuffer[0];
+        if (slot.second.empty()||slot.first.height!=round.height||slot.first.previousHash!=round.parent) return result;
+        result.hash=slot.first.hash; result.transactions=slot.first.txs.size();
+        count=min(sample.size(),result.transactions);
+        for (size_t i=0;i<count;++i) sample[i]=GetTransactionHash(slot.first.txs[i*result.transactions/count]);
+    }
+    if (count) {
+        lock_guard lock(txpoolMutex); size_t matched=0;
+        for (size_t i=0;i<count;++i) matched+=txpool.count(sample[i]);
+        result.poolOverlap=double(matched)/count;
+    }
+    return result;
+}
+bool MarginalAlternativeUnchanged(const CandidateRound& round,const MarginalAlternative& alternative) {
+    lock_guard lock(blockBufferLock); const auto& slot=BlockBuffer[0];
+    return !slot.second.empty()&&slot.first.hash==alternative.hash&&slot.first.height==round.height&&slot.first.previousHash==round.parent;
+}
 struct CandidatePolicies {
     AdaptivePreparation preparation;
     CandidateValueModel value;
+    CandidateMarginalModel marginal;
     deque<PendingCandidateOutcome> pending;
     void ObservePending(bool closing=false) {
         if (pending.empty()) return;
@@ -398,6 +431,15 @@ struct CandidatePolicies {
                 value.survival.Observe(row.features,parentSurvived);
                 if (parentSurvived) value.retention.Observe(row.features,retained);
             }
+            double marginalTarget=0;
+            if (row.marginalSample) {
+                if (parentSurvived&&retained&&row.candidateTransactions>row.alternativeTransactions)
+                    marginalTarget=min(1.,double(row.candidateTransactions-row.alternativeTransactions)/row.maximumTransactions);
+                if (!censored) marginal.Observe(row.marginalFeatures,marginalTarget,row.marginalPrediction);
+                lock_guard lock(nodeClock.lock);
+                if (censored) ++nodeClock.marginalCensored;
+                else { ++nodeClock.marginalLabels; nodeClock.marginalAbsoluteError+=abs(marginalTarget-row.marginalPrediction); }
+            }
             {
                 lock_guard lock(nodeClock.lock);
                 if (censored) ++nodeClock.valueCensored;
@@ -410,6 +452,9 @@ struct CandidatePolicies {
                 {"observed_us",now},{"prepared_us",row.preparedUs},{"age_us",now-row.preparedUs},
                 {"retained",retained},{"censored",censored},{"prediction_before_update",before},
                 {"parent_survived",parentSurvived},{"survival_prediction_before_update",survivalBefore},
+                {"marginal_sample",row.marginalSample},{"marginal_target",censored?nlohmann::json(nullptr):nlohmann::json(marginalTarget)},
+                {"marginal_prediction",row.marginalPrediction},{"marginal_features",row.marginalFeatures},
+                {"candidate_transactions",row.candidateTransactions},{"alternative_transactions",row.alternativeTransactions},
                 {"features",row.features},{"label_source","local_canonical_250_to_500ms"}});
         }
     }
@@ -451,6 +496,31 @@ void RunBoundedCandidateRound(int64_t& lastRound,CandidateRiskModel& risk,Candid
     }
     auto round=*planned;
     auto head=ReadChainHead(); round.parent=head.hash; round.height=head.height+1; round.stateVersion=head.version;
+    MarginalAlternative marginalAlternative;
+    MarginalFeatures marginalFeatures{}; MarginalDecision marginalDecision;
+    if (nodeClock.candidateMarginal) {
+        marginalAlternative=ReadMarginalAlternative(round);
+        marginalFeatures=CandidateMarginalModel::Features(ready,maxBlockTx,pendingTxVerify.load(),pendingBlockVerify.load(),pendingMetadata.load(),
+            prepare,max(int64_t(0),mapping.steadyUs-headAt),marginalAlternative.transactions,marginalAlternative.poolOverlap,
+            round.proposalDeadlineUs-mapping.steadyUs);
+        marginalDecision=policies.marginal.Decide(marginalFeatures,marginalAlternative.transactions,maxBlockTx,prepare,
+            round.proposalDeadlineUs-mapping.steadyUs,period,marginalAlternative.transactions>0);
+        bool suggest=marginalDecision.defer&&MarginalAlternativeUnchanged(round,marginalAlternative);
+        {
+            lock_guard lock(nodeClock.lock); ++nodeClock.marginalPredictions;
+            if (suggest) {
+                ++nodeClock.marginalSuggestions;
+                if (marginalAlternative.transactions>=maxBlockTx) ++nodeClock.marginalRuleSuggestions;
+                if (nodeClock.candidateMarginal==2) ++nodeClock.marginalDeferrals;
+            }
+        }
+        if (suggest) WriteClockTrace({{"kind","marginal_decision"},{"round",round.id},{"reason",marginalDecision.reason},
+            {"action",nodeClock.candidateMarginal==2?"defer":"shadow"},{"features",marginalFeatures},
+            {"prediction",marginalDecision.prediction},{"margin",marginalDecision.margin},{"cost_score",marginalDecision.cost},
+            {"alternative_transactions",marginalAlternative.transactions},{"alternative_hash",U32ToHex(marginalAlternative.hash)},
+            {"labels",policies.marginal.samples}});
+        if (suggest&&nodeClock.candidateMarginal==2) { ++policies.marginal.consecutiveSkips; return; }
+    }
     bool alternative=false;
     {
         lock_guard lock(blockBufferLock);
@@ -518,13 +588,20 @@ void RunBoundedCandidateRound(int64_t& lastRound,CandidateRiskModel& risk,Candid
     // Empty and invalid attempts do not teach an outcome model for valid work.
     if (valid) risk.Observe(bucket,!accepted);
     if (nodeClock.candidateAdaptive) policies.preparation.Observe(size_t(pendingBlock>0),policies.preparation.rawUs,workUs,valid);
-    if (nodeClock.candidateValue||nodeClock.candidateLifecycle) {
+    if (nodeClock.candidateValue||nodeClock.candidateLifecycle||nodeClock.candidateMarginal) {
         policies.value.consecutiveSkips=0;
+        policies.marginal.consecutiveSkips=0;
         if (valid&&survived) {
             if (policies.pending.size()>=64) {
+                bool marginal=policies.pending.front().marginalSample;
                 policies.pending.pop_front(); lock_guard lock(nodeClock.lock); ++nodeClock.valueCensored;
+                if (marginal) ++nodeClock.marginalCensored;
             }
-            policies.pending.push_back({preparedHash,round.parent,round.height,int64_t(prepared/1000),valueFeatures,survivePrediction,retainPrediction});
+            PendingCandidateOutcome pending{preparedHash,round.parent,round.height,int64_t(prepared/1000),valueFeatures,survivePrediction,retainPrediction};
+            pending.marginalSample=nodeClock.candidateMarginal&&marginalAlternative.transactions>0;
+            pending.marginalFeatures=marginalFeatures; pending.marginalPrediction=marginalDecision.prediction;
+            pending.candidateTransactions=ReadU64(data.data()+72); pending.alternativeTransactions=marginalAlternative.transactions;
+            pending.maximumTransactions=maxBlockTx; policies.pending.push_back(std::move(pending));
         }
     }
     RecordClockWork(true,workUs,late);
@@ -538,6 +615,8 @@ void RunBoundedCandidateRound(int64_t& lastRound,CandidateRiskModel& risk,Candid
         {"features",features},{"risk_bucket",bucket},{"predicted_failure_after",risk.cells[bucket].failure},
         {"candidate_timing",nodeClock.candidateTiming},{"candidate_risk",nodeClock.candidateRisk},
         {"candidate_adaptive",nodeClock.candidateAdaptive},{"candidate_value",nodeClock.candidateValue},
+        {"candidate_marginal",nodeClock.candidateMarginal},{"marginal_features",marginalFeatures},{"marginal_reason",marginalDecision.reason},
+        {"alternative_transactions",marginalAlternative.transactions},{"marginal_prediction",marginalDecision.prediction},
         {"hash",U32ToHex(preparedHash)},{"parent_valid_after_prepare",survived},
         {"value_features",valueFeatures},{"survival_prediction",survivePrediction},{"retention_prediction",retainPrediction},
         {"uncalibrated_prepare_us",nodeClock.candidateAdaptive?policies.preparation.rawUs:prepare},
@@ -697,6 +776,13 @@ nlohmann::json GetNodeStats() {
         {"block_reply_read_ms",blockReplyReadNs.load()/1e6},{"block_reply_tasks",blockReplyTasks.load()},
         {"state_version",snapshot.version},
         {"ingress_wait_ms",ingressWaitNs.load()/1e6},{"clock",GetClockStats()},{"experiment_index",experimentIndex}};
+    auto budget=verificationBudget.Snapshot();
+    stats.update({{"work_scheduler",workScheduler},{"metadata_threads",workScheduler?1:0},{"pool_snapshot",poolSnapshot},
+        {"verification_budget",verificationBudget.limit},{"verification_active",budget.active},{"verification_peak",budget.peak},
+        {"verification_waits",budget.waits},{"verification_wait_ms",budget.waitNs/1e6},
+        {"verification_normal_waiting",budget.normalWaiting},{"verification_priority_waiting",budget.priorityWaiting},
+        {"pending_metadata_bytes",pendingMetadataBytes.load()},{"pool_snapshot_chunks",poolSnapshotChunks.load()},
+        {"pool_snapshot_lock_ms",poolSnapshotLockNs.load()/1e6}});
     stats.update(GetProcessResources());
     return stats;
 }

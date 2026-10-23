@@ -71,7 +71,7 @@ struct VerifyReservation {
     ~VerifyReservation() {
         if (!active) return;
         ReleaseVerify(count,block,metadata);
-        (block?pendingBlockBytes:pendingTxBytes)-=bytes; pendingVerifyBytes-=bytes;
+        (metadata&&workScheduler?pendingMetadataBytes:(block?pendingBlockBytes:pendingTxBytes))-=bytes; pendingVerifyBytes-=bytes;
     }
 };
 awaitable<void> ProcessMessage(shared_ptr<Peer> peer,uint8_t type,vector<uint8_t> data) {
@@ -94,8 +94,8 @@ awaitable<void> ProcessMessage(shared_ptr<Peer> peer,uint8_t type,vector<uint8_t
     bool metadata=type==39||type==41;
     if (metadata) num=1;
     bool blockMessage=type!=1&&type!=10&&type!=17&&type!=18&&type!=44;
-    auto& byteCounter=blockMessage?pendingBlockBytes:pendingTxBytes;
-    auto byteLimit=blockMessage?size_t(16*1024*1024):size_t(48*1024*1024);
+    auto& byteCounter=metadata&&workScheduler?pendingMetadataBytes:(blockMessage?pendingBlockBytes:pendingTxBytes);
+    auto byteLimit=metadata&&workScheduler?size_t(8*1024*1024):(blockMessage?size_t(16*1024*1024):size_t(48*1024*1024));
     steady_timer timer(co_await this_coro::executor);
     auto queuedAt=GetSteadyTime();
     uint64_t expected=0;
@@ -140,7 +140,7 @@ awaitable<void> ProcessMessage(shared_ptr<Peer> peer,uint8_t type,vector<uint8_t
         co_await timer.async_wait(use_awaitable);
     }
     auto admissionOrder=type==44?peer->admissionRead++:0;
-    auto& workers=blockMessage&&candidateThreads?*candidateThreads:*verifyThreads;
+    auto& workers=metadata&&metadataThreads?*metadataThreads:(blockMessage&&candidateThreads?*candidateThreads:*verifyThreads);
     post(workers,[peer,type,queuedAt,blockMessage,metadata,admissionOrder,reservation=std::move(reservation),work=std::move(work),data=std::move(data),blocks=std::move(blocks)]() mutable {
         (void)work;
         auto wait=GetSteadyTime()-queuedAt; queueWaitNs+=wait;

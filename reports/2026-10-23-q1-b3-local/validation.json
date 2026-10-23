@@ -1,0 +1,445 @@
+{
+  "scope": "local correctness only; no cloud deployment or TPS measurement",
+  "base_commit": "a53f5663f9e7b344f496dbd97b7e843f513b9608",
+  "platform": "Windows x64, MinGW UCRT64, CMake Release",
+  "boost_sha256": "54059c8f9c14e54989db6fe2911f00d0c0ee73db5d2e45d8a930456f5bd3ce0a",
+  "source_file_sha256": {
+    "DB/DB.h": "e0a4d8dc0353d045426417ab455069296d21d8ba845aeba9e56657f719d7279f",
+    "Network/Client.h": "1120dcd16b1cd6a813aa868120945ee57da05111721a80f9c73cea4a0460d665",
+    "Network/Server.h": "769f6b56555ddcc4642b641516cd29ee5a4fb5ed7185580b07653aad3c0f4da4",
+    "Time/Time.h": "b7459cb68c7b3455a7b8d489a147b1582e6d891778803fdb2f02b7697ee9c88e",
+    "Time/MarginalPolicy.h": "9c2a34067af84dd4e8e14ff81bdad0a4608bff65dec06ec7278362494683b2b4",
+    "Tool/VerificationBudget.h": "6c00cccec6be568ac6c67c5cd48b0fb86928243351e1bb363d623139dec520c2",
+    "Transaction/Block.h": "e05b2393de98cd50fd7a940f3c23a5057c6bae01b56010258867002c9b07ba72",
+    "Transaction/Transaction.h": "c037bf9ab2ab4c06964a44f6711653869c28d4db3071b21ceb1f9d39c445ead2",
+    "main.cpp": "d498fca1bc7cb18e17b54ced12e66a081d600c136b679422fbbfbb3a0c2ef924",
+    "Test/FlowTest.cpp": "7184c5a3a8e42a71dc8aa204e6b9cb5e1983628d39720528fc6e27334c7017c6",
+    "Test/UserTest.cpp": "f889159183ede35f54ca38fc853d6e896d635d6027d3d4c8b0fe7bd3c161bcc0",
+    "Test/ForkStateTest.cpp": "a1ec93b4cbd4e49e4c10279d3a48d1a8cbe8dbdc92275943f38e5f18f3a83dc5",
+    "Test/ClockTest.cpp": "a0cff12add162ceeb892c221f22f57530d92028207b21402b8c503e3772cb374",
+    "Test/ClockNetworkTest.py": "d847d05ea7721bc3a88295e6d681e18f371d7445526e8136691c942aaa63c511",
+    "Test/EvmNetworkTest.py": "ea1f11816ffe81b376a4a0cedb84b70d34c8169dcb1aa0dca3e93ca08f90c53b"
+  },
+  "full_ctest": {
+    "tests": 14,
+    "failures": 0,
+    "timestamp_local": "2026-10-23T16:00:37",
+    "cases": [
+      {
+        "name": "ChainCorrectness",
+        "seconds": 1.43083,
+        "passed": true
+      },
+      {
+        "name": "AccountCorrectness",
+        "seconds": 1.32809,
+        "passed": true
+      },
+      {
+        "name": "ForkStateCorrectness",
+        "seconds": 14.6234,
+        "passed": true
+      },
+      {
+        "name": "ThroughputCorrectness",
+        "seconds": 0.190875,
+        "passed": true
+      },
+      {
+        "name": "FlowCorrectness",
+        "seconds": 1.50635,
+        "passed": true
+      },
+      {
+        "name": "ClockCorrectness",
+        "seconds": 0.455993,
+        "passed": true
+      },
+      {
+        "name": "ClockToolsCorrectness",
+        "seconds": 0.252004,
+        "passed": true
+      },
+      {
+        "name": "ClockNetwork",
+        "seconds": 26.68,
+        "passed": true
+      },
+      {
+        "name": "ChainNetwork",
+        "seconds": 25.8135,
+        "passed": true
+      },
+      {
+        "name": "AccountNetwork",
+        "seconds": 2.18319,
+        "passed": true
+      },
+      {
+        "name": "ForkNetwork",
+        "seconds": 3.169,
+        "passed": true
+      },
+      {
+        "name": "EvmNetwork",
+        "seconds": 4.33857,
+        "passed": true
+      },
+      {
+        "name": "ExperimentNetwork",
+        "seconds": 6.25137,
+        "passed": true
+      },
+      {
+        "name": "AdmissionNetwork",
+        "seconds": 6.45129,
+        "passed": true
+      }
+    ]
+  },
+  "extra_active_scheduler_regression": {
+    "tests": 1,
+    "failures": 0,
+    "timestamp_local": "2026-10-23T16:05:13",
+    "cases": [
+      {
+        "name": "ClockCorrectness",
+        "seconds": 0.424935,
+        "passed": true
+      }
+    ]
+  },
+  "clock_network": {
+    "case_count": 17,
+    "cases": [
+      {
+        "case": "0",
+        "options": {
+          "--clock-control": "robust",
+          "--round-scheduler": "bounded",
+          "--join-current-round": "0",
+          "--candidate-timing": "0",
+          "--candidate-risk": "0",
+          "--candidate-adaptive": "0",
+          "--candidate-value": "0",
+          "--candidate-marginal": "0",
+          "--work-scheduler": "0",
+          "--pool-snapshot": "0",
+          "--verification-budget": "0",
+          "--clock-min-peers": "1"
+        }
+      },
+      {
+        "case": "1",
+        "options": {
+          "--clock-control": "robust",
+          "--round-scheduler": "bounded",
+          "--join-current-round": "1",
+          "--candidate-timing": "0",
+          "--candidate-risk": "0",
+          "--candidate-adaptive": "0",
+          "--candidate-value": "0",
+          "--candidate-marginal": "0",
+          "--work-scheduler": "0",
+          "--pool-snapshot": "0",
+          "--verification-budget": "0",
+          "--clock-min-peers": "1"
+        }
+      },
+      {
+        "case": "2",
+        "options": {
+          "--clock-control": "learned",
+          "--round-scheduler": "bounded",
+          "--join-current-round": "0",
+          "--candidate-timing": "0",
+          "--candidate-risk": "0",
+          "--candidate-adaptive": "0",
+          "--candidate-value": "0",
+          "--candidate-marginal": "0",
+          "--work-scheduler": "0",
+          "--pool-snapshot": "0",
+          "--verification-budget": "0",
+          "--clock-min-peers": "1"
+        }
+      },
+      {
+        "case": "3",
+        "options": {
+          "--clock-control": "learned",
+          "--round-scheduler": "bounded",
+          "--join-current-round": "1",
+          "--candidate-timing": "0",
+          "--candidate-risk": "0",
+          "--candidate-adaptive": "0",
+          "--candidate-value": "0",
+          "--candidate-marginal": "0",
+          "--work-scheduler": "0",
+          "--pool-snapshot": "0",
+          "--verification-budget": "0",
+          "--clock-min-peers": "1"
+        }
+      },
+      {
+        "case": "4",
+        "options": {
+          "--clock-control": "shadow",
+          "--round-scheduler": "bounded",
+          "--join-current-round": "1",
+          "--candidate-timing": "0",
+          "--candidate-risk": "0",
+          "--candidate-adaptive": "0",
+          "--candidate-value": "0",
+          "--candidate-marginal": "0",
+          "--work-scheduler": "0",
+          "--pool-snapshot": "0",
+          "--verification-budget": "0",
+          "--clock-min-peers": "1"
+        }
+      },
+      {
+        "case": "5",
+        "options": {
+          "--clock-control": "learned",
+          "--round-scheduler": "bounded",
+          "--join-current-round": "1",
+          "--candidate-timing": "0",
+          "--candidate-risk": "0",
+          "--candidate-adaptive": "0",
+          "--candidate-value": "0",
+          "--candidate-marginal": "0",
+          "--work-scheduler": "0",
+          "--pool-snapshot": "0",
+          "--verification-budget": "0",
+          "--clock-min-peers": "1"
+        }
+      },
+      {
+        "case": "adaptive-0-2",
+        "options": {
+          "--clock-control": "robust",
+          "--round-scheduler": "bounded",
+          "--join-current-round": "1",
+          "--candidate-timing": "0",
+          "--candidate-risk": "0",
+          "--candidate-adaptive": "0",
+          "--candidate-value": "2",
+          "--candidate-marginal": "0",
+          "--work-scheduler": "0",
+          "--pool-snapshot": "0",
+          "--verification-budget": "0",
+          "--clock-min-peers": "1"
+        }
+      },
+      {
+        "case": "adaptive-1-1",
+        "options": {
+          "--clock-control": "learned",
+          "--round-scheduler": "bounded",
+          "--join-current-round": "1",
+          "--candidate-timing": "0",
+          "--candidate-risk": "0",
+          "--candidate-adaptive": "1",
+          "--candidate-value": "1",
+          "--candidate-marginal": "0",
+          "--work-scheduler": "0",
+          "--pool-snapshot": "0",
+          "--verification-budget": "0",
+          "--clock-min-peers": "1"
+        }
+      },
+      {
+        "case": "adaptive-1-2",
+        "options": {
+          "--clock-control": "learned",
+          "--round-scheduler": "bounded",
+          "--join-current-round": "1",
+          "--candidate-timing": "0",
+          "--candidate-risk": "0",
+          "--candidate-adaptive": "1",
+          "--candidate-value": "2",
+          "--candidate-marginal": "0",
+          "--work-scheduler": "0",
+          "--pool-snapshot": "0",
+          "--verification-budget": "0",
+          "--clock-min-peers": "1"
+        }
+      },
+      {
+        "case": "local-v3-0-0-1",
+        "options": {
+          "--clock-control": "learned",
+          "--round-scheduler": "bounded",
+          "--join-current-round": "1",
+          "--candidate-timing": "1",
+          "--candidate-risk": "0",
+          "--candidate-adaptive": "0",
+          "--candidate-value": "0",
+          "--candidate-marginal": "1",
+          "--work-scheduler": "0",
+          "--pool-snapshot": "0",
+          "--verification-budget": "0",
+          "--clock-min-peers": "1"
+        }
+      },
+      {
+        "case": "local-v3-0-0-2",
+        "options": {
+          "--clock-control": "learned",
+          "--round-scheduler": "bounded",
+          "--join-current-round": "1",
+          "--candidate-timing": "1",
+          "--candidate-risk": "0",
+          "--candidate-adaptive": "0",
+          "--candidate-value": "0",
+          "--candidate-marginal": "2",
+          "--work-scheduler": "0",
+          "--pool-snapshot": "0",
+          "--verification-budget": "0",
+          "--clock-min-peers": "1"
+        }
+      },
+      {
+        "case": "local-v3-1-1-0",
+        "options": {
+          "--clock-control": "learned",
+          "--round-scheduler": "bounded",
+          "--join-current-round": "1",
+          "--candidate-timing": "1",
+          "--candidate-risk": "0",
+          "--candidate-adaptive": "0",
+          "--candidate-value": "0",
+          "--candidate-marginal": "0",
+          "--work-scheduler": "1",
+          "--pool-snapshot": "1",
+          "--verification-budget": "1",
+          "--clock-min-peers": "1"
+        }
+      },
+      {
+        "case": "local-v3-1-1-2",
+        "options": {
+          "--clock-control": "learned",
+          "--round-scheduler": "bounded",
+          "--join-current-round": "1",
+          "--candidate-timing": "1",
+          "--candidate-risk": "0",
+          "--candidate-adaptive": "0",
+          "--candidate-value": "0",
+          "--candidate-marginal": "2",
+          "--work-scheduler": "1",
+          "--pool-snapshot": "1",
+          "--verification-budget": "1",
+          "--clock-min-peers": "1"
+        }
+      },
+      {
+        "case": "no-quorum",
+        "options": {
+          "--clock-control": "robust",
+          "--clock-min-peers": "2",
+          "--round-scheduler": "bounded"
+        }
+      },
+      {
+        "case": "policy-0-1",
+        "options": {
+          "--clock-control": "robust",
+          "--round-scheduler": "bounded",
+          "--join-current-round": "1",
+          "--candidate-timing": "0",
+          "--candidate-risk": "1",
+          "--candidate-adaptive": "0",
+          "--candidate-value": "0",
+          "--candidate-marginal": "0",
+          "--work-scheduler": "0",
+          "--pool-snapshot": "0",
+          "--verification-budget": "0",
+          "--clock-min-peers": "1"
+        }
+      },
+      {
+        "case": "policy-1-0",
+        "options": {
+          "--clock-control": "learned",
+          "--round-scheduler": "bounded",
+          "--join-current-round": "1",
+          "--candidate-timing": "1",
+          "--candidate-risk": "0",
+          "--candidate-adaptive": "0",
+          "--candidate-value": "0",
+          "--candidate-marginal": "0",
+          "--work-scheduler": "0",
+          "--pool-snapshot": "0",
+          "--verification-budget": "0",
+          "--clock-min-peers": "1"
+        }
+      },
+      {
+        "case": "policy-1-1",
+        "options": {
+          "--clock-control": "learned",
+          "--round-scheduler": "bounded",
+          "--join-current-round": "1",
+          "--candidate-timing": "1",
+          "--candidate-risk": "1",
+          "--candidate-adaptive": "0",
+          "--candidate-value": "0",
+          "--candidate-marginal": "0",
+          "--work-scheduler": "0",
+          "--pool-snapshot": "0",
+          "--verification-budget": "0",
+          "--clock-min-peers": "1"
+        }
+      }
+    ],
+    "evidence": "ClockNetwork exit 0; all 17 sequential cases completed their assertions"
+  },
+  "extra_evm": {
+    "options": {
+      "work-scheduler": 1,
+      "verification-budget": 1,
+      "pool-snapshot": 1
+    },
+    "result": {
+      "checks": [
+        "deploy and execute persistent storage with return value",
+        "REVERT restores storage and consumes nonce and actual gas",
+        "out of gas restores contract state",
+        "SHA256 precompile returns the expected digest",
+        "signature binds full contract input",
+        "Solidity 0.8.28 Shanghai bytecode events nested CALL and revert",
+        "modular exponentiation precompile",
+        "follower independently replays code storage fees and receipts",
+        "compact announcement fetches missing EVM transactions and replays consecutive calls",
+        "restart recovers contract state and supply",
+        "same height tie converges by hash; EVM storage receipts native balances and fees follow selected branch"
+      ],
+      "gas": {
+        "deploy": 57454,
+        "call": 43230,
+        "revert": 43112
+      }
+    }
+  },
+  "database_cleanup": {
+    "status": "partially blocked",
+    "test_processes_stopped": true,
+    "cluster_managed_databases": "Cluster.Close completed cleanup during tests",
+    "additional_database_directories_retained": 28,
+    "reason": "Automatic tool safety review rejected local database deletion: blocked by policy",
+    "inputs_results_logs_retained": true
+  },
+  "extra_pool_selection_regression": {
+    "tests": 1,
+    "failures": 0,
+    "timestamp_local": "2026-10-23T16:13:14",
+    "cases": [
+      {
+        "name": "AccountCorrectness",
+        "seconds": 1.16791,
+        "passed": true
+      }
+    ]
+  }
+}

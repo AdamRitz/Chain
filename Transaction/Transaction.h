@@ -11,6 +11,7 @@
 #include <vector>
 #include "../Key/Key.h"
 #include "../DB/DB.h"
+#include "../Tool/VerificationBudget.h"
 using namespace std;
 
 // ------------------------------------------------交易和交易池------------------------------------------------
@@ -43,6 +44,8 @@ void WakeMainLoop() {
 }
 size_t maxPoolTx=200000;
 size_t maxBlockTx=6000;
+bool poolSnapshot=false;
+atomic<uint64_t> poolSnapshotChunks{0},poolSnapshotLockNs{0};
 atomic<uint64_t> receivedTx{0},validTx{0},invalidTx{0},duplicateTx{0},rejectedTx{0};
 atomic<uint64_t> invalidUserTx{0},conflictTx{0};
 atomic<uint64_t> txCommitWaitNs{0},txReadNs{0},txPoolWaitNs{0};
@@ -145,7 +148,7 @@ array<uint8_t,176> GenerateTx(const array<uint8_t,32>& sender,const array<uint8_
     if (crypto_sign_detached(tx.signature.data(),nullptr,tx.hash.data(),32,wallet.private_key.data())!=0) throw runtime_error("Sign failed");
     return SerializeTxALL(tx,partByte);
 }
-bool VerifyTransaction(const array<uint8_t,176>& data,span<const uint8_t> payload={}) {
+bool VerifyTransaction(const array<uint8_t,176>& data,span<const uint8_t> payload={},bool priority=false) {
     if (!payload.empty()&&(!ValidEvmPayload(payload)||memcmp(payload.data()+13,genesisRoot.data(),32))) return false;
     // 完整交易和合约输入共同标识验签结果，缓存独立于交易池和分支状态。
     array<uint8_t,32> fingerprint;
@@ -177,8 +180,11 @@ bool VerifyTransaction(const array<uint8_t,176>& data,span<const uint8_t> payloa
         hash=EvmTransactionHash(data,payload);
     }
     if (sodium_memcmp(hash.data(),data.data()+80,32)!=0) return false;
-    signatureChecks++;
-    if (crypto_sign_verify_detached(data.data()+112,hash.data(),32,data.data())!=0) return false;
+    {
+        VerificationBudget::Lease permit(verificationBudget,priority);
+        signatureChecks++;
+        if (crypto_sign_verify_detached(data.data()+112,hash.data(),32,data.data())!=0) return false;
+    }
     {
         lock_guard lock(cache.lock);
         if (!cache.hashes.count(fingerprint)) {

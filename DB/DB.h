@@ -450,7 +450,7 @@ array<uint8_t,32> DBReadCurrentBlock() {
 void PublishChainHead() {
     ChainHead head{DBReadBlockHeight(),DBReadNumber("ChainTx"),dbStateVersion,userBurned,users.size(),evmState.get_accounts().size(),DBReadCurrentBlock()};
     PublishedChain next; next.head=head; next.atUs=int64_t(GetSteadyTime()/1000);
-    if (experimentIndex||nodeClock.candidateLifecycle||nodeClock.candidateValue) {
+    if (experimentIndex||nodeClock.candidateLifecycle||nodeClock.candidateValue||nodeClock.candidateMarginal) {
         auto previous=ReadPublishedChain();
         auto hash=head.hash; auto height=head.height;
         while (height&&next.tail.size()<256) {

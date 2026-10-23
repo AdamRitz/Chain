@@ -1,6 +1,11 @@
 """EVM deployment, gas, rollback, replication and restart through the public wire protocol."""
 import argparse
 from NetworkTest import *
+from NetworkTest import StartNode as StartBaseNode
+
+NODE_OPTIONS = {}
+def StartNode(binary, work, name, **options):
+    return StartBaseNode(binary, work, name, **{**NODE_OPTIONS, **options})
 
 def InitCode(runtime):
     size=len(bytes.fromhex(runtime))
@@ -147,4 +152,8 @@ def TestEvm(binary,work):
 
 if __name__=='__main__':
     parser=argparse.ArgumentParser(); parser.add_argument('--bin',type=Path,required=True); parser.add_argument('--work',type=Path,required=True)
-    args=parser.parse_args(); TestEvm(args.bin.resolve(),args.work.resolve())
+    parser.add_argument('--optimized', action='store_true')
+    args=parser.parse_args()
+    if args.optimized:
+        NODE_OPTIONS.update({'work-scheduler':1, 'verification-budget':1, 'pool-snapshot':1})
+    TestEvm(args.bin.resolve(),args.work.resolve())

@@ -76,6 +76,8 @@ int main(int argc,char** argv) {
         auto refreshed=txpool; auto refreshedInputs=evmPool; auto refreshedReady=readyPoolTx;
         RefreshTxPool();
         Require(txpool==refreshed&&evmPool==refreshedInputs&&readyPoolTx==refreshedReady,"affected-account refresh matches full native and EVM refresh");
+        auto baselineSelection=GenerateBlock(); poolSnapshot=true; auto snapshotSelection=GenerateBlock(); poolSnapshot=false;
+        Require(snapshotSelection==baselineSelection&&VerifyBlock(snapshotSelection),"snapshot selection preserves EVM payloads after a reorganization");
         Require(signatureChecks==checksBefore,"pool refresh preserves signature verification");
         Require(txpool.size()==3&&readyPoolTx==3,"pool refresh restores executable native and contract prefixes");
         Require(!txpool.count(GetTransactionHash(transfer))&&!txpool.count(GetTransactionHash(expensive)),"pool refresh removes confirmed and unaffordable transactions");
