@@ -23,6 +23,8 @@ import org.fisco.bcos.sdk.demo.contract.DagTransfer;
 public class NativeAlignedBench {
     static final BigInteger INITIAL = BigInteger.valueOf(1_000_000_000L);
     static int USERS = 1024;
+    static final int SHARDS = Integer.parseInt(System.getenv().getOrDefault("FISCO_BENCH_SHARDS", "1"));
+    static final int SHARD = Integer.parseInt(System.getenv().getOrDefault("FISCO_BENCH_SHARD", "0"));
     static final Gson JSON = new GsonBuilder().serializeNulls().setPrettyPrinting().create();
     static BcosSDK sdk;
     static Client client;
@@ -35,6 +37,8 @@ public class NativeAlignedBench {
         return value.startsWith("0x") ? Long.parseLong(value.substring(2),16) : Long.parseLong(value);
     }
     static String Name(int user) { return prefix + "-" + user; }
+    static int GlobalIndex(int local) { return Math.addExact(Math.multiplyExact(local, SHARDS), SHARD); }
+    static int From(int local) { return GlobalIndex(local) % USERS; }
     static String Hash(String signed) {
         try {return JsonParser.parseString(TransactionBuilderJniObj.decodeTransactionToJsonObj(signed))
             .getAsJsonObject().get("dataHash").getAsString();}
@@ -55,9 +59,9 @@ public class NativeAlignedBench {
         return row;
     }
     static void Fund() throws Exception {
-        CountDownLatch latch = new CountDownLatch(USERS);
+        CountDownLatch latch = new CountDownLatch((USERS + SHARDS - 1 - SHARD) / SHARDS);
         AtomicInteger failed = new AtomicInteger();
-        for (int i=0;i<USERS;i++) {
+        for (int i=SHARD;i<USERS;i+=SHARDS) {
             TransactionCallback cb = new TransactionCallback() {
                 public void onResponse(TransactionReceipt r) {
                     if (r.getStatus()!=0 || (nativeMode && nativeContract.getUserAddOutput(r).getValue1().signum()!=0)) failed.incrementAndGet();
@@ -71,7 +75,7 @@ public class NativeAlignedBench {
             // Setup is outside the measured interval. Verify state when a push receipt is delayed.
             fundingReceiptQueries=(int)latch.getCount()+failed.get();
             AtomicInteger wrong=new AtomicInteger();ExecutorService verify=Executors.newFixedThreadPool(8);
-            for(int i=0;i<USERS;i++){int index=i;verify.submit(()->{
+            for(int i=SHARD;i<USERS;i+=SHARDS){int index=i;verify.submit(()->{
                 try {
                     var balance=nativeMode?nativeContract.userBalance(Name(index)).getValue2():contract.balanceOf(Name(index));
                     if(!balance.equals(INITIAL))wrong.incrementAndGet();
@@ -121,11 +125,15 @@ public class NativeAlignedBench {
         int maxInflight=args.length>8?Integer.parseInt(args[8]):100000;
         boolean shortBudget=args.length>9 && args[9].equals("short-budget");
         int total = Math.multiplyExact(rate,warm+seconds);
-        prefix = "bench"+System.currentTimeMillis()+"-"+UUID.randomUUID().toString().substring(0,8);
+        if(SHARDS<1 || SHARD<0 || SHARD>=SHARDS || SHARDS>USERS)
+            throw new IllegalArgumentException("Invalid sender partition");
+        prefix = System.getenv().getOrDefault("FISCO_BENCH_PREFIX",
+            "bench"+System.currentTimeMillis()+"-"+UUID.randomUUID().toString().substring(0,8));
         var result = new LinkedHashMap<String,Object>();
         result.put("workload",args[1]); result.put("target_tps",rate); result.put("warmup_s",warm);
         result.put("measure_s",seconds); result.put("users",USERS); result.put("requested",total);
         result.put("prefix",prefix); result.put("presigned",true);
+        result.put("shards",SHARDS);result.put("shard",SHARD);
         result.put("max_inflight",maxInflight);result.put("short_budget",shortBudget);
         sdk = BcosSDK.build(args[0]); client = sdk.getClient("group0");
         try {
@@ -158,14 +166,14 @@ public class NativeAlignedBench {
                 for(int begin=0;begin<total;begin+=4096) {
                     final int first=begin,count=Math.min(4096,total-begin);String[] chunk=new String[count];
                     java.util.stream.IntStream.range(0,count).parallel().forEach(j->{
-                        int i=first+j,from=i%USERS,to=(from+1)%USERS;
+                        int i=first+j,from=From(i),to=(from+1)%USERS;
                         chunk[j]=nativeContract.getSignedTransactionForUserTransfer(Name(from),Name(to),BigInteger.ONE);
                         hashes[i]=Hash(chunk[j]);
                     });
                     for(int j=0;j<count;j++) {
                         int i=first+j;byte[] encoded=chunk[j].getBytes(StandardCharsets.US_ASCII);
                         offsets[i]=preparedBytes;spool.writeInt(encoded.length);spool.write(encoded);preparedBytes+=4+encoded.length;
-                        manifest.write(JSON.toJson(Map.of("index",i,"hash",hashes[i])).replace("\n",""));manifest.newLine();
+                        manifest.write(JSON.toJson(Map.of("index",GlobalIndex(i),"hash",hashes[i])).replace("\n",""));manifest.newLine();
                     }
                 }
             }
@@ -175,8 +183,8 @@ public class NativeAlignedBench {
                 prepared=channel.map(FileChannel.MapMode.READ_ONLY,0,preparedBytes).asReadOnlyBuffer();
             }
             result.put("prepared_file_bytes",preparedBytes);
-            result.put("routing","ring: from=i%"+USERS+",to=(from+1)%"+USERS+",amount=1");
-            result.put("sender_placement","single controller; signatures prepared before gate; disk-backed bounded heap");
+            result.put("routing","ring: global_i=local_i*shards+shard,from=global_i%"+USERS+",to=(from+1)%"+USERS+",amount=1");
+            result.put("sender_placement",SHARDS==1?"single controller":"one presigned sender per validator; shared logical accounts");
             result.put("prepare_s",(System.nanoTime()-prepareStart)/1e9);
             var decodedInspection=JsonParser.parseString(TransactionBuilderJniObj.decodeTransactionToJsonObj(ReadPrepared(prepared,offsets,0))).getAsJsonObject();
             Map<String,Object> signedInspection=new LinkedHashMap<>();
@@ -348,7 +356,7 @@ public class NativeAlignedBench {
             long[] expected=new long[USERS];Arrays.fill(expected,INITIAL.longValueExact());
             for(int i=0;i<total;i++) {
                 if(sent[i]>=windowStart&&sent[i]<windowEnd){sentInWindow++;if(outcomes[i]==1)lat[n++]=completed[i]-sent[i];}
-                if(outcomes[i]==1){expected[i%USERS]--;expected[(i%USERS+1)%USERS]++;if(completed[i]>=windowStart&&completed[i]<windowEnd)confirmedInWindow++;}
+                if(outcomes[i]==1){expected[From(i)]--;expected[(From(i)+1)%USERS]++;if(completed[i]>=windowStart&&completed[i]<windowEnd)confirmedInWindow++;}
                 if(sent[i]>0&&sent[i]<windowStart&&(completed[i]==0||completed[i]>=windowStart))backlogStart++;
                 if(sent[i]>0&&sent[i]<windowEnd&&(completed[i]==0||completed[i]>=windowEnd))backlogEnd++;
             }
