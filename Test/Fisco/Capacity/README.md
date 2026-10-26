@@ -29,4 +29,8 @@ python3 Run.py --hosts /opt/fisco-control/automation/fisco-adapter/hosts.json \
 
 `Sample.py` 每秒记录节点和发送器 CPU、常驻内存、线程 CPU、磁盘与网卡计数。`TestCapacity.py` 验证分区初始化、全局环形路由及回执下标重组；云端原生冒烟测试补充真实 SDK、配置和账本验证。
 
+`Analyze.py --raw <解压后的批次父目录> --output <分析.json>` 从保存证据重算采样跨度、资源使用、队列、延迟及测量期内 PBFT 超时；日志采用服务器 Asia/Shanghai 时区，排除初始化和停机后无 quorum 审计期间的超时。报告同时保留实际 SDK 调用起点与计划发送起点的延迟，防止回压下只报告低回执延迟。
+
+2026-10-26 已完成 1 次冒烟、12 次不同配置/压力对照及 5 档正式短测，见 [容量实验报告](../../../reports/2026-10-26-fisco-capacity/REPORT.md)。正式批次最高 19,453 TPS，调参短测最高 20,534 TPS；均不是长期可持续容量的证明。
+
 参考：[v3.7.3 节点配置实现](https://github.com/FISCO-BCOS/FISCO-BCOS/blob/v3.7.3/bcos-tool/bcos-tool/NodeConfig.cpp)、[原生转账实现](https://github.com/FISCO-BCOS/FISCO-BCOS/blob/v3.7.3/bcos-executor/src/precompiled/extension/DagTransferPrecompiled.cpp)、[串行调度实现](https://github.com/FISCO-BCOS/FISCO-BCOS/blob/v3.7.3/bcos-scheduler/src/SerialBlockExecutive.cpp)。

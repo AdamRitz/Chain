@@ -1,0 +1,38 @@
+[
+  {
+    "batch": "cap-formal-20261026",
+    "remote": "/opt/fisco-control/results/cap-formal-20261026-evidence.tar.gz",
+    "bytes": 154394069,
+    "sha256": "28137bdd8a843d7b59b08add6e008388e14b40d9232883a7a3da6f9b1000aece"
+  },
+  {
+    "batch": "cap-smoke-20261026",
+    "remote": "/opt/fisco-control/results/cap-smoke-20261026-evidence.tar.gz",
+    "bytes": 208059,
+    "sha256": "e4d876de392ad706ba81bf2a457b6f27fa42bc95894fc81a1ac7665a5d280695"
+  },
+  {
+    "batch": "cap-tune-20261026",
+    "remote": "/opt/fisco-control/results/cap-tune-20261026-evidence.tar.gz",
+    "bytes": 83279977,
+    "sha256": "63c100a8efb3d7e62b06527c1d5cd7478d20718359a3fbb53560505fe042bf99"
+  },
+  {
+    "batch": "cap-tune2-20261026",
+    "remote": "/opt/fisco-control/results/cap-tune2-20261026-evidence.tar.gz",
+    "bytes": 79615167,
+    "sha256": "5ac02f404eac8663362de7b666c23d519514b398e052620c78bbeaad977189af"
+  },
+  {
+    "batch": "cap-tune3-20261026",
+    "remote": "/opt/fisco-control/results/cap-tune3-20261026-evidence.tar.gz",
+    "bytes": 71365992,
+    "sha256": "36a7b7456aa0cbe0cce0a7c09f2d2b4d29d129545bf653b3c191500f97a6345d"
+  },
+  {
+    "batch": "cap-tune4-20261026",
+    "remote": "/opt/fisco-control/results/cap-tune4-20261026-evidence.tar.gz",
+    "bytes": 26058388,
+    "sha256": "d43903ffa0562349cf0abbd2deca358e7ebceacdede1d8b942cd7e3d12537bfe"
+  }
+]

@@ -1,0 +1,92 @@
+[
+  {
+    "node": "node01",
+    "ip": "182.151.5.57",
+    "private_ip": "192.168.0.176",
+    "cpu_count": 4,
+    "mem_mib": 3661,
+    "binary_sha256": "7c29bd2afe615a57af02a440fc4d665c3beec3cf7301ec4007cc07caf5b683f4",
+    "chrony": "    : 771CCEC1 (119.28.206.193)\nStratum         : 3\nRef time (UTC)  : Mon Oct 26 05:54:53 2026\nSystem time     : 0.000000010 seconds slow of NTP time\nLast offset     : +0.000566017 seconds\nRMS offset      : 0.000231896 seconds\n"
+  },
+  {
+    "node": "node02",
+    "ip": "118.122.78.54",
+    "private_ip": "192.168.0.111",
+    "cpu_count": 4,
+    "mem_mib": 3661,
+    "binary_sha256": "7c29bd2afe615a57af02a440fc4d665c3beec3cf7301ec4007cc07caf5b683f4",
+    "chrony": "    : 771CCEC1 (119.28.206.193)\nStratum         : 3\nRef time (UTC)  : Mon Oct 26 05:57:09 2026\nSystem time     : 0.000592352 seconds fast of NTP time\nLast offset     : +0.000085113 seconds\nRMS offset      : 0.000161421 seconds\n"
+  },
+  {
+    "node": "node03",
+    "ip": "182.151.27.42",
+    "private_ip": "192.168.0.108",
+    "cpu_count": 4,
+    "mem_mib": 3661,
+    "binary_sha256": "7c29bd2afe615a57af02a440fc4d665c3beec3cf7301ec4007cc07caf5b683f4",
+    "chrony": "    : 771CCEC1 (119.28.206.193)\nStratum         : 3\nRef time (UTC)  : Mon Oct 26 05:51:09 2026\nSystem time     : 0.000308614 seconds fast of NTP time\nLast offset     : +0.000174910 seconds\nRMS offset      : 0.000508921 seconds\n"
+  },
+  {
+    "node": "node04",
+    "ip": "118.121.202.17",
+    "private_ip": "192.168.0.167",
+    "cpu_count": 4,
+    "mem_mib": 3661,
+    "binary_sha256": "7c29bd2afe615a57af02a440fc4d665c3beec3cf7301ec4007cc07caf5b683f4",
+    "chrony": "    : CA701D52 (dns1.synet.edu.cn)\nStratum         : 3\nRef time (UTC)  : Mon Oct 26 05:37:53 2026\nSystem time     : 0.000019528 seconds slow of NTP time\nLast offset     : +0.000042458 seconds\nRMS offset      : 0.000046139 seconds\n"
+  },
+  {
+    "node": "node05",
+    "ip": "110.185.105.122",
+    "private_ip": "192.168.0.249",
+    "cpu_count": 4,
+    "mem_mib": 3661,
+    "binary_sha256": "7c29bd2afe615a57af02a440fc4d665c3beec3cf7301ec4007cc07caf5b683f4",
+    "chrony": "    : 771CCEC1 (119.28.206.193)\nStratum         : 3\nRef time (UTC)  : Mon Oct 26 06:04:56 2026\nSystem time     : 0.000452792 seconds fast of NTP time\nLast offset     : -0.000037549 seconds\nRMS offset      : 0.000349751 seconds\n"
+  },
+  {
+    "node": "node06",
+    "ip": "110.185.104.206",
+    "private_ip": "192.168.0.138",
+    "cpu_count": 4,
+    "mem_mib": 3661,
+    "binary_sha256": "7c29bd2afe615a57af02a440fc4d665c3beec3cf7301ec4007cc07caf5b683f4",
+    "chrony": "    : 771CCEC1 (119.28.206.193)\nStratum         : 3\nRef time (UTC)  : Mon Oct 26 05:47:08 2026\nSystem time     : 0.001412349 seconds fast of NTP time\nLast offset     : +0.000939920 seconds\nRMS offset      : 0.000404516 seconds\n"
+  },
+  {
+    "node": "node07",
+    "ip": "182.151.9.116",
+    "private_ip": "192.168.0.162",
+    "cpu_count": 4,
+    "mem_mib": 3661,
+    "binary_sha256": "7c29bd2afe615a57af02a440fc4d665c3beec3cf7301ec4007cc07caf5b683f4",
+    "chrony": "    : 771CCEC1 (119.28.206.193)\nStratum         : 3\nRef time (UTC)  : Mon Oct 26 05:51:57 2026\nSystem time     : 0.000417282 seconds fast of NTP time\nLast offset     : +0.000025592 seconds\nRMS offset      : 0.000149408 seconds\n"
+  },
+  {
+    "node": "node08",
+    "ip": "182.151.38.203",
+    "private_ip": "192.168.0.61",
+    "cpu_count": 4,
+    "mem_mib": 3661,
+    "binary_sha256": "7c29bd2afe615a57af02a440fc4d665c3beec3cf7301ec4007cc07caf5b683f4",
+    "chrony": "    : 771CCEC1 (119.28.206.193)\nStratum         : 3\nRef time (UTC)  : Mon Oct 26 05:53:05 2026\nSystem time     : 0.000120301 seconds fast of NTP time\nLast offset     : +0.000150009 seconds\nRMS offset      : 0.000569831 seconds\n"
+  },
+  {
+    "node": "node09",
+    "ip": "118.121.198.136",
+    "private_ip": "192.168.0.12",
+    "cpu_count": 4,
+    "mem_mib": 3661,
+    "binary_sha256": "7c29bd2afe615a57af02a440fc4d665c3beec3cf7301ec4007cc07caf5b683f4",
+    "chrony": "    : 771CB7B8 (119.28.183.184)\nStratum         : 3\nRef time (UTC)  : Mon Oct 26 06:04:45 2026\nSystem time     : 0.000081330 seconds slow of NTP time\nLast offset     : -0.000075927 seconds\nRMS offset      : 0.000186162 seconds\n"
+  },
+  {
+    "node": "node10",
+    "ip": "118.122.72.173",
+    "private_ip": "192.168.0.11",
+    "cpu_count": 4,
+    "mem_mib": 3661,
+    "binary_sha256": "7c29bd2afe615a57af02a440fc4d665c3beec3cf7301ec4007cc07caf5b683f4",
+    "chrony": "    : 8BC7D6CA (139.199.214.202)\nStratum         : 3\nRef time (UTC)  : Mon Oct 26 05:55:28 2026\nSystem time     : 0.000242901 seconds fast of NTP time\nLast offset     : -0.000025555 seconds\nRMS offset      : 0.000144259 seconds\n"
+  }
+]

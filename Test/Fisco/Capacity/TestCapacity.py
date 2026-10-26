@@ -1,13 +1,36 @@
 """Check distributed workload accounting without a running chain."""
 import json
+from datetime import datetime, timezone, timedelta
+import io
 from pathlib import Path
 import shutil
+import tarfile
 import tempfile
 import unittest
+from Analyze import LogEvents
 from Run import Capacity
 
 
 class AccountingTest(unittest.TestCase):
+    def test_timeout_analysis_excludes_setup_and_audit(self):
+        lines = [
+            'warning|2026-10-26 14:00:01.000000|pbft|After onTimeout',
+            'warning|2026-10-26 14:00:02.000000|pbft|verify proposal exceptioned msg=timeout',
+            'warning|2026-10-26 14:00:07.000000|pbft|After onTimeout',
+            'warning|2026-10-26 14:00:12.000000|pbft|After onTimeout',
+        ]
+        content=('\n'.join(lines)+'\n').encode()
+        buffer=io.BytesIO()
+        with tarfile.open(fileobj=buffer,mode='w') as tar:
+            info=tarfile.TarInfo('node/log/log_2026102614.00.log');info.size=len(content)
+            tar.addfile(info,io.BytesIO(content))
+        buffer.seek(0)
+        start=datetime(2026,10,26,14,0,2,tzinfo=timezone(timedelta(hours=8))).timestamp()
+        with tarfile.open(fileobj=buffer,mode='r') as tar:
+            result=LogEvents(tar,start,start+10)
+        self.assertEqual(result['counts'],dict(view_timeout=1,proposal_verify_timeout=1,proposal_fetch_timeout=0))
+        self.assertEqual(len(result['examples']),2)
+
     def test_shards_reassemble_original_ring_and_outcomes(self):
         with tempfile.TemporaryDirectory() as temporary:
             root=Path(temporary)

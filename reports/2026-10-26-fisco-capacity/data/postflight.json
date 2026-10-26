@@ -1,0 +1,452 @@
+[
+  {
+    "services": {
+      "chain-node": {
+        "active": {
+          "code": 0,
+          "out": "active",
+          "err": ""
+        },
+        "enabled": {
+          "code": 0,
+          "out": "enabled",
+          "err": ""
+        }
+      },
+      "fisco-bcos": {
+        "active": {
+          "code": 0,
+          "out": "active",
+          "err": ""
+        },
+        "enabled": {
+          "code": 0,
+          "out": "enabled",
+          "err": ""
+        }
+      }
+    },
+    "config_hashes": {
+      "config.ini": "7867a2b0e3d674260954dd354b8eea47a3b780570d5e7c6b54ddb90cf0548676",
+      "config.genesis": "3e76abec0b7bc8a98aca9415063bf8c746742772afbdd8f9d50a6a16e42f0729"
+    },
+    "active_experiment_units": {
+      "code": 0,
+      "out": "",
+      "err": ""
+    },
+    "experiment_processes": [],
+    "case_directories": 18,
+    "remaining_databases": [],
+    "disk_free_bytes": 13057060864,
+    "node": "node01",
+    "ip": "182.151.5.57",
+    "passed": true,
+    "original_configs_unchanged": true
+  },
+  {
+    "services": {
+      "chain-node": {
+        "active": {
+          "code": 0,
+          "out": "active",
+          "err": ""
+        },
+        "enabled": {
+          "code": 0,
+          "out": "enabled",
+          "err": ""
+        }
+      },
+      "fisco-bcos": {
+        "active": {
+          "code": 0,
+          "out": "active",
+          "err": ""
+        },
+        "enabled": {
+          "code": 0,
+          "out": "enabled",
+          "err": ""
+        }
+      }
+    },
+    "config_hashes": {
+      "config.ini": "7867a2b0e3d674260954dd354b8eea47a3b780570d5e7c6b54ddb90cf0548676",
+      "config.genesis": "3e76abec0b7bc8a98aca9415063bf8c746742772afbdd8f9d50a6a16e42f0729"
+    },
+    "active_experiment_units": {
+      "code": 0,
+      "out": "",
+      "err": ""
+    },
+    "experiment_processes": [],
+    "case_directories": 18,
+    "remaining_databases": [],
+    "disk_free_bytes": 30365261824,
+    "node": "node02",
+    "ip": "118.122.78.54",
+    "passed": true,
+    "original_configs_unchanged": true
+  },
+  {
+    "services": {
+      "chain-node": {
+        "active": {
+          "code": 0,
+          "out": "active",
+          "err": ""
+        },
+        "enabled": {
+          "code": 0,
+          "out": "enabled",
+          "err": ""
+        }
+      },
+      "fisco-bcos": {
+        "active": {
+          "code": 0,
+          "out": "active",
+          "err": ""
+        },
+        "enabled": {
+          "code": 0,
+          "out": "enabled",
+          "err": ""
+        }
+      }
+    },
+    "config_hashes": {
+      "config.ini": "7867a2b0e3d674260954dd354b8eea47a3b780570d5e7c6b54ddb90cf0548676",
+      "config.genesis": "3e76abec0b7bc8a98aca9415063bf8c746742772afbdd8f9d50a6a16e42f0729"
+    },
+    "active_experiment_units": {
+      "code": 0,
+      "out": "",
+      "err": ""
+    },
+    "experiment_processes": [],
+    "case_directories": 18,
+    "remaining_databases": [],
+    "disk_free_bytes": 30410240000,
+    "node": "node03",
+    "ip": "182.151.27.42",
+    "passed": true,
+    "original_configs_unchanged": true
+  },
+  {
+    "services": {
+      "chain-node": {
+        "active": {
+          "code": 0,
+          "out": "active",
+          "err": ""
+        },
+        "enabled": {
+          "code": 0,
+          "out": "enabled",
+          "err": ""
+        }
+      },
+      "fisco-bcos": {
+        "active": {
+          "code": 0,
+          "out": "active",
+          "err": ""
+        },
+        "enabled": {
+          "code": 0,
+          "out": "enabled",
+          "err": ""
+        }
+      }
+    },
+    "config_hashes": {
+      "config.ini": "7867a2b0e3d674260954dd354b8eea47a3b780570d5e7c6b54ddb90cf0548676",
+      "config.genesis": "3e76abec0b7bc8a98aca9415063bf8c746742772afbdd8f9d50a6a16e42f0729"
+    },
+    "active_experiment_units": {
+      "code": 0,
+      "out": "",
+      "err": ""
+    },
+    "experiment_processes": [],
+    "case_directories": 18,
+    "remaining_databases": [],
+    "disk_free_bytes": 30401966080,
+    "node": "node04",
+    "ip": "118.121.202.17",
+    "passed": true,
+    "original_configs_unchanged": true
+  },
+  {
+    "services": {
+      "chain-node": {
+        "active": {
+          "code": 0,
+          "out": "active",
+          "err": ""
+        },
+        "enabled": {
+          "code": 0,
+          "out": "enabled",
+          "err": ""
+        }
+      },
+      "fisco-bcos": {
+        "active": {
+          "code": 0,
+          "out": "active",
+          "err": ""
+        },
+        "enabled": {
+          "code": 0,
+          "out": "enabled",
+          "err": ""
+        }
+      }
+    },
+    "config_hashes": {
+      "config.ini": "7867a2b0e3d674260954dd354b8eea47a3b780570d5e7c6b54ddb90cf0548676",
+      "config.genesis": "3e76abec0b7bc8a98aca9415063bf8c746742772afbdd8f9d50a6a16e42f0729"
+    },
+    "active_experiment_units": {
+      "code": 0,
+      "out": "",
+      "err": ""
+    },
+    "experiment_processes": [],
+    "case_directories": 18,
+    "remaining_databases": [],
+    "disk_free_bytes": 30384214016,
+    "node": "node05",
+    "ip": "110.185.105.122",
+    "passed": true,
+    "original_configs_unchanged": true
+  },
+  {
+    "services": {
+      "chain-node": {
+        "active": {
+          "code": 0,
+          "out": "active",
+          "err": ""
+        },
+        "enabled": {
+          "code": 0,
+          "out": "enabled",
+          "err": ""
+        }
+      },
+      "fisco-bcos": {
+        "active": {
+          "code": 0,
+          "out": "active",
+          "err": ""
+        },
+        "enabled": {
+          "code": 0,
+          "out": "enabled",
+          "err": ""
+        }
+      }
+    },
+    "config_hashes": {
+      "config.ini": "7867a2b0e3d674260954dd354b8eea47a3b780570d5e7c6b54ddb90cf0548676",
+      "config.genesis": "3e76abec0b7bc8a98aca9415063bf8c746742772afbdd8f9d50a6a16e42f0729"
+    },
+    "active_experiment_units": {
+      "code": 0,
+      "out": "",
+      "err": ""
+    },
+    "experiment_processes": [],
+    "case_directories": 18,
+    "remaining_databases": [],
+    "disk_free_bytes": 30352969728,
+    "node": "node06",
+    "ip": "110.185.104.206",
+    "passed": true,
+    "original_configs_unchanged": true
+  },
+  {
+    "services": {
+      "chain-node": {
+        "active": {
+          "code": 0,
+          "out": "active",
+          "err": ""
+        },
+        "enabled": {
+          "code": 0,
+          "out": "enabled",
+          "err": ""
+        }
+      },
+      "fisco-bcos": {
+        "active": {
+          "code": 0,
+          "out": "active",
+          "err": ""
+        },
+        "enabled": {
+          "code": 0,
+          "out": "enabled",
+          "err": ""
+        }
+      }
+    },
+    "config_hashes": {
+      "config.ini": "7867a2b0e3d674260954dd354b8eea47a3b780570d5e7c6b54ddb90cf0548676",
+      "config.genesis": "3e76abec0b7bc8a98aca9415063bf8c746742772afbdd8f9d50a6a16e42f0729"
+    },
+    "active_experiment_units": {
+      "code": 0,
+      "out": "",
+      "err": ""
+    },
+    "experiment_processes": [],
+    "case_directories": 18,
+    "remaining_databases": [],
+    "disk_free_bytes": 30380257280,
+    "node": "node07",
+    "ip": "182.151.9.116",
+    "passed": true,
+    "original_configs_unchanged": true
+  },
+  {
+    "services": {
+      "chain-node": {
+        "active": {
+          "code": 0,
+          "out": "active",
+          "err": ""
+        },
+        "enabled": {
+          "code": 0,
+          "out": "enabled",
+          "err": ""
+        }
+      },
+      "fisco-bcos": {
+        "active": {
+          "code": 0,
+          "out": "active",
+          "err": ""
+        },
+        "enabled": {
+          "code": 0,
+          "out": "enabled",
+          "err": ""
+        }
+      }
+    },
+    "config_hashes": {
+      "config.ini": "7867a2b0e3d674260954dd354b8eea47a3b780570d5e7c6b54ddb90cf0548676",
+      "config.genesis": "3e76abec0b7bc8a98aca9415063bf8c746742772afbdd8f9d50a6a16e42f0729"
+    },
+    "active_experiment_units": {
+      "code": 0,
+      "out": "",
+      "err": ""
+    },
+    "experiment_processes": [],
+    "case_directories": 18,
+    "remaining_databases": [],
+    "disk_free_bytes": 30386909184,
+    "node": "node08",
+    "ip": "182.151.38.203",
+    "passed": true,
+    "original_configs_unchanged": true
+  },
+  {
+    "services": {
+      "chain-node": {
+        "active": {
+          "code": 0,
+          "out": "active",
+          "err": ""
+        },
+        "enabled": {
+          "code": 0,
+          "out": "enabled",
+          "err": ""
+        }
+      },
+      "fisco-bcos": {
+        "active": {
+          "code": 0,
+          "out": "active",
+          "err": ""
+        },
+        "enabled": {
+          "code": 0,
+          "out": "enabled",
+          "err": ""
+        }
+      }
+    },
+    "config_hashes": {
+      "config.ini": "7867a2b0e3d674260954dd354b8eea47a3b780570d5e7c6b54ddb90cf0548676",
+      "config.genesis": "3e76abec0b7bc8a98aca9415063bf8c746742772afbdd8f9d50a6a16e42f0729"
+    },
+    "active_experiment_units": {
+      "code": 0,
+      "out": "",
+      "err": ""
+    },
+    "experiment_processes": [],
+    "case_directories": 18,
+    "remaining_databases": [],
+    "disk_free_bytes": 30403616768,
+    "node": "node09",
+    "ip": "118.121.198.136",
+    "passed": true,
+    "original_configs_unchanged": true
+  },
+  {
+    "services": {
+      "chain-node": {
+        "active": {
+          "code": 0,
+          "out": "active",
+          "err": ""
+        },
+        "enabled": {
+          "code": 0,
+          "out": "enabled",
+          "err": ""
+        }
+      },
+      "fisco-bcos": {
+        "active": {
+          "code": 0,
+          "out": "active",
+          "err": ""
+        },
+        "enabled": {
+          "code": 0,
+          "out": "enabled",
+          "err": ""
+        }
+      }
+    },
+    "config_hashes": {
+      "config.ini": "7867a2b0e3d674260954dd354b8eea47a3b780570d5e7c6b54ddb90cf0548676",
+      "config.genesis": "3e76abec0b7bc8a98aca9415063bf8c746742772afbdd8f9d50a6a16e42f0729"
+    },
+    "active_experiment_units": {
+      "code": 0,
+      "out": "",
+      "err": ""
+    },
+    "experiment_processes": [],
+    "case_directories": 18,
+    "remaining_databases": [],
+    "disk_free_bytes": 30387957760,
+    "node": "node10",
+    "ip": "118.122.72.173",
+    "passed": true,
+    "original_configs_unchanged": true
+  }
+]
