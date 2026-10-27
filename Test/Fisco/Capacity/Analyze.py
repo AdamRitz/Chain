@@ -73,8 +73,11 @@ def Analyze(root):
                 x=next((p for p in a['processes'] if p['role']==role),None)
                 y=next((p for p in b['processes'] if p['role']==role),None)
                 if not(x and y) or x['pid']!=y['pid']:continue
+                measured=[p['rss_bytes'] for s in samples if a_time<=s['epoch']<=b_time
+                          for p in s['processes'] if p['role']==role and p['pid']==x['pid']]
                 data['roles'][role]={'cpu_cores':(y['cpu_s']-x['cpu_s'])/dt,
-                    'max_rss_bytes':max(p['rss_bytes'] for s in samples for p in s['processes'] if p['role']==role),
+                    'max_rss_bytes':max(measured) if measured else None,
+                    'max_rss_bytes_entire_case':max(p['rss_bytes'] for s in samples for p in s['processes'] if p['role']==role),
                     'write_bytes_per_s':(y['write_bytes']-x['write_bytes'])/dt,
                     'thread_cpu_cores':{k:(v-x['thread_cpu_s'].get(k,0))/dt for k,v in y['thread_cpu_s'].items()}}
             ac=list(map(int,a['cpu'].split()[1:]));bc=list(map(int,b['cpu'].split()[1:]));ticks=sum(bc[:8])-sum(ac[:8])
@@ -118,9 +121,14 @@ def Analyze(root):
         if len(pair)==2 and all(pair):
             first,last=[min(n['height'] for n in p['nodes']) for p in pair]
             sizes=[]
-            for line in ReadLines(path.with_name('canonical-blocks.jsonl')):
+            ledger_path=path.with_name('canonical-blocks.jsonl')
+            if not ledger_path.exists() and not ledger_path.with_suffix('.jsonl.gz').exists():
+                ledger_path=path.with_name('canonical-index.jsonl')
+                row['local_ledger_evidence']='block index; full transaction lists retained on controller'
+            for line in ReadLines(ledger_path):
                 block=json.loads(line)
-                if first<block['height']<=last:sizes.append(len(block['hashes']))
+                if first<block['height']<=last:
+                    sizes.append(block['transaction_count'] if 'transaction_count' in block else len(block['hashes']))
             row['measurement_blocks']=dict(count=len(sizes),mean_transactions=statistics.mean(sizes) if sizes else 0,
                                             max_transactions=max(sizes,default=0))
         drivers=json.loads(path.with_name('drivers.json').read_text())

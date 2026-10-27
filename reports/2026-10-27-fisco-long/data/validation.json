@@ -1,0 +1,53 @@
+{
+  "python_tests": 3,
+  "python_tests_passed": true,
+  "java_compilation_nodes": 10,
+  "java_compilation_all_passed": true,
+  "harness_commit": "553eb092f4633d96617a73175931f49a687dbcdb",
+  "github_master_verified": true,
+  "smoke_failed": "cap-smoke-20261027",
+  "smoke_corrected": "cap-smoke2-20261027",
+  "smoke_note": "Initially placed block_limit in config.ini; v3.7.3 reads it from config.genesis. Corrected after BlockLimitCheckFail. First smoke also hit a transient SCP error. Both attempts retained and cleaned; corrected native smoke and audit passed.",
+  "user_authorization": "2026-10-27: each of the five rates measured for 60 seconds, repeated three times.",
+  "additional_rate_decision": "User explicitly declined 14k/16k/18k additions; finish only the authorized five rates, three repeats each.",
+  "source_checks": [
+    {
+      "file": "Run.py",
+      "sha256": "34e7d0e48592a937b0216ec6cabb901e6c214a2b1e69c3eb7066b61403bc87a2",
+      "git_source_matches": true
+    },
+    {
+      "file": "Sample.py",
+      "sha256": "2920c9ef75c822fa2d9f1ff0756e5b62ee3cdd1a8bbc9126b09dc7ce0759fd37",
+      "git_source_matches": true
+    },
+    {
+      "file": "NativeAlignedBench.java",
+      "sha256": "1bdedc0ea437ceca0dc56029698a1b76fd911bd9936f4534f53c680e94a36d16",
+      "git_source_matches": true
+    },
+    {
+      "file": "NativeRun.py",
+      "sha256": "ac58352aa633d71f1eace430fcbb29b25b99c04d0c3f4c3836b510a2656ea227",
+      "git_source_matches": true
+    },
+    {
+      "file": "DefaultFormal.py",
+      "sha256": "da795b31d7cc5fc89e53453e24eca941c1243b173468ebb491541972900c1774",
+      "git_source_matches": true
+    },
+    {
+      "file": "DriverStage.py",
+      "sha256": "6e2601938fe399a0a1116d8abcd513012781addaf8662bc005e6b9d3926c8748",
+      "git_source_matches": true
+    }
+  ],
+  "formal_cases": 15,
+  "formal_all_correct": true,
+  "formal_database_cleanups": 150,
+  "all_sdk_error_transactions_verified_successful": true,
+  "sdk_error_transactions": 80720,
+  "actual_calls_and_audited_transfers": 17130898,
+  "final_services_restored": true,
+  "final_configs_unchanged": true
+}

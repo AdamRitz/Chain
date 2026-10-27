@@ -1,0 +1,23 @@
+[
+  {
+    "batch": "cap-formal-20261027",
+    "remote_directory": "/opt/fisco-control/results/cap-formal-20261027",
+    "scope": "analysis bundle with block index; full per-transaction records retained remotely",
+    "bytes": 127696750,
+    "sha256": "0fea156da83111469e525999f6def8787c4aee07298e837caef62e4b27a01e3b"
+  },
+  {
+    "batch": "cap-smoke-20261027",
+    "remote_directory": "/opt/fisco-control/results/cap-smoke-20261027",
+    "scope": "analysis bundle with block index; full per-transaction records retained remotely",
+    "bytes": 183346,
+    "sha256": "f83f2043278eaf7b29c37fcf147a4ca0da355421b130124c83507516fb2bf89e"
+  },
+  {
+    "batch": "cap-smoke2-20261027",
+    "remote_directory": "/opt/fisco-control/results/cap-smoke2-20261027",
+    "scope": "analysis bundle with block index; full per-transaction records retained remotely",
+    "bytes": 195886,
+    "sha256": "33014a0b33f3d41f621c30fe8d2e257a850f5e3e7ffd97ebb1029a826c0d97a5"
+  }
+]

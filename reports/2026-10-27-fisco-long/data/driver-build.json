@@ -1,0 +1,62 @@
+[
+  {
+    "node": "node01",
+    "compile_exit": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  {
+    "node": "node02",
+    "compile_exit": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  {
+    "node": "node03",
+    "compile_exit": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  {
+    "node": "node04",
+    "compile_exit": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  {
+    "node": "node05",
+    "compile_exit": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  {
+    "node": "node06",
+    "compile_exit": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  {
+    "node": "node07",
+    "compile_exit": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  {
+    "node": "node08",
+    "compile_exit": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  {
+    "node": "node09",
+    "compile_exit": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  {
+    "node": "node10",
+    "compile_exit": 0,
+    "stdout": "",
+    "stderr": ""
+  }
+]

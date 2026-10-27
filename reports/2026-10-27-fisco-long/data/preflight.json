@@ -1,0 +1,82 @@
+[
+  {
+    "node": "node01",
+    "ip": "182.151.5.57",
+    "private_ip": "192.168.0.176",
+    "stdout": "Filesystem       1B-blocks        Used   Available Use% Mounted on\n/dev/vda2      37728235520 22735339520 13043593216  64% /\n               total        used        free      shared  buff/cache   available\nMem:            3661         582         825          81        2586        3079\nSwap:           4095         100        3995\nactive\nactive\n7c29bd2afe615a57af02a440fc4d665c3beec3cf7301ec4007cc07caf5b683f4  /opt/fisco/bin/fisco-bcos\nReference ID    : 771CCEC1 (119.28.206.193)\nStratum         : 3\nRef time (UTC)  : Tue Oct 27 05:12:09 2026\nSystem time     : 0.000136155 seconds fast of NTP time\nLast offset     : +0.000116525 seconds\nRMS offset      : 0.000134822 seconds\nFrequency       : 17.351 ppm slow\n",
+    "stderr": "",
+    "exit_code": 0
+  },
+  {
+    "node": "node02",
+    "ip": "118.122.78.54",
+    "private_ip": "192.168.0.111",
+    "stdout": "Filesystem       1B-blocks       Used   Available Use% Mounted on\n/dev/vda2      37728235520 5429383168 30349549568  16% /\n               total        used        free      shared  buff/cache   available\nMem:            3661         719         915          82        2389        2942\nSwap:           4095           3        4092\nactive\nactive\n7c29bd2afe615a57af02a440fc4d665c3beec3cf7301ec4007cc07caf5b683f4  /opt/fisco/bin/fisco-bcos\nReference ID    : 771CCEC1 (119.28.206.193)\nStratum         : 3\nRef time (UTC)  : Tue Oct 27 05:14:54 2026\nSystem time     : 0.000068075 seconds slow of NTP time\nLast offset     : -0.000252454 seconds\nRMS offset      : 0.000222985 seconds\nFrequency       : 11.009 ppm slow\n",
+    "stderr": "",
+    "exit_code": 0
+  },
+  {
+    "node": "node03",
+    "ip": "182.151.27.42",
+    "private_ip": "192.168.0.108",
+    "stdout": "Filesystem       1B-blocks       Used   Available Use% Mounted on\n/dev/vda2      37728235520 5390688256 30388244480  16% /\n               total        used        free      shared  buff/cache   available\nMem:            3661         710         906          80        2406        2950\nSwap:           4095           3        4092\nactive\nactive\n7c29bd2afe615a57af02a440fc4d665c3beec3cf7301ec4007cc07caf5b683f4  /opt/fisco/bin/fisco-bcos\nReference ID    : 771CCEC1 (119.28.206.193)\nStratum         : 3\nRef time (UTC)  : Tue Oct 27 05:07:20 2026\nSystem time     : 0.000370231 seconds fast of NTP time\nLast offset     : +0.000440498 seconds\nRMS offset      : 0.000473135 seconds\nFrequency       : 17.340 ppm slow\n",
+    "stderr": "",
+    "exit_code": 0
+  },
+  {
+    "node": "node04",
+    "ip": "118.121.202.17",
+    "private_ip": "192.168.0.167",
+    "stdout": "Filesystem       1B-blocks       Used   Available Use% Mounted on\n/dev/vda2      37728235520 5403316224 30375616512  16% /\n               total        used        free      shared  buff/cache   available\nMem:            3661         687         898          81        2410        2973\nSwap:           4095           1        4094\nactive\nactive\n7c29bd2afe615a57af02a440fc4d665c3beec3cf7301ec4007cc07caf5b683f4  /opt/fisco/bin/fisco-bcos\nReference ID    : CA701D52 (dns1.synet.edu.cn)\nStratum         : 3\nRef time (UTC)  : Tue Oct 27 03:45:33 2026\nSystem time     : 0.000100306 seconds slow of NTP time\nLast offset     : -0.000179992 seconds\nRMS offset      : 0.000180952 seconds\nFrequency       : 10.996 ppm slow\n",
+    "stderr": "",
+    "exit_code": 0
+  },
+  {
+    "node": "node05",
+    "ip": "110.185.105.122",
+    "private_ip": "192.168.0.249",
+    "stdout": "Filesystem       1B-blocks       Used   Available Use% Mounted on\n/dev/vda2      37728235520 5417869312 30361063424  16% /\n               total        used        free      shared  buff/cache   available\nMem:            3661         709         900          81        2413        2952\nSwap:           4095           3        4092\nactive\nactive\n7c29bd2afe615a57af02a440fc4d665c3beec3cf7301ec4007cc07caf5b683f4  /opt/fisco/bin/fisco-bcos\nReference ID    : 771CCEC1 (119.28.206.193)\nStratum         : 3\nRef time (UTC)  : Tue Oct 27 05:21:33 2026\nSystem time     : 0.000099231 seconds slow of NTP time\nLast offset     : +0.000154009 seconds\nRMS offset      : 0.000522191 seconds\nFrequency       : 17.386 ppm slow\n",
+    "stderr": "",
+    "exit_code": 0
+  },
+  {
+    "node": "node06",
+    "ip": "110.185.104.206",
+    "private_ip": "192.168.0.138",
+    "stdout": "Filesystem       1B-blocks       Used   Available Use% Mounted on\n/dev/vda2      37728235520 5459906560 30319026176  16% /\n               total        used        free      shared  buff/cache   available\nMem:            3661         715         916          81        2394        2945\nSwap:           4095           3        4092\nactive\nactive\n7c29bd2afe615a57af02a440fc4d665c3beec3cf7301ec4007cc07caf5b683f4  /opt/fisco/bin/fisco-bcos\nReference ID    : 771CCEC1 (119.28.206.193)\nStratum         : 3\nRef time (UTC)  : Tue Oct 27 05:04:11 2026\nSystem time     : 0.000026284 seconds fast of NTP time\nLast offset     : -0.000009240 seconds\nRMS offset      : 0.000077680 seconds\nFrequency       : 8.223 ppm slow\n",
+    "stderr": "",
+    "exit_code": 0
+  },
+  {
+    "node": "node07",
+    "ip": "182.151.9.116",
+    "private_ip": "192.168.0.162",
+    "stdout": "Filesystem       1B-blocks       Used   Available Use% Mounted on\n/dev/vda2      37728235520 5419540480 30359392256  16% /\n               total        used        free      shared  buff/cache   available\nMem:            3661         732         897          84        2397        2929\nSwap:           4095           2        4093\nactive\nactive\n7c29bd2afe615a57af02a440fc4d665c3beec3cf7301ec4007cc07caf5b683f4  /opt/fisco/bin/fisco-bcos\nReference ID    : 771CCEC1 (119.28.206.193)\nStratum         : 3\nRef time (UTC)  : Tue Oct 27 05:08:02 2026\nSystem time     : 0.000572390 seconds fast of NTP time\nLast offset     : +0.000101534 seconds\nRMS offset      : 0.000163114 seconds\nFrequency       : 11.033 ppm slow\n",
+    "stderr": "",
+    "exit_code": 0
+  },
+  {
+    "node": "node08",
+    "ip": "182.151.38.203",
+    "private_ip": "192.168.0.61",
+    "stdout": "Filesystem       1B-blocks       Used   Available Use% Mounted on\n/dev/vda2      37728235520 5418647552 30360285184  16% /\n               total        used        free      shared  buff/cache   available\nMem:            3661         710         927          81        2386        2950\nSwap:           4095           3        4092\nactive\nactive\n7c29bd2afe615a57af02a440fc4d665c3beec3cf7301ec4007cc07caf5b683f4  /opt/fisco/bin/fisco-bcos\nReference ID    : 771CCEC1 (119.28.206.193)\nStratum         : 3\nRef time (UTC)  : Tue Oct 27 05:08:16 2026\nSystem time     : 0.000028993 seconds slow of NTP time\nLast offset     : +0.000047667 seconds\nRMS offset      : 0.000318484 seconds\nFrequency       : 17.365 ppm slow\n",
+    "stderr": "",
+    "exit_code": 0
+  },
+  {
+    "node": "node09",
+    "ip": "118.121.198.136",
+    "private_ip": "192.168.0.12",
+    "stdout": "Filesystem       1B-blocks       Used   Available Use% Mounted on\n/dev/vda2      37728235520 5399220224 30379712512  16% /\n               total        used        free      shared  buff/cache   available\nMem:            3661         690         906          83        2400        2971\nSwap:           4095           1        4094\nactive\nactive\n7c29bd2afe615a57af02a440fc4d665c3beec3cf7301ec4007cc07caf5b683f4  /opt/fisco/bin/fisco-bcos\nReference ID    : 8BC7D6CA (139.199.214.202)\nStratum         : 3\nRef time (UTC)  : Tue Oct 27 05:13:23 2026\nSystem time     : 0.000165283 seconds fast of NTP time\nLast offset     : +0.000006774 seconds\nRMS offset      : 0.000078788 seconds\nFrequency       : 17.525 ppm slow\n",
+    "stderr": "",
+    "exit_code": 0
+  },
+  {
+    "node": "node10",
+    "ip": "118.122.72.173",
+    "private_ip": "192.168.0.11",
+    "stdout": "Filesystem       1B-blocks       Used   Available Use% Mounted on\n/dev/vda2      37728235520 5409968128 30368964608  16% /\n               total        used        free      shared  buff/cache   available\nMem:            3661         678         895          81        2421        2982\nSwap:           4095           1        4094\nactive\nactive\n7c29bd2afe615a57af02a440fc4d665c3beec3cf7301ec4007cc07caf5b683f4  /opt/fisco/bin/fisco-bcos\nReference ID    : 8BC7D6CA (139.199.214.202)\nStratum         : 3\nRef time (UTC)  : Tue Oct 27 05:12:25 2026\nSystem time     : 0.000190938 seconds fast of NTP time\nLast offset     : +0.000075054 seconds\nRMS offset      : 0.000134157 seconds\nFrequency       : 11.008 ppm slow\n",
+    "stderr": "",
+    "exit_code": 0
+  }
+]

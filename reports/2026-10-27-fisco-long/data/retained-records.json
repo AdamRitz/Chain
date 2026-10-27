@@ -1,0 +1,1985 @@
+{
+  "scope": "Analysis bundle. Full signed transactions stay on each sender; full transaction-hash manifests, canonical transaction lists and RPC logs stay on the controller.",
+  "retained_records": [
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-20000-r1/192.168.0.108/outcomes.bin",
+      "bytes": 124000,
+      "sha256": "682ec8db1744812d4f5a58c9d27e4802e1162f77c6bc5e80bf94165aa2f04294",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-20000-r1/192.168.0.108/transaction-hashes.jsonl.gz",
+      "bytes": 5424632,
+      "sha256": "0dadfc2b03eaa746c60e0adcb4b5a2a77822ae4f6dede0a61e5ff9b198ada295",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-20000-r1/192.168.0.11/outcomes.bin",
+      "bytes": 124000,
+      "sha256": "9ae2250ab1f3f8750ddf45e8f2887497689bc21b5f541fda6935ea0fe53bb03f",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-20000-r1/192.168.0.11/transaction-hashes.jsonl.gz",
+      "bytes": 5424125,
+      "sha256": "8102071565bcb9ccee3111a0e0f3fe758366a12fcdd571d1436f447118084a3d",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-20000-r1/192.168.0.111/outcomes.bin",
+      "bytes": 124000,
+      "sha256": "7322aa72647cfa4b34b211798423745c0d0c1801c6827e8854db3552dfb34fc9",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-20000-r1/192.168.0.111/transaction-hashes.jsonl.gz",
+      "bytes": 5447190,
+      "sha256": "c04f4ecbb230173e7e2cc3d2732a66c9827607f8dd42f78aa2e30c34205beb87",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-20000-r1/192.168.0.12/outcomes.bin",
+      "bytes": 124000,
+      "sha256": "f0d40e2365a12e8c3a4a3dc00cd3f188a4c33709e295435ba652c7e3ef163429",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-20000-r1/192.168.0.12/transaction-hashes.jsonl.gz",
+      "bytes": 5445969,
+      "sha256": "28caaba18c762813ba161d293c832c7b31ead57bcea2b1414906f541c158f12d",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-20000-r1/192.168.0.138/outcomes.bin",
+      "bytes": 124000,
+      "sha256": "2b14cdc09de91aebad946dc80da6a26141f63814e7f0dc1bb4dca690539a0964",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-20000-r1/192.168.0.138/transaction-hashes.jsonl.gz",
+      "bytes": 5446307,
+      "sha256": "445ad027c7930af9138ce6ec663d4dcaebb522c1e951c36da3f6d9ecaa838b74",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-20000-r1/192.168.0.162/outcomes.bin",
+      "bytes": 124000,
+      "sha256": "69fc1baf2fa6476a5303bad8cdda044332ec208f9217a02b083f4387f817ce82",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-20000-r1/192.168.0.162/transaction-hashes.jsonl.gz",
+      "bytes": 5446292,
+      "sha256": "e9eb5ff8aff0297ad8cdad2250d99b4123a812b7dfead3f7b0038c02bbf177fe",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-20000-r1/192.168.0.167/outcomes.bin",
+      "bytes": 124000,
+      "sha256": "2ce814e19e61660310540b19d7ecfe84325cb052b07e83dc08b113ff3f78c57e",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-20000-r1/192.168.0.167/transaction-hashes.jsonl.gz",
+      "bytes": 5446771,
+      "sha256": "afbe199e44bbfd382f09cee6b0fee2343424e4d7efc9d698b84a601efb004c89",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-20000-r1/192.168.0.176/outcomes.bin",
+      "bytes": 124000,
+      "sha256": "29452a098463efd18356166d65b8bbc3bfe758b7be1b8b06bb63321d012c5766",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-20000-r1/192.168.0.176/transaction-hashes.jsonl.gz",
+      "bytes": 5446074,
+      "sha256": "dae965bea3c6811cc57bd70f1c30c56239775532edbc33284574a6a5a42a43f0",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-20000-r1/192.168.0.249/outcomes.bin",
+      "bytes": 124000,
+      "sha256": "899272408eaf07cb034f9d6862380ce612fc9fc04527465f5c5eaa33074ad796",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-20000-r1/192.168.0.249/transaction-hashes.jsonl.gz",
+      "bytes": 5423825,
+      "sha256": "99e74b75b3aa0c6304e23a6636dc5595cdfa57ccb55d361ab98dd164fc7baef5",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-20000-r1/192.168.0.61/outcomes.bin",
+      "bytes": 124000,
+      "sha256": "522afdd0bca3b33e1343226715d9a704dd2cff98b825d6a90f2baed077fa9867",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-20000-r1/192.168.0.61/transaction-hashes.jsonl.gz",
+      "bytes": 5425362,
+      "sha256": "53d493b0fde1a373463bbf3f6c59f3022e22f71615dc2b0514d8bcb38a7c1f2e",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-20000-r1/canonical-blocks.jsonl.gz",
+      "bytes": 39041416,
+      "sha256": "03b7e03b40ea2c0174039ddcce3b4d63c1bed81a9dc61265a65fdd7e6a7427b6",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-20000-r1/rpc.jsonl.gz",
+      "bytes": 5060929,
+      "sha256": "6e0d68d3d6ccad5fef36e870ad287f9ac8a9e9649344e0aeabda315f1b8e8bb9",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-20000-r2/192.168.0.108/outcomes.bin",
+      "bytes": 124000,
+      "sha256": "e89636d8e5e458d1a29aa61e9871c36facfe7504dc65f7110b63cb9255f2efa0",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-20000-r2/192.168.0.108/transaction-hashes.jsonl.gz",
+      "bytes": 5424828,
+      "sha256": "8830c847cecc55c029fdf7533e655875aa5f479e55c21efd25fcb2112e984c6f",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-20000-r2/192.168.0.11/outcomes.bin",
+      "bytes": 124000,
+      "sha256": "2ac4eeaeae93e6e06fc39f08716ed74203410c5c6ff232a22b783c253856babf",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-20000-r2/192.168.0.11/transaction-hashes.jsonl.gz",
+      "bytes": 5425091,
+      "sha256": "75a7e4a5bddbf73fdef8d8d5268f5beb7502643901c53cecd597163dac173992",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-20000-r2/192.168.0.111/outcomes.bin",
+      "bytes": 124000,
+      "sha256": "5ecd7e0a40c617b1108ef587c3e4f47bf3c3253b77eddb6c729b65aacbbb908e",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-20000-r2/192.168.0.111/transaction-hashes.jsonl.gz",
+      "bytes": 5446312,
+      "sha256": "d140c9c226c882fe53fc4ae089b6e43cdbbc076b30886140ba28667884a57e61",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-20000-r2/192.168.0.12/outcomes.bin",
+      "bytes": 124000,
+      "sha256": "06ad4223c32aa21cb149b6d75943a771901b377e33c2912150685b7e25e4b0e8",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-20000-r2/192.168.0.12/transaction-hashes.jsonl.gz",
+      "bytes": 5445812,
+      "sha256": "610459013902b8c6ba38e84742d9d33603635c77a4e5b75dc0f360c3bd290597",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-20000-r2/192.168.0.138/outcomes.bin",
+      "bytes": 124000,
+      "sha256": "be577ef1a0c4be43eca05d7bd28279e61a4b386c813937dd29d6c0d1947bc192",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-20000-r2/192.168.0.138/transaction-hashes.jsonl.gz",
+      "bytes": 5424793,
+      "sha256": "ead2cebefa70e2a63c0a01a0d1fcfac6d21cae661eb4e4c390f776fd05c1598b",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-20000-r2/192.168.0.162/outcomes.bin",
+      "bytes": 124000,
+      "sha256": "1afc586016a9fa1db59039434b912c2c82498b37b19d70111d56a55b3eab6ddd",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-20000-r2/192.168.0.162/transaction-hashes.jsonl.gz",
+      "bytes": 5424114,
+      "sha256": "13a67a6991a575306377bcbf347585af9be460d44234223053e1da417490f829",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-20000-r2/192.168.0.167/outcomes.bin",
+      "bytes": 124000,
+      "sha256": "919a184da0dd13b338522b76123b83de71620d97aa83f47f9d169893bcadeb40",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-20000-r2/192.168.0.167/transaction-hashes.jsonl.gz",
+      "bytes": 5424983,
+      "sha256": "0e7f1b98767b92b45ff2d88fae7d7ce5f923944eedbba96953d214a931929684",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-20000-r2/192.168.0.176/outcomes.bin",
+      "bytes": 124000,
+      "sha256": "eb6a8782f9184cc5fad4e0787ef596c0f84c2d3e8d8431b7e01fd17301ea0947",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-20000-r2/192.168.0.176/transaction-hashes.jsonl.gz",
+      "bytes": 5446814,
+      "sha256": "d61b0e44a356f60054da2ba17d4b447499f4e3929e1db924f8529a7f5489c5e0",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-20000-r2/192.168.0.249/outcomes.bin",
+      "bytes": 124000,
+      "sha256": "306fcc51ea994123a5c3a03044ec211d843e52a808d26ff32d6476b8af1a4ad9",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-20000-r2/192.168.0.249/transaction-hashes.jsonl.gz",
+      "bytes": 5446012,
+      "sha256": "8eecaed62ea008740bb24ff2a4d5bdd4afa62d3a3a2ec451726cd7c348914268",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-20000-r2/192.168.0.61/outcomes.bin",
+      "bytes": 124000,
+      "sha256": "efd49cde8a88f859b3a6e0a7d25daaf876e0c90df024938fa2acd2e6d8c8b22a",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-20000-r2/192.168.0.61/transaction-hashes.jsonl.gz",
+      "bytes": 5425140,
+      "sha256": "a0dba39c350bf1b6c7cf45104e646a79bb4eb9b641097c610e2ef70cca409de7",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-20000-r2/canonical-blocks.jsonl.gz",
+      "bytes": 43036438,
+      "sha256": "d2d9cc12dd964e301a6f7e6449d550f6f3bcc6f2edab82f5aa9369b53fe0136f",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-20000-r2/rpc.jsonl.gz",
+      "bytes": 904754,
+      "sha256": "9d11841c60b66196a7cb8b0bba9357b2372128ba53c6269db6e77cd332ac589a",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-20000-r3/192.168.0.108/outcomes.bin",
+      "bytes": 124000,
+      "sha256": "d965ee9b1bf6792e5bf23158f3a9f625f915a3dfe1839581494bed0602c64bcf",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-20000-r3/192.168.0.108/transaction-hashes.jsonl.gz",
+      "bytes": 5424735,
+      "sha256": "3032ef037ac7de42f1ce1bea53141b1b167157f3ae6c81dc53677be2e2167ff9",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-20000-r3/192.168.0.11/outcomes.bin",
+      "bytes": 124000,
+      "sha256": "2650f20c563e2e35716a86e4ee5aae4ef404b5be0632e77c38d7cf7cf882a5a6",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-20000-r3/192.168.0.11/transaction-hashes.jsonl.gz",
+      "bytes": 5446433,
+      "sha256": "08cf8e6eb380638155aeaefbc2b5ebeb6fb6754c757af8da1ff0ff9617a86384",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-20000-r3/192.168.0.111/outcomes.bin",
+      "bytes": 124000,
+      "sha256": "9578cc55056401f7e923cb85df216b8877b9c83164c5dab814deb519c34af722",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-20000-r3/192.168.0.111/transaction-hashes.jsonl.gz",
+      "bytes": 5424549,
+      "sha256": "4a97cf03d64032e443d98dcb8799cccfcc52a53daaca97d9ae91df25d28bd679",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-20000-r3/192.168.0.12/outcomes.bin",
+      "bytes": 124000,
+      "sha256": "f54d462b864d4c1b967d1510ad50e08a309b64943f77039d2c9bc1a242762a92",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-20000-r3/192.168.0.12/transaction-hashes.jsonl.gz",
+      "bytes": 5445697,
+      "sha256": "9497cc8a366a5c69c0fd6b729b25a0522c72cf41efcfec8ec4809ff13718961a",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-20000-r3/192.168.0.138/outcomes.bin",
+      "bytes": 124000,
+      "sha256": "a4f0f075905c1f1b18aaaca9d3ae3315835f41bc1421aa490fa2ba5905209b4a",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-20000-r3/192.168.0.138/transaction-hashes.jsonl.gz",
+      "bytes": 5445571,
+      "sha256": "518903b9d69ab82cf493df6b10d994fb2b481a784a6ee3059a4037cfc38e9953",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-20000-r3/192.168.0.162/outcomes.bin",
+      "bytes": 124000,
+      "sha256": "f1a7e290706647314d6354dd2ee8b50685012bfcfecb4999b7687fdc30bf19df",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-20000-r3/192.168.0.162/transaction-hashes.jsonl.gz",
+      "bytes": 5424874,
+      "sha256": "3adb30caed505b51322f1217af79e5ae04f837c1ba5e1e69b321b42c34e0fe94",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-20000-r3/192.168.0.167/outcomes.bin",
+      "bytes": 124000,
+      "sha256": "a95fa462c3af8360da523128a29805f6ca1203c85264216c1d7fd4d5cddc5f4e",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-20000-r3/192.168.0.167/transaction-hashes.jsonl.gz",
+      "bytes": 5446576,
+      "sha256": "f5f52b625006f67a4f3a4849e567fc24d38a3d3300a45f81c9ea646452571bd9",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-20000-r3/192.168.0.176/outcomes.bin",
+      "bytes": 124000,
+      "sha256": "57654fa0e6fa7a0637e2e3c3f65f35e13c858cf5067cf1a7db0d60ef9f9f12f2",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-20000-r3/192.168.0.176/transaction-hashes.jsonl.gz",
+      "bytes": 5424373,
+      "sha256": "7dccf019b0658b7affc957115b03b484dc1b12607f7e893b349011c0bf28dfcb",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-20000-r3/192.168.0.249/outcomes.bin",
+      "bytes": 124000,
+      "sha256": "02fe3ef4883029d3b6692630ef616444775eea7f1d495eea75a4fba8558f36c1",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-20000-r3/192.168.0.249/transaction-hashes.jsonl.gz",
+      "bytes": 5424561,
+      "sha256": "dccb1328e5c263e23369d62d6b007b399259d1370bbea2818a0502bab5d104f1",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-20000-r3/192.168.0.61/outcomes.bin",
+      "bytes": 124000,
+      "sha256": "278dffcaa1a1f299295512c07f384d7ce8b80c7b06bdab3994e29f51512cba58",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-20000-r3/192.168.0.61/transaction-hashes.jsonl.gz",
+      "bytes": 5424374,
+      "sha256": "1d3ab832d9f7e32e408fb3ab5e63725a996c8272af711f8667d81bbb3c71530b",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-20000-r3/canonical-blocks.jsonl.gz",
+      "bytes": 45059367,
+      "sha256": "8c62015c3c8fade824d9b69d37e817210629488a166f1bf5b9b2322ed90ee87c",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-20000-r3/rpc.jsonl",
+      "bytes": 876909,
+      "sha256": "f85c343e1613aab615533ab3d795cdb3c9be7f2070ac73a88c2ac7abc8139406",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-30000-r1/192.168.0.108/outcomes.bin",
+      "bytes": 186000,
+      "sha256": "df2df2680577019f853c4e46029c67fee37cc922e4e3f02f402fae6d4b91c6e6",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-30000-r1/192.168.0.108/transaction-hashes.jsonl.gz",
+      "bytes": 8172752,
+      "sha256": "5e662bc6d5d5129a6aed1cd2093ec8de81068be59f23743f66348548691d7bf0",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-30000-r1/192.168.0.11/outcomes.bin",
+      "bytes": 186000,
+      "sha256": "5c73132a1bd60b6d4bc9ee31aa10a725d3c669a4405dbf57f39af9dd4513c1d9",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-30000-r1/192.168.0.11/transaction-hashes.jsonl.gz",
+      "bytes": 8172593,
+      "sha256": "254c941302690f99f3e2b82dbe664bfbbd7735939fb6981be7f012372c16c80c",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-30000-r1/192.168.0.111/outcomes.bin",
+      "bytes": 186000,
+      "sha256": "379abb641dc5b635ed81ec3ef4a623622aaa2991bea5cede314af8a80db94d91",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-30000-r1/192.168.0.111/transaction-hashes.jsonl.gz",
+      "bytes": 8137562,
+      "sha256": "3e5b6f0a760f3bfb12a59538e6f507c84da87e64cf5fbf737cad1e89a5b5e287",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-30000-r1/192.168.0.12/outcomes.bin",
+      "bytes": 186000,
+      "sha256": "eb99d2119966904f1c2865c7fa7f8f0adb49903d24170c313de576ed1220eaf7",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-30000-r1/192.168.0.12/transaction-hashes.jsonl.gz",
+      "bytes": 8136676,
+      "sha256": "83aa1edc362cb53c6f1361e51ef8d1b373601b9098e58ff6ae5a48dfa30ece39",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-30000-r1/192.168.0.138/outcomes.bin",
+      "bytes": 186000,
+      "sha256": "4226f99ea671d5f467a142dc1618a47ec7193d026695b90c18736331295b3edc",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-30000-r1/192.168.0.138/transaction-hashes.jsonl.gz",
+      "bytes": 8171356,
+      "sha256": "7a3ba25856a67f89d689523fb1f18f98ed2b6d918b5740f64c9f8fc74ffbceb3",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-30000-r1/192.168.0.162/outcomes.bin",
+      "bytes": 186000,
+      "sha256": "734cafcf55cb86bec99adf744ce5c1ab22187b3f6db51afb5457297c62589977",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-30000-r1/192.168.0.162/transaction-hashes.jsonl.gz",
+      "bytes": 8137710,
+      "sha256": "eecee0ea24d395a56aa3a735bc7c4639b6ed289b0296715485d63b5b4f640626",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-30000-r1/192.168.0.167/outcomes.bin",
+      "bytes": 186000,
+      "sha256": "33dc1415695290a9fcd73103d29579e76c02e82f52466847d004de6f2167f29d",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-30000-r1/192.168.0.167/transaction-hashes.jsonl.gz",
+      "bytes": 8137998,
+      "sha256": "5b22d27e439253e43f7e75b67eb563e39faa3305d19aa2e1449160341293af0f",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-30000-r1/192.168.0.176/outcomes.bin",
+      "bytes": 186000,
+      "sha256": "f1e631650bbb2edb010c32f8f86e6708b7dfaff4c11fda5ae8dad488b1b4f241",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-30000-r1/192.168.0.176/transaction-hashes.jsonl.gz",
+      "bytes": 8137829,
+      "sha256": "8d2406dc1393c812cb04387270ccd8bdee6e9aa08c9f548d4d25390319af7397",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-30000-r1/192.168.0.249/outcomes.bin",
+      "bytes": 186000,
+      "sha256": "f7542d7c1c49f6fdf8e2b9d2a45a3cfc6628db8c21ac4389d464535247cba44b",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-30000-r1/192.168.0.249/transaction-hashes.jsonl.gz",
+      "bytes": 8172364,
+      "sha256": "cebaef98282a352d72cf8b6854e53dbdd05104766c4f698f453eeaf41bf7da3a",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-30000-r1/192.168.0.61/outcomes.bin",
+      "bytes": 186000,
+      "sha256": "88b109b0e1a3b1d1fd00b91f968b5d3bd106ba5c85310f6e6696e905042e918a",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-30000-r1/192.168.0.61/transaction-hashes.jsonl.gz",
+      "bytes": 8137953,
+      "sha256": "d9d663ac0f919da8d6fd6464c04411a615c9842c75b97ea6e41defa91784aa0c",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-30000-r1/canonical-blocks.jsonl.gz",
+      "bytes": 49466793,
+      "sha256": "55602e229b8bbc579173f358252781e298a3a5da108185b34866302f06e4a753",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-30000-r1/rpc.jsonl",
+      "bytes": 881940,
+      "sha256": "415e0735dceffc041d82bbde7122f8d354e9f6cf55a2a37308c333ffc94f81bc",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-30000-r2/192.168.0.108/outcomes.bin",
+      "bytes": 186000,
+      "sha256": "7d60fbffb2e74a654398f38dbe7176cc0332eab4a37bc433bd28fe398c956ee2",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-30000-r2/192.168.0.108/transaction-hashes.jsonl.gz",
+      "bytes": 8172402,
+      "sha256": "3c89bf12f732fa620330c058e2215fe3d834e06c45b4a45975c2696827db166b",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-30000-r2/192.168.0.11/outcomes.bin",
+      "bytes": 186000,
+      "sha256": "934b1b5493e87efae4b2852104802b5fed5425b22d35eb8b77921a55ef7a2d01",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-30000-r2/192.168.0.11/transaction-hashes.jsonl.gz",
+      "bytes": 8172625,
+      "sha256": "c4c739cc95d7411fd518bd48796afae432ce74f541b036e578ad5d7f164a60dd",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-30000-r2/192.168.0.111/outcomes.bin",
+      "bytes": 186000,
+      "sha256": "dad1c24788905e6f066a7e03e06bb7e86e94bf3fdb42251835da324ed33c1b04",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-30000-r2/192.168.0.111/transaction-hashes.jsonl.gz",
+      "bytes": 8172358,
+      "sha256": "aa878eb07176a3dab5b04083eb48c34ac59338ed04a6f324da00c3d97da42082",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-30000-r2/192.168.0.12/outcomes.bin",
+      "bytes": 186000,
+      "sha256": "5949231db5c5bab60de0c29d9bfd1b859a61938654c3d6b7c1fadaa6d83f0c80",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-30000-r2/192.168.0.12/transaction-hashes.jsonl.gz",
+      "bytes": 8172429,
+      "sha256": "955563e37dc56506f287cff0cbf583b3c616db422388f6e30df12b19dfe3750c",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-30000-r2/192.168.0.138/outcomes.bin",
+      "bytes": 186000,
+      "sha256": "82ca8ff41abb037f0ae47b1c4ef66b8329346bca46144fb6041d956d878f8281",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-30000-r2/192.168.0.138/transaction-hashes.jsonl.gz",
+      "bytes": 8138115,
+      "sha256": "95fbfc94d5e301e769a39f8dbc0bff64f785192db5ee91d949d35cbde69be888",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-30000-r2/192.168.0.162/outcomes.bin",
+      "bytes": 186000,
+      "sha256": "f7def2536ad0c2cba221202270676aa90e1e96be9936d0b67092f8c3eca6d9dd",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-30000-r2/192.168.0.162/transaction-hashes.jsonl.gz",
+      "bytes": 8137439,
+      "sha256": "8d8ec2d1e36dd41cf36cc326f29d3241a695b62629c9c689e81f5e4443e2d715",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-30000-r2/192.168.0.167/outcomes.bin",
+      "bytes": 186000,
+      "sha256": "958bee0bb2b7ece464725f39a3a960ef97c55d746ae27518602924c527d08b70",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-30000-r2/192.168.0.167/transaction-hashes.jsonl.gz",
+      "bytes": 8172673,
+      "sha256": "fd7533c723337ce68221b04bd9d6fccb1f55637955e1cd0416b71176cc50776b",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-30000-r2/192.168.0.176/outcomes.bin",
+      "bytes": 186000,
+      "sha256": "9c2f7ccd95513efefcd81715201e578d8a8b3bccb5cc11cba499b8649fb71a54",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-30000-r2/192.168.0.176/transaction-hashes.jsonl.gz",
+      "bytes": 8172072,
+      "sha256": "b2f765cb433743f8b5b0f42cb221121359607d159d277cc04230d3c35d21762d",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-30000-r2/192.168.0.249/outcomes.bin",
+      "bytes": 186000,
+      "sha256": "1175d237fe7b7b9a696a6ce43cfa1960e1eddf658db775e4fb1be73e1ddc18a1",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-30000-r2/192.168.0.249/transaction-hashes.jsonl.gz",
+      "bytes": 8137298,
+      "sha256": "dc3d856d84000b496085011d66c476f8de5d6d769e2af28379ed82613be94768",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-30000-r2/192.168.0.61/outcomes.bin",
+      "bytes": 186000,
+      "sha256": "952dbeef90519e6421cfe2269a2fbca2213cbe5ddaa81020f53f05550bc42f9f",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-30000-r2/192.168.0.61/transaction-hashes.jsonl.gz",
+      "bytes": 8137003,
+      "sha256": "d3cae86891ec50ccc964306943c99a056396222ad5a2a4020af85f30b82c07c8",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-30000-r2/canonical-blocks.jsonl.gz",
+      "bytes": 38754647,
+      "sha256": "0b21c6d93bc5721385f1ec32d1499427816c9ceec2624f39fd52f7c511efda45",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-30000-r2/rpc.jsonl.gz",
+      "bytes": 1375669,
+      "sha256": "81146a9481620d455a55f4eb290f7a79c6e29c30443915859be2f87d81be867b",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-30000-r3/192.168.0.108/outcomes.bin",
+      "bytes": 186000,
+      "sha256": "b0e18f12378f65afe248458ef514c754ad329fc24275d48a0ea4e0d0bd103b3b",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-30000-r3/192.168.0.108/transaction-hashes.jsonl.gz",
+      "bytes": 8138667,
+      "sha256": "cb4b337b394f9082e0992e4f0e05ba61fa8390cc4d48a3ba9ae99d3f664dabb0",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-30000-r3/192.168.0.11/outcomes.bin",
+      "bytes": 186000,
+      "sha256": "f30a23f089ebf6916ef360c2f1ec45a80c1b41971202d15fa314a657c02bd442",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-30000-r3/192.168.0.11/transaction-hashes.jsonl.gz",
+      "bytes": 8137607,
+      "sha256": "5303ee8f31d6334bc441e1f9e4e01664b3d1c208fc33e43d8daf653ad721883a",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-30000-r3/192.168.0.111/outcomes.bin",
+      "bytes": 186000,
+      "sha256": "20f406098fd3ba4dab5db3c5e5536026c115528109989d74c49a74801c714b85",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-30000-r3/192.168.0.111/transaction-hashes.jsonl.gz",
+      "bytes": 8173169,
+      "sha256": "0aca50599705e616495139a410cee12b2fd5a096731c23055d4c436e13206772",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-30000-r3/192.168.0.12/outcomes.bin",
+      "bytes": 186000,
+      "sha256": "82079c12c3982ca64236a07252e9812ba09847870535894a08b756983a7b9bdf",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-30000-r3/192.168.0.12/transaction-hashes.jsonl.gz",
+      "bytes": 8173144,
+      "sha256": "3bffb3d20df7924255a6b4fd1b4096dca7e74a786593d976a3702be2270db8eb",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-30000-r3/192.168.0.138/outcomes.bin",
+      "bytes": 186000,
+      "sha256": "32c500e37cd1ff69658570d5ce159872edbdef4dfe52ee70cbbd0f0454bff7a2",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-30000-r3/192.168.0.138/transaction-hashes.jsonl.gz",
+      "bytes": 8137071,
+      "sha256": "d5c1570acf354d7ad7d3357d89f74a5eb0573371ea092b15fc226d9ab87f0555",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-30000-r3/192.168.0.162/outcomes.bin",
+      "bytes": 186000,
+      "sha256": "811f0f08900496344c211320ea5cb6ee8c6b46ebf11619554e47958a7f88bb26",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-30000-r3/192.168.0.162/transaction-hashes.jsonl.gz",
+      "bytes": 8172239,
+      "sha256": "0e1fcd75bb157938078a9c478efba6cc98e8986caa5a8ddf361276e1d9e7f44a",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-30000-r3/192.168.0.167/outcomes.bin",
+      "bytes": 186000,
+      "sha256": "9972ea1174df34c84e4fa5da036ce1fc8cd490b60a13d605ed2c0d7b99c3a3f8",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-30000-r3/192.168.0.167/transaction-hashes.jsonl.gz",
+      "bytes": 8173233,
+      "sha256": "a602e3240aefaf9bd285acdddb1173c4ee2d666ed503308a0f18c5f57af55926",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-30000-r3/192.168.0.176/outcomes.bin",
+      "bytes": 186000,
+      "sha256": "72e9b923a7b6dbbbd6949104400c51d2fff0bf15b2d43d3e347ac824b69f4e98",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-30000-r3/192.168.0.176/transaction-hashes.jsonl.gz",
+      "bytes": 8137646,
+      "sha256": "1f729293720ef34f154f246e3a3f98e112d0dab6da737aa281b2075f7cd714b9",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-30000-r3/192.168.0.249/outcomes.bin",
+      "bytes": 186000,
+      "sha256": "241ed5cd701496de377ff0fd45c8980f125f7392db8008bdce778bf3881dfb20",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-30000-r3/192.168.0.249/transaction-hashes.jsonl.gz",
+      "bytes": 8172711,
+      "sha256": "32ab942de14d4514f8134720aa980dfb2847f881e4dfc4f68cbbab07068d5ec9",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-30000-r3/192.168.0.61/outcomes.bin",
+      "bytes": 186000,
+      "sha256": "a409a9dd567c5982d81bc344aa4f8456a38cdec790c16c360cac430b9c2b2451",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-30000-r3/192.168.0.61/transaction-hashes.jsonl.gz",
+      "bytes": 8137338,
+      "sha256": "c9c0fa1983b33c04df1686197ca6bb9275b38be90be5cd286ba7f6ef260f696a",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-30000-r3/canonical-blocks.jsonl.gz",
+      "bytes": 45516328,
+      "sha256": "46ed26402817270c8f1c20ac8a680ba5fab6833a672231d6e570adcf8f78c6e5",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-30000-r3/rpc.jsonl",
+      "bytes": 892409,
+      "sha256": "83aa2696a3f4ae807980813f444692899742a84bfae4f4e0c9c3532940c16773",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-40000-r1/192.168.0.108/outcomes.bin",
+      "bytes": 248000,
+      "sha256": "60f081c0ed1d52993fe17b8a119f5e7cf8afcd7254da830036dc8bde360ae9e9",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-40000-r1/192.168.0.108/transaction-hashes.jsonl.gz",
+      "bytes": 10899591,
+      "sha256": "e754d1158aaa82847ca737bf285c6a980a590b6749c984bec4000405f7edb298",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-40000-r1/192.168.0.11/outcomes.bin",
+      "bytes": 248000,
+      "sha256": "f6342f91281ccbc1beedb72b02ec1ab9e0f71a0b9db5f17ef0ee204b368decdd",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-40000-r1/192.168.0.11/transaction-hashes.jsonl.gz",
+      "bytes": 10850877,
+      "sha256": "6e41b47471f5df514015b3007f3f16e67d82b73b46f48d7d76c34c51eed52d7c",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-40000-r1/192.168.0.111/outcomes.bin",
+      "bytes": 248000,
+      "sha256": "e8ad665b7acde397da5a7415e6e35f1fa4a452dc8b3c28cd035e689298838ca4",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-40000-r1/192.168.0.111/transaction-hashes.jsonl.gz",
+      "bytes": 10899083,
+      "sha256": "0b403b1554a57af88d534485a5fcb2e1a2fa62bdc9c4dd2974337f6a7c779149",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-40000-r1/192.168.0.12/outcomes.bin",
+      "bytes": 248000,
+      "sha256": "fe07bf1af55a0228c8a668580db34c6aa8e73158f5e8933abb5bc0dc9acea9d0",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-40000-r1/192.168.0.12/transaction-hashes.jsonl.gz",
+      "bytes": 10899107,
+      "sha256": "8b4db68526cc347918f5e53f7591fa8f117d876924df1460e6513505e0cf8fcd",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-40000-r1/192.168.0.138/outcomes.bin",
+      "bytes": 248000,
+      "sha256": "d96aed3991d40476f37786e83e21f9fa21add11169ed0caae7b10bb311ded305",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-40000-r1/192.168.0.138/transaction-hashes.jsonl.gz",
+      "bytes": 10849848,
+      "sha256": "ee267b8cbfac57f6e8c720c8837ac354160bbf46b668b443c2555b790d742bf4",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-40000-r1/192.168.0.162/outcomes.bin",
+      "bytes": 248000,
+      "sha256": "be9f1b8fa44f41c880458f5ba743503f70dcdf2e71abebae80cb5b14d34a3320",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-40000-r1/192.168.0.162/transaction-hashes.jsonl.gz",
+      "bytes": 10898784,
+      "sha256": "69f5193bc3111bda52bf58422843112b64a9f824d7b7f8ae207a94c0c36f402c",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-40000-r1/192.168.0.167/outcomes.bin",
+      "bytes": 248000,
+      "sha256": "9f94afe1ccc35ebaf5ede643f40ce3e22688c6e5e09f7bc73ce395ba3128759e",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-40000-r1/192.168.0.167/transaction-hashes.jsonl.gz",
+      "bytes": 10850730,
+      "sha256": "7a7b830f6ad2df2ec653081614dd1b58f92b6cf315695e73c3578b73ddf42340",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-40000-r1/192.168.0.176/outcomes.bin",
+      "bytes": 248000,
+      "sha256": "b3845597a1c5bee6df3c46e1ec7fe41effacb159080331a4ca320943e2acb851",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-40000-r1/192.168.0.176/transaction-hashes.jsonl.gz",
+      "bytes": 10850460,
+      "sha256": "a4bea4fe382b07fcd8972ee906fc8c6180c95e4dd94e9a058cef88e196e8e09c",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-40000-r1/192.168.0.249/outcomes.bin",
+      "bytes": 248000,
+      "sha256": "4240411a6c3090fb57d443f68eb79f3fa2db257cd9ed6af95891b7dc49a784da",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-40000-r1/192.168.0.249/transaction-hashes.jsonl.gz",
+      "bytes": 10899931,
+      "sha256": "2ed8bf18e2c49fbab34b649edca68d485097e3947ccda997f9cbec761ba97a02",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-40000-r1/192.168.0.61/outcomes.bin",
+      "bytes": 248000,
+      "sha256": "8aa7ea981e3c0a17b07c935b78ae42bc4d8aec6e26d797bcaf4c32a3f8eb23ce",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-40000-r1/192.168.0.61/transaction-hashes.jsonl.gz",
+      "bytes": 10900047,
+      "sha256": "30e93f674d3bf486d67a494d5344ff645696c12a6118aa168581b05181ffa9e9",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-40000-r1/canonical-blocks.jsonl.gz",
+      "bytes": 46165110,
+      "sha256": "4d72a4694dbe5618f7ae65c899168ef6b83051b8da57247988caab866065fb74",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-40000-r1/rpc.jsonl",
+      "bytes": 880739,
+      "sha256": "7d3dd8aeb390c48edbb8de9006d3de34f11ca1f39294745ec859a37c29cd5abb",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-40000-r2/192.168.0.108/outcomes.bin",
+      "bytes": 248000,
+      "sha256": "93e1c5623a0ce16d9cd4633cf0e34ba71e39a03acdf8f2680eac1fdde81986d0",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-40000-r2/192.168.0.108/transaction-hashes.jsonl.gz",
+      "bytes": 10850588,
+      "sha256": "b656629b5be227eaed2e39954083a5fb82f06a86d20350a742f7aeeb79602205",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-40000-r2/192.168.0.11/outcomes.bin",
+      "bytes": 248000,
+      "sha256": "01cefac0431fc9bfba92aa389e66e6f466e53ee8f2a24a2b680a02ffd1c8c328",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-40000-r2/192.168.0.11/transaction-hashes.jsonl.gz",
+      "bytes": 10850446,
+      "sha256": "79b5e4f5fa03978dc2b827eb02c3e357957781174516f5d6af08a894ce9a46a4",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-40000-r2/192.168.0.111/outcomes.bin",
+      "bytes": 248000,
+      "sha256": "448176445cd0dfa541fbd990fe07cd9dcdb032928d5b121fe3bf8fb7140f4ab3",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-40000-r2/192.168.0.111/transaction-hashes.jsonl.gz",
+      "bytes": 10900274,
+      "sha256": "662723fe1426f4391675e47b2241eaf37ddbc192da228216bcd7a02086a4c941",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-40000-r2/192.168.0.12/outcomes.bin",
+      "bytes": 248000,
+      "sha256": "84db09108673267ec567ae1c419371a46f656d3d91ae923f86a14869c8116a59",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-40000-r2/192.168.0.12/transaction-hashes.jsonl.gz",
+      "bytes": 10899363,
+      "sha256": "0dc7baf7d36e1d794e50cd35016a06a3c2e882a6d9a3722145f3baf5318528f2",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-40000-r2/192.168.0.138/outcomes.bin",
+      "bytes": 248000,
+      "sha256": "bc3504fd7a91ac14781bd3eb5036d92958e8607dbfe902676635947edf6e2047",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-40000-r2/192.168.0.138/transaction-hashes.jsonl.gz",
+      "bytes": 10850563,
+      "sha256": "dd719b7dd755db3041edf14e9dc955434c6c71a2e06a6e72c659c5210aa014e1",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-40000-r2/192.168.0.162/outcomes.bin",
+      "bytes": 248000,
+      "sha256": "97727ea4d9fbc68c72bfd7ffaf717568b6107fc53c7c7b0c61d3c597507c12a5",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-40000-r2/192.168.0.162/transaction-hashes.jsonl.gz",
+      "bytes": 10849937,
+      "sha256": "5993409b0ecfe1f128f2ca7164ad19efb498ea82cb97b68df5f2e278fefd59b3",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-40000-r2/192.168.0.167/outcomes.bin",
+      "bytes": 248000,
+      "sha256": "9bbeed6ecb5933c27a6ad184536f7803e11d5dcca4b4d3616d947bae456bf9d4",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-40000-r2/192.168.0.167/transaction-hashes.jsonl.gz",
+      "bytes": 10850012,
+      "sha256": "cd238643af4cbdd38ebd2e4fec31ecc2ef3ce326a7215988b8652325a314d157",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-40000-r2/192.168.0.176/outcomes.bin",
+      "bytes": 248000,
+      "sha256": "56a52aae40c40797cc4305dfeb3b2d50ad7aba74522220dda5ae2d75e2b07690",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-40000-r2/192.168.0.176/transaction-hashes.jsonl.gz",
+      "bytes": 10849930,
+      "sha256": "1c0c84025bf6a4e91038bf6019ae81dd5c4de79859bbe8fcaaa4c78c9b07cdf4",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-40000-r2/192.168.0.249/outcomes.bin",
+      "bytes": 248000,
+      "sha256": "a2a175d1f6277eb59ec4063e40e6844d66ac7166e3d360fcc1161260e8af2708",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-40000-r2/192.168.0.249/transaction-hashes.jsonl.gz",
+      "bytes": 10899968,
+      "sha256": "253a86de9b5fc6edca2e6def701b68dc2075bf5fab78785402275486d4802b9d",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-40000-r2/192.168.0.61/outcomes.bin",
+      "bytes": 248000,
+      "sha256": "d416a1e62cb64a3f5b5cb93fa58d2f47265a5b8cfc58e674e393e20b45c944ea",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-40000-r2/192.168.0.61/transaction-hashes.jsonl.gz",
+      "bytes": 10849642,
+      "sha256": "9259bbd6d1e8532cef2697d25517bcc5e39b278e61c465fa822e5876bc774395",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-40000-r2/canonical-blocks.jsonl.gz",
+      "bytes": 49876851,
+      "sha256": "dd3b020f19fc8b82257f4118eea25369737d21153820656b122bdf12b8bb623c",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-40000-r2/rpc.jsonl",
+      "bytes": 882510,
+      "sha256": "6fa3c469541ad15477a992854e2509c9da87ff6428e612a19e835e10956a98d1",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-40000-r3/192.168.0.108/outcomes.bin",
+      "bytes": 248000,
+      "sha256": "2f902a76936c9c7728758db243b31d1d3354e69277006ee95d4c0605e8321c9f",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-40000-r3/192.168.0.108/transaction-hashes.jsonl.gz",
+      "bytes": 10850425,
+      "sha256": "b2161f0d8ccc3a07c49659f041d9831234deb17e6a07063862a16e9be655a717",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-40000-r3/192.168.0.11/outcomes.bin",
+      "bytes": 248000,
+      "sha256": "116053f05a1652f6f4169622ce35d6aaa93ad48122d9b466b11d0cba3f4ee8c9",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-40000-r3/192.168.0.11/transaction-hashes.jsonl.gz",
+      "bytes": 10850147,
+      "sha256": "dd2639a3bf4524d5081bf9af069824c9ce4bb6c0231ea84d29d290e3f25c8d40",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-40000-r3/192.168.0.111/outcomes.bin",
+      "bytes": 248000,
+      "sha256": "49eae65d09bb1ca40523d983a5aa102b12ebc9b2db55eefc519a3fed419c634f",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-40000-r3/192.168.0.111/transaction-hashes.jsonl.gz",
+      "bytes": 10899012,
+      "sha256": "6643b9752bf13b151664e3f8e99e0c2bbdc586eaca420ef80dc30e69af8d3d2b",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-40000-r3/192.168.0.12/outcomes.bin",
+      "bytes": 248000,
+      "sha256": "2599e6111c27b20b712995bbcf7bbb88ad3908779cabf4e0ac95da0bee2d06bb",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-40000-r3/192.168.0.12/transaction-hashes.jsonl.gz",
+      "bytes": 10898907,
+      "sha256": "54e8e0cf06ef78a4df7a3386e55c341abd04541afb3aeadcc9b46caba7696947",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-40000-r3/192.168.0.138/outcomes.bin",
+      "bytes": 248000,
+      "sha256": "d85f4dc0a587320c3fd48e8009705d8d352500b072dc02289fdb64d1b12a4fde",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-40000-r3/192.168.0.138/transaction-hashes.jsonl.gz",
+      "bytes": 10898661,
+      "sha256": "227e01a0e709d889ec732776a3df3e4b9b86ecb0a1241b8081697801bb15fddc",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-40000-r3/192.168.0.162/outcomes.bin",
+      "bytes": 248000,
+      "sha256": "1e5cb3e4a0a3ab284fe4e34d85f0fbb74913c4374eafc1fc54cadee562aa85de",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-40000-r3/192.168.0.162/transaction-hashes.jsonl.gz",
+      "bytes": 10900337,
+      "sha256": "c46811cff3ff455a66fe7d5d77a586e56e54cab1e49cfd0a76ad530a8a95fd72",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-40000-r3/192.168.0.167/outcomes.bin",
+      "bytes": 248000,
+      "sha256": "43744d968e7feaacfdb9628409fb1744ad35def3734468db501c7a5a9e69fb87",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-40000-r3/192.168.0.167/transaction-hashes.jsonl.gz",
+      "bytes": 10899525,
+      "sha256": "139a3003659d08367fc2cb08f54a70b8e0f06f827bcd3622a8c89de3be608397",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-40000-r3/192.168.0.176/outcomes.bin",
+      "bytes": 248000,
+      "sha256": "2f7f379112b0668373d6e25e151d37048ffdbe3449d33bc8847065b0bbc1fe1d",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-40000-r3/192.168.0.176/transaction-hashes.jsonl.gz",
+      "bytes": 10850419,
+      "sha256": "27e672fb7e94e65c7bcfeaf0d56e76d213dd927b8277e39aef9ee0380e9e7508",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-40000-r3/192.168.0.249/outcomes.bin",
+      "bytes": 248000,
+      "sha256": "7828231240f84fe63025298a25aad8df06e403becd901d40102e2980ed006d5c",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-40000-r3/192.168.0.249/transaction-hashes.jsonl.gz",
+      "bytes": 10898953,
+      "sha256": "40023e84426ba0990deac14fecb581fca998875b2db2e307dda0081b0e474c5b",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-40000-r3/192.168.0.61/outcomes.bin",
+      "bytes": 248000,
+      "sha256": "dc64c496875a630897b0ed2a1b1b09b7ac0d871335645f4135f6978388207c6f",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-40000-r3/192.168.0.61/transaction-hashes.jsonl.gz",
+      "bytes": 10850423,
+      "sha256": "f4f5ad12de9222b8b46b331c3b743e5a2802c4c249cb0344fef41b42d4285b2c",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-40000-r3/canonical-blocks.jsonl.gz",
+      "bytes": 42707859,
+      "sha256": "764004d3f78d858b42f7c9d42b427b8e266d35b5ced0a6d0021a1e6a55290caa",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-40000-r3/rpc.jsonl.gz",
+      "bytes": 972262,
+      "sha256": "078bd2570bcd02806ec36e8f8a2ececb5299ca9589121dd17970acc11330e7d7",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-50000-r1/192.168.0.108/outcomes.bin",
+      "bytes": 310000,
+      "sha256": "26639172d5846ecd08d310c325858eb3c45da0486c4713fedaa91c26d68b98c5",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-50000-r1/192.168.0.108/transaction-hashes.jsonl.gz",
+      "bytes": 13563942,
+      "sha256": "5616ab26a058f9a60fcfc9bef7d8f87fa070e8ba179b149949d586c7ef1ab7f9",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-50000-r1/192.168.0.11/outcomes.bin",
+      "bytes": 310000,
+      "sha256": "b4093363669eb783d47081c0b22c20890ba4b84c838040f0f3664bc31c226842",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-50000-r1/192.168.0.11/transaction-hashes.jsonl.gz",
+      "bytes": 13625461,
+      "sha256": "6cfd889398b5d9370a3d071772668260266304b76e6772cfc2b5b1a754f0ea49",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-50000-r1/192.168.0.111/outcomes.bin",
+      "bytes": 310000,
+      "sha256": "b08b961f4651b6fa3019eaaebb68bec74f7d41d9ee58f867f28a5d54ff63e000",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-50000-r1/192.168.0.111/transaction-hashes.jsonl.gz",
+      "bytes": 13563347,
+      "sha256": "69086a57344c7c24751b2d964578772257555844e215279b1896f74c8c388237",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-50000-r1/192.168.0.12/outcomes.bin",
+      "bytes": 310000,
+      "sha256": "861764b35ed89b5768887e27aa33ccfbee90ee1d89710ab4c85c9ece8f234a21",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-50000-r1/192.168.0.12/transaction-hashes.jsonl.gz",
+      "bytes": 13563939,
+      "sha256": "9085d66dda8f54c429245ee8c2ca33805d5e3c7bcb717994009ad39f8a471e59",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-50000-r1/192.168.0.138/outcomes.bin",
+      "bytes": 310000,
+      "sha256": "93f390d770d156a42b68bcc5ba0d03e7eca617678323b937a2d0ab311c9cb7a6",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-50000-r1/192.168.0.138/transaction-hashes.jsonl.gz",
+      "bytes": 13563137,
+      "sha256": "1fe0c408df63e5a94e32d1904377c8379a5ca236efef25f3d13f348115f0363e",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-50000-r1/192.168.0.162/outcomes.bin",
+      "bytes": 310000,
+      "sha256": "022f0dbf682a962eb31c179a6c51036520a352d85c94c4c8965df6ca61adac06",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-50000-r1/192.168.0.162/transaction-hashes.jsonl.gz",
+      "bytes": 13626443,
+      "sha256": "8553283ab8af1ac2874f6a51a216df9bd15b8138b83d2d526fee4f46a001b251",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-50000-r1/192.168.0.167/outcomes.bin",
+      "bytes": 310000,
+      "sha256": "1accd7b61246fa1a69b39a478bb661835ee555d09ea769920e16c2acca40897d",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-50000-r1/192.168.0.167/transaction-hashes.jsonl.gz",
+      "bytes": 13626516,
+      "sha256": "7777c2e96a95fb6ea4d1242e396f143c549632516649c2ce3fadbdae2bb07a36",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-50000-r1/192.168.0.176/outcomes.bin",
+      "bytes": 310000,
+      "sha256": "b0b6a3d2dbda8bc4257867e77fe0f20f39ad29b4be32d4b22cd2f513b08b38b9",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-50000-r1/192.168.0.176/transaction-hashes.jsonl.gz",
+      "bytes": 13563865,
+      "sha256": "6526988f63a7231d4e6aa16fc53c4e8ad00f4ef030f5458351c56005b51b97a7",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-50000-r1/192.168.0.249/outcomes.bin",
+      "bytes": 310000,
+      "sha256": "a7fedbda85db108415635fa613a7d361de59675a678432dec1d4bcd6bfc0c694",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-50000-r1/192.168.0.249/transaction-hashes.jsonl.gz",
+      "bytes": 13562568,
+      "sha256": "55f8c677a7fcc1f41a14fd802ffe0e55ddd8d14965ebbf9d4d0d5ddd4b9102b1",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-50000-r1/192.168.0.61/outcomes.bin",
+      "bytes": 310000,
+      "sha256": "e95340a221714f7718185a35f4cb64c95d9f0e8e58ee391cd9e8e7c8c141789b",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-50000-r1/192.168.0.61/transaction-hashes.jsonl.gz",
+      "bytes": 13626079,
+      "sha256": "17eda2bc8646213ea7ca0958b69e13db5cfd8f2c9f9ace1520717f4d54ffce45",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-50000-r1/canonical-blocks.jsonl.gz",
+      "bytes": 44976575,
+      "sha256": "074235657a732234f577319de32dcf045630730cae5e94a8dcf43db7ce1dd1d1",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-50000-r1/rpc.jsonl",
+      "bytes": 876783,
+      "sha256": "a5e5370e985887ac71d74bc37d8f84dd7ecef5afa8ca4826fcdf5ce5d8f5fb3b",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-50000-r2/192.168.0.108/outcomes.bin",
+      "bytes": 310000,
+      "sha256": "738edaaf62f633831055b2908385de35444567944199297cccc9ceda97e45c88",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-50000-r2/192.168.0.108/transaction-hashes.jsonl.gz",
+      "bytes": 13626896,
+      "sha256": "304e333ee68f3dfe252a243da9b28b2f9928829bfe2808a4ae694ba984f36acb",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-50000-r2/192.168.0.11/outcomes.bin",
+      "bytes": 310000,
+      "sha256": "78634e8b26588262b78baa7d4bc3116216d874628dbaba6972cb99788aaacb79",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-50000-r2/192.168.0.11/transaction-hashes.jsonl.gz",
+      "bytes": 13563580,
+      "sha256": "20269a7f166ac6f32dc23acbeff65702ca4895ab125e2cbbb9b326a0c5776013",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-50000-r2/192.168.0.111/outcomes.bin",
+      "bytes": 310000,
+      "sha256": "94bea3aa50ce2c274c0e34553ed5248741ab61a3beb30fcc70d99229de3a24d8",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-50000-r2/192.168.0.111/transaction-hashes.jsonl.gz",
+      "bytes": 13626135,
+      "sha256": "0cef8758049e4dd4691ac4742bb2d9e5894de73407e2295e08c9fef22a5a5ab9",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-50000-r2/192.168.0.12/outcomes.bin",
+      "bytes": 310000,
+      "sha256": "ca8135f42400c18fbd542a1d4edaaeb876f23d1d08bd11dff5f571bf0d97bee7",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-50000-r2/192.168.0.12/transaction-hashes.jsonl.gz",
+      "bytes": 13626256,
+      "sha256": "c5744ccb2baddd80abd422445822f5ef1decc38672a19d38396c2d6b92ea79e1",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-50000-r2/192.168.0.138/outcomes.bin",
+      "bytes": 310000,
+      "sha256": "908b57e4031e0bb62d66fe69d1a55c733b575d9f3aa15dedf5491cc9f76a031f",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-50000-r2/192.168.0.138/transaction-hashes.jsonl.gz",
+      "bytes": 13625107,
+      "sha256": "fcddc5d869ac186936113822ac12fef880b9b47f6d5ef4958a02ac9fc325fc55",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-50000-r2/192.168.0.162/outcomes.bin",
+      "bytes": 310000,
+      "sha256": "ab283a52586e265d3bcc8598afff528f4e5c2ce6fcc81c558c511691362e00a3",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-50000-r2/192.168.0.162/transaction-hashes.jsonl.gz",
+      "bytes": 13625611,
+      "sha256": "4ce541ec95e647b7e0dbfb6852642cf618fc0c9a4e4a9ff63792382a163a3c26",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-50000-r2/192.168.0.167/outcomes.bin",
+      "bytes": 310000,
+      "sha256": "a7bb2539675ff6ce23bf3479d67ac0b1a274b098463b19dfa01ba8a35ec4ee6d",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-50000-r2/192.168.0.167/transaction-hashes.jsonl.gz",
+      "bytes": 13562946,
+      "sha256": "5af1d1bcdd3513cd1097f77b63c1c52ca512adae7d61eb5326e9479afba42c95",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-50000-r2/192.168.0.176/outcomes.bin",
+      "bytes": 310000,
+      "sha256": "ec5e972e9e7cbef298b799dc755a2ae89c379eb95a23d8f94943b258381239bf",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-50000-r2/192.168.0.176/transaction-hashes.jsonl.gz",
+      "bytes": 13563571,
+      "sha256": "a3c49b7c59b0564fcd01184f37772474766f528026ce07e3be0197378d670e9e",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-50000-r2/192.168.0.249/outcomes.bin",
+      "bytes": 310000,
+      "sha256": "3d4041c24023492259be13ae1ef1740d50f6e8bec088613dd4c9a192f0cdd98b",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-50000-r2/192.168.0.249/transaction-hashes.jsonl.gz",
+      "bytes": 13563884,
+      "sha256": "27ca341c1d093647903494aba96d58dfdc6b0a4c62830b2295e2c41c4330c6c2",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-50000-r2/192.168.0.61/outcomes.bin",
+      "bytes": 310000,
+      "sha256": "169d7215dfe77d3cd73abb81448f84330f62d1fe7d2b64c6fde0e9a76e5750b0",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-50000-r2/192.168.0.61/transaction-hashes.jsonl.gz",
+      "bytes": 13563555,
+      "sha256": "28a39a737792012634804f5279d3b2e9472333c0811fc7018e77f0dd397ca182",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-50000-r2/canonical-blocks.jsonl.gz",
+      "bytes": 49015237,
+      "sha256": "1219d4ffefe0e0357b2faad76feb6e358f8227a1f43335f3f25259656a7eda0b",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-50000-r2/rpc.jsonl",
+      "bytes": 883363,
+      "sha256": "f9288a1cc1c397186929cb07787a322eaeb84bfae1856f0163ffbd3ceeb5eea8",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-50000-r3/192.168.0.108/outcomes.bin",
+      "bytes": 310000,
+      "sha256": "2d95c260951021f1b3d787f7787676358a74fc40c70d463368a901f30d67d7f0",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-50000-r3/192.168.0.108/transaction-hashes.jsonl.gz",
+      "bytes": 13626109,
+      "sha256": "60b3575eec25a789eca463aee175dc5adf991d9bdf877c823a88e634d1c42179",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-50000-r3/192.168.0.11/outcomes.bin",
+      "bytes": 310000,
+      "sha256": "1c20aca28db00883b295cb38be0a8a7294eb4ee550bbbc07273b7790d21e8f1b",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-50000-r3/192.168.0.11/transaction-hashes.jsonl.gz",
+      "bytes": 13625394,
+      "sha256": "1c8910dcb22e9b6f8afb8b8f77cb938dd326f7ceaea5c7097757607cfade93ab",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-50000-r3/192.168.0.111/outcomes.bin",
+      "bytes": 310000,
+      "sha256": "c399423ea5b5fd1fc8e4e59a812554386781310e8e668d35e0f1d444ed878403",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-50000-r3/192.168.0.111/transaction-hashes.jsonl.gz",
+      "bytes": 13625287,
+      "sha256": "94223f808669f0415bde43d07446de1dd2497d4f26b1ac9735df0883faf4808d",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-50000-r3/192.168.0.12/outcomes.bin",
+      "bytes": 310000,
+      "sha256": "ba70c9ec5be8e9df29cc11a817295ca728276d16a18da9ba1fb9e4355b86d18c",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-50000-r3/192.168.0.12/transaction-hashes.jsonl.gz",
+      "bytes": 13626158,
+      "sha256": "bdaf79a603954bbe998abf7570567cf3e9c6ff7e617e248ffa2fab27be6306cd",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-50000-r3/192.168.0.138/outcomes.bin",
+      "bytes": 310000,
+      "sha256": "029c14da4125d8a914c89d9ba4eb8f0be92527ac68dabe1957425cd68cf3dcb7",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-50000-r3/192.168.0.138/transaction-hashes.jsonl.gz",
+      "bytes": 13625277,
+      "sha256": "12f440a1a18de885a5a396b7e2cedbcdb850191b2f51aabd7f5766cf9931cf73",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-50000-r3/192.168.0.162/outcomes.bin",
+      "bytes": 310000,
+      "sha256": "46ef147c7f0dd425653c027951de620be1585c4a7f62828f56b8f88dea8cea81",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-50000-r3/192.168.0.162/transaction-hashes.jsonl.gz",
+      "bytes": 13563038,
+      "sha256": "77041288b189064dcda3ebe8895a52fb6634af001bdb4f257182f8994f5b216e",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-50000-r3/192.168.0.167/outcomes.bin",
+      "bytes": 310000,
+      "sha256": "fbc291d4a30f517b684353216146aa06edfcf0c62861aeab1fefda0aaaaa2655",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-50000-r3/192.168.0.167/transaction-hashes.jsonl.gz",
+      "bytes": 13564156,
+      "sha256": "bd8d772fa6d7d7a869f5dda34d7a6d2ac1336755acf466de90c22362654d2a4a",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-50000-r3/192.168.0.176/outcomes.bin",
+      "bytes": 310000,
+      "sha256": "4b5c6fa7bf47e4a0a4eed76feabdc9a688a869954530b7ea1250931bcbb6f9d6",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-50000-r3/192.168.0.176/transaction-hashes.jsonl.gz",
+      "bytes": 13625184,
+      "sha256": "8e1b6acee84b25bf2457ce9ee487e5a269ab6ba7e058095372e9cb443cdc16f3",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-50000-r3/192.168.0.249/outcomes.bin",
+      "bytes": 310000,
+      "sha256": "6c2c96ff218b1a07d7886e20cfdc816f8e2845d2fe4917b7438a09a93e004088",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-50000-r3/192.168.0.249/transaction-hashes.jsonl.gz",
+      "bytes": 13626695,
+      "sha256": "e32cb43fa57ef225fb6cdaca0d17c5eeb72951aeba12a1201f127caa8dc92ea9",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-50000-r3/192.168.0.61/outcomes.bin",
+      "bytes": 310000,
+      "sha256": "1cab482dee93e540c83da20953798ce86d6080ad64498bcecd6c9c3adfa6e48d",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-50000-r3/192.168.0.61/transaction-hashes.jsonl.gz",
+      "bytes": 13625589,
+      "sha256": "6e3bae641d516237e328ed92edf83e7fd6d9b1b57804e2d1a07b8d730a804f27",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-50000-r3/canonical-blocks.jsonl.gz",
+      "bytes": 48740223,
+      "sha256": "ced6915d0008cffa0abd9a7b05ec7382881aab9d2972185451a33fb30d63db6c",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-50000-r3/rpc.jsonl",
+      "bytes": 880892,
+      "sha256": "8b2741b89697cee90caf4957ea11dee385a00b3fd2db2ddfec65c4e45b403811",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-60000-r1/192.168.0.108/outcomes.bin",
+      "bytes": 372000,
+      "sha256": "774d712232e38c3a23758511416cab069baff62a5ee8b97b05d3ec41b132eed5",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-60000-r1/192.168.0.108/transaction-hashes.jsonl.gz",
+      "bytes": 16276950,
+      "sha256": "65e8a96de5a4c07235de22aa6fafb386c078c074fa2ccf2da755bce466ce6a68",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-60000-r1/192.168.0.11/outcomes.bin",
+      "bytes": 372000,
+      "sha256": "66ef17e41331318556432b68152dc1516efbe87ff16631fbbe1795f600d3de9e",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-60000-r1/192.168.0.11/transaction-hashes.jsonl.gz",
+      "bytes": 16276888,
+      "sha256": "56df33c6c2945d5e3ccc1b21894845f9833bce6d4ae3e2a5228159ce3d9d3a78",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-60000-r1/192.168.0.111/outcomes.bin",
+      "bytes": 372000,
+      "sha256": "5215e5a52b03a03ba0113f237688affce87ff34525a9a98f23f5ce898a0b3b53",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-60000-r1/192.168.0.111/transaction-hashes.jsonl.gz",
+      "bytes": 16277245,
+      "sha256": "1f595a796e1d7d2491dafa91922ce9d2d8c9154790deb0e492dc5283ca5cc272",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-60000-r1/192.168.0.12/outcomes.bin",
+      "bytes": 372000,
+      "sha256": "c4a55ef2a802fe700043779701b35cdf17cf438bd377e6adb48dcc8b7361f4e8",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-60000-r1/192.168.0.12/transaction-hashes.jsonl.gz",
+      "bytes": 16352618,
+      "sha256": "172dbbe23d4f3a78fd56f9b255403e9f647ae1459564570c7a3d16332185842a",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-60000-r1/192.168.0.138/outcomes.bin",
+      "bytes": 372000,
+      "sha256": "de9598688fa240c5651a3b5e922a83171e0b52ce2b7fcc6f36407a21bae7171a",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-60000-r1/192.168.0.138/transaction-hashes.jsonl.gz",
+      "bytes": 16277046,
+      "sha256": "e43235215b9b0953c9e5fb8fc177d0e5e0da3188646491947157f119c6277bcf",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-60000-r1/192.168.0.162/outcomes.bin",
+      "bytes": 372000,
+      "sha256": "126a02e6df9066a2e670b643714fb2586c72010e318fa6270765125b81bf8cc0",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-60000-r1/192.168.0.162/transaction-hashes.jsonl.gz",
+      "bytes": 16276660,
+      "sha256": "9fc1377a2677a18b5b3dbca19ed445cbd70c81dabb726390075b0b861d535be6",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-60000-r1/192.168.0.167/outcomes.bin",
+      "bytes": 372000,
+      "sha256": "a9ec3440c9f3b8530828a8aca7a047d887ad68a46d358cc3191c4a88f2a2beb5",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-60000-r1/192.168.0.167/transaction-hashes.jsonl.gz",
+      "bytes": 16276163,
+      "sha256": "1c31a19eab18636f8ee97d9184caac8396c261ec2ee84cdc4441c93b538f2560",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-60000-r1/192.168.0.176/outcomes.bin",
+      "bytes": 372000,
+      "sha256": "553b4a88692a8058de44f2c23d16317babb59cbc627dd7356800a88b341f8d6e",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-60000-r1/192.168.0.176/transaction-hashes.jsonl.gz",
+      "bytes": 16276921,
+      "sha256": "810ba883153051b88c2227b90f7c8abc9e86d645ba7bdcf5c48d1d74d0214117",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-60000-r1/192.168.0.249/outcomes.bin",
+      "bytes": 372000,
+      "sha256": "bedd4d8054d883b8402d15ca4bedaadbee83697ff0e8329986d0006c5d4cdb57",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-60000-r1/192.168.0.249/transaction-hashes.jsonl.gz",
+      "bytes": 16276756,
+      "sha256": "0c6a038b530bba887c443823026fddcf6f134a6961faab25149bf7bdbfb4c333",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-60000-r1/192.168.0.61/outcomes.bin",
+      "bytes": 372000,
+      "sha256": "1e0449df05b2b875b08691ab873d5128fd0bd5c0d1e176a117943fdc999685f6",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-60000-r1/192.168.0.61/transaction-hashes.jsonl.gz",
+      "bytes": 16351087,
+      "sha256": "111c205c523c5ddf169b535292e31f36f0e0091222e68e7266bf18428361f120",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-60000-r1/canonical-blocks.jsonl.gz",
+      "bytes": 48089682,
+      "sha256": "4b495ce12eba68601482853005cfc12bdcf9d3a1823f34c9bd61e345c57f4eca",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-60000-r1/rpc.jsonl",
+      "bytes": 882564,
+      "sha256": "b7f9a221b2601e419f81a5d0c0e1df6b205d65ecdef4553b1634548aa2a344f2",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-60000-r2/192.168.0.108/outcomes.bin",
+      "bytes": 372000,
+      "sha256": "e573dff6894313454700bb066eaeb4aca5258e5235548f0a4f4c176de92c067a",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-60000-r2/192.168.0.108/transaction-hashes.jsonl.gz",
+      "bytes": 16353151,
+      "sha256": "4a1fb4001f5f7e853a8dcb0dd5aa6b2878fbcb6681d0622dbce1144e9780d3f2",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-60000-r2/192.168.0.11/outcomes.bin",
+      "bytes": 372000,
+      "sha256": "ff8d4795c7a109d7f39c77ec2ec727e7361c051fdc2b8a8c96175a42f6c69a31",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-60000-r2/192.168.0.11/transaction-hashes.jsonl.gz",
+      "bytes": 16277991,
+      "sha256": "543481b74fb6a856d9f33bc1f4704388da01c6f98100e2281c0e241e2f0d223c",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-60000-r2/192.168.0.111/outcomes.bin",
+      "bytes": 372000,
+      "sha256": "5f2cc587df3c98ce81a7fcc1752593bd30f175cd55f06f0d299c78405850104b",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-60000-r2/192.168.0.111/transaction-hashes.jsonl.gz",
+      "bytes": 16351921,
+      "sha256": "96f05babdc8ea0e023150d020e5fc34a974c604f97585b9a3553815367225e73",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-60000-r2/192.168.0.12/outcomes.bin",
+      "bytes": 372000,
+      "sha256": "186867bc6667a55d3792f80f17d6b9ff47ce2fd3e19b4148bdd561b5020875df",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-60000-r2/192.168.0.12/transaction-hashes.jsonl.gz",
+      "bytes": 16352799,
+      "sha256": "096b611bc78afa5b8274e6450ff3d2a83a03dc224597496149f629d8c6aca9d2",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-60000-r2/192.168.0.138/outcomes.bin",
+      "bytes": 372000,
+      "sha256": "07e2260cd525248a223b8dcad6e8826604e84caf3707ba6879d2c0c08301dea8",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-60000-r2/192.168.0.138/transaction-hashes.jsonl.gz",
+      "bytes": 16353006,
+      "sha256": "26a0ae17ab4084c277b9975fe830ddb44406ebb972473571211700cf4baed2dd",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-60000-r2/192.168.0.162/outcomes.bin",
+      "bytes": 372000,
+      "sha256": "c42f478977232b96f58069410286e0422b3b4fc49c3878e4a28a922994d2522c",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-60000-r2/192.168.0.162/transaction-hashes.jsonl.gz",
+      "bytes": 16277043,
+      "sha256": "d52313565f1d274578c34931298ec11f7d15acf789603e2fec70472ac9b048a3",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-60000-r2/192.168.0.167/outcomes.bin",
+      "bytes": 372000,
+      "sha256": "1478fbfc0b5a9b5e53b366e24136ec5ff62ca524189af42854b3dbb7b3d7279d",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-60000-r2/192.168.0.167/transaction-hashes.jsonl.gz",
+      "bytes": 16351985,
+      "sha256": "01fca670c258a92c411f859214c00e98705233b0b7f4d8afba1e1451900c4288",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-60000-r2/192.168.0.176/outcomes.bin",
+      "bytes": 372000,
+      "sha256": "bd292e7e5bd784f976aea77dfec902fc98e95c6e3dc58c175a94050daf81224e",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-60000-r2/192.168.0.176/transaction-hashes.jsonl.gz",
+      "bytes": 16352292,
+      "sha256": "4badbbcb78120f685ef03aec3bcb4f543f809e061c41659e2438b56caf6ec756",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-60000-r2/192.168.0.249/outcomes.bin",
+      "bytes": 372000,
+      "sha256": "816dc25358a4f90558a9ab9b2dbbf9987a8d496862a164fd822e3a1ed71706e3",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-60000-r2/192.168.0.249/transaction-hashes.jsonl.gz",
+      "bytes": 16276461,
+      "sha256": "73ceae14ca27ef9bfc1f512a01a587a30470e1953ffce208810eb5ecb0bcc453",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-60000-r2/192.168.0.61/outcomes.bin",
+      "bytes": 372000,
+      "sha256": "dc706a38dd0d3a97530ed82d6814e59b7e4767688cdfb70c9310a441492ac8ab",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-60000-r2/192.168.0.61/transaction-hashes.jsonl.gz",
+      "bytes": 16352415,
+      "sha256": "06ca60139898c668644a178856350761a93cab732706a7dd129b8afd37d12212",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-60000-r2/canonical-blocks.jsonl.gz",
+      "bytes": 44081948,
+      "sha256": "91c5494dd1f4550a2e54269274d79c93417c418eb5270bd7fbb9726447950bd6",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-60000-r2/rpc.jsonl",
+      "bytes": 898567,
+      "sha256": "9ae02f938c26c13bb59f9199e0f04cc539a50c77155a01638874bb6af4a9ceed",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-60000-r3/192.168.0.108/outcomes.bin",
+      "bytes": 372000,
+      "sha256": "18f14a059f3f2e4412ab7903bd687c581fb53126cd454268ee454d8f4ea28396",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-60000-r3/192.168.0.108/transaction-hashes.jsonl.gz",
+      "bytes": 16352670,
+      "sha256": "9c3e34c17359e8355d582ca49035395f950156b85251df90705a63190fb475b4",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-60000-r3/192.168.0.11/outcomes.bin",
+      "bytes": 372000,
+      "sha256": "eb49e09c134cd99b1ebe6dbc08bb869e3a0123c22012765339db1e31dda08b5f",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-60000-r3/192.168.0.11/transaction-hashes.jsonl.gz",
+      "bytes": 16352737,
+      "sha256": "dfbce2362567a6de1f9e053ab1df07cedcd3a84754f2dfa4e23f3047f47e8a74",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-60000-r3/192.168.0.111/outcomes.bin",
+      "bytes": 372000,
+      "sha256": "638827f34f75db8549e836b1afd97f0c5759068528b2b54d84a0b53f038ece61",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-60000-r3/192.168.0.111/transaction-hashes.jsonl.gz",
+      "bytes": 16276772,
+      "sha256": "c94b802bb836a2ca0049d16cba7581669aed22885ee90ed552047d1e2cdb3c86",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-60000-r3/192.168.0.12/outcomes.bin",
+      "bytes": 372000,
+      "sha256": "4c22f8e471a2147952c354e7d39cc8c45be17006cf928ae3c2bfcfbd13ede035",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-60000-r3/192.168.0.12/transaction-hashes.jsonl.gz",
+      "bytes": 16277325,
+      "sha256": "a708dfb95950adb6d0501c37251bca423722a1c4114154492c680f7913a42129",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-60000-r3/192.168.0.138/outcomes.bin",
+      "bytes": 372000,
+      "sha256": "1e28b823c4358935b3b8e14cf4d182a07e46f540f14b523001ab88e855194fba",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-60000-r3/192.168.0.138/transaction-hashes.jsonl.gz",
+      "bytes": 16275851,
+      "sha256": "327dfb033a75b9d847f1c2c27442d0c57a485dc42dd829803e360cfa2d39bc9e",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-60000-r3/192.168.0.162/outcomes.bin",
+      "bytes": 372000,
+      "sha256": "deeda35ca01a4a3b60752655de0a6ebac43665972f971eaec7c2a6bf4d7bbdc0",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-60000-r3/192.168.0.162/transaction-hashes.jsonl.gz",
+      "bytes": 16275735,
+      "sha256": "a2b1528921e348593b7b2edff0433593b6f1e44d39392cd2953d806b695df1bc",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-60000-r3/192.168.0.167/outcomes.bin",
+      "bytes": 372000,
+      "sha256": "582e1aa777c1dfea28c38db4aef92edb6dc1f6d18c71a9db3f77a7315c9c4e4d",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-60000-r3/192.168.0.167/transaction-hashes.jsonl.gz",
+      "bytes": 16351684,
+      "sha256": "4026b0e58367ded22d3038e6868fe7a71ebd70dbed06fd41c2970505b26aa882",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-60000-r3/192.168.0.176/outcomes.bin",
+      "bytes": 372000,
+      "sha256": "0900c83fb3ba06c8a05c5cca7b784f08d6f77bd1a102220d5d2ff6440c1e33e3",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-60000-r3/192.168.0.176/transaction-hashes.jsonl.gz",
+      "bytes": 16276884,
+      "sha256": "fd45a107627348408b7d45d148187ac8749448b7091ad803d1613c4281ddae9a",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-60000-r3/192.168.0.249/outcomes.bin",
+      "bytes": 372000,
+      "sha256": "338007c078cfe52b40f24fd8952a589835a5ead2237d56fcb6fa5759cb269d0f",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-60000-r3/192.168.0.249/transaction-hashes.jsonl.gz",
+      "bytes": 16353118,
+      "sha256": "7666129fa9543095c8ae219230b87889f3504e8f8f10babc6f8ab32bd421f118",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-60000-r3/192.168.0.61/outcomes.bin",
+      "bytes": 372000,
+      "sha256": "632c7b8789833f2d947a9620dac6045d0ef764f83d0b599a723ca7010cfb9eae",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-60000-r3/192.168.0.61/transaction-hashes.jsonl.gz",
+      "bytes": 16351227,
+      "sha256": "d6cc2df05b4d23f1079a479da7f3e1a4366d75770b5af9428b46451fe8014874",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-60000-r3/canonical-blocks.jsonl.gz",
+      "bytes": 43046556,
+      "sha256": "4c24d19a2dd39bd88d454185c8516b417656254babdbdd6f02fa74f9e4ef13e0",
+      "location": "retained on controller"
+    },
+    {
+      "path": "/opt/fisco-control/results/cap-formal-20261027/cap-formal-20261027-serial50-60000-r3/rpc.jsonl.gz",
+      "bytes": 680377,
+      "sha256": "37f21acb70d1fff34d47ef4be1c23a0034ca96d8cc5d5ffa206f5d07517f6e0e",
+      "location": "retained on controller"
+    }
+  ]
+}

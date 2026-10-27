@@ -35,10 +35,12 @@ python3 Run.py --hosts /opt/fisco-control/automation/fisco-adapter/hosts.json \
 
 2026-10-27 用户已明确选择五档各测量 60 秒、重复 3 次。长测固定 `serial50`、每发送器在途阈值 3000，预热仍为 2 秒、收尾最多 5 秒；各重复改变档位顺序，保持其余条件一致。计划为第 1 轮 20/30/40/50/60k，第 2 轮 60/50/40/30/20k，第 3 轮 30/50/20/60/40k。
 
-长测在隔离配置设置 `chain.block_limit=5000`，通过 `FISCO_BENCH_BLOCK_LIMIT_OFFSET=4000` 将预签名交易固定为初始化高度 +4000。SDK 接口代理仅覆盖签名过程使用的 `getBlockLimit`，其余方法转交原客户端；节点签名与 blockLimit 校验保留。准备时检查首尾实际编码值和剩余高度预算，审计时再核对最终高度。默认 offset=0，原短测行为不变。
+长测在隔离 `config.genesis` 设置 `chain.block_limit=5000`，通过 `FISCO_BENCH_BLOCK_LIMIT_OFFSET=4000` 将预签名交易固定为初始化高度 +4000。SDK 接口代理仅覆盖签名过程使用的 `getBlockLimit`，其余方法转交原客户端；节点签名与 blockLimit 校验保留。准备时检查首尾实际编码值和剩余高度预算，审计时再核对最终高度。默认 offset=0，原短测行为不变。该版本不能把这个参数仅写在 `config.ini`；首次冒烟对此返回 BlockLimitCheckFail，修正后的冒烟及状态审计通过，两次记录均保留。
 
 `compact_records=true` 在该轮完成状态核对和数据库清理后，将较大的 JSONL 证据无损 gzip 压缩。逐个解压校验 SHA256 后才移除原始文本副本，记录于 `compressed-records.json`；签名数据、所有证据内容均保留。分析器同时支持文本及压缩账本。控制机每轮开始前要求至少 2 GiB 可用空间。
 
 `window_screen_passed` 只是单个 60 秒窗口的初筛，不自动命名为可持续上限。正式结论还需合并三个重复、查看完整队列时间序列、确认实际调用达到目标，并说明回压与未提交请求。
+
+五档 60 秒 ×3 已完成，见 [长测报告](../../../reports/2026-10-27-fisco-long/REPORT.md)。最高三次中位数为 20,002 TPS，单次最高 20,214 TPS；各档均未持续接纳目标输入。全部 17,130,898 笔实际调用最终成功入块，其中 80,720 笔有过 SDK 错误回调，均经逐笔审计确认成功，不能将这些回调直接算作最终拒绝或丢单。用户选择只完成这 15 轮，未增加其他容量档位。
 
 参考：[v3.7.3 节点配置实现](https://github.com/FISCO-BCOS/FISCO-BCOS/blob/v3.7.3/bcos-tool/bcos-tool/NodeConfig.cpp)、[原生转账实现](https://github.com/FISCO-BCOS/FISCO-BCOS/blob/v3.7.3/bcos-executor/src/precompiled/extension/DagTransferPrecompiled.cpp)、[串行调度实现](https://github.com/FISCO-BCOS/FISCO-BCOS/blob/v3.7.3/bcos-scheduler/src/SerialBlockExecutive.cpp)。
