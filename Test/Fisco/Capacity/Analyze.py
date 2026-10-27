@@ -1,6 +1,7 @@
 """Recompute endpoint, resource, latency and cleanup evidence offline."""
 import argparse
 from datetime import datetime, timedelta, timezone
+import gzip
 import json
 from pathlib import Path
 import re
@@ -33,11 +34,22 @@ def LogEvents(tar, start, end):
     return dict(counts=counts, examples=examples)
 
 
+def ReadLines(path):
+    if path.exists():
+        with path.open(encoding='utf-8') as stream:yield from stream
+    else:
+        with gzip.open(path.with_suffix(path.suffix+'.gz'),'rt',encoding='utf-8') as stream:yield from stream
+
+
 def Analyze(root):
     cases=[]
     for path in sorted(root.glob('cap-*/*/summary.json')):
         row=json.loads(path.read_text())
         if 'plan' not in row:
+            continue
+        if row.get('status')!='complete':
+            row.update(batch=path.parent.parent.name,eligible=False,stage='failed')
+            cases.append(row)
             continue
         plan=row['plan'];timing=json.loads(path.with_name('timing.json').read_text())
         a_time=timing['gate_epoch']+timing['warm'];b_time=a_time+timing['seconds']
@@ -105,8 +117,10 @@ def Analyze(root):
         row['common_chain_timeline']=[{k:p[k] for k in ['target_seconds','count_min','pending_mean']} for p in points]
         if len(pair)==2 and all(pair):
             first,last=[min(n['height'] for n in p['nodes']) for p in pair]
-            blocks=[json.loads(line) for line in path.with_name('canonical-blocks.jsonl').read_text().splitlines()]
-            sizes=[len(b['hashes']) for b in blocks if first<b['height']<=last]
+            sizes=[]
+            for line in ReadLines(path.with_name('canonical-blocks.jsonl')):
+                block=json.loads(line)
+                if first<block['height']<=last:sizes.append(len(block['hashes']))
             row['measurement_blocks']=dict(count=len(sizes),mean_transactions=statistics.mean(sizes) if sizes else 0,
                                             max_transactions=max(sizes,default=0))
         drivers=json.loads(path.with_name('drivers.json').read_text())
@@ -137,4 +151,4 @@ if __name__=='__main__':
     args=p.parse_args();value=Analyze(args.raw);args.output.parent.mkdir(parents=True,exist_ok=True)
     args.output.write_text(json.dumps(value,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
     for row in value['cases']:
-        print(row['stage'],row['name'],row['eligible'],round(row.get('tps',0)),row.get('receipt_p95_ms'),round(row.get('cpu_node_mean',0),2))
+        print(row['stage'],row['name'],row['eligible'],round(row.get('tps',0)),row.get('receipt_p95_ms'),round(row.get('cpu_node_mean') or 0,2))

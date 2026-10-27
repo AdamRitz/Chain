@@ -1,11 +1,13 @@
 """Ten-validator native transfer capacity experiments, isolated configurations."""
 import argparse
 import concurrent.futures as CF
+import gzip
 import hashlib
 import json
 import os
 from pathlib import Path
 import re
+import shutil
 import statistics
 import subprocess
 import sys
@@ -30,6 +32,31 @@ PROFILES = {
 }
 
 
+def CompactCompleted(out, merged):
+    """Losslessly retain large completed-run text records without exhausting controller disk."""
+    records=[]
+    for root in [out,merged]:
+        boundary=root.resolve()
+        for path in sorted(root.rglob('*.jsonl')):
+            if path.is_symlink() or not path.resolve().is_relative_to(boundary):
+                raise RuntimeError('Unexpected evidence path')
+            if path.stat().st_size<1024*1024:continue
+            target=path.with_suffix(path.suffix+'.gz')
+            if target.exists():raise RuntimeError('Compressed evidence already exists')
+            digest=hashlib.sha256();size=path.stat().st_size
+            with path.open('rb') as source,gzip.open(target,'wb',compresslevel=1) as dest:
+                for data in iter(lambda:source.read(1024*1024),b''):
+                    digest.update(data);dest.write(data)
+            verify=hashlib.sha256()
+            with gzip.open(target,'rb') as source:
+                for data in iter(lambda:source.read(1024*1024),b''):verify.update(data)
+            if digest.digest()!=verify.digest():raise RuntimeError('Compressed evidence checksum mismatch')
+            records.append(dict(path=str(path),compressed=str(target),bytes=size,
+                                compressed_bytes=target.stat().st_size,sha256=digest.hexdigest()))
+            path.unlink()
+    Save(out/'compressed-records.json',records)
+
+
 class Capacity(Native):
     def __init__(self, args):
         super().__init__(args)
@@ -46,6 +73,15 @@ class Capacity(Native):
         if r.returncode:
             raise RuntimeError(host+': '+r.stdout+r.stderr)
         return r.stdout
+
+    def Download(self, host, source, destination):
+        for attempt in range(3):
+            try:return super().Download(host,source,destination)
+            except (subprocess.CalledProcessError,subprocess.TimeoutExpired) as exc:
+                if attempt==2:
+                    detail=getattr(exc,'stderr','')
+                    raise RuntimeError(f'Download {host}:{source} failed: {detail}') from exc
+                time.sleep(.5*(attempt+1))
 
     def Java(self, *arguments, config=None):
         return [str(self.root/'toolchain/jdk/bin/java'), '-Xms64m', '-Xmx512m',
@@ -70,6 +106,7 @@ def update(file,changes):
  with (root/file).open('w') as f:c.write(f)
 update('config.ini',{{'consensus':{{'min_seal_time':p['seal']}},'txpool':{{'limit':50000,'verify_worker_num':p.get('verify',4),'notify_worker_num':2}},'rpc':{{'thread_count':4,'return_input_params':str(p.get('return_input',True)).lower()}},'log':{{'level':'warning'}},'executor':{{'enable_dag':'true'}},'sync':{{'send_txs_by_tree':str(p.get('tree',False)).lower()}}}})
 update('config.genesis',{{'consensus':{{'block_tx_count_limit':p['block'],'leader_period':5}},'executor':{{'is_serial_execute':str(p['serial']).lower()}}}})
+if p.get('block_limit'):update('config.genesis',{{'chain':{{'block_limit':p['block_limit']}}}})
 uid=pwd.getpwnam('fisco').pw_uid;gid=grp.getgrnam('fisco').gr_gid
 for path in [root,*root.rglob('*')]:os.chown(path,uid,gid)
 manifest={{f:hashlib.sha256((root/f).read_bytes()).hexdigest() for f in ['config.ini','config.genesis','nodes.json']}}
@@ -91,7 +128,7 @@ source=pathlib.Path('/opt/fisco-control/driver/config.toml').read_text()
 source=re.sub(r'(?m)^peers\\s*=.*$', 'peers = ["{host}:20200"]', source)
 source=re.sub(r'(?m)^threadPoolSize\\s*=.*$', 'threadPoolSize = "2"', source)
 (root/'config.toml').write_text(source)
-args=['systemd-run','--quiet','--unit','fisco-driver-'+{name!r},'--property=TimeoutStopSec=5','--property=KillMode=control-group','--property=RuntimeMaxSec=1800','--setenv=FISCO_BENCH_SHARDS=10','--setenv=FISCO_BENCH_SHARD={shard}','--setenv=FISCO_BENCH_PREFIX='+{name!r},'--property=StandardOutput=append:'+str(root/'driver.log'),'--property=StandardError=append:'+str(root/'driver.log'),*{command!r}]
+args=['systemd-run','--quiet','--unit','fisco-driver-'+{name!r},'--property=TimeoutStopSec=5','--property=KillMode=control-group','--property=RuntimeMaxSec=1800','--setenv=FISCO_BENCH_SHARDS=10','--setenv=FISCO_BENCH_SHARD={shard}','--setenv=FISCO_BENCH_PREFIX='+{name!r},'--setenv=FISCO_BENCH_BLOCK_LIMIT_OFFSET={self.profile.get('sign_limit_offset',0)}','--property=StandardOutput=append:'+str(root/'driver.log'),'--property=StandardError=append:'+str(root/'driver.log'),*{command!r}]
 subprocess.run(args,check=True,capture_output=True,timeout=20)
 print(json.dumps({{'host':{host!r},'shard':{shard},'command':args}}))
 ''')
@@ -130,7 +167,9 @@ print(json.dumps({{'host':{host!r},'shard':{shard},'command':args}}))
 def Case(c, plan, batch):
     name=batch.name+'-'+plan['profile']+'-'+str(plan['rate'])+'-r'+str(plan.get('repeat',1))
     out=batch/name;out.mkdir()
-    c.profile=PROFILES[plan['profile']]
+    c.profile=dict(PROFILES[plan['profile']])
+    for key in ['block_limit','sign_limit_offset']:
+        if key in plan:c.profile[key]=plan[key]
     rate=plan['rate'];warm=plan.get('warm',2);seconds=plan.get('seconds',10)
     end=warm+seconds;cutoff=end+5
     node_unit='fisco-node-'+name;driver_unit='fisco-driver-'+name
@@ -140,6 +179,7 @@ def Case(c, plan, batch):
     def StopNodes():
         Save(out/'guard.json',Parallel(lambda h:c.WatchdogStopUnit(h,node_unit),c.hosts))
     try:
+        if shutil.disk_usage(batch).free<2*1024**3:raise RuntimeError('Controller free disk below 2 GiB reserve')
         Save(out/'node-launches.json',Parallel(lambda h:c.PrepareNode(h,name,node_unit),c.hosts))
         fresh=c.Ready(60);assert all(Number(n['transactionCount'])==0 for n in fresh['nodes'])
         Save(out/'fresh.json',fresh)
@@ -153,11 +193,16 @@ while not (root/'go.ready').exists():
  state=subprocess.run(['systemctl','show','fisco-driver-'+{name!r},'--property=ActiveState'],capture_output=True,text=True).stdout
  if 'ActiveState=failed' in state or time.monotonic()>deadline:raise RuntimeError(state+' '+(root/'driver.log').read_text()[-2000:])
  time.sleep(.5)
-print(json.dumps({{'host':{host!r},'ready':True}}))
+print(json.dumps({{'host':{host!r},'ready':True,'prepared':json.loads((root/'prepared.json').read_text())}}))
 ''')
         # Remote calls are bounded; preparation normally completes well within five minutes.
-        Save(out/'prepared.json',Parallel(Wait,c.hosts))
+        prepared=[json.loads(v) for v in Parallel(Wait,c.hosts)]
+        Save(out/'prepared.json',prepared)
         ready=c.Ready(60);setup=Number(ready['nodes'][0]['transactionCount']);assert setup==1024
+        if plan.get('sign_limit_offset'):
+            heights=[Number(n['blockNumber']) for n in ready['nodes']]
+            limits=[Number(v['prepared']['signed_transaction_inspection']['blockLimit']) for v in prepared]
+            assert min(limits)>max(heights)+(warm+seconds+5)*1000/c.profile['seal']+100,'Signing horizon too short'
         Save(out/'setup.json',ready)
         Save(out/'system-settings.json',Parallel(lambda h:{'host':h,'block_limit':c.Rpc(h,'getSystemConfigByKey','tx_count_limit')['result']},c.hosts))
         gate=time.time()+4;start=time.monotonic()+gate-time.time()
@@ -220,10 +265,11 @@ print(json.dumps({{'host':{host!r},'ready':True}}))
             lo=b['bracket_begin_monotonic']-a['bracket_end_monotonic'];hi=b['bracket_end_monotonic']-a['bracket_begin_monotonic']
             summary.update(tps=delta/((lo+hi)/2),tps_bounds=[delta/hi,delta/lo],measurement_seconds=(lo+hi)/2,
                 pending_start=a['pending_mean'],pending_end=b['pending_mean'],pending_growth_per_s=(b['pending_mean']-a['pending_mean'])/seconds)
-            summary['sustainable']=bool(seconds>=60 and summary['actual_send_tps']>=.95*rate and summary['tps']>=.95*rate
+            summary['window_screen_passed']=bool(seconds>=60 and summary['actual_send_tps']>=.99*rate and summary['tps']>=.99*rate
                 and not callback_errors and summary['unresolved']==0 and summary['unsubmitted']==0 and audit['all_heads_equal']
-                and summary['pending_growth_per_s']<=max(10,.01*rate))
-        print(json.dumps({k:summary.get(k) for k in ['name','tps','actual_send_tps','receipt_p95_ms','unresolved','sustainable']}),flush=True)
+                and summary['pending_growth_per_s']<=max(10,.001*rate))
+            summary['capacity_claim']='Single-window screen only; repeated runs and queue time series must also be evaluated.'
+        print(json.dumps({k:summary.get(k) for k in ['name','tps','actual_send_tps','receipt_p95_ms','unresolved','window_screen_passed']}),flush=True)
     except Exception as exc:
         summary.update(status='failed',error=repr(exc),errors=errors)
         print(json.dumps(summary),flush=True)
@@ -253,6 +299,8 @@ def Main():
     for case in plan:
         assert case['profile'] in PROFILES and case['rate']>0 and case['rate']%10==0
         assert 0<=case.get('warm',2)<=10 and 1<=case.get('seconds',10)<=60
+        if case.get('sign_limit_offset'):
+            assert 0<case['sign_limit_offset']<case.get('block_limit',1000)<=5000
     c=Capacity(args);batch=c.root/'results'/args.name;batch.mkdir(exist_ok=False)
     source_dir=batch/'sources';source_dir.mkdir()
     source_manifest={}
@@ -272,6 +320,8 @@ def Main():
         Save(batch/'services-stopped.json',Parallel(lambda h:c.Remote(h,"import subprocess\nsubprocess.run(['systemctl','stop','chain-node','fisco-bcos'],check=True,capture_output=True,timeout=30)\n"),c.hosts))
         for case in plan:
             row=Case(c,case,batch);rows.append(row);Save(batch/'results.json',rows)
+            if case.get('compact_records') and row['status']=='complete' and row['cleanup_ok']:
+                CompactCompleted(batch/row['name'],c.driver/'runs'/row['name'])
             if row['status']!='complete' or not row['cleanup_ok']:break
     finally:
         Save(batch/'services-restored.json',Parallel(lambda h:c.Remote(h,"import subprocess\nsubprocess.run(['systemctl','start','chain-node','fisco-bcos'],check=True,capture_output=True,timeout=30)\nprint(subprocess.run(['systemctl','is-active','chain-node','fisco-bcos'],capture_output=True,text=True).stdout)\n"),c.hosts))

@@ -157,6 +157,24 @@ public class NativeAlignedBench {
             }
             Fund();
             result.put("funding_delayed_receipts",fundingReceiptQueries);
+            // A fixed, explicitly bounded horizon keeps pre-signed long runs from expiring.
+            // All normal SDK calls and node-side validity/signature checks remain enabled.
+            int limitOffset=Integer.parseInt(System.getenv().getOrDefault("FISCO_BENCH_BLOCK_LIMIT_OFFSET","0"));
+            BigInteger fixedBlockLimit=null;
+            if(limitOffset!=0) {
+                if(limitOffset<1 || limitOffset>4000)throw new IllegalArgumentException("Invalid signing horizon");
+                fixedBlockLimit=client.getBlockNumber().getBlockNumber().add(BigInteger.valueOf(limitOffset));
+                final BigInteger horizon=fixedBlockLimit;final Client delegate=client;
+                Client signingClient=(Client)java.lang.reflect.Proxy.newProxyInstance(Client.class.getClassLoader(),new Class<?>[]{Client.class},
+                    (proxy,method,parameters)->{
+                        if(method.getName().equals("getBlockLimit") && method.getParameterCount()==0)return horizon;
+                        try{return method.invoke(delegate,parameters);}
+                        catch(java.lang.reflect.InvocationTargetException e){throw e.getCause();}
+                    });
+                nativeContract=DagTransfer.load("0x000000000000000000000000000000000000100c",signingClient,key);
+                nativeContract.setEnableDAG(true);
+            }
+            result.put("fixed_block_limit",fixedBlockLimit);result.put("block_limit_offset",limitOffset);
             System.out.println("PREPARE "+total+" "+args[1]); System.out.flush();
             long prepareStart=System.nanoTime();
             String[] hashes = new String[total];long[] offsets=new long[total];
@@ -198,6 +216,15 @@ public class NativeAlignedBench {
                     if(decodedInspection.getAsJsonObject("data").has(field))
                         signedInspection.put(field,decodedInspection.getAsJsonObject("data").get(field));
             result.put("signed_transaction_inspection",signedInspection);
+            if(fixedBlockLimit!=null) {
+                var last=JsonParser.parseString(TransactionBuilderJniObj.decodeTransactionToJsonObj(ReadPrepared(prepared,offsets,total-1))).getAsJsonObject();
+                BigInteger firstLimit=decodedInspection.getAsJsonObject("data").get("blockLimit").getAsBigInteger();
+                BigInteger lastLimit=last.getAsJsonObject("data").get("blockLimit").getAsBigInteger();
+                if(!fixedBlockLimit.equals(firstLimit)||!fixedBlockLimit.equals(lastLimit))throw new IllegalStateException("Signing horizon mismatch");
+            }
+            Files.writeString(output.resolveSibling("prepared.json"),JSON.toJson(Map.of(
+                "requested",total,"prepared_bytes",preparedBytes,"prepare_s",result.get("prepare_s"),
+                "block_limit_offset",limitOffset,"signed_transaction_inspection",signedInspection)));
             result.put("submitted_semantics","SDK submission attempts; not admission acknowledgements");
             BufferedWriter sentSamples=Files.newBufferedWriter(output.resolveSibling("sent-samples.jsonl"));
             long[] sent=new long[total], completed=new long[total]; byte[] outcomes=new byte[total];

@@ -2,16 +2,29 @@
 import json
 from datetime import datetime, timezone, timedelta
 import io
+import gzip
 from pathlib import Path
 import shutil
 import tarfile
 import tempfile
 import unittest
 from Analyze import LogEvents
-from Run import Capacity
+from Run import Capacity, CompactCompleted
 
 
 class AccountingTest(unittest.TestCase):
+    def test_completed_evidence_compaction_is_lossless(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root=Path(temporary);out=root/'case';merged=root/'merged';out.mkdir();merged.mkdir()
+            content=b'{"index": 123, "value": "abcdef"}\n'*40000
+            for path in [out/'rpc.jsonl',merged/'transaction-hashes.jsonl']:path.write_bytes(content)
+            CompactCompleted(out,merged)
+            rows=json.loads((out/'compressed-records.json').read_text())
+            self.assertEqual(len(rows),2)
+            for row in rows:
+                self.assertFalse(Path(row['path']).exists())
+                with gzip.open(row['compressed'],'rb') as stream:self.assertEqual(stream.read(),content)
+
     def test_timeout_analysis_excludes_setup_and_audit(self):
         lines = [
             'warning|2026-10-26 14:00:01.000000|pbft|After onTimeout',

@@ -1,0 +1,167 @@
+[
+  {
+    "profile": "serial50",
+    "rate": 20000,
+    "warm": 2,
+    "seconds": 60,
+    "repeat": 1,
+    "inflight": 3000,
+    "block_limit": 5000,
+    "sign_limit_offset": 4000,
+    "compact_records": true
+  },
+  {
+    "profile": "serial50",
+    "rate": 30000,
+    "warm": 2,
+    "seconds": 60,
+    "repeat": 1,
+    "inflight": 3000,
+    "block_limit": 5000,
+    "sign_limit_offset": 4000,
+    "compact_records": true
+  },
+  {
+    "profile": "serial50",
+    "rate": 40000,
+    "warm": 2,
+    "seconds": 60,
+    "repeat": 1,
+    "inflight": 3000,
+    "block_limit": 5000,
+    "sign_limit_offset": 4000,
+    "compact_records": true
+  },
+  {
+    "profile": "serial50",
+    "rate": 50000,
+    "warm": 2,
+    "seconds": 60,
+    "repeat": 1,
+    "inflight": 3000,
+    "block_limit": 5000,
+    "sign_limit_offset": 4000,
+    "compact_records": true
+  },
+  {
+    "profile": "serial50",
+    "rate": 60000,
+    "warm": 2,
+    "seconds": 60,
+    "repeat": 1,
+    "inflight": 3000,
+    "block_limit": 5000,
+    "sign_limit_offset": 4000,
+    "compact_records": true
+  },
+  {
+    "profile": "serial50",
+    "rate": 60000,
+    "warm": 2,
+    "seconds": 60,
+    "repeat": 2,
+    "inflight": 3000,
+    "block_limit": 5000,
+    "sign_limit_offset": 4000,
+    "compact_records": true
+  },
+  {
+    "profile": "serial50",
+    "rate": 50000,
+    "warm": 2,
+    "seconds": 60,
+    "repeat": 2,
+    "inflight": 3000,
+    "block_limit": 5000,
+    "sign_limit_offset": 4000,
+    "compact_records": true
+  },
+  {
+    "profile": "serial50",
+    "rate": 40000,
+    "warm": 2,
+    "seconds": 60,
+    "repeat": 2,
+    "inflight": 3000,
+    "block_limit": 5000,
+    "sign_limit_offset": 4000,
+    "compact_records": true
+  },
+  {
+    "profile": "serial50",
+    "rate": 30000,
+    "warm": 2,
+    "seconds": 60,
+    "repeat": 2,
+    "inflight": 3000,
+    "block_limit": 5000,
+    "sign_limit_offset": 4000,
+    "compact_records": true
+  },
+  {
+    "profile": "serial50",
+    "rate": 20000,
+    "warm": 2,
+    "seconds": 60,
+    "repeat": 2,
+    "inflight": 3000,
+    "block_limit": 5000,
+    "sign_limit_offset": 4000,
+    "compact_records": true
+  },
+  {
+    "profile": "serial50",
+    "rate": 30000,
+    "warm": 2,
+    "seconds": 60,
+    "repeat": 3,
+    "inflight": 3000,
+    "block_limit": 5000,
+    "sign_limit_offset": 4000,
+    "compact_records": true
+  },
+  {
+    "profile": "serial50",
+    "rate": 50000,
+    "warm": 2,
+    "seconds": 60,
+    "repeat": 3,
+    "inflight": 3000,
+    "block_limit": 5000,
+    "sign_limit_offset": 4000,
+    "compact_records": true
+  },
+  {
+    "profile": "serial50",
+    "rate": 20000,
+    "warm": 2,
+    "seconds": 60,
+    "repeat": 3,
+    "inflight": 3000,
+    "block_limit": 5000,
+    "sign_limit_offset": 4000,
+    "compact_records": true
+  },
+  {
+    "profile": "serial50",
+    "rate": 60000,
+    "warm": 2,
+    "seconds": 60,
+    "repeat": 3,
+    "inflight": 3000,
+    "block_limit": 5000,
+    "sign_limit_offset": 4000,
+    "compact_records": true
+  },
+  {
+    "profile": "serial50",
+    "rate": 40000,
+    "warm": 2,
+    "seconds": 60,
+    "repeat": 3,
+    "inflight": 3000,
+    "block_limit": 5000,
+    "sign_limit_offset": 4000,
+    "compact_records": true
+  }
+]
