@@ -1,14 +1,17 @@
 #include <utility>
+#include "../Network/Address.h"
 #include <boost/asio.hpp>
 #include <filesystem>
 #include <thread>
 #include <set>
 #include "../Transaction/Transaction.h"
 #include "../Message/Message.h"
+#include "../Tool/Arguments.h"
+#include "../EVM/BuildTransaction.h"
 using namespace boost::asio;
 using tcp=ip::tcp;
 Wallet ReadWallet(const string& path) {
-    ifstream input(path); nlohmann::json data;
+    ifstream input(Utf8Path(path)); nlohmann::json data;
     if (!input||!(input>>data)) throw runtime_error("Cannot read wallet");
     auto seed=HexToU32(data.at("seed").get<string>());
     Wallet wallet;
@@ -16,23 +19,8 @@ Wallet ReadWallet(const string& path) {
     if (data.contains("public_key")&&data["public_key"]!=U32ToHex(wallet.public_key)) throw runtime_error("Wallet public key mismatch");
     return wallet;
 }
-vector<uint8_t> MakeEvmTx(const Wallet& wallet,span<const uint8_t> target,span<const uint8_t> input,
-                          uint64_t nonce,uint64_t amount,uint64_t gas,bool deploy) {
-    if (input.size()>maxEvmInput||(!deploy&&target.size()!=20)||!nonce) throw invalid_argument("Invalid EVM transaction");
-    vector<uint8_t> tx(221+input.size());
-    memcpy(tx.data(),wallet.public_key.data(),32);
-    if (!deploy) memcpy(tx.data()+44,target.data(),20);
-    WriteU64(tx.data()+64,amount); WriteU64(tx.data()+72,nonce);
-    memcpy(tx.data()+176,"EVM1",4); tx[180]=deploy?0:1;
-    WriteU64(tx.data()+181,gas); memcpy(tx.data()+189,genesisRoot.data(),32);
-    if (!input.empty()) memcpy(tx.data()+221,input.data(),input.size());
-    auto hash=EvmTransactionHash(tx,span<const uint8_t>(tx).subspan(176));
-    memcpy(tx.data()+80,hash.data(),32);
-    crypto_sign_detached(tx.data()+112,nullptr,hash.data(),32,wallet.private_key.data());
-    return tx;
-}
 tcp::socket OpenNode(io_context& io,const string& host,uint16_t port) {
-    tcp::socket socket(io); socket.connect({ip::make_address_v4(host),port}); socket.set_option(tcp::no_delay(true));
+    auto socket=OpenNodeSocket(io,host,port);
     array<uint8_t,1> hello{2}; write(socket,buffer(hello)); return socket;
 }
 nlohmann::json Query(const string& host,uint16_t port,uint8_t type,uint8_t response,span<const uint8_t> data) {
@@ -44,6 +32,7 @@ nlohmann::json Query(const string& host,uint16_t port,uint8_t type,uint8_t respo
 }
 int main(int argc,char** argv) {
     try {
+        Utf8Arguments unicode(argc,argv);
         if (sodium_init()<0) return 1;
         map<string,string> args;
         const set<string> names={"--host","--port","--receipt","--contract","--slot","--wallet","--evm-nonce","--count","--wallets","--batch","--connections","--offset","--file","--gas","--amount","--nonce","--deploy","--input","--call","--genesis","--prepare","--balance"};
@@ -78,7 +67,7 @@ int main(int argc,char** argv) {
         if (offset>2000000||count>2000000-offset) throw invalid_argument("Invalid dataset range");
         vector<vector<uint8_t>> txs;
         if (args.count("--file")) {
-            ifstream input(args["--file"],ios::binary);
+            ifstream input(Utf8Path(args["--file"]),ios::binary);
             if (!input) throw runtime_error("Cannot open EVM dataset");
             for (uint64_t i=0;i<offset+count;i++) {
                 array<uint8_t,4> header; input.read(reinterpret_cast<char*>(header.data()),4);
@@ -105,14 +94,14 @@ int main(int argc,char** argv) {
                 for (uint64_t i=0;i<wallets;i++) { keys.push_back(GenerateWallet()); accounts.push_back({{"public_key",U32ToHex(keys.back().public_key)},{"balance",Number("--balance",10000000000ULL)}}); }
                 SetGenesisUsers({{"base_fee",baseFee},{"accounts",accounts}});
                 auto path=args["--prepare"]+".genesis.json";
-                if (filesystem::exists(path)) throw runtime_error("Genesis file already exists");
-                ofstream genesis(path); genesis<<GetGenesisConfig().dump(2); if (!genesis) throw runtime_error("Genesis write failed");
+                if (filesystem::exists(Utf8Path(path))) throw runtime_error("Genesis file already exists");
+                ofstream genesis(Utf8Path(path)); genesis<<GetGenesisConfig().dump(2); if (!genesis) throw runtime_error("Genesis write failed");
                 for (uint64_t i=0;i<count;i++) txs.push_back(MakeEvmTx(keys[i%wallets],target,input,nonce+i/wallets,amount,gas,deploy));
             }
         }
         if (args.count("--prepare")) {
-            if (filesystem::exists(args["--prepare"])) throw runtime_error("Dataset already exists");
-            ofstream out(args["--prepare"],ios::binary);
+            if (filesystem::exists(Utf8Path(args["--prepare"]))) throw runtime_error("Dataset already exists");
+            ofstream out(Utf8Path(args["--prepare"]),ios::binary);
             for (const auto& tx:txs) { array<uint8_t,4> length; WriteU32(length.data(),uint32_t(tx.size())); out.write(reinterpret_cast<char*>(length.data()),4); out.write(reinterpret_cast<const char*>(tx.data()),tx.size()); }
             if (!out) throw runtime_error("Dataset write failed");
             cout<<nlohmann::json({{"prepared",txs.size()},{"genesis_root",U32ToHex(genesisRoot)}}).dump()<<endl; return 0;

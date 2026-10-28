@@ -23,13 +23,13 @@ def ReadInventory(path):
     for node in nodes:
         if not re.fullmatch(r'[A-Za-z0-9_-]{1,40}', node['id']) or node['id'] in identities:
             raise ValueError('Node identifiers must be unique and contain letters, numbers, _ or -')
-        node['host'] = str(ipaddress.IPv4Address(node['host']))
+        node['host'] = str(ipaddress.ip_address(node['host']))
         node['port'] = int(node.get('port', 8089))
         if not 1 <= node['port'] <= 65535 or (node['host'], node['port']) in endpoints:
             raise ValueError('Node endpoints must be valid and unique')
         identities.add(node['id']); endpoints.add((node['host'], node['port']))
         if node.get('transport', 'ssh') == 'ssh':
-            if not re.fullmatch(r'[A-Za-z0-9_.@-]+', node['ssh']) or node['ssh'].startswith('-'):
+            if not re.fullmatch(r'[A-Za-z0-9_.@:\[\]-]+', node['ssh']) or node['ssh'].startswith('-'):
                 raise ValueError('Invalid SSH destination')
         elif node['transport'] != 'local':
             raise ValueError('Use local or ssh transport')
@@ -133,7 +133,7 @@ class Cluster:
                 arguments += ['--'+key, str(int(value) if isinstance(value, bool) else value)]
             # One TCP connection per undirected edge; configured peers reconnect automatically.
             for peer in self.nodes[index+1:]:
-                arguments += ['--seed', f'{peer["host"]}:{peer["port"]}']
+                arguments += ['--seed', f'[{peer["host"]}]:{peer["port"]}' if ':' in peer['host'] else f'{peer["host"]}:{peer["port"]}']
             self.starts[index] = {'action': 'start', 'run': self.run, 'binary': node['binary'],
                                   'genesis': self.genesis, 'arguments': arguments}
         def StartOne(index):

@@ -1,0 +1,412 @@
+{
+  "processes_stopped": true,
+  "roots": [
+    "D:\\Project\\Chain\\build\\classroom-check-20261028-01",
+    "D:\\Project\\Chain\\build\\classroom-check-20261028-02",
+    "D:\\Project\\Chain\\build\\classroom-check-20261029-03",
+    "D:\\Project\\Chain\\build\\classroom-check-20261029-04",
+    "D:\\Project\\Chain\\build\\classroom-e2e-20261028-01",
+    "D:\\Project\\Chain\\build\\classroom-e2e-20261028-02",
+    "D:\\Project\\Chain\\build\\classroom-ui-review-20261028",
+    "D:\\Project\\Chain\\build\\classroom-join-20261029-01",
+    "D:\\Project\\Chain\\build\\classroom-parent-final-20261029-06",
+    "D:\\Project\\Chain\\build\\classroom-parent-lifecycle-20261029-01",
+    "D:\\Project\\Chain\\build\\教学网络验证-20261029-02",
+    "D:\\Project\\Chain\\build\\教学网络验证-20261029-03",
+    "D:\\Project\\Chain\\build\\教学网络最终验证-20261029-05"
+  ],
+  "databases_cleared": 78,
+  "records": [
+    {
+      "database": "D:\\Project\\Chain\\build\\classroom-check-20261028-01\\account-network-test-data\\1793202786354712900\\follower\\db",
+      "files_removed": 7,
+      "evidence": "D:\\Project\\Chain\\build\\classroom-check-20261028-01-db-evidence\\0"
+    },
+    {
+      "database": "D:\\Project\\Chain\\build\\classroom-check-20261028-01\\account-network-test-data\\1793202786354712900\\leader\\db",
+      "files_removed": 10,
+      "evidence": "D:\\Project\\Chain\\build\\classroom-check-20261028-01-db-evidence\\1"
+    },
+    {
+      "database": "D:\\Project\\Chain\\build\\classroom-check-20261028-01\\admission-network-test-data\\1793202802064223900\\admission\\db",
+      "files_removed": 7,
+      "evidence": "D:\\Project\\Chain\\build\\classroom-check-20261028-01-db-evidence\\2"
+    },
+    {
+      "database": "D:\\Project\\Chain\\build\\classroom-check-20261028-01\\admission-network-test-data\\1793202802064223900\\full-block-batch\\full-batch\\db",
+      "files_removed": 7,
+      "evidence": "D:\\Project\\Chain\\build\\classroom-check-20261028-01-db-evidence\\3"
+    },
+    {
+      "database": "D:\\Project\\Chain\\build\\classroom-check-20261028-01\\admission-network-test-data\\1793202802064223900\\large-block-batch\\full-batch\\db",
+      "files_removed": 7,
+      "evidence": "D:\\Project\\Chain\\build\\classroom-check-20261028-01-db-evidence\\4"
+    },
+    {
+      "database": "D:\\Project\\Chain\\build\\classroom-check-20261028-01\\admission-network-test-data\\1793202802064223900\\reliable\\db",
+      "files_removed": 7,
+      "evidence": "D:\\Project\\Chain\\build\\classroom-check-20261028-01-db-evidence\\5"
+    },
+    {
+      "database": "D:\\Project\\Chain\\build\\classroom-check-20261028-01\\evm-network-test-data\\follower\\db",
+      "files_removed": 12,
+      "evidence": "D:\\Project\\Chain\\build\\classroom-check-20261028-01-db-evidence\\6"
+    },
+    {
+      "database": "D:\\Project\\Chain\\build\\classroom-check-20261028-01\\evm-network-test-data\\producer\\db",
+      "files_removed": 10,
+      "evidence": "D:\\Project\\Chain\\build\\classroom-check-20261028-01-db-evidence\\7"
+    },
+    {
+      "database": "D:\\Project\\Chain\\build\\classroom-check-20261028-01\\experiment-test-data\\1793202795797498200\\index\\index\\db",
+      "files_removed": 10,
+      "evidence": "D:\\Project\\Chain\\build\\classroom-check-20261028-01-db-evidence\\8"
+    },
+    {
+      "database": "D:\\Project\\Chain\\build\\classroom-check-20261028-01\\flow-test-data\\3666699578386800",
+      "files_removed": 10,
+      "evidence": "D:\\Project\\Chain\\build\\classroom-check-20261028-01-db-evidence\\9"
+    },
+    {
+      "database": "D:\\Project\\Chain\\build\\classroom-check-20261028-01\\flow-test-data\\3666699578386800\\deterministic",
+      "files_removed": 7,
+      "evidence": "D:\\Project\\Chain\\build\\classroom-check-20261028-01-db-evidence\\10"
+    },
+    {
+      "database": "D:\\Project\\Chain\\build\\classroom-check-20261028-01\\flow-test-data\\3666699578386800\\ranked",
+      "files_removed": 7,
+      "evidence": "D:\\Project\\Chain\\build\\classroom-check-20261028-01-db-evidence\\11"
+    },
+    {
+      "database": "D:\\Project\\Chain\\build\\classroom-check-20261028-01\\fork-network-test-data\\a\\db",
+      "files_removed": 10,
+      "evidence": "D:\\Project\\Chain\\build\\classroom-check-20261028-01-db-evidence\\12"
+    },
+    {
+      "database": "D:\\Project\\Chain\\build\\classroom-check-20261028-01\\fork-network-test-data\\b\\db",
+      "files_removed": 10,
+      "evidence": "D:\\Project\\Chain\\build\\classroom-check-20261028-01-db-evidence\\13"
+    },
+    {
+      "database": "D:\\Project\\Chain\\build\\classroom-check-20261028-01\\fork-network-test-data\\future\\db",
+      "files_removed": 7,
+      "evidence": "D:\\Project\\Chain\\build\\classroom-check-20261028-01-db-evidence\\14"
+    },
+    {
+      "database": "D:\\Project\\Chain\\build\\classroom-check-20261028-01\\fork-state-data\\3666685364332600",
+      "files_removed": 12,
+      "evidence": "D:\\Project\\Chain\\build\\classroom-check-20261028-01-db-evidence\\15"
+    },
+    {
+      "database": "D:\\Project\\Chain\\build\\classroom-check-20261028-01\\fork-state-data\\3666685364332600\\large-fork",
+      "files_removed": 10,
+      "evidence": "D:\\Project\\Chain\\build\\classroom-check-20261028-01-db-evidence\\16"
+    },
+    {
+      "database": "D:\\Project\\Chain\\build\\classroom-check-20261028-01\\network-test-data\\1793202762643338600\\follower\\db",
+      "files_removed": 7,
+      "evidence": "D:\\Project\\Chain\\build\\classroom-check-20261028-01-db-evidence\\17"
+    },
+    {
+      "database": "D:\\Project\\Chain\\build\\classroom-check-20261028-01\\network-test-data\\1793202762643338600\\graceful\\db",
+      "files_removed": 7,
+      "evidence": "D:\\Project\\Chain\\build\\classroom-check-20261028-01-db-evidence\\18"
+    },
+    {
+      "database": "D:\\Project\\Chain\\build\\classroom-check-20261028-01\\network-test-data\\1793202762643338600\\leader\\db",
+      "files_removed": 10,
+      "evidence": "D:\\Project\\Chain\\build\\classroom-check-20261028-01-db-evidence\\19"
+    },
+    {
+      "database": "D:\\Project\\Chain\\build\\classroom-check-20261028-01\\test-data\\3666683139974600",
+      "files_removed": 15,
+      "evidence": "D:\\Project\\Chain\\build\\classroom-check-20261028-01-db-evidence\\20"
+    },
+    {
+      "database": "D:\\Project\\Chain\\build\\classroom-check-20261028-01\\user-test-data\\3666684286249300\\chain",
+      "files_removed": 15,
+      "evidence": "D:\\Project\\Chain\\build\\classroom-check-20261028-01-db-evidence\\21"
+    },
+    {
+      "database": "D:\\Project\\Chain\\build\\classroom-check-20261029-03\\account-network-test-data\\1793204130780131600\\follower\\db",
+      "files_removed": 7,
+      "evidence": "D:\\Project\\Chain\\build\\classroom-check-20261029-03-db-evidence\\22"
+    },
+    {
+      "database": "D:\\Project\\Chain\\build\\classroom-check-20261029-03\\account-network-test-data\\1793204130780131600\\leader\\db",
+      "files_removed": 10,
+      "evidence": "D:\\Project\\Chain\\build\\classroom-check-20261029-03-db-evidence\\23"
+    },
+    {
+      "database": "D:\\Project\\Chain\\build\\classroom-check-20261029-03\\admission-network-test-data\\1793204146597047300\\admission\\db",
+      "files_removed": 7,
+      "evidence": "D:\\Project\\Chain\\build\\classroom-check-20261029-03-db-evidence\\24"
+    },
+    {
+      "database": "D:\\Project\\Chain\\build\\classroom-check-20261029-03\\admission-network-test-data\\1793204146597047300\\full-block-batch\\full-batch\\db",
+      "files_removed": 7,
+      "evidence": "D:\\Project\\Chain\\build\\classroom-check-20261029-03-db-evidence\\25"
+    },
+    {
+      "database": "D:\\Project\\Chain\\build\\classroom-check-20261029-03\\admission-network-test-data\\1793204146597047300\\large-block-batch\\full-batch\\db",
+      "files_removed": 7,
+      "evidence": "D:\\Project\\Chain\\build\\classroom-check-20261029-03-db-evidence\\26"
+    },
+    {
+      "database": "D:\\Project\\Chain\\build\\classroom-check-20261029-03\\admission-network-test-data\\1793204146597047300\\reliable\\db",
+      "files_removed": 7,
+      "evidence": "D:\\Project\\Chain\\build\\classroom-check-20261029-03-db-evidence\\27"
+    },
+    {
+      "database": "D:\\Project\\Chain\\build\\classroom-check-20261029-03\\classroom-join\\teacher\\data\\networks\\7c78d8b7c2758c47ae9928f2\\node1\\db",
+      "files_removed": 7,
+      "evidence": "D:\\Project\\Chain\\build\\classroom-check-20261029-03-db-evidence\\28"
+    },
+    {
+      "database": "D:\\Project\\Chain\\build\\classroom-check-20261029-03\\classroom-join\\teacher\\data\\networks\\7c78d8b7c2758c47ae9928f2\\node2\\db",
+      "files_removed": 7,
+      "evidence": "D:\\Project\\Chain\\build\\classroom-check-20261029-03-db-evidence\\29"
+    },
+    {
+      "database": "D:\\Project\\Chain\\build\\classroom-check-20261029-03\\classroom-join\\teacher\\data\\networks\\7c78d8b7c2758c47ae9928f2\\node3\\db",
+      "files_removed": 7,
+      "evidence": "D:\\Project\\Chain\\build\\classroom-check-20261029-03-db-evidence\\30"
+    },
+    {
+      "database": "D:\\Project\\Chain\\build\\classroom-check-20261029-03\\classroom-join\\teacher\\data\\networks\\e50fa9c1021b618bb2d0d828\\node1\\db",
+      "files_removed": 7,
+      "evidence": "D:\\Project\\Chain\\build\\classroom-check-20261029-03-db-evidence\\31"
+    },
+    {
+      "database": "D:\\Project\\Chain\\build\\classroom-check-20261029-03\\classroom-join\\teacher\\data\\networks\\e50fa9c1021b618bb2d0d828\\node2\\db",
+      "files_removed": 7,
+      "evidence": "D:\\Project\\Chain\\build\\classroom-check-20261029-03-db-evidence\\32"
+    },
+    {
+      "database": "D:\\Project\\Chain\\build\\classroom-check-20261029-03\\classroom-join\\teacher\\data\\networks\\e50fa9c1021b618bb2d0d828\\node3\\db",
+      "files_removed": 7,
+      "evidence": "D:\\Project\\Chain\\build\\classroom-check-20261029-03-db-evidence\\33"
+    },
+    {
+      "database": "D:\\Project\\Chain\\build\\classroom-check-20261029-03\\evm-network-test-data\\follower\\db",
+      "files_removed": 12,
+      "evidence": "D:\\Project\\Chain\\build\\classroom-check-20261029-03-db-evidence\\34"
+    },
+    {
+      "database": "D:\\Project\\Chain\\build\\classroom-check-20261029-03\\evm-network-test-data\\producer\\db",
+      "files_removed": 10,
+      "evidence": "D:\\Project\\Chain\\build\\classroom-check-20261029-03-db-evidence\\35"
+    },
+    {
+      "database": "D:\\Project\\Chain\\build\\classroom-check-20261029-03\\experiment-test-data\\1793204140415802100\\index\\index\\db",
+      "files_removed": 10,
+      "evidence": "D:\\Project\\Chain\\build\\classroom-check-20261029-03-db-evidence\\36"
+    },
+    {
+      "database": "D:\\Project\\Chain\\build\\classroom-check-20261029-03\\flow-test-data\\3668044156462500",
+      "files_removed": 10,
+      "evidence": "D:\\Project\\Chain\\build\\classroom-check-20261029-03-db-evidence\\37"
+    },
+    {
+      "database": "D:\\Project\\Chain\\build\\classroom-check-20261029-03\\flow-test-data\\3668044156462500\\deterministic",
+      "files_removed": 7,
+      "evidence": "D:\\Project\\Chain\\build\\classroom-check-20261029-03-db-evidence\\38"
+    },
+    {
+      "database": "D:\\Project\\Chain\\build\\classroom-check-20261029-03\\flow-test-data\\3668044156462500\\ranked",
+      "files_removed": 7,
+      "evidence": "D:\\Project\\Chain\\build\\classroom-check-20261029-03-db-evidence\\39"
+    },
+    {
+      "database": "D:\\Project\\Chain\\build\\classroom-check-20261029-03\\fork-network-test-data\\a\\db",
+      "files_removed": 10,
+      "evidence": "D:\\Project\\Chain\\build\\classroom-check-20261029-03-db-evidence\\40"
+    },
+    {
+      "database": "D:\\Project\\Chain\\build\\classroom-check-20261029-03\\fork-network-test-data\\b\\db",
+      "files_removed": 10,
+      "evidence": "D:\\Project\\Chain\\build\\classroom-check-20261029-03-db-evidence\\41"
+    },
+    {
+      "database": "D:\\Project\\Chain\\build\\classroom-check-20261029-03\\fork-network-test-data\\future\\db",
+      "files_removed": 7,
+      "evidence": "D:\\Project\\Chain\\build\\classroom-check-20261029-03-db-evidence\\42"
+    },
+    {
+      "database": "D:\\Project\\Chain\\build\\classroom-check-20261029-03\\fork-state-data\\3668029442493800",
+      "files_removed": 12,
+      "evidence": "D:\\Project\\Chain\\build\\classroom-check-20261029-03-db-evidence\\43"
+    },
+    {
+      "database": "D:\\Project\\Chain\\build\\classroom-check-20261029-03\\fork-state-data\\3668029442493800\\large-fork",
+      "files_removed": 10,
+      "evidence": "D:\\Project\\Chain\\build\\classroom-check-20261029-03-db-evidence\\44"
+    },
+    {
+      "database": "D:\\Project\\Chain\\build\\classroom-check-20261029-03\\network-test-data\\1793204107491667300\\follower\\db",
+      "files_removed": 7,
+      "evidence": "D:\\Project\\Chain\\build\\classroom-check-20261029-03-db-evidence\\45"
+    },
+    {
+      "database": "D:\\Project\\Chain\\build\\classroom-check-20261029-03\\network-test-data\\1793204107491667300\\graceful\\db",
+      "files_removed": 7,
+      "evidence": "D:\\Project\\Chain\\build\\classroom-check-20261029-03-db-evidence\\46"
+    },
+    {
+      "database": "D:\\Project\\Chain\\build\\classroom-check-20261029-03\\network-test-data\\1793204107491667300\\leader\\db",
+      "files_removed": 10,
+      "evidence": "D:\\Project\\Chain\\build\\classroom-check-20261029-03-db-evidence\\47"
+    },
+    {
+      "database": "D:\\Project\\Chain\\build\\classroom-check-20261029-03\\test-data\\3668027020978600",
+      "files_removed": 15,
+      "evidence": "D:\\Project\\Chain\\build\\classroom-check-20261029-03-db-evidence\\48"
+    },
+    {
+      "database": "D:\\Project\\Chain\\build\\classroom-check-20261029-03\\user-test-data\\3668028257244500\\chain",
+      "files_removed": 15,
+      "evidence": "D:\\Project\\Chain\\build\\classroom-check-20261029-03-db-evidence\\49"
+    },
+    {
+      "database": "D:\\Project\\Chain\\build\\classroom-check-20261029-04\\account-network-test-data\\1793205032644304300\\follower\\db",
+      "files_removed": 7,
+      "evidence": "D:\\Project\\Chain\\build\\classroom-check-20261029-04-db-evidence\\50"
+    },
+    {
+      "database": "D:\\Project\\Chain\\build\\classroom-check-20261029-04\\account-network-test-data\\1793205032644304300\\leader\\db",
+      "files_removed": 10,
+      "evidence": "D:\\Project\\Chain\\build\\classroom-check-20261029-04-db-evidence\\51"
+    },
+    {
+      "database": "D:\\Project\\Chain\\build\\classroom-check-20261029-04\\admission-network-test-data\\1793205048637794000\\admission\\db",
+      "files_removed": 7,
+      "evidence": "D:\\Project\\Chain\\build\\classroom-check-20261029-04-db-evidence\\52"
+    },
+    {
+      "database": "D:\\Project\\Chain\\build\\classroom-check-20261029-04\\admission-network-test-data\\1793205048637794000\\full-block-batch\\full-batch\\db",
+      "files_removed": 7,
+      "evidence": "D:\\Project\\Chain\\build\\classroom-check-20261029-04-db-evidence\\53"
+    },
+    {
+      "database": "D:\\Project\\Chain\\build\\classroom-check-20261029-04\\admission-network-test-data\\1793205048637794000\\large-block-batch\\full-batch\\db",
+      "files_removed": 7,
+      "evidence": "D:\\Project\\Chain\\build\\classroom-check-20261029-04-db-evidence\\54"
+    },
+    {
+      "database": "D:\\Project\\Chain\\build\\classroom-check-20261029-04\\admission-network-test-data\\1793205048637794000\\reliable\\db",
+      "files_removed": 7,
+      "evidence": "D:\\Project\\Chain\\build\\classroom-check-20261029-04-db-evidence\\55"
+    },
+    {
+      "database": "D:\\Project\\Chain\\build\\classroom-check-20261029-04\\evm-network-test-data\\follower\\db",
+      "files_removed": 12,
+      "evidence": "D:\\Project\\Chain\\build\\classroom-check-20261029-04-db-evidence\\56"
+    },
+    {
+      "database": "D:\\Project\\Chain\\build\\classroom-check-20261029-04\\evm-network-test-data\\producer\\db",
+      "files_removed": 10,
+      "evidence": "D:\\Project\\Chain\\build\\classroom-check-20261029-04-db-evidence\\57"
+    },
+    {
+      "database": "D:\\Project\\Chain\\build\\classroom-check-20261029-04\\experiment-test-data\\1793205042329629300\\index\\index\\db",
+      "files_removed": 10,
+      "evidence": "D:\\Project\\Chain\\build\\classroom-check-20261029-04-db-evidence\\58"
+    },
+    {
+      "database": "D:\\Project\\Chain\\build\\classroom-check-20261029-04\\flow-test-data\\3668944699690900",
+      "files_removed": 10,
+      "evidence": "D:\\Project\\Chain\\build\\classroom-check-20261029-04-db-evidence\\59"
+    },
+    {
+      "database": "D:\\Project\\Chain\\build\\classroom-check-20261029-04\\flow-test-data\\3668944699690900\\deterministic",
+      "files_removed": 7,
+      "evidence": "D:\\Project\\Chain\\build\\classroom-check-20261029-04-db-evidence\\60"
+    },
+    {
+      "database": "D:\\Project\\Chain\\build\\classroom-check-20261029-04\\flow-test-data\\3668944699690900\\ranked",
+      "files_removed": 7,
+      "evidence": "D:\\Project\\Chain\\build\\classroom-check-20261029-04-db-evidence\\61"
+    },
+    {
+      "database": "D:\\Project\\Chain\\build\\classroom-check-20261029-04\\fork-network-test-data\\a\\db",
+      "files_removed": 10,
+      "evidence": "D:\\Project\\Chain\\build\\classroom-check-20261029-04-db-evidence\\62"
+    },
+    {
+      "database": "D:\\Project\\Chain\\build\\classroom-check-20261029-04\\fork-network-test-data\\b\\db",
+      "files_removed": 10,
+      "evidence": "D:\\Project\\Chain\\build\\classroom-check-20261029-04-db-evidence\\63"
+    },
+    {
+      "database": "D:\\Project\\Chain\\build\\classroom-check-20261029-04\\fork-network-test-data\\future\\db",
+      "files_removed": 7,
+      "evidence": "D:\\Project\\Chain\\build\\classroom-check-20261029-04-db-evidence\\64"
+    },
+    {
+      "database": "D:\\Project\\Chain\\build\\classroom-check-20261029-04\\fork-state-data\\3668929842418900",
+      "files_removed": 12,
+      "evidence": "D:\\Project\\Chain\\build\\classroom-check-20261029-04-db-evidence\\65"
+    },
+    {
+      "database": "D:\\Project\\Chain\\build\\classroom-check-20261029-04\\fork-state-data\\3668929842418900\\large-fork",
+      "files_removed": 10,
+      "evidence": "D:\\Project\\Chain\\build\\classroom-check-20261029-04-db-evidence\\66"
+    },
+    {
+      "database": "D:\\Project\\Chain\\build\\classroom-check-20261029-04\\network-test-data\\1793205008249949500\\follower\\db",
+      "files_removed": 7,
+      "evidence": "D:\\Project\\Chain\\build\\classroom-check-20261029-04-db-evidence\\67"
+    },
+    {
+      "database": "D:\\Project\\Chain\\build\\classroom-check-20261029-04\\network-test-data\\1793205008249949500\\graceful\\db",
+      "files_removed": 7,
+      "evidence": "D:\\Project\\Chain\\build\\classroom-check-20261029-04-db-evidence\\68"
+    },
+    {
+      "database": "D:\\Project\\Chain\\build\\classroom-check-20261029-04\\network-test-data\\1793205008249949500\\leader\\db",
+      "files_removed": 10,
+      "evidence": "D:\\Project\\Chain\\build\\classroom-check-20261029-04-db-evidence\\69"
+    },
+    {
+      "database": "D:\\Project\\Chain\\build\\classroom-check-20261029-04\\test-data\\3668927501071400",
+      "files_removed": 15,
+      "evidence": "D:\\Project\\Chain\\build\\classroom-check-20261029-04-db-evidence\\70"
+    },
+    {
+      "database": "D:\\Project\\Chain\\build\\classroom-check-20261029-04\\user-test-data\\3668928727926500\\chain",
+      "files_removed": 15,
+      "evidence": "D:\\Project\\Chain\\build\\classroom-check-20261029-04-db-evidence\\71"
+    },
+    {
+      "database": "D:\\Project\\Chain\\build\\classroom-e2e-20261028-01\\app\\networks\\4e6177e586744e5775be96dc\\node1\\db",
+      "files_removed": 7,
+      "evidence": "D:\\Project\\Chain\\build\\classroom-e2e-20261028-01-db-evidence\\72"
+    },
+    {
+      "database": "D:\\Project\\Chain\\build\\classroom-e2e-20261028-01\\app\\networks\\4e6177e586744e5775be96dc\\node2\\db",
+      "files_removed": 7,
+      "evidence": "D:\\Project\\Chain\\build\\classroom-e2e-20261028-01-db-evidence\\73"
+    },
+    {
+      "database": "D:\\Project\\Chain\\build\\classroom-e2e-20261028-01\\app\\networks\\4e6177e586744e5775be96dc\\node3\\db",
+      "files_removed": 7,
+      "evidence": "D:\\Project\\Chain\\build\\classroom-e2e-20261028-01-db-evidence\\74"
+    },
+    {
+      "database": "D:\\Project\\Chain\\build\\classroom-ui-review-20261028\\app\\networks\\6014add97cb63aa4fcd21ec6\\node1\\db",
+      "files_removed": 10,
+      "evidence": "D:\\Project\\Chain\\build\\classroom-ui-review-20261028-db-evidence\\75"
+    },
+    {
+      "database": "D:\\Project\\Chain\\build\\classroom-ui-review-20261028\\app\\networks\\6014add97cb63aa4fcd21ec6\\node2\\db",
+      "files_removed": 10,
+      "evidence": "D:\\Project\\Chain\\build\\classroom-ui-review-20261028-db-evidence\\76"
+    },
+    {
+      "database": "D:\\Project\\Chain\\build\\classroom-ui-review-20261028\\app\\networks\\6014add97cb63aa4fcd21ec6\\node3\\db",
+      "files_removed": 10,
+      "evidence": "D:\\Project\\Chain\\build\\classroom-ui-review-20261028-db-evidence\\77"
+    }
+  ],
+  "code_inputs_profiles_and_logs_preserved": true
+}

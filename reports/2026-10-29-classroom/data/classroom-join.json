@@ -1,0 +1,8 @@
+{
+  "checks": [
+    "two independently encrypted app vaults join through IPv6; normal teacher transfer funds student chat",
+    "student app cannot invoke teacher administration",
+    "on-chain room closure and membership restrictions reject calls; explicit authorization restores chat",
+    "new experiments have distinct genesis fingerprints even when reusing the local wallet"
+  ]
+}

@@ -1,0 +1,6 @@
+{
+  "malformed_abi_rejected": true,
+  "outbox_reorganized": true,
+  "reorg_events": true,
+  "shorter_chain": true
+}

@@ -70,7 +70,7 @@ int main() {
         AnnounceBlock(first);
         Require(recentBlockTransactions.empty(),"local-only node avoids relay cache allocations");
         auto neighbor=make_shared<Peer>(tcp::socket(io));neighbor->port=5500;neighbor->compact=true;
-        auto neighborKey=GetPeerKey(neighbor->address,neighbor->port);peerPool.emplace(neighborKey,neighbor);
+        auto neighborKey=neighbor->key=NewPeerKey();peerPool.emplace(neighborKey,neighbor);
         AnnounceBlock(first);
         Require(recentBlockTransactions.size()==block.txs.size()&&recentBlockTransactions.at(hashes[0])==vector<uint8_t>(block.txs[0].begin(),block.txs[0].end()),"recent verified transactions remain available after pool removal");
         Require(relayTransactionBytes<=maxRelayTransactionBytes&&recentBlockTransactions.size()<=maxRecentBlockTransactions,"recent relay cache budget");

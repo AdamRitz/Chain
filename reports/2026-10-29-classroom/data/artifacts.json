@@ -1,0 +1,33 @@
+{
+  "files": [
+    {
+      "path": "Classroom/release/ChainClassroom-0.1.0-windows-x64-setup.exe",
+      "bytes": 229294775,
+      "sha256": "bef778e7ad7d2c8c52d44db160f97b42c87e1381658a362940bffdc2bb9ea9b5"
+    },
+    {
+      "path": "Classroom/src-tauri/target/release/chain-classroom.exe",
+      "bytes": 8133632,
+      "sha256": "4f8549f78b2eadfdea23880ca0ee1a25298d50067fb231ef744c190739a45930"
+    },
+    {
+      "path": "build/classroom-20261028/boost.exe",
+      "bytes": 15961073,
+      "sha256": "d39bc1e62cefcf2db1ce4448180c15e5702b2bbabf5d607707f88d48fab667e1"
+    },
+    {
+      "path": "build/classroom-20261028/chain_classroom.exe",
+      "bytes": 15841958,
+      "sha256": "f8564df665105b70e4a0b026ccdc1d42b2bb5585e3b427dd8348553a07e5c044"
+    },
+    {
+      "path": "Contracts/ClassroomChat.compiled.json",
+      "bytes": 23634,
+      "sha256": "676511d9fa1299795c3f22288fba8b3ca9fee54157c6cf666c9f234a5c5c6cf9"
+    }
+  ],
+  "installer_payload_paths_verified": true,
+  "runtime_manifest_verified": true,
+  "actual_installation_wizard_run": false,
+  "code_signed": false
+}

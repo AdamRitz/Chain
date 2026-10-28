@@ -1,6 +1,7 @@
 #ifndef CHAIN_CLIENT_H
 #define CHAIN_CLIENT_H
 #include <utility>
+#include <set>
 #include <boost/asio.hpp>
 #include <deque>
 #include <thread>
@@ -8,6 +9,7 @@
 #include "../Transaction/Block.h"
 #include "../Message/Message.h"
 #include "../Tool/Resource.h"
+#include "Address.h"
 using namespace std;
 using namespace std::chrono;
 using namespace boost::asio;
@@ -37,7 +39,8 @@ bool relayTransactions=false;
 atomic<uint64_t> networkSentBytes{0},localProposals{0};
 size_t maxSendBytes=8*1024*1024;
 unsigned short listenPort=8089;
-string listenAddress="127.0.0.1";
+string listenAddress="127.0.0.1",listenAddressV6;
+bool peerProtocolV2=false;
 int blockInterval=50;
 bool produceBlocks=true;
 
@@ -48,9 +51,11 @@ struct Peer:enable_shared_from_this<Peer> {
     steady_timer deadline;
     deque<shared_ptr<const vector<uint8_t>>> messageQueue;
     size_t queuedBytes=0;
-    uint64_t key=0,remoteHeight=0;
+    uint64_t key=0;
+    atomic<uint64_t> remoteHeight{0};
     uint16_t port=0;
-    array<uint8_t,4> address{};
+    ip::address address=ip::address_v4::any();
+    bool discoveryV2=false;
     array<uint8_t,32> requestedHead{};
     uint64_t admissionRead=0,admissionWrite=0;
     map<uint64_t,vector<uint8_t>> admissionReplies;
@@ -67,18 +72,17 @@ mutex peerMutex;
 awaitable<void> session(uint64_t key,shared_ptr<Peer> peer);
 awaitable<void> SyncBlock(shared_ptr<Peer> peer);
 
-uint64_t GetPeerKey(const array<uint8_t,4>& ipByte,uint16_t port) {
-    return uint64_t(ipByte[0])|(uint64_t(ipByte[1])<<8)|(uint64_t(ipByte[2])<<16)|(uint64_t(ipByte[3])<<24)|(uint64_t(port)<<32);
-}
+atomic<uint64_t> nextPeerKey{1};
+uint64_t NewPeerKey() { return nextPeerKey.fetch_add(1); }
 pair<uint64_t,shared_ptr<Peer>> AddPeer(tcp::socket socket,uint16_t port=0) {
     auto endpoint=socket.remote_endpoint();
-    auto key=GetPeerKey(endpoint.address().to_v4().to_bytes(),endpoint.port());
+    auto key=NewPeerKey();
     lock_guard lock(peerMutex);
     if (peerPool.size()>=maxPeers||peerPool.count(key)) return {key,nullptr};
     auto peer=make_shared<Peer>(std::move(socket));
     peer->key=key;
     peer->port=port;
-    peer->address=endpoint.address().to_v4().to_bytes();
+    peer->address=CanonicalAddress(endpoint.address());
     peerPool.emplace(key,peer);
     return {key,peer};
 }
@@ -150,15 +154,15 @@ void SendAdmission(const shared_ptr<Peer>& peer,uint64_t order,vector<uint8_t> r
 // 普通函数只负责投递，调用它就会安排广播；大缓冲区在节点间共享。
 void BroadcastData(vector<uint8_t> data,uint64_t source=0) {
     auto shared=make_shared<const vector<uint8_t>>(std::move(data));
-    vector<shared_ptr<Peer>> peers;
+    vector<shared_ptr<Peer>> peers;optional<pair<ip::address,uint16_t>> sourceEndpoint;
     {
         lock_guard lock(peerMutex);
-        for (const auto& [key,peer]:peerPool) peers.push_back(peer);
+        for (const auto& [key,peer]:peerPool) {peers.push_back(peer);if (key==source) sourceEndpoint=make_pair(peer->address,peer->port);}
     }
-    unordered_set<uint64_t> sent;
+    set<pair<ip::address,uint16_t>> sent;
     for (const auto& peer:peers) {
-        auto id=GetPeerKey(peer->address,peer->port);
-        if ((!source||id!=source)&&sent.insert(id).second) SendData(peer,shared);
+        auto id=make_pair(peer->address,peer->port);
+        if ((!sourceEndpoint||id!=*sourceEndpoint)&&sent.insert(id).second) SendData(peer,shared);
     }
 }
 awaitable<void> ProcessMessage(shared_ptr<Peer> peer,uint8_t type,vector<uint8_t> data);
@@ -171,30 +175,31 @@ void QueryBlock(const shared_ptr<Peer>& peer,uint64_t height) {
 }
 
 // ------------------------------------------------连接、发现和同步------------------------------------------------
-awaitable<void> Connect(array<uint8_t,4> ipByte,uint16_t port) {
+awaitable<void> Connect(ip::address address,uint16_t port) {
+    address=CanonicalAddress(address);
     auto executor=co_await this_coro::executor;
     if (!port||connectionCount>=maxConnections) co_return;
     {
         lock_guard lock(peerMutex);
         for (const auto& [key,peer]:peerPool) {
-            if (peer->port==port&&peer->address==ipByte) co_return;
+            if (peer->port==port&&peer->address==address) co_return;
         }
     }
     auto peer=make_shared<Peer>(tcp::socket(executor));
     boost::system::error_code ec;
     peer->deadline.expires_after(seconds(5));
     peer->deadline.async_wait([peer](boost::system::error_code error){if (!error) ClosePeer(peer);});
-    co_await peer->socket.async_connect(tcp::endpoint(ip::address_v4(ipByte),port),redirect_error(use_awaitable,ec));
+    co_await peer->socket.async_connect(tcp::endpoint(address,port),redirect_error(use_awaitable,ec));
     peer->deadline.cancel();
     if (ec) co_return;
     peer->socket.set_option(tcp::no_delay(true),ec);
-    array<uint8_t,3> hello{3,uint8_t(listenPort),uint8_t(listenPort>>8)};
+    peer->discoveryV2=address.is_v6()||peerProtocolV2;
+    array<uint8_t,3> hello{uint8_t(peer->discoveryV2?4:3),uint8_t(listenPort),uint8_t(listenPort>>8)};
     co_await async_write(peer->socket,buffer(hello),redirect_error(use_awaitable,ec));
     if (ec) co_return;
-    auto endpoint=peer->socket.remote_endpoint();
-    peer->key=GetPeerKey(ipByte,endpoint.port());
+    peer->key=NewPeerKey();
     peer->port=port;
-    peer->address=ipByte;
+    peer->address=address;
     peer->compact=true;
     {
         lock_guard lock(peerMutex);
@@ -205,33 +210,49 @@ awaitable<void> Connect(array<uint8_t,4> ipByte,uint16_t port) {
     QueryHeight(peer);
 }
 awaitable<void> ConnectSeed(const string& host="127.0.0.1",uint16_t port=8089) {
-    co_await Connect(ip::make_address_v4(host).to_bytes(),port);
+    auto executor=co_await this_coro::executor;
+    tcp::resolver resolver(executor);boost::system::error_code ec;
+    auto entries=co_await resolver.async_resolve(host,to_string(port),redirect_error(use_awaitable,ec));
+    if (ec) co_return;
+    for (const auto& entry:entries) co_await Connect(entry.endpoint().address(),port);
 }
-vector<uint8_t> GenerateDiscoverMessage() {
+vector<uint8_t> GenerateDiscoverMessage(bool extended=false) {
     vector<uint8_t> data;
     lock_guard lock(peerMutex);
     data.reserve(peerPool.size()*6);
     for (const auto& [key,peer]:peerPool) {
         if (!peer->port) continue;
-        auto addr=peer->address;
-        data.insert(data.end(),addr.begin(),addr.end());
+        auto address=CanonicalAddress(peer->address);
+        if (address.is_v6()&&(address.to_v6().is_link_local()||address.to_v6().scope_id())) continue;
+        if (!extended&&address.is_v6()) continue;
+        if (extended) data.push_back(address.is_v4()?4:6);
+        if (address.is_v4()) { auto bytes=address.to_v4().to_bytes();data.insert(data.end(),bytes.begin(),bytes.end()); }
+        else { auto bytes=address.to_v6().to_bytes();data.insert(data.end(),bytes.begin(),bytes.end()); }
         data.push_back(uint8_t(peer->port));
         data.push_back(uint8_t(peer->port>>8));
     }
-    return GenerateMessage(9,data);
+    return GenerateMessage(extended?48:9,data);
 }
-awaitable<void> ProcessDiscoverMessage(vector<uint8_t> data) {
-    if (data.size()%6!=0||data.size()>1024*6) co_return;
+awaitable<void> ProcessDiscoverMessage(vector<uint8_t> data,bool extended=false) {
+    if (data.size()>1024*19||(!extended&&data.size()%6)) co_return;
+    vector<pair<ip::address,uint16_t>> entries;
+    for (size_t offset=0;offset<data.size();) {
+        auto family=extended?data[offset++]:4;size_t length=family==4?4:family==6?16:0;
+        if (!length||data.size()-offset<length+2||entries.size()>=1024) co_return;
+        ip::address address;
+        if (family==4) { ip::address_v4::bytes_type bytes;memcpy(bytes.data(),data.data()+offset,4);address=ip::address_v4(bytes); }
+        else { ip::address_v6::bytes_type bytes;memcpy(bytes.data(),data.data()+offset,16);address=ip::address_v6(bytes); }
+        offset+=length;auto port=uint16_t(data[offset])|(uint16_t(data[offset+1])<<8);offset+=2;
+        address=CanonicalAddress(address);
+        if (!port||address.is_unspecified()||address.is_multicast()||(address.is_v6()&&address.to_v6().is_link_local())) continue;
+        if (address.is_loopback()&&port==listenPort) continue;
+        entries.emplace_back(address,port);
+    }
     auto executor=co_await this_coro::executor;
-    for (size_t offset=0;offset<data.size();offset+=6) {
-        array<uint8_t,4> addr;
-        memcpy(addr.data(),data.data()+offset,4);
-        auto port=uint16_t(data[offset+4])|(uint16_t(data[offset+5])<<8);
-        if (ip::address_v4(addr).is_loopback()&&port==listenPort) continue;
-        co_spawn(executor,Connect(addr,port),[](exception_ptr error) {
+    for (const auto& [address,port]:entries)
+        co_spawn(executor,Connect(address,port),[](exception_ptr error) {
             if (error) { try { rethrow_exception(error); } catch (const exception& e) { spdlog::warn("Connect: {}",e.what()); } }
         });
-    }
 }
 struct SyncCompletion {
     shared_ptr<Peer> peer;
@@ -252,7 +273,7 @@ awaitable<void> SyncBlock(shared_ptr<Peer> peer) {
             peer->requestedHead={}; QueryHeight(peer);
         }
         requested=max(requested,height);
-        auto limit=min(peer->remoteHeight,height+syncWindow);
+        auto limit=min(peer->remoteHeight.load(),height+syncWindow);
         while (requested<limit) {
             auto count=uint16_t(min(uint64_t(4),limit-requested));
             if (peer->compact) {
@@ -282,7 +303,7 @@ awaitable<void> OpenDiscoveryMode() {
             for (const auto& [key,peer]:peerPool) peers.push_back(peer);
         }
         for (const auto& peer:peers) QueryHeight(peer);
-        for (const auto& [host,port]:configuredPeers) co_await Connect(ip::make_address_v4(host).to_bytes(),port);
+        for (const auto& [host,port]:configuredPeers) co_await ConnectSeed(host,port);
         timer.expires_after(seconds(1));
         co_await timer.async_wait(use_awaitable);
     }

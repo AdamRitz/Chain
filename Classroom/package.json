@@ -1,0 +1,31 @@
+{
+  "name": "chain-classroom",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1",
+    "build": "tsc --noEmit && vite build",
+    "contract": "node scripts/CompileChat.cjs",
+    "tauri": "tauri",
+    "test": "node --experimental-strip-types --test test/*.test.mjs"
+  },
+  "dependencies": {
+    "lucide-react": "^0.468.0",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "^2.10.0",
+    "@types/react": "^19.2.0",
+    "@types/react-dom": "^19.2.0",
+    "@vitejs/plugin-react": "^5.1.0",
+    "prettier": "3.7.4",
+    "solc": "0.8.28",
+    "typescript": "~5.9.3",
+    "vite": "^7.2.2"
+  },
+  "engines": {
+    "node": ">=22.12.0"
+  }
+}

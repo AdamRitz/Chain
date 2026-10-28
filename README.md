@@ -4,6 +4,8 @@ C++20 区块链原型，使用 Boost.Asio、libsodium、默克尔树、RocksDB �
 
 当前 Chain 运行实现已恢复到 `933905448951c600156a8ad2a0b3c3a895916fb5` 的无学习模型基线，沿用四时间戳/中位数时钟同步及固定轮次候选收集。通过新的提交保留完整 Git 历史；FISCO 3.7.3 的 [原生转账驱动](Test/Fisco/Aligned/README.md)、[容量测试方法](Test/Fisco/Capacity/README.md) 和 [60 秒三次复测](reports/2026-10-27-fisco-long/REPORT.md)继续保留。切换范围和验证见 [基线恢复记录](reports/2026-10-28-no-model/REPORT.md)。
 
+新增 [Windows 区块链实验室](Classroom/README.md)：可视化钱包、区块/节点观察、课堂加入、自动部署的 Solidity 聊天室与 IPv4/IPv6 双栈。教学功能采用独立网关与桌面壳，交易执行及共识继续沿用无学习模型基线。安装与开发构建见该目录说明。
+
 修改前阅读 [MODULE_GUIDE.md](MODULE_GUIDE.md)。合约操作与分叉规则见 [EVM_GUIDE.md](EVM_GUIDE.md)，最新性能测试见 [十节点吞吐量复测](reports/2026-10-14-ten-node/REPORT.md)，前次优化见 [传播、同步与执行优化](reports/2026-10-13-throughput/REPORT.md)，合约接入测试见 [分叉与 EVM 报告](reports/2026-09-16-fork-evm/REPORT.md)。
 
 同父块候选按交易数、哈希排序。分支按累计有效交易数、高度和链头哈希比较，在 256 块窗口内通过原子回滚与重放收敛。每秒交易数（Transactions Per Second，TPS）统计完成执行与同步落盘的交易。

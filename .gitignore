@@ -72,3 +72,18 @@ __pycache__/
 /.venv/
 /experiment-results/
 Experiments/cluster.local.json
+
+# Classroom frontend, desktop packaging, and encrypted local wallets
+Classroom/node_modules/
+Classroom/dist/
+Classroom/src-tauri/target/
+Classroom/src-tauri/resources/
+Classroom/release/
+*.vault.json
+*.sqlite*
+/classroom-data/
+
+/Classroom/src-tauri/icons/*
+!/Classroom/src-tauri/icons/icon.svg
+!/Classroom/src-tauri/icons/icon.ico
+Classroom/src-tauri/gen/

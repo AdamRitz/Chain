@@ -1,6 +1,8 @@
 #ifndef CHAIN_USER_H
 #define CHAIN_USER_H
 #include <fstream>
+#include <filesystem>
+#include "../Tool/Path.h"
 #include <map>
 #include <span>
 #include <unordered_map>
@@ -64,7 +66,7 @@ void SetGenesisUsers(const nlohmann::json& config) {
     genesisConfigured=true;
 }
 void LoadGenesisUsers(const string& path) {
-    ifstream input(path);
+    ifstream input(Utf8Path(path));
     if (!input) throw runtime_error("Cannot open genesis configuration: "+path);
     nlohmann::json config;
     input>>config;

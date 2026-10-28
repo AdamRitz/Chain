@@ -25,7 +25,7 @@ atomic<uint64_t> compactAnnouncements{0},compactReconstructed{0},missingTransact
 atomic<uint64_t> syncRequests{0},syncRetries{0},syncBlocks{0};
 atomic<uint64_t> recentTransactionHits{0};
 
-uint64_t PeerId(const shared_ptr<Peer>& peer) { return peer->port?GetPeerKey(peer->address,peer->port):0; }
+uint64_t PeerId(const shared_ptr<Peer>& peer) { return peer->port?peer->key:0; }
 void RememberBlockSource(const array<uint8_t,32>& hash,uint64_t source) {
     if (!source) return;
     lock_guard lock(relayMutex);

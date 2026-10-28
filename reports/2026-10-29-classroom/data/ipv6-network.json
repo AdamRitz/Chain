@@ -1,0 +1,9 @@
+{
+  "checks": [
+    "experiment inventory accepts IPv6 endpoints and SSH destinations",
+    "IPv6-only sender propagates one signed transaction through dual-stack and legacy IPv4 peers",
+    "sender CLI resolves and queries IPv6",
+    "version-2 discovery contains IPv4 and IPv6; legacy discovery keeps six-byte records",
+    "invalid teaching query returns an error without stopping the node"
+  ]
+}

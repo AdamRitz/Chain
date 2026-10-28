@@ -3,6 +3,7 @@
 #include <csignal>
 #include <yaml-cpp/yaml.h>
 #include "Network/Server.h"
+#include "Tool/Arguments.h"
 #ifdef _WIN32
 #include <windows.h>
 #include <psapi.h>
@@ -24,15 +25,12 @@ double ParseReal(const string& text,double minimum,double maximum) {
     return value;
 }
 void AddConfiguredPeer(const string& value) {
-    auto colon=value.find(':');
-    if (colon==string::npos) throw invalid_argument("Use IPv4:port for --seed");
-    auto host=value.substr(0,colon);
-    ip::make_address_v4(host);
-    configuredPeers.emplace_back(host,uint16_t(ParseNumber(value.substr(colon+1),1,65535)));
+    configuredPeers.push_back(ParseEndpoint(value));
 }
 int main(int argc,char* argv[]) {
     try {
-        string configPath,dataPath="data/accounts-v7",metricsPath,genesisPath;
+        Utf8Arguments unicode(argc,argv);
+        string configPath,dataPath="data/accounts-v7",metricsPath,genesisPath,stopFile;
         int ioNum=4,verifyNum=8,candidateNum=0,blockVerifyCount=0,queryNum=1,runSeconds=0;
         bool sync=true,observeClock=false;
         for (int i=1;i<argc;i++) {
@@ -41,9 +39,12 @@ int main(int argc,char* argv[]) {
         if (configPath.empty()&&filesystem::exists("config.yaml")) configPath="config.yaml";
         if (configPath.empty()&&filesystem::exists("../config.yaml")) configPath="../config.yaml";
         if (!configPath.empty()) {
-            auto node=YAML::LoadFile(configPath)["node"];
+            ifstream configFile(Utf8Path(configPath));if(!configFile)throw runtime_error("Cannot open node configuration");
+            auto node=YAML::Load(configFile)["node"];
             if (node["port"]) listenPort=node["port"].as<uint16_t>();
             if (node["bind"]) listenAddress=node["bind"].as<string>();
+            if (node["bind_v6"]) listenAddressV6=node["bind_v6"].as<string>();
+            if (node["peer_protocol"]) {auto version=node["peer_protocol"].as<unsigned>();if(version<1||version>2)throw invalid_argument("Invalid peer protocol");peerProtocolV2=version==2;}
             if (node["data"]) dataPath=node["data"].as<string>();
             if (node["genesis"]) genesisPath=node["genesis"].as<string>();
             if (node["io_threads"]) ioNum=node["io_threads"].as<int>();
@@ -63,7 +64,10 @@ int main(int argc,char* argv[]) {
             if (name=="--config") continue;
             if (name=="--data") dataPath=value;
             else if (name=="--genesis") genesisPath=value;
+            else if (name=="--stop-file") stopFile=value;
             else if (name=="--bind") listenAddress=value;
+            else if (name=="--bind-v6") { if (!ip::make_address(value).is_v6()) throw invalid_argument("--bind-v6 requires IPv6");listenAddressV6=value; }
+            else if (name=="--peer-protocol") peerProtocolV2=ParseNumber(value,1,2)==2;
             else if (name=="--port") listenPort=uint16_t(ParseNumber(value,1,65535));
             else if (name=="--io-threads") ioNum=int(ParseNumber(value,1,64));
             else if (name=="--verify-threads") verifyNum=int(ParseNumber(value,1,64));
@@ -131,13 +135,24 @@ int main(int argc,char* argv[]) {
             timer.expires_after(seconds(runSeconds));
             timer.async_wait([&](const boost::system::error_code& ec){if (!ec) stop();});
         }
+        steady_timer stopTimer(io);
+        function<void()> pollStop;
+        if (!stopFile.empty()) {
+            pollStop=[&] {
+                if (filesystem::exists(Utf8Path(stopFile))) { stop();return; }
+                stopTimer.expires_after(milliseconds(200));
+                stopTimer.async_wait([&](boost::system::error_code ec){if (!ec) pollStop();});
+            };
+            pollStop();
+        }
         auto onError=[&](exception_ptr error) {
             if (!error) return;
             try { rethrow_exception(error); } catch (const exception& e) { spdlog::error("Node: {}",e.what()); }
             nodeFailed=true;
             io.stop();
         };
-        co_spawn(io,Listen(listenPort),onError);
+        co_spawn(io,Listen(listenPort,listenAddress),onError);
+        if (!listenAddressV6.empty()) co_spawn(io,Listen(listenPort,listenAddressV6),onError);
         co_spawn(make_strand(io),OpenDiscoveryMode(),onError);
         if (observeClock) co_spawn(make_strand(io),SynchronizeClock(),onError);
         spdlog::info("Node ready. IO:{}, Verify:{}, BlockMs:{}, Produce:{}",ioNum,verifyNum,blockInterval,produceBlocks);
@@ -189,12 +204,12 @@ int main(int argc,char* argv[]) {
         if (GetProcessMemoryInfo(GetCurrentProcess(),&memory,sizeof(memory))) stats["peak_working_set_bytes"]=memory.PeakWorkingSetSize;
 #endif
         if (!metricsPath.empty()) {
-            ofstream output(metricsPath);
+            ofstream output(Utf8Path(metricsPath));
             if (!output) throw runtime_error("Cannot write metrics file");
             output<<stats.dump(2)<<endl;
             string dbStats;
             db->GetProperty("rocksdb.stats",&dbStats);
-            ofstream dbOutput(metricsPath+".rocksdb.txt");
+            ofstream dbOutput(Utf8Path(metricsPath+".rocksdb.txt"));
             dbOutput<<dbStats<<endl;
         }
         cout<<stats.dump()<<endl;

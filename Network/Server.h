@@ -199,8 +199,16 @@ awaitable<void> ProcessMessage(shared_ptr<Peer> peer,uint8_t type,vector<uint8_t
         WakeMainLoop();
     });
 }
+#include "ClassroomQuery.h"
 vector<uint8_t> ReadQueryResponse(uint8_t type,const vector<uint8_t>& data) {
-    if (type==13) {
+    if (type==46) {
+        nlohmann::json response;
+        try { response=ClassroomQuery(nlohmann::json::parse(data.begin(),data.end())); }
+        catch (const exception& e) { response={{"error",e.what()}}; }
+        auto text=response.dump();
+        if (text.size()>maxBlockBytes) text="{\"error\":\"Response too large; use smaller page\"}";
+        return GenerateMessage(47,span<const uint8_t>(reinterpret_cast<const uint8_t*>(text.data()),text.size()));
+    } else if (type==13) {
         auto stats=GetNodeStats().dump();
         return GenerateMessage(14,span<const uint8_t>(reinterpret_cast<const uint8_t*>(stats.data()),stats.size()));
     } else if (type==15) {
@@ -354,7 +362,7 @@ awaitable<void> session(uint64_t key,shared_ptr<Peer> peer) {
             RecordClockSample(peer->key,peer->clockSentLogical,int64_t(ReadU64(data.data()+8)),
                 int64_t(ReadU64(data.data()+16)),GetLogicalTimeUs(),int64_t((GetSteadyTime()-peer->clockSentSteady)/1000));
             peer->clockToken=0;
-        } else if (type==13||type==15||type==19||type==23||type==25||type==29||type==31||type==33||type==35||type==37) {
+        } else if (type==46||type==13||type==15||type==19||type==23||type==25||type==29||type==31||type==33||type==35||type==37) {
             co_await ProcessQuery(peer,type,std::move(data));
         } else if (type==4) {
             SendData(peer,GenerateHeightMessage(5));
@@ -366,9 +374,10 @@ awaitable<void> session(uint64_t key,shared_ptr<Peer> peer) {
         } else if (type==6) {
             co_await SendBlockReply(peer,type,std::move(data));
         } else if (type==8) {
-            SendData(peer,GenerateDiscoverMessage());
-        } else if (type==9) {
-            co_await ProcessDiscoverMessage(std::move(data));
+            SendData(peer,GenerateDiscoverMessage(peer->discoveryV2));
+        } else if (type==9||type==48) {
+            if (type==48&&!peer->discoveryV2) { ClosePeer(peer);co_return; }
+            co_await ProcessDiscoverMessage(std::move(data),type==48);
         } else if (type==11) {
             ProcessTxTimeACKMessage(data,system_clock::now(),peer);
         } else if (type==20&&peer->port) {
@@ -390,16 +399,17 @@ awaitable<void> session(uint64_t key,shared_ptr<Peer> peer) {
 awaitable<void> AcceptPeer(shared_ptr<Peer> peer) {
     array<uint8_t,1> type;
     if (!co_await ReadData(peer,buffer(type),3)) co_return;
-    if (type[0]!=1&&type[0]!=2&&type[0]!=3) { ClosePeer(peer); co_return; }
-    if (type[0]==1||type[0]==3) {
-        peer->compact=type[0]==3;
+    if (type[0]!=1&&type[0]!=2&&type[0]!=3&&type[0]!=4) { ClosePeer(peer); co_return; }
+    if (type[0]==1||type[0]==3||type[0]==4) {
+        peer->compact=type[0]>=3;
+        peer->discoveryV2=type[0]==4;
         array<uint8_t,2> port;
         if (!co_await ReadData(peer,buffer(port),3)) co_return;
         peer->port=uint16_t(port[0])|(uint16_t(port[1])<<8);
         if (!peer->port) { ClosePeer(peer); co_return; }
         auto endpoint=peer->socket.remote_endpoint();
-        peer->key=GetPeerKey(endpoint.address().to_v4().to_bytes(),endpoint.port());
-        peer->address=endpoint.address().to_v4().to_bytes();
+        peer->key=NewPeerKey();
+        peer->address=CanonicalAddress(endpoint.address());
         {
             lock_guard lock(peerMutex);
             if (peerPool.size()>=maxPeers||peerPool.count(peer->key)) { peer->key=0; co_return; }
@@ -409,9 +419,12 @@ awaitable<void> AcceptPeer(shared_ptr<Peer> peer) {
     }
     co_await session(peer->key,peer);
 }
-awaitable<void> Listen(unsigned short port) {
+awaitable<void> Listen(unsigned short port,const string& address) {
     auto executor=co_await this_coro::executor;
-    tcp::acceptor acceptor(executor,tcp::endpoint(ip::make_address_v4(listenAddress),port));
+    tcp::acceptor acceptor(executor);auto local=ip::make_address(address);
+    acceptor.open(local.is_v6()?tcp::v6():tcp::v4());
+    if (local.is_v6()) acceptor.set_option(ip::v6_only(true));
+    acceptor.bind(tcp::endpoint(local,port));acceptor.listen();
     spdlog::info("Server started on {}",port);
     while (nodeRunning) {
         boost::system::error_code ec;

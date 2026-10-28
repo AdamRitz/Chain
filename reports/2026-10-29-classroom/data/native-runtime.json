@@ -1,0 +1,15 @@
+{
+  "native_window_created": true,
+  "compiler_runtime_path_removed": true,
+  "live_nodes": 3,
+  "matching_heads": true,
+  "heights": [
+    5,
+    5,
+    5
+  ],
+  "desktop_visual_review": "Windows locked; native screenshot and UI input stopped; browser UI was separately verified",
+  "gui_executable": "D:\\Project\\Chain\\build\\classroom-native-qa\\ChainClassroom.exe",
+  "gateway_executable": "D:\\Project\\Chain\\build\\classroom-native-qa\\runtime\\chain_classroom.exe",
+  "test_processes_stopped": true
+}

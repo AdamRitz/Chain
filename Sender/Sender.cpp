@@ -1,4 +1,5 @@
 #include <utility>
+#include "../Network/Address.h"
 #include <boost/asio.hpp>
 #include <fstream>
 #include <filesystem>
@@ -6,13 +7,13 @@
 #include <nlohmann/json.hpp>
 #include "../Transaction/Transaction.h"
 #include "../Message/Message.h"
+#include "../Tool/Arguments.h"
 using namespace std;
 using namespace boost::asio;
 using tcp=ip::tcp;
 
 tcp::socket ConnectNode(io_context& io,const string& host,uint16_t port) {
-    tcp::socket socket(io);
-    socket.connect(tcp::endpoint(ip::make_address_v4(host),port));
+    auto socket=OpenNodeSocket(io,host,port);
     socket.set_option(tcp::no_delay(true));
     array<uint8_t,1> hello{2};
     write(socket,buffer(hello));
@@ -69,6 +70,7 @@ void Sender(span<const array<uint8_t,176>> txs,span<const size_t> indices,const 
 }
 int main(int argc,char* argv[]) {
     try {
+        Utf8Arguments unicode(argc,argv);
         if (sodium_init()<0) throw runtime_error("Sodium Init Error");
         string host="127.0.0.1",file,prepare,genesisPath,createWallet,walletPath,receiverText,accountText;
         uint16_t port=8089;
@@ -104,11 +106,11 @@ int main(int argc,char* argv[]) {
         }
         if (!count||count>(prepare.empty()?2000000:size_t(100000000))||!batch||batch>maxProtocolTx||!connections||connections>64||!window||window>64||!walletNum||walletNum>100000) throw invalid_argument("Invalid sender limits");
         if (!createWallet.empty()) {
-            if (filesystem::exists(createWallet)) throw invalid_argument("Wallet file already exists");
+            if (filesystem::exists(Utf8Path(createWallet))) throw invalid_argument("Wallet file already exists");
             auto wallet=GenerateWallet();
             array<uint8_t,32> seed;
             crypto_sign_ed25519_sk_to_seed(seed.data(),wallet.private_key.data());
-            ofstream output(createWallet);
+            ofstream output(Utf8Path(createWallet));
             if (!output) throw runtime_error("Cannot create wallet file");
             output<<nlohmann::json({{"public_key",U32ToHex(wallet.public_key)},{"seed",U32ToHex(seed)}}).dump(2)<<endl;
             if (!output) throw runtime_error("Wallet write failed");
@@ -144,7 +146,7 @@ int main(int argc,char* argv[]) {
         }
         vector<array<uint8_t,176>> txs;
         if (!file.empty()) {
-            ifstream input(file,ios::binary|ios::ate);
+            ifstream input(Utf8Path(file),ios::binary|ios::ate);
             if (!input) throw runtime_error("Cannot open dataset");
             auto length=input.tellg();
             if (length<0||uint64_t(length)%176!=0) throw runtime_error("Invalid dataset length");
@@ -155,7 +157,7 @@ int main(int argc,char* argv[]) {
             input.read(reinterpret_cast<char*>(txs.data()),count*176);
             if (!input) throw runtime_error("Dataset read failed");
         } else if (!walletPath.empty()) {
-            ifstream input(walletPath);
+            ifstream input(Utf8Path(walletPath));
             nlohmann::json saved;
             if (!input||!(input>>saved)) throw runtime_error("Cannot read wallet");
             auto seed=HexToU32(saved.at("seed").get<string>());
@@ -174,12 +176,12 @@ int main(int argc,char* argv[]) {
             for (const auto& wallet:wallets) accounts.push_back({{"public_key",U32ToHex(wallet.public_key)},{"balance",initialBalance}});
             SetGenesisUsers({{"base_fee",fee},{"accounts",accounts}});
             if (genesisPath.empty()) genesisPath=prepare+".genesis.json";
-            if (filesystem::exists(genesisPath)) throw invalid_argument("Genesis file already exists");
-            ofstream genesis(genesisPath);
+            if (filesystem::exists(Utf8Path(genesisPath))) throw invalid_argument("Genesis file already exists");
+            ofstream genesis(Utf8Path(genesisPath));
             if (!genesis) throw runtime_error("Cannot write genesis configuration");
             genesis<<GetGenesisConfig().dump(2)<<endl;
             if (!genesis) throw runtime_error("Genesis write failed");
-            ofstream dataset(prepare,ios::binary);
+            ofstream dataset(Utf8Path(prepare),ios::binary);
             if (!dataset) throw runtime_error("Cannot write dataset");
             for (size_t i=0;i<count;i++) {
                 const auto& wallet=wallets[i%walletNum];
@@ -192,7 +194,7 @@ int main(int argc,char* argv[]) {
             return 0;
         }
         if (!prepare.empty()) {
-            ofstream output(prepare,ios::binary);
+            ofstream output(Utf8Path(prepare),ios::binary);
             if (!output) throw runtime_error("Cannot write dataset");
             output.write(reinterpret_cast<const char*>(txs.data()),txs.size()*176);
             if (!output) throw runtime_error("Dataset write failed");

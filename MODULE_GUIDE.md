@@ -354,3 +354,21 @@ EVM 交易沿用 176 字节基础字段，附带部署/调用类型、Gas 上限
 Windows、Linux 各十四项回归通过；四组各跑两万至六万五档，每档预热两秒、测量十秒、各一次。二十组状态核对通过，二百个轮次数据库清理，常驻服务每节点九个邻居、原有一千笔与账户核对通过，FISCO 服务恢复。完整报告、方法和证据见 `reports/2026-10-21-clock-cloud/REPORT.md`。
 
 四万及以上输入档有效模型预测为零，准备与提交时间及队列越出模拟训练域，控制按设计回退。高负载 CPU 接近四个 vCPU、同步写调用均值约六十毫秒，准备预算约三十九毫秒，当前轮补入难以发生。不能从本轮组间波动声称学习模型改善 TPS；六万档实际发送约五万 TPS，且部分测量边界发生重组，报告区分已核对边界与诊断观测。真实参考采集、重训练、混合故障与开销测量仍未执行。
+
+## Windows 教学界面与 IPv6（2026-10-29）
+
+在无学习模型基线上增加教学应用，账户、EVM 执行、分支排名及 schema 7 不变。入口和操作见 `Classroom/README.md`，实施与验证见 `reports/2026-10-29-classroom/REPORT.md`。
+
+| 文件 | 职责 | 修改约束 |
+|---|---|---|
+| `Classroom/src/` | React 中文教学界面、钱包/区块/网络/聊天/课堂管理、实验引导 | 交易状态与最终性准确标注；UTF-8 字节限制、真实规范链位置，旧分页缓存随重组清除 |
+| `Classroom/Gateway/` | 独立本地 HTTP 网关、加密钱包、共用序号管理、节点进程、SQLite 索引 | 回环监听、Host/Origin/令牌检查，私钥不进入前端；原文重试；按规范链回退索引 |
+| `Classroom/src-tauri/` | Windows 桌面窗口、单实例、资源启动与退出监督 | 将 Tauri 的 Windows verbatim 资源路径转换为 MinGW 可用格式；监控父进程与正常停止所属节点 |
+| `Contracts/ClassroomChat.sol`、`ClassroomChat.compiled.json` | 普通部署的课堂房间、成员权限与公开消息事件 | 固定 solc 0.8.28/Shanghai；发送者来自 msg.sender；事件与状态随原子提交及分叉规则处理 |
+| `Network/Address.h` | IPv4/IPv6 地址规范化、种子解析、端点显示、CLI 连接 | 完整端点比较，兼容原 IPv4 语法；IPv6 使用方括号带端口 |
+| `Network/ClassroomQuery.h` | 有界分页区块/回执、节点连接、代码与 EVM 静态只读调用 | 使用查询工作池和提交共享锁，静态调用使用覆盖状态，不落盘、不改变序号和余额 |
+| `EVM/BuildTransaction.h` | CLI 与教学签名器共用 EVM 交易封装 | 保持现有 Ed25519、完整输入与创世摘要绑定 |
+| `Tool/Arguments.h`、`Tool/Path.h`、`Tool/Utf8.*` | Windows Unicode 参数、文件路径、UTF-8 进程清单 | Windows 10 1903+/11，避免要求用户更改系统区域设置 |
+| `Test/IPv6NetworkTest.py`、`Test/Classroom*` | 双栈/旧节点混合、真实聊天、权限、重启、索引重组与进程生命周期 | 独立本地测试目录；保留原十一项；教学开关启用后十五项 CTest |
+
+节点握手 4 / 发现 48 用于新地址族协议；保留原握手和类型 9 六字节 IPv4 发现报文。只读教学请求/响应为 46/47。P2P 连接使用独立连接编号，广播按完整 IP 地址与监听端口去重。`--stop-file` 为本地管理器正常退出入口，不提供远程任意进程控制。

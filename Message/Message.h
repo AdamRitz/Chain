@@ -45,6 +45,9 @@ bool VerifyMessageSize(uint8_t type,uint32_t size) {
         case 42:return size==10;
         case 43:return size>=118;
         case 44:return size>0&&size%176==0&&size<=maxProtocolTx*176;
+        case 46:return size>0&&size<=16384;
+        case 47:return size<=maxBlockBytes;
+        case 48:return size<=1024*19;
         case 45:return size>0&&size<=maxProtocolTx;
         default:return false;
     }

@@ -1,0 +1,11 @@
+{
+  "checks": [
+    "encrypted wallet create lock unlock and backup; wrong password rejected",
+    "three real nodes, idempotent deployment and a signed native transfer",
+    "UTF-8 chat event and receipt, bounded body, read-only call and duplicate-ID contract revert",
+    "IPv6 ::1 and IPv4 share one canonical ledger",
+    "gateway rejects foreign origins and missing token; diagnostics exclude raw outbox and seeds",
+    "index rebuild and full node restart preserve contract and canonical chat",
+    "desktop restart recovers deployment metadata from the signed outbox without unlocking or redeploying"
+  ]
+}

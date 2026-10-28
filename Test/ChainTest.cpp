@@ -155,7 +155,7 @@ int main(int argc,char* argv[]) {
         for (uint8_t type: {1,2,4,5,6,7,8,9,10,11,12,13,14}) Require(!VerifyMessageSize(type,UINT32_MAX),"oversize frame rejected");
         Require(!VerifyMessageSize(255,0),"unknown type");
         Require(!VerifyMessageSize(1,175)&&!VerifyMessageSize(10,177),"type-specific lengths");
-        Require(GetPeerKey({127,0,0,1},8089)!=GetPeerKey({127,0,0,1},8090),"peer key includes port");
+        Require(FormatEndpoint("127.0.0.1",8089)!=FormatEndpoint("127.0.0.1",8090),"peer key includes port");
         RequireThrow([]{GenerateMessage(1,vector<uint8_t>(maxMessageSize+1));},"outbound bound");
         maxPendingVerify=6000;
         Require(ReserveVerify(6000)&&!ReserveVerify(1)&&pendingVerify==6000,"bounded validation queue");
