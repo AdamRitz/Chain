@@ -1,0 +1,375 @@
+{
+  "current": [
+    {
+      "rate": 20000,
+      "send_tps": 19993.6,
+      "estimate": {
+        "tps": 19994.505795135643,
+        "seconds": 9.99954697798239,
+        "height_delta": 200,
+        "transaction_delta": 199936,
+        "interval_ms": 49.99773488991195,
+        "interval_bounds_ms": [
+          49.98343768005725,
+          50.01203209976666
+        ],
+        "tps_bounds": [
+          19988.789857724343,
+          20000.22500250837
+        ],
+        "endpoint_spans": [
+          0.0033291090512648225,
+          0.002389774890616536
+        ]
+      },
+      "qualified": true,
+      "reasons": [],
+      "persisted_anchor_proof": true,
+      "p50_ms": 91.29900694824755,
+      "p95_ms": 120.30476296786219,
+      "p99_ms": 134.87697404343635,
+      "sampled": 20,
+      "unresolved": 0,
+      "confirmed": 240000,
+      "completed_all_ingress": 239872,
+      "attempted_upper": 240000
+    },
+    {
+      "rate": 30000,
+      "send_tps": 30003.2,
+      "estimate": {
+        "tps": 28867.309326949533,
+        "seconds": 10.025458095944487,
+        "height_delta": 187,
+        "transaction_delta": 289408,
+        "interval_ms": 53.61207537938228,
+        "interval_bounds_ms": [
+          53.456681908760714,
+          53.767468850003844
+        ],
+        "tps_bounds": [
+          28783.879857797194,
+          28951.22383910495
+        ],
+        "endpoint_spans": [
+          0.0035874349996447563,
+          0.054529723012819886
+        ]
+      },
+      "qualified": true,
+      "reasons": [],
+      "persisted_anchor_proof": true,
+      "p50_ms": 423.8494209712371,
+      "p95_ms": 903.6748890066519,
+      "p99_ms": 1259.8240580409765,
+      "sampled": 20,
+      "unresolved": 0,
+      "confirmed": 360000,
+      "completed_all_ingress": 360000,
+      "attempted_upper": 360000
+    },
+    {
+      "rate": 40000,
+      "send_tps": 40000.0,
+      "estimate": null,
+      "qualified": false,
+      "reasons": [
+        "persisted canonical proof failed",
+        "missing exact measurement endpoint"
+      ],
+      "persisted_anchor_proof": false,
+      "p50_ms": 1320.7298709312454,
+      "p95_ms": 2366.4479659637436,
+      "p99_ms": 2815.16062899027,
+      "sampled": 20,
+      "unresolved": 0,
+      "confirmed": 479872,
+      "completed_all_ingress": 479872,
+      "attempted_upper": 479872
+    },
+    {
+      "rate": 50000,
+      "send_tps": 46630.4,
+      "estimate": {
+        "tps": 44191.82483715277,
+        "seconds": 10.212929691479076,
+        "height_delta": 84,
+        "transaction_delta": 451328,
+        "interval_ms": 121.58249632713185,
+        "interval_bounds_ms": [
+          114.28809674994443,
+          128.87689590431927
+        ],
+        "tps_bounds": [
+          41690.57877481287,
+          47012.35328739511
+        ],
+        "endpoint_spans": [
+          0.5389320589601994,
+          0.686527070007287
+        ]
+      },
+      "qualified": false,
+      "reasons": [
+        "acquisition span exceeds 0.5s"
+      ],
+      "persisted_anchor_proof": true,
+      "p50_ms": 2745.4002130543813,
+      "p95_ms": 4543.211427982897,
+      "p99_ms": 4543.211427982897,
+      "sampled": 19,
+      "unresolved": 0,
+      "confirmed": 566272,
+      "completed_all_ingress": 566272,
+      "attempted_upper": 566400
+    },
+    {
+      "rate": 60000,
+      "send_tps": 49318.4,
+      "estimate": {
+        "tps": 51160.4482518899,
+        "seconds": 9.247768855944742,
+        "height_delta": 85,
+        "transaction_delta": 473120,
+        "interval_ms": 108.79728065817343,
+        "interval_bounds_ms": [
+          93.16771188203026,
+          124.4268494343166
+        ],
+        "tps_bounds": [
+          44734.05597235755,
+          59742.98965404118
+        ],
+        "endpoint_spans": [
+          2.223814368015155,
+          0.4332123239291832
+        ]
+      },
+      "qualified": false,
+      "reasons": [
+        "acquisition span exceeds 0.5s"
+      ],
+      "persisted_anchor_proof": true,
+      "p50_ms": 2984.167391085066,
+      "p95_ms": 4177.476701093838,
+      "p99_ms": 4177.476701093838,
+      "sampled": 17,
+      "unresolved": 0,
+      "confirmed": 613248,
+      "completed_all_ingress": 613120,
+      "attempted_upper": 613248
+    }
+  ],
+  "historical_baseline": [
+    {
+      "rate": 20000,
+      "estimate": {
+        "tps": 19993.898984734282,
+        "seconds": 9.999850462016184,
+        "height_delta": 196,
+        "transaction_delta": 199936,
+        "interval_ms": 51.01964521436828,
+        "interval_bounds_ms": [
+          51.00680102563905,
+          51.03248940309752
+        ],
+        "tps_bounds": [
+          19988.866790244123,
+          19998.933713571012
+        ],
+        "endpoint_spans": [
+          0.002768386999377981,
+          0.0022665349824819714
+        ]
+      },
+      "observed_tps": 19993.898984734282,
+      "strict_head_proof": true,
+      "p50_ms": 277.78287199907936,
+      "p95_ms": 1595.3192220185883,
+      "p99_ms": 1618.8126990164164
+    },
+    {
+      "rate": 30000,
+      "estimate": {
+        "tps": 28007.60702822876,
+        "seconds": 10.17323613948247,
+        "height_delta": 187,
+        "transaction_delta": 284928,
+        "interval_ms": 54.40233229669769,
+        "interval_bounds_ms": [
+          53.46383693575719,
+          55.3408276576382
+        ],
+        "tps_bounds": [
+          27532.64106946776,
+          28499.247934934006
+        ],
+        "endpoint_spans": [
+          0.0024425149895250797,
+          0.34855475000222214
+        ]
+      },
+      "observed_tps": 28007.60702822876,
+      "strict_head_proof": false,
+      "p50_ms": 414.320873998804,
+      "p95_ms": 965.4071299883071,
+      "p99_ms": 1341.5627150097862
+    },
+    {
+      "rate": 40000,
+      "estimate": {
+        "tps": 33858.46014757832,
+        "seconds": 9.98793207151175,
+        "height_delta": 158,
+        "transaction_delta": 338176,
+        "interval_ms": 63.2147599462769,
+        "interval_bounds_ms": [
+          52.27816863301582,
+          74.15135125953799
+        ],
+        "tps_bounds": [
+          28864.67197190066,
+          40941.64899701603
+        ],
+        "endpoint_spans": [
+          1.74008356500417,
+          1.7158792899863329
+        ]
+      },
+      "observed_tps": 33858.46014757832,
+      "strict_head_proof": false,
+      "p50_ms": 1702.6091119914781,
+      "p95_ms": 2941.1496259854175,
+      "p99_ms": 3441.1496259854175
+    },
+    {
+      "rate": 50000,
+      "estimate": {
+        "tps": 46294.20811526163,
+        "seconds": 9.862140829005511,
+        "height_delta": 83,
+        "transaction_delta": 456560,
+        "interval_ms": 118.8209738434399,
+        "interval_bounds_ms": [
+          112.83124932536788,
+          124.81069836151191
+        ],
+        "tps_bounds": [
+          44072.5271453375,
+          48751.7680115728
+        ],
+        "endpoint_spans": [
+          0.6350028890010435,
+          0.35929138099891134
+        ]
+      },
+      "observed_tps": 46294.20811526163,
+      "strict_head_proof": false,
+      "p50_ms": 1601.3442570110783,
+      "p95_ms": 2400.6126780004706,
+      "p99_ms": 2429.7777060128283
+    },
+    {
+      "rate": 60000,
+      "estimate": null,
+      "observed_tps": 42803.35466831348,
+      "strict_head_proof": false,
+      "p50_ms": 3718.7108939979225,
+      "p95_ms": 4352.030484995339,
+      "p99_ms": 4352.030484995339
+    }
+  ],
+  "historical_model": [
+    {
+      "group": "N95",
+      "rate": 20000,
+      "valid": 3,
+      "total": 3,
+      "median_tps": 19993.842716246418,
+      "median_interval_ms": 50.00827098490845,
+      "median_p95_ms": 97.13463499792852
+    },
+    {
+      "group": "N95",
+      "rate": 30000,
+      "valid": 3,
+      "total": 3,
+      "median_tps": 29221.411982243837,
+      "median_interval_ms": 51.32871186405492,
+      "median_p95_ms": 862.4860330019146
+    },
+    {
+      "group": "N95",
+      "rate": 40000,
+      "valid": 2,
+      "total": 3,
+      "median_tps": 35984.99348807742,
+      "median_interval_ms": 69.33042543086215,
+      "median_p95_ms": 1416.1285020236392
+    },
+    {
+      "group": "N95",
+      "rate": 50000,
+      "valid": 2,
+      "total": 3,
+      "median_tps": 47385.67603420163,
+      "median_interval_ms": 108.93516074629453,
+      "median_p95_ms": 2246.001565014012
+    },
+    {
+      "group": "N95",
+      "rate": 60000,
+      "valid": 2,
+      "total": 3,
+      "median_tps": 45567.9727162771,
+      "median_interval_ms": 128.93095457983304,
+      "median_p95_ms": 3674.1258919937536
+    },
+    {
+      "group": "M75",
+      "rate": 20000,
+      "valid": 3,
+      "total": 3,
+      "median_tps": 20006.683600713346,
+      "median_interval_ms": 49.99929123507172,
+      "median_p95_ms": 117.83807899337262
+    },
+    {
+      "group": "M75",
+      "rate": 30000,
+      "valid": 3,
+      "total": 3,
+      "median_tps": 28227.466810222,
+      "median_interval_ms": 53.119487537067414,
+      "median_p95_ms": 663.5519490228035
+    },
+    {
+      "group": "M75",
+      "rate": 40000,
+      "valid": 1,
+      "total": 3,
+      "median_tps": 34632.07655562158,
+      "median_interval_ms": 70.58626749342402,
+      "median_p95_ms": 2209.989836002933
+    },
+    {
+      "group": "M75",
+      "rate": 50000,
+      "valid": 2,
+      "total": 3,
+      "median_tps": 46943.83484406145,
+      "median_interval_ms": 120.53445925394502,
+      "median_p95_ms": 1861.4559319976252
+    },
+    {
+      "group": "M75",
+      "rate": 60000,
+      "valid": 2,
+      "total": 3,
+      "median_tps": 44150.00170769167,
+      "median_interval_ms": 128.91211693872387,
+      "median_p95_ms": 4101.266324985772
+    }
+  ],
+  "note": "diagnostic estimates do not become qualified results when persisted proof or timing quality fails"
+}

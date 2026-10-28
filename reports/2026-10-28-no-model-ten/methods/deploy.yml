@@ -1,0 +1,42 @@
+- name: Stage the verified no-model release
+  hosts: chain
+  gather_facts: false
+  vars:
+    revision: 1504583cda142c8f50fcc6215864160ae469f333
+    release: '/opt/chain/releases/{{ revision }}'
+    validation: "{{ lookup('file', release + '/validation.json') | from_json }}"
+  tasks:
+    - ansible.builtin.assert:
+        that: [validation.revision == revision, validation.ctest_passed, validation.tests == 11]
+    - ansible.builtin.file:
+        path: '{{ release }}/{{ item }}'
+        state: directory
+        mode: '0755'
+      loop: [source, build]
+    - ansible.builtin.unarchive:
+        src: '/opt/chain-control/packages/chain-source-{{ revision }}.tar.gz'
+        dest: '{{ release }}/source'
+        creates: '{{ release }}/source/main.cpp'
+    - ansible.builtin.unarchive:
+        src: '/opt/chain-control/packages/chain-binaries-{{ revision }}.tar.gz'
+        dest: '{{ release }}/build'
+        creates: '{{ release }}/build/boost'
+    - ansible.builtin.copy:
+        content: "{{ revision }}\n"
+        dest: '{{ release }}/REVISION'
+        mode: '0644'
+    - ansible.builtin.copy:
+        src: '{{ release }}/validation.json'
+        dest: '{{ release }}/validation.json'
+        mode: '0644'
+    - ansible.builtin.shell: |
+        set -euo pipefail
+        printf '%s  %s\n' '{{ validation.binaries.boost }}' '{{ release }}/build/boost' | sha256sum --check
+        printf '%s  %s\n' '{{ validation.binaries.sender }}' '{{ release }}/build/sender' | sha256sum --check
+        printf '%s  %s\n' '{{ validation.binaries.evm_sender }}' '{{ release }}/build/evm_sender' | sha256sum --check
+        ldd '{{ release }}/build/boost'
+      args:
+        executable: /bin/bash
+      register: integrity
+      changed_when: false
+      failed_when: integrity.rc != 0 or 'not found' in integrity.stdout

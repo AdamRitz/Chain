@@ -1,0 +1,2591 @@
+[
+  {
+    "case": {
+      "suite": "throughput",
+      "mode": "throughput",
+      "rate": 20000,
+      "nodes": 10,
+      "repeat": 1,
+      "pattern": "steady",
+      "group": "baseline",
+      "revision": "1504583cda142c8f50fcc6215864160ae469f333"
+    },
+    "status": "complete",
+    "dataset_sha256": "101b045a90e95dca1ffab93f0dcac0e85486a9c03ba67cf9e06bc44fb61717a0",
+    "metrics": {
+      "offered_tps": 20000,
+      "common_commit_tps": 19993.379371029547,
+      "achieved_send_tps": 19993.6,
+      "common_commit_tps_rpc_interval_bounds": [
+        19992.266385816845,
+        19994.492480170677
+      ],
+      "common_observation_tps": 19994.505795135643,
+      "proven_common_tps": 19994.505795135643,
+      "common_boundary_proof_passed": true,
+      "common_observation_tps_acquisition_interval_bounds": [
+        19988.789857724343,
+        20000.22500250837
+      ],
+      "common_observation_note": "net common-prefix observation rate; interval spans stats acquisition through prefix checks, no atomic global snapshot or finality claimed",
+      "common_observation_boundary_targets": [
+        2,
+        12
+      ],
+      "measurement_seconds": 10.000110351014882,
+      "measurement_samples": 11,
+      "boundary_canonical_proof_passed": true,
+      "skipped_stats_targets": [],
+      "diagnostic_prefix_observed_tps": 19993.379371029547,
+      "diagnostic_prefix_rpc_interval_bounds": [
+        19992.266385816845,
+        19994.492480170677
+      ],
+      "diagnostic_prefix_note": "snapshot time corrected, but boundaries may be reorganized; not used as proven TPS",
+      "sent_unique_completed_all_ingress": 239872,
+      "sent_unique_attempted_upper_bound": 240000,
+      "sent_unique": 239872,
+      "sent_wire_copies_completed": 2398976,
+      "completed_per_ingress": [
+        240000,
+        240000,
+        239872,
+        239872,
+        239872,
+        239872,
+        239872,
+        239872,
+        239872,
+        239872
+      ],
+      "partial_batch": {
+        "begin": 239872,
+        "end": 240000,
+        "completed_ingress_indices": [
+          0,
+          1
+        ],
+        "cutoff_expected": true,
+        "reason": "Stopped: "
+      },
+      "load_error": null,
+      "cutoff_seconds": 12.00024822098203,
+      "generator_finished_seconds": 12.002205178025179,
+      "p50_ms": 91.29900694824755,
+      "p95_ms": 120.30476296786219,
+      "p99_ms": 134.87697404343635,
+      "p99_after_send_ms": 129.91111003793776,
+      "latency_label": "first observed identical transaction position on all ten nodes; no finality guarantee",
+      "latency_poll_seconds": 0.05,
+      "latency_sample_hz_total": 2,
+      "latency_note": "upper observation latency includes query/round-trip/polling delay; not node commit timestamp",
+      "samples": 20,
+      "unresolved_samples": 0,
+      "drained": true,
+      "drained_observed_seconds": 13.00302187493071,
+      "checks": {
+        "accounts_checked_per_node": 1024,
+        "state": {
+          "burned": 0,
+          "head": "b78404aa64968fd594b3c421a900523aa8d3321bbe9e08b29bd7aba86796e094",
+          "state_hash": "588e40de2e50173b9416c84e63e432ae7b5ad27d05cf3db0638522e4eabd13e3",
+          "supply": 1024000000000,
+          "transactions": 240000
+        }
+      },
+      "resources": [
+        {
+          "node": "node01",
+          "node_clock_seconds": 10.000003,
+          "cpu_core_equivalents": 1.5794314261705722,
+          "network_received_bytes_per_second": 10444670.266598921,
+          "network_sent_bytes_per_second": 6031511.390546584,
+          "db_write_ms_per_second": 203.09113297266012,
+          "peak_resident_bytes": 151498752
+        },
+        {
+          "node": "node02",
+          "node_clock_seconds": 10.000133,
+          "cpu_core_equivalents": 1.629793923740814,
+          "network_received_bytes_per_second": 9856882.803458715,
+          "network_sent_bytes_per_second": 6431894.455803738,
+          "db_write_ms_per_second": 157.5672149560411,
+          "peak_resident_bytes": 154292224
+        },
+        {
+          "node": "node03",
+          "node_clock_seconds": 10.000154,
+          "cpu_core_equivalents": 1.5840268059871878,
+          "network_received_bytes_per_second": 9809834.02855596,
+          "network_sent_bytes_per_second": 6330180.415221605,
+          "db_write_ms_per_second": 201.19334632246662,
+          "peak_resident_bytes": 150978560
+        },
+        {
+          "node": "node04",
+          "node_clock_seconds": 10.000169,
+          "cpu_core_equivalents": 1.6469069672722532,
+          "network_received_bytes_per_second": 9887176.506717037,
+          "network_sent_bytes_per_second": 6533179.789261562,
+          "db_write_ms_per_second": 212.14837339248965,
+          "peak_resident_bytes": 157863936
+        },
+        {
+          "node": "node05",
+          "node_clock_seconds": 10.000148,
+          "cpu_core_equivalents": 1.5704783569203176,
+          "network_received_bytes_per_second": 9742088.717086988,
+          "network_sent_bytes_per_second": 6236787.495545066,
+          "db_write_ms_per_second": 199.39954188678013,
+          "peak_resident_bytes": 151523328
+        },
+        {
+          "node": "node06",
+          "node_clock_seconds": 10.000133,
+          "cpu_core_equivalents": 1.6787027732531155,
+          "network_received_bytes_per_second": 9866010.88205527,
+          "network_sent_bytes_per_second": 6563308.1080021635,
+          "db_write_ms_per_second": 209.4716875265559,
+          "peak_resident_bytes": 155594752
+        },
+        {
+          "node": "node07",
+          "node_clock_seconds": 10.000084,
+          "cpu_core_equivalents": 1.6185986037717286,
+          "network_received_bytes_per_second": 9846060.293093538,
+          "network_sent_bytes_per_second": 6432591.266233364,
+          "db_write_ms_per_second": 209.29495892234505,
+          "peak_resident_bytes": 152645632
+        },
+        {
+          "node": "node08",
+          "node_clock_seconds": 10.000167,
+          "cpu_core_equivalents": 1.5734209238705714,
+          "network_received_bytes_per_second": 9967303.346034123,
+          "network_sent_bytes_per_second": 6093310.041722303,
+          "db_write_ms_per_second": 201.22732440368247,
+          "peak_resident_bytes": 155439104
+        },
+        {
+          "node": "node09",
+          "node_clock_seconds": 10.000136,
+          "cpu_core_equivalents": 1.7001283782540557,
+          "network_received_bytes_per_second": 9827524.04567298,
+          "network_sent_bytes_per_second": 6754880.033631543,
+          "db_write_ms_per_second": 215.18092043948207,
+          "peak_resident_bytes": 153108480
+        },
+        {
+          "node": "node10",
+          "node_clock_seconds": 10.000144,
+          "cpu_core_equivalents": 1.6136414635629246,
+          "network_received_bytes_per_second": 9811088.520325307,
+          "network_sent_bytes_per_second": 6484327.4256850695,
+          "db_write_ms_per_second": 208.92466238486168,
+          "peak_resident_bytes": 153018368
+        }
+      ],
+      "timing": "RPC intervals bound each snapshot; TPS uses limiting stats snapshot, never later prefix query completion",
+      "measurement_quality": "canonical boundary proof passed"
+    },
+    "state_audit": {
+      "passed": true,
+      "nodes": [
+        {
+          "node": "node01",
+          "accounts_checked": 1024,
+          "confirmed": 240000,
+          "height": 241,
+          "head": "b78404aa64968fd594b3c421a900523aa8d3321bbe9e08b29bd7aba86796e094",
+          "state": {
+            "burned": 0,
+            "head": "b78404aa64968fd594b3c421a900523aa8d3321bbe9e08b29bd7aba86796e094",
+            "state_hash": "588e40de2e50173b9416c84e63e432ae7b5ad27d05cf3db0638522e4eabd13e3",
+            "supply": 1024000000000,
+            "transactions": 240000
+          },
+          "passed": true,
+          "anchor_checks": [
+            {
+              "anchor": {
+                "hash": "421a3260f8bfc3e7c76ecdfc6ffb45f921ebd50943a39d4ee0d86e84cc12b82f",
+                "height": 40,
+                "transactions": 39040
+              },
+              "matches": true
+            },
+            {
+              "anchor": {
+                "hash": "4eebccd543ece4f7e7a2a2e779c5a35ab18e8ae4f36743aa112e126ee1c0c3e0",
+                "height": 240,
+                "transactions": 238976
+              },
+              "matches": true
+            }
+          ]
+        },
+        {
+          "node": "node02",
+          "accounts_checked": 1024,
+          "confirmed": 240000,
+          "height": 241,
+          "head": "b78404aa64968fd594b3c421a900523aa8d3321bbe9e08b29bd7aba86796e094",
+          "state": {
+            "burned": 0,
+            "head": "b78404aa64968fd594b3c421a900523aa8d3321bbe9e08b29bd7aba86796e094",
+            "state_hash": "588e40de2e50173b9416c84e63e432ae7b5ad27d05cf3db0638522e4eabd13e3",
+            "supply": 1024000000000,
+            "transactions": 240000
+          },
+          "passed": true,
+          "anchor_checks": [
+            {
+              "anchor": {
+                "hash": "421a3260f8bfc3e7c76ecdfc6ffb45f921ebd50943a39d4ee0d86e84cc12b82f",
+                "height": 40,
+                "transactions": 39040
+              },
+              "matches": true
+            },
+            {
+              "anchor": {
+                "hash": "4eebccd543ece4f7e7a2a2e779c5a35ab18e8ae4f36743aa112e126ee1c0c3e0",
+                "height": 240,
+                "transactions": 238976
+              },
+              "matches": true
+            }
+          ]
+        },
+        {
+          "node": "node03",
+          "accounts_checked": 1024,
+          "confirmed": 240000,
+          "height": 241,
+          "head": "b78404aa64968fd594b3c421a900523aa8d3321bbe9e08b29bd7aba86796e094",
+          "state": {
+            "burned": 0,
+            "head": "b78404aa64968fd594b3c421a900523aa8d3321bbe9e08b29bd7aba86796e094",
+            "state_hash": "588e40de2e50173b9416c84e63e432ae7b5ad27d05cf3db0638522e4eabd13e3",
+            "supply": 1024000000000,
+            "transactions": 240000
+          },
+          "passed": true,
+          "anchor_checks": [
+            {
+              "anchor": {
+                "hash": "421a3260f8bfc3e7c76ecdfc6ffb45f921ebd50943a39d4ee0d86e84cc12b82f",
+                "height": 40,
+                "transactions": 39040
+              },
+              "matches": true
+            },
+            {
+              "anchor": {
+                "hash": "4eebccd543ece4f7e7a2a2e779c5a35ab18e8ae4f36743aa112e126ee1c0c3e0",
+                "height": 240,
+                "transactions": 238976
+              },
+              "matches": true
+            }
+          ]
+        },
+        {
+          "node": "node04",
+          "accounts_checked": 1024,
+          "confirmed": 240000,
+          "height": 241,
+          "head": "b78404aa64968fd594b3c421a900523aa8d3321bbe9e08b29bd7aba86796e094",
+          "state": {
+            "burned": 0,
+            "head": "b78404aa64968fd594b3c421a900523aa8d3321bbe9e08b29bd7aba86796e094",
+            "state_hash": "588e40de2e50173b9416c84e63e432ae7b5ad27d05cf3db0638522e4eabd13e3",
+            "supply": 1024000000000,
+            "transactions": 240000
+          },
+          "passed": true,
+          "anchor_checks": [
+            {
+              "anchor": {
+                "hash": "421a3260f8bfc3e7c76ecdfc6ffb45f921ebd50943a39d4ee0d86e84cc12b82f",
+                "height": 40,
+                "transactions": 39040
+              },
+              "matches": true
+            },
+            {
+              "anchor": {
+                "hash": "4eebccd543ece4f7e7a2a2e779c5a35ab18e8ae4f36743aa112e126ee1c0c3e0",
+                "height": 240,
+                "transactions": 238976
+              },
+              "matches": true
+            }
+          ]
+        },
+        {
+          "node": "node05",
+          "accounts_checked": 1024,
+          "confirmed": 240000,
+          "height": 241,
+          "head": "b78404aa64968fd594b3c421a900523aa8d3321bbe9e08b29bd7aba86796e094",
+          "state": {
+            "burned": 0,
+            "head": "b78404aa64968fd594b3c421a900523aa8d3321bbe9e08b29bd7aba86796e094",
+            "state_hash": "588e40de2e50173b9416c84e63e432ae7b5ad27d05cf3db0638522e4eabd13e3",
+            "supply": 1024000000000,
+            "transactions": 240000
+          },
+          "passed": true,
+          "anchor_checks": [
+            {
+              "anchor": {
+                "hash": "421a3260f8bfc3e7c76ecdfc6ffb45f921ebd50943a39d4ee0d86e84cc12b82f",
+                "height": 40,
+                "transactions": 39040
+              },
+              "matches": true
+            },
+            {
+              "anchor": {
+                "hash": "4eebccd543ece4f7e7a2a2e779c5a35ab18e8ae4f36743aa112e126ee1c0c3e0",
+                "height": 240,
+                "transactions": 238976
+              },
+              "matches": true
+            }
+          ]
+        },
+        {
+          "node": "node06",
+          "accounts_checked": 1024,
+          "confirmed": 240000,
+          "height": 241,
+          "head": "b78404aa64968fd594b3c421a900523aa8d3321bbe9e08b29bd7aba86796e094",
+          "state": {
+            "burned": 0,
+            "head": "b78404aa64968fd594b3c421a900523aa8d3321bbe9e08b29bd7aba86796e094",
+            "state_hash": "588e40de2e50173b9416c84e63e432ae7b5ad27d05cf3db0638522e4eabd13e3",
+            "supply": 1024000000000,
+            "transactions": 240000
+          },
+          "passed": true,
+          "anchor_checks": [
+            {
+              "anchor": {
+                "hash": "421a3260f8bfc3e7c76ecdfc6ffb45f921ebd50943a39d4ee0d86e84cc12b82f",
+                "height": 40,
+                "transactions": 39040
+              },
+              "matches": true
+            },
+            {
+              "anchor": {
+                "hash": "4eebccd543ece4f7e7a2a2e779c5a35ab18e8ae4f36743aa112e126ee1c0c3e0",
+                "height": 240,
+                "transactions": 238976
+              },
+              "matches": true
+            }
+          ]
+        },
+        {
+          "node": "node07",
+          "accounts_checked": 1024,
+          "confirmed": 240000,
+          "height": 241,
+          "head": "b78404aa64968fd594b3c421a900523aa8d3321bbe9e08b29bd7aba86796e094",
+          "state": {
+            "burned": 0,
+            "head": "b78404aa64968fd594b3c421a900523aa8d3321bbe9e08b29bd7aba86796e094",
+            "state_hash": "588e40de2e50173b9416c84e63e432ae7b5ad27d05cf3db0638522e4eabd13e3",
+            "supply": 1024000000000,
+            "transactions": 240000
+          },
+          "passed": true,
+          "anchor_checks": [
+            {
+              "anchor": {
+                "hash": "421a3260f8bfc3e7c76ecdfc6ffb45f921ebd50943a39d4ee0d86e84cc12b82f",
+                "height": 40,
+                "transactions": 39040
+              },
+              "matches": true
+            },
+            {
+              "anchor": {
+                "hash": "4eebccd543ece4f7e7a2a2e779c5a35ab18e8ae4f36743aa112e126ee1c0c3e0",
+                "height": 240,
+                "transactions": 238976
+              },
+              "matches": true
+            }
+          ]
+        },
+        {
+          "node": "node08",
+          "accounts_checked": 1024,
+          "confirmed": 240000,
+          "height": 241,
+          "head": "b78404aa64968fd594b3c421a900523aa8d3321bbe9e08b29bd7aba86796e094",
+          "state": {
+            "burned": 0,
+            "head": "b78404aa64968fd594b3c421a900523aa8d3321bbe9e08b29bd7aba86796e094",
+            "state_hash": "588e40de2e50173b9416c84e63e432ae7b5ad27d05cf3db0638522e4eabd13e3",
+            "supply": 1024000000000,
+            "transactions": 240000
+          },
+          "passed": true,
+          "anchor_checks": [
+            {
+              "anchor": {
+                "hash": "421a3260f8bfc3e7c76ecdfc6ffb45f921ebd50943a39d4ee0d86e84cc12b82f",
+                "height": 40,
+                "transactions": 39040
+              },
+              "matches": true
+            },
+            {
+              "anchor": {
+                "hash": "4eebccd543ece4f7e7a2a2e779c5a35ab18e8ae4f36743aa112e126ee1c0c3e0",
+                "height": 240,
+                "transactions": 238976
+              },
+              "matches": true
+            }
+          ]
+        },
+        {
+          "node": "node09",
+          "accounts_checked": 1024,
+          "confirmed": 240000,
+          "height": 241,
+          "head": "b78404aa64968fd594b3c421a900523aa8d3321bbe9e08b29bd7aba86796e094",
+          "state": {
+            "burned": 0,
+            "head": "b78404aa64968fd594b3c421a900523aa8d3321bbe9e08b29bd7aba86796e094",
+            "state_hash": "588e40de2e50173b9416c84e63e432ae7b5ad27d05cf3db0638522e4eabd13e3",
+            "supply": 1024000000000,
+            "transactions": 240000
+          },
+          "passed": true,
+          "anchor_checks": [
+            {
+              "anchor": {
+                "hash": "421a3260f8bfc3e7c76ecdfc6ffb45f921ebd50943a39d4ee0d86e84cc12b82f",
+                "height": 40,
+                "transactions": 39040
+              },
+              "matches": true
+            },
+            {
+              "anchor": {
+                "hash": "4eebccd543ece4f7e7a2a2e779c5a35ab18e8ae4f36743aa112e126ee1c0c3e0",
+                "height": 240,
+                "transactions": 238976
+              },
+              "matches": true
+            }
+          ]
+        },
+        {
+          "node": "node10",
+          "accounts_checked": 1024,
+          "confirmed": 240000,
+          "height": 241,
+          "head": "b78404aa64968fd594b3c421a900523aa8d3321bbe9e08b29bd7aba86796e094",
+          "state": {
+            "burned": 0,
+            "head": "b78404aa64968fd594b3c421a900523aa8d3321bbe9e08b29bd7aba86796e094",
+            "state_hash": "588e40de2e50173b9416c84e63e432ae7b5ad27d05cf3db0638522e4eabd13e3",
+            "supply": 1024000000000,
+            "transactions": 240000
+          },
+          "passed": true,
+          "anchor_checks": [
+            {
+              "anchor": {
+                "hash": "421a3260f8bfc3e7c76ecdfc6ffb45f921ebd50943a39d4ee0d86e84cc12b82f",
+                "height": 40,
+                "transactions": 39040
+              },
+              "matches": true
+            },
+            {
+              "anchor": {
+                "hash": "4eebccd543ece4f7e7a2a2e779c5a35ab18e8ae4f36743aa112e126ee1c0c3e0",
+                "height": 240,
+                "transactions": 238976
+              },
+              "matches": true
+            }
+          ]
+        }
+      ],
+      "all_heads_equal": true,
+      "method": "stopped nodes reopened without production or peers; each balance reconstructed from dataset routes and nonce; endpoint hashes checked on persisted canonical chains",
+      "measurement_or_drain_extended": false
+    },
+    "audited_measurement": {
+      "passed": true,
+      "reasons": [],
+      "endpoint_spans": [
+        0.0033291090512648225,
+        0.002389774890616536
+      ],
+      "height_delta": 200,
+      "transaction_delta": 199936,
+      "measurement_seconds": 9.99954697798239,
+      "tps": 19994.505795135643,
+      "tps_bounds": [
+        19988.789857724343,
+        20000.22500250837
+      ],
+      "mean_common_block_interval_ms": 49.99773488991195,
+      "block_interval_bounds_ms": [
+        49.98343768005725,
+        50.01203209976666
+      ]
+    },
+    "cleanup_errors": []
+  },
+  {
+    "case": {
+      "suite": "throughput",
+      "mode": "throughput",
+      "rate": 30000,
+      "nodes": 10,
+      "repeat": 1,
+      "pattern": "steady",
+      "group": "baseline",
+      "revision": "1504583cda142c8f50fcc6215864160ae469f333"
+    },
+    "status": "complete",
+    "dataset_sha256": "101b045a90e95dca1ffab93f0dcac0e85486a9c03ba67cf9e06bc44fb61717a0",
+    "metrics": {
+      "offered_tps": 30000,
+      "common_commit_tps": null,
+      "achieved_send_tps": 30003.2,
+      "common_commit_tps_rpc_interval_bounds": null,
+      "common_observation_tps": 28867.309326949533,
+      "proven_common_tps": 28867.309326949533,
+      "common_boundary_proof_passed": true,
+      "common_observation_tps_acquisition_interval_bounds": [
+        28783.879857797194,
+        28951.22383910495
+      ],
+      "common_observation_note": "net common-prefix observation rate; interval spans stats acquisition through prefix checks, no atomic global snapshot or finality claimed",
+      "common_observation_boundary_targets": [
+        2,
+        12
+      ],
+      "measurement_seconds": 9.99997775699012,
+      "measurement_samples": 11,
+      "boundary_canonical_proof_passed": false,
+      "skipped_stats_targets": [],
+      "diagnostic_prefix_observed_tps": null,
+      "diagnostic_prefix_rpc_interval_bounds": null,
+      "diagnostic_prefix_note": "snapshot time corrected, but boundaries may be reorganized; not used as proven TPS",
+      "sent_unique_completed_all_ingress": 360000,
+      "sent_unique_attempted_upper_bound": 360000,
+      "sent_unique": 360000,
+      "sent_wire_copies_completed": 3600000,
+      "completed_per_ingress": [
+        360000,
+        360000,
+        360000,
+        360000,
+        360000,
+        360000,
+        360000,
+        360000,
+        360000,
+        360000
+      ],
+      "partial_batch": null,
+      "load_error": null,
+      "cutoff_seconds": 12.000471287057735,
+      "generator_finished_seconds": 12.002498168032616,
+      "p50_ms": 423.8494209712371,
+      "p95_ms": 903.6748890066519,
+      "p99_ms": 1259.8240580409765,
+      "p99_after_send_ms": 1258.4786349907517,
+      "latency_label": "first observed identical transaction position on all ten nodes; no finality guarantee",
+      "latency_poll_seconds": 0.05,
+      "latency_sample_hz_total": 2,
+      "latency_note": "upper observation latency includes query/round-trip/polling delay; not node commit timestamp",
+      "samples": 20,
+      "unresolved_samples": 0,
+      "drained": true,
+      "drained_observed_seconds": 13.00289782404434,
+      "checks": {
+        "accounts_checked_per_node": 1024,
+        "state": {
+          "burned": 0,
+          "head": "4845af7ab5c6de136f5942b361b7e238404471ecf7aa51cd6b54249c04589799",
+          "state_hash": "4ba0ae208cca38aac9d6150fb11ddcd8085a76eb1e97484037a5192013b792f7",
+          "supply": 1024000000000,
+          "transactions": 360000
+        }
+      },
+      "resources": [
+        {
+          "node": "node01",
+          "node_clock_seconds": 10.002488,
+          "cpu_core_equivalents": 2.5693805381221155,
+          "network_received_bytes_per_second": 18620649.482408777,
+          "network_sent_bytes_per_second": 16935668.105775286,
+          "db_write_ms_per_second": 284.554774971987,
+          "peak_resident_bytes": 464207872
+        },
+        {
+          "node": "node02",
+          "node_clock_seconds": 9.999983,
+          "cpu_core_equivalents": 2.7071660021822037,
+          "network_received_bytes_per_second": 20086795.74755277,
+          "network_sent_bytes_per_second": 18037695.96408314,
+          "db_write_ms_per_second": 293.5744237765204,
+          "peak_resident_bytes": 482340864
+        },
+        {
+          "node": "node03",
+          "node_clock_seconds": 9.99998,
+          "cpu_core_equivalents": 2.6537608075216146,
+          "network_received_bytes_per_second": 20119022.838045675,
+          "network_sent_bytes_per_second": 14984331.868663736,
+          "db_write_ms_per_second": 332.1728862457724,
+          "peak_resident_bytes": 484384768
+        },
+        {
+          "node": "node04",
+          "node_clock_seconds": 10.000019,
+          "cpu_core_equivalents": 2.7166569383518175,
+          "network_received_bytes_per_second": 21425491.491566166,
+          "network_sent_bytes_per_second": 12760758.154559506,
+          "db_write_ms_per_second": 417.02733114807086,
+          "peak_resident_bytes": 486748160
+        },
+        {
+          "node": "node05",
+          "node_clock_seconds": 9.999996,
+          "cpu_core_equivalents": 2.6028253411301367,
+          "network_received_bytes_per_second": 18609761.543904617,
+          "network_sent_bytes_per_second": 16995478.89819156,
+          "db_write_ms_per_second": 291.9615642846257,
+          "peak_resident_bytes": 475918336
+        },
+        {
+          "node": "node06",
+          "node_clock_seconds": 9.999934,
+          "cpu_core_equivalents": 2.690217755437186,
+          "network_received_bytes_per_second": 19892697.691804767,
+          "network_sent_bytes_per_second": 13238952.977089649,
+          "db_write_ms_per_second": 350.90812349361505,
+          "peak_resident_bytes": 474664960
+        },
+        {
+          "node": "node07",
+          "node_clock_seconds": 9.999986,
+          "cpu_core_equivalents": 2.7278511189915666,
+          "network_received_bytes_per_second": 22102356.1432986,
+          "network_sent_bytes_per_second": 13619090.766727073,
+          "db_write_ms_per_second": 399.86107560550585,
+          "peak_resident_bytes": 482070528
+        },
+        {
+          "node": "node08",
+          "node_clock_seconds": 10.000085,
+          "cpu_core_equivalents": 2.6146132757871556,
+          "network_received_bytes_per_second": 19003721.168370068,
+          "network_sent_bytes_per_second": 14781266.459235096,
+          "db_write_ms_per_second": 290.2141984793129,
+          "peak_resident_bytes": 468606976
+        },
+        {
+          "node": "node09",
+          "node_clock_seconds": 10.000045,
+          "cpu_core_equivalents": 2.8321783551974016,
+          "network_received_bytes_per_second": 22024515.489680298,
+          "network_sent_bytes_per_second": 14689807.895864468,
+          "db_write_ms_per_second": 354.08726700729846,
+          "peak_resident_bytes": 481558528
+        },
+        {
+          "node": "node10",
+          "node_clock_seconds": 10.000049,
+          "cpu_core_equivalents": 2.7967853957515603,
+          "network_received_bytes_per_second": 22998970.105046485,
+          "network_sent_bytes_per_second": 16049627.35682595,
+          "db_write_ms_per_second": 422.6867056351424,
+          "peak_resident_bytes": 483172352
+        }
+      ],
+      "timing": "RPC intervals bound each snapshot; TPS uses limiting stats snapshot, never later prefix query completion",
+      "measurement_quality": "TPS unresolved: canonical boundary proof unavailable/failed"
+    },
+    "state_audit": {
+      "passed": true,
+      "nodes": [
+        {
+          "node": "node01",
+          "accounts_checked": 1024,
+          "confirmed": 360000,
+          "height": 236,
+          "head": "4845af7ab5c6de136f5942b361b7e238404471ecf7aa51cd6b54249c04589799",
+          "state": {
+            "burned": 0,
+            "head": "4845af7ab5c6de136f5942b361b7e238404471ecf7aa51cd6b54249c04589799",
+            "state_hash": "4ba0ae208cca38aac9d6150fb11ddcd8085a76eb1e97484037a5192013b792f7",
+            "supply": 1024000000000,
+            "transactions": 360000
+          },
+          "passed": true,
+          "anchor_checks": [
+            {
+              "anchor": {
+                "hash": "6711be25acd0c88dab813c66d58a79860943345e5ad069d00cc347a8646eced1",
+                "height": 40,
+                "transactions": 57216
+              },
+              "matches": true
+            },
+            {
+              "anchor": {
+                "hash": "180f27235d961c8a7a789ca18dfbaaca7eb5a1f799abb62fec2a7e35cdf308a1",
+                "height": 227,
+                "transactions": 346624
+              },
+              "matches": true
+            }
+          ]
+        },
+        {
+          "node": "node02",
+          "accounts_checked": 1024,
+          "confirmed": 360000,
+          "height": 236,
+          "head": "4845af7ab5c6de136f5942b361b7e238404471ecf7aa51cd6b54249c04589799",
+          "state": {
+            "burned": 0,
+            "head": "4845af7ab5c6de136f5942b361b7e238404471ecf7aa51cd6b54249c04589799",
+            "state_hash": "4ba0ae208cca38aac9d6150fb11ddcd8085a76eb1e97484037a5192013b792f7",
+            "supply": 1024000000000,
+            "transactions": 360000
+          },
+          "passed": true,
+          "anchor_checks": [
+            {
+              "anchor": {
+                "hash": "6711be25acd0c88dab813c66d58a79860943345e5ad069d00cc347a8646eced1",
+                "height": 40,
+                "transactions": 57216
+              },
+              "matches": true
+            },
+            {
+              "anchor": {
+                "hash": "180f27235d961c8a7a789ca18dfbaaca7eb5a1f799abb62fec2a7e35cdf308a1",
+                "height": 227,
+                "transactions": 346624
+              },
+              "matches": true
+            }
+          ]
+        },
+        {
+          "node": "node03",
+          "accounts_checked": 1024,
+          "confirmed": 360000,
+          "height": 236,
+          "head": "4845af7ab5c6de136f5942b361b7e238404471ecf7aa51cd6b54249c04589799",
+          "state": {
+            "burned": 0,
+            "head": "4845af7ab5c6de136f5942b361b7e238404471ecf7aa51cd6b54249c04589799",
+            "state_hash": "4ba0ae208cca38aac9d6150fb11ddcd8085a76eb1e97484037a5192013b792f7",
+            "supply": 1024000000000,
+            "transactions": 360000
+          },
+          "passed": true,
+          "anchor_checks": [
+            {
+              "anchor": {
+                "hash": "6711be25acd0c88dab813c66d58a79860943345e5ad069d00cc347a8646eced1",
+                "height": 40,
+                "transactions": 57216
+              },
+              "matches": true
+            },
+            {
+              "anchor": {
+                "hash": "180f27235d961c8a7a789ca18dfbaaca7eb5a1f799abb62fec2a7e35cdf308a1",
+                "height": 227,
+                "transactions": 346624
+              },
+              "matches": true
+            }
+          ]
+        },
+        {
+          "node": "node04",
+          "accounts_checked": 1024,
+          "confirmed": 360000,
+          "height": 236,
+          "head": "4845af7ab5c6de136f5942b361b7e238404471ecf7aa51cd6b54249c04589799",
+          "state": {
+            "burned": 0,
+            "head": "4845af7ab5c6de136f5942b361b7e238404471ecf7aa51cd6b54249c04589799",
+            "state_hash": "4ba0ae208cca38aac9d6150fb11ddcd8085a76eb1e97484037a5192013b792f7",
+            "supply": 1024000000000,
+            "transactions": 360000
+          },
+          "passed": true,
+          "anchor_checks": [
+            {
+              "anchor": {
+                "hash": "6711be25acd0c88dab813c66d58a79860943345e5ad069d00cc347a8646eced1",
+                "height": 40,
+                "transactions": 57216
+              },
+              "matches": true
+            },
+            {
+              "anchor": {
+                "hash": "180f27235d961c8a7a789ca18dfbaaca7eb5a1f799abb62fec2a7e35cdf308a1",
+                "height": 227,
+                "transactions": 346624
+              },
+              "matches": true
+            }
+          ]
+        },
+        {
+          "node": "node05",
+          "accounts_checked": 1024,
+          "confirmed": 360000,
+          "height": 236,
+          "head": "4845af7ab5c6de136f5942b361b7e238404471ecf7aa51cd6b54249c04589799",
+          "state": {
+            "burned": 0,
+            "head": "4845af7ab5c6de136f5942b361b7e238404471ecf7aa51cd6b54249c04589799",
+            "state_hash": "4ba0ae208cca38aac9d6150fb11ddcd8085a76eb1e97484037a5192013b792f7",
+            "supply": 1024000000000,
+            "transactions": 360000
+          },
+          "passed": true,
+          "anchor_checks": [
+            {
+              "anchor": {
+                "hash": "6711be25acd0c88dab813c66d58a79860943345e5ad069d00cc347a8646eced1",
+                "height": 40,
+                "transactions": 57216
+              },
+              "matches": true
+            },
+            {
+              "anchor": {
+                "hash": "180f27235d961c8a7a789ca18dfbaaca7eb5a1f799abb62fec2a7e35cdf308a1",
+                "height": 227,
+                "transactions": 346624
+              },
+              "matches": true
+            }
+          ]
+        },
+        {
+          "node": "node06",
+          "accounts_checked": 1024,
+          "confirmed": 360000,
+          "height": 236,
+          "head": "4845af7ab5c6de136f5942b361b7e238404471ecf7aa51cd6b54249c04589799",
+          "state": {
+            "burned": 0,
+            "head": "4845af7ab5c6de136f5942b361b7e238404471ecf7aa51cd6b54249c04589799",
+            "state_hash": "4ba0ae208cca38aac9d6150fb11ddcd8085a76eb1e97484037a5192013b792f7",
+            "supply": 1024000000000,
+            "transactions": 360000
+          },
+          "passed": true,
+          "anchor_checks": [
+            {
+              "anchor": {
+                "hash": "6711be25acd0c88dab813c66d58a79860943345e5ad069d00cc347a8646eced1",
+                "height": 40,
+                "transactions": 57216
+              },
+              "matches": true
+            },
+            {
+              "anchor": {
+                "hash": "180f27235d961c8a7a789ca18dfbaaca7eb5a1f799abb62fec2a7e35cdf308a1",
+                "height": 227,
+                "transactions": 346624
+              },
+              "matches": true
+            }
+          ]
+        },
+        {
+          "node": "node07",
+          "accounts_checked": 1024,
+          "confirmed": 360000,
+          "height": 236,
+          "head": "4845af7ab5c6de136f5942b361b7e238404471ecf7aa51cd6b54249c04589799",
+          "state": {
+            "burned": 0,
+            "head": "4845af7ab5c6de136f5942b361b7e238404471ecf7aa51cd6b54249c04589799",
+            "state_hash": "4ba0ae208cca38aac9d6150fb11ddcd8085a76eb1e97484037a5192013b792f7",
+            "supply": 1024000000000,
+            "transactions": 360000
+          },
+          "passed": true,
+          "anchor_checks": [
+            {
+              "anchor": {
+                "hash": "6711be25acd0c88dab813c66d58a79860943345e5ad069d00cc347a8646eced1",
+                "height": 40,
+                "transactions": 57216
+              },
+              "matches": true
+            },
+            {
+              "anchor": {
+                "hash": "180f27235d961c8a7a789ca18dfbaaca7eb5a1f799abb62fec2a7e35cdf308a1",
+                "height": 227,
+                "transactions": 346624
+              },
+              "matches": true
+            }
+          ]
+        },
+        {
+          "node": "node08",
+          "accounts_checked": 1024,
+          "confirmed": 360000,
+          "height": 236,
+          "head": "4845af7ab5c6de136f5942b361b7e238404471ecf7aa51cd6b54249c04589799",
+          "state": {
+            "burned": 0,
+            "head": "4845af7ab5c6de136f5942b361b7e238404471ecf7aa51cd6b54249c04589799",
+            "state_hash": "4ba0ae208cca38aac9d6150fb11ddcd8085a76eb1e97484037a5192013b792f7",
+            "supply": 1024000000000,
+            "transactions": 360000
+          },
+          "passed": true,
+          "anchor_checks": [
+            {
+              "anchor": {
+                "hash": "6711be25acd0c88dab813c66d58a79860943345e5ad069d00cc347a8646eced1",
+                "height": 40,
+                "transactions": 57216
+              },
+              "matches": true
+            },
+            {
+              "anchor": {
+                "hash": "180f27235d961c8a7a789ca18dfbaaca7eb5a1f799abb62fec2a7e35cdf308a1",
+                "height": 227,
+                "transactions": 346624
+              },
+              "matches": true
+            }
+          ]
+        },
+        {
+          "node": "node09",
+          "accounts_checked": 1024,
+          "confirmed": 360000,
+          "height": 236,
+          "head": "4845af7ab5c6de136f5942b361b7e238404471ecf7aa51cd6b54249c04589799",
+          "state": {
+            "burned": 0,
+            "head": "4845af7ab5c6de136f5942b361b7e238404471ecf7aa51cd6b54249c04589799",
+            "state_hash": "4ba0ae208cca38aac9d6150fb11ddcd8085a76eb1e97484037a5192013b792f7",
+            "supply": 1024000000000,
+            "transactions": 360000
+          },
+          "passed": true,
+          "anchor_checks": [
+            {
+              "anchor": {
+                "hash": "6711be25acd0c88dab813c66d58a79860943345e5ad069d00cc347a8646eced1",
+                "height": 40,
+                "transactions": 57216
+              },
+              "matches": true
+            },
+            {
+              "anchor": {
+                "hash": "180f27235d961c8a7a789ca18dfbaaca7eb5a1f799abb62fec2a7e35cdf308a1",
+                "height": 227,
+                "transactions": 346624
+              },
+              "matches": true
+            }
+          ]
+        },
+        {
+          "node": "node10",
+          "accounts_checked": 1024,
+          "confirmed": 360000,
+          "height": 236,
+          "head": "4845af7ab5c6de136f5942b361b7e238404471ecf7aa51cd6b54249c04589799",
+          "state": {
+            "burned": 0,
+            "head": "4845af7ab5c6de136f5942b361b7e238404471ecf7aa51cd6b54249c04589799",
+            "state_hash": "4ba0ae208cca38aac9d6150fb11ddcd8085a76eb1e97484037a5192013b792f7",
+            "supply": 1024000000000,
+            "transactions": 360000
+          },
+          "passed": true,
+          "anchor_checks": [
+            {
+              "anchor": {
+                "hash": "6711be25acd0c88dab813c66d58a79860943345e5ad069d00cc347a8646eced1",
+                "height": 40,
+                "transactions": 57216
+              },
+              "matches": true
+            },
+            {
+              "anchor": {
+                "hash": "180f27235d961c8a7a789ca18dfbaaca7eb5a1f799abb62fec2a7e35cdf308a1",
+                "height": 227,
+                "transactions": 346624
+              },
+              "matches": true
+            }
+          ]
+        }
+      ],
+      "all_heads_equal": true,
+      "method": "stopped nodes reopened without production or peers; each balance reconstructed from dataset routes and nonce; endpoint hashes checked on persisted canonical chains",
+      "measurement_or_drain_extended": false
+    },
+    "audited_measurement": {
+      "passed": true,
+      "reasons": [],
+      "endpoint_spans": [
+        0.0035874349996447563,
+        0.054529723012819886
+      ],
+      "height_delta": 187,
+      "transaction_delta": 289408,
+      "measurement_seconds": 10.025458095944487,
+      "tps": 28867.309326949533,
+      "tps_bounds": [
+        28783.879857797194,
+        28951.22383910495
+      ],
+      "mean_common_block_interval_ms": 53.61207537938228,
+      "block_interval_bounds_ms": [
+        53.456681908760714,
+        53.767468850003844
+      ]
+    },
+    "cleanup_errors": []
+  },
+  {
+    "case": {
+      "suite": "throughput",
+      "mode": "throughput",
+      "rate": 40000,
+      "nodes": 10,
+      "repeat": 1,
+      "pattern": "steady",
+      "group": "baseline",
+      "revision": "1504583cda142c8f50fcc6215864160ae469f333"
+    },
+    "status": "complete",
+    "dataset_sha256": "101b045a90e95dca1ffab93f0dcac0e85486a9c03ba67cf9e06bc44fb61717a0",
+    "metrics": {
+      "offered_tps": 40000,
+      "common_commit_tps": null,
+      "achieved_send_tps": 40000.0,
+      "common_commit_tps_rpc_interval_bounds": null,
+      "common_observation_tps": null,
+      "proven_common_tps": null,
+      "common_boundary_proof_passed": false,
+      "common_observation_tps_acquisition_interval_bounds": null,
+      "common_observation_note": "net common-prefix observation rate; interval spans stats acquisition through prefix checks, no atomic global snapshot or finality claimed",
+      "common_observation_boundary_targets": [],
+      "measurement_seconds": 9.000229937606491,
+      "measurement_samples": 10,
+      "boundary_canonical_proof_passed": false,
+      "skipped_stats_targets": [],
+      "diagnostic_prefix_observed_tps": null,
+      "diagnostic_prefix_rpc_interval_bounds": null,
+      "diagnostic_prefix_note": "snapshot time corrected, but boundaries may be reorganized; not used as proven TPS",
+      "sent_unique_completed_all_ingress": 479872,
+      "sent_unique_attempted_upper_bound": 479872,
+      "sent_unique": 479872,
+      "sent_wire_copies_completed": 4798720,
+      "completed_per_ingress": [
+        479872,
+        479872,
+        479872,
+        479872,
+        479872,
+        479872,
+        479872,
+        479872,
+        479872,
+        479872
+      ],
+      "partial_batch": null,
+      "load_error": null,
+      "cutoff_seconds": 12.000243171933107,
+      "generator_finished_seconds": 12.003636737004854,
+      "p50_ms": 1320.7298709312454,
+      "p95_ms": 2366.4479659637436,
+      "p99_ms": 2815.16062899027,
+      "p99_after_send_ms": 2813.3636460406706,
+      "latency_label": "first observed identical transaction position on all ten nodes; no finality guarantee",
+      "latency_poll_seconds": 0.05,
+      "latency_sample_hz_total": 2,
+      "latency_note": "upper observation latency includes query/round-trip/polling delay; not node commit timestamp",
+      "samples": 20,
+      "unresolved_samples": 0,
+      "drained": true,
+      "drained_observed_seconds": 14.003183092921972,
+      "checks": {
+        "accounts_checked_per_node": 1024,
+        "state": {
+          "burned": 0,
+          "head": "f08c29a54eb1ae37b010d923fab37053ecccf08ab6c8141148777c2ce8c5a674",
+          "state_hash": "e4c393a242c46a3130d96e239f26cfb85bce30315053be5338017dcd09195b8c",
+          "supply": 1024000000000,
+          "transactions": 479872
+        }
+      },
+      "resources": [
+        {
+          "node": "node01",
+          "node_clock_seconds": 8.997475,
+          "cpu_core_equivalents": 3.4894859946818415,
+          "network_received_bytes_per_second": 35610610.86582625,
+          "network_sent_bytes_per_second": 14002407.119775271,
+          "db_write_ms_per_second": 454.82272459773435,
+          "peak_resident_bytes": 722472960
+        },
+        {
+          "node": "node02",
+          "node_clock_seconds": 9.000842,
+          "cpu_core_equivalents": 3.5422437145324848,
+          "network_received_bytes_per_second": 28880074.664125867,
+          "network_sent_bytes_per_second": 27113294.400679402,
+          "db_write_ms_per_second": 410.3633470068688,
+          "peak_resident_bytes": 707182592
+        },
+        {
+          "node": "node03",
+          "node_clock_seconds": 8.999957,
+          "cpu_core_equivalents": 3.4788087320861645,
+          "network_received_bytes_per_second": 31312767.93878015,
+          "network_sent_bytes_per_second": 22633653.583011564,
+          "db_write_ms_per_second": 455.20003951129996,
+          "peak_resident_bytes": 746135552
+        },
+        {
+          "node": "node04",
+          "node_clock_seconds": 8.999954,
+          "cpu_core_equivalents": 3.5013313401379604,
+          "network_received_bytes_per_second": 34876468.03528107,
+          "network_sent_bytes_per_second": 12858298.4979701,
+          "db_write_ms_per_second": 495.5768672817661,
+          "peak_resident_bytes": 701505536
+        },
+        {
+          "node": "node05",
+          "node_clock_seconds": 9.01774,
+          "cpu_core_equivalents": 3.4656613519573645,
+          "network_received_bytes_per_second": 24811934.69760716,
+          "network_sent_bytes_per_second": 43618590.46723458,
+          "db_write_ms_per_second": 369.2636910134912,
+          "peak_resident_bytes": 705843200
+        },
+        {
+          "node": "node06",
+          "node_clock_seconds": 9.149368,
+          "cpu_core_equivalents": 3.5529809272072117,
+          "network_received_bytes_per_second": 33305659.69146721,
+          "network_sent_bytes_per_second": 15086580.843616739,
+          "db_write_ms_per_second": 493.99199780793595,
+          "peak_resident_bytes": 710754304
+        },
+        {
+          "node": "node07",
+          "node_clock_seconds": 9.01104,
+          "cpu_core_equivalents": 3.4907461291926354,
+          "network_received_bytes_per_second": 26926659.51987784,
+          "network_sent_bytes_per_second": 29341224.65331416,
+          "db_write_ms_per_second": 430.2315016912587,
+          "peak_resident_bytes": 740155392
+        },
+        {
+          "node": "node08",
+          "node_clock_seconds": 9.041879,
+          "cpu_core_equivalents": 3.5117875388511615,
+          "network_received_bytes_per_second": 25109475.80696446,
+          "network_sent_bytes_per_second": 31307050.44825307,
+          "db_write_ms_per_second": 389.14521859892176,
+          "peak_resident_bytes": 716169216
+        },
+        {
+          "node": "node09",
+          "node_clock_seconds": 9.020938,
+          "cpu_core_equivalents": 3.616689417441956,
+          "network_received_bytes_per_second": 31859702.727144342,
+          "network_sent_bytes_per_second": 16846168.325289454,
+          "db_write_ms_per_second": 462.5748850064152,
+          "peak_resident_bytes": 725012480
+        },
+        {
+          "node": "node10",
+          "node_clock_seconds": 8.998163,
+          "cpu_core_equivalents": 3.54382644546448,
+          "network_received_bytes_per_second": 30645390.28688411,
+          "network_sent_bytes_per_second": 20413384.709745757,
+          "db_write_ms_per_second": 427.2013045329363,
+          "peak_resident_bytes": 704114688
+        }
+      ],
+      "timing": "RPC intervals bound each snapshot; TPS uses limiting stats snapshot, never later prefix query completion",
+      "measurement_quality": "TPS unresolved: canonical boundary proof unavailable/failed"
+    },
+    "state_audit": {
+      "passed": true,
+      "nodes": [
+        {
+          "node": "node01",
+          "accounts_checked": 1024,
+          "confirmed": 479872,
+          "height": 187,
+          "head": "f08c29a54eb1ae37b010d923fab37053ecccf08ab6c8141148777c2ce8c5a674",
+          "state": {
+            "burned": 0,
+            "head": "f08c29a54eb1ae37b010d923fab37053ecccf08ab6c8141148777c2ce8c5a674",
+            "state_hash": "e4c393a242c46a3130d96e239f26cfb85bce30315053be5338017dcd09195b8c",
+            "supply": 1024000000000,
+            "transactions": 479872
+          },
+          "passed": true,
+          "anchor_checks": [
+            {
+              "anchor": {
+                "hash": "03a2a2505be0a9bb8dd03c8a9ad6569b715392d7e3e4eb2cecc5c55cfbc4eeea",
+                "height": 26,
+                "transactions": 55552
+              },
+              "matches": true
+            }
+          ]
+        },
+        {
+          "node": "node02",
+          "accounts_checked": 1024,
+          "confirmed": 479872,
+          "height": 187,
+          "head": "f08c29a54eb1ae37b010d923fab37053ecccf08ab6c8141148777c2ce8c5a674",
+          "state": {
+            "burned": 0,
+            "head": "f08c29a54eb1ae37b010d923fab37053ecccf08ab6c8141148777c2ce8c5a674",
+            "state_hash": "e4c393a242c46a3130d96e239f26cfb85bce30315053be5338017dcd09195b8c",
+            "supply": 1024000000000,
+            "transactions": 479872
+          },
+          "passed": true,
+          "anchor_checks": [
+            {
+              "anchor": {
+                "hash": "03a2a2505be0a9bb8dd03c8a9ad6569b715392d7e3e4eb2cecc5c55cfbc4eeea",
+                "height": 26,
+                "transactions": 55552
+              },
+              "matches": true
+            }
+          ]
+        },
+        {
+          "node": "node03",
+          "accounts_checked": 1024,
+          "confirmed": 479872,
+          "height": 187,
+          "head": "f08c29a54eb1ae37b010d923fab37053ecccf08ab6c8141148777c2ce8c5a674",
+          "state": {
+            "burned": 0,
+            "head": "f08c29a54eb1ae37b010d923fab37053ecccf08ab6c8141148777c2ce8c5a674",
+            "state_hash": "e4c393a242c46a3130d96e239f26cfb85bce30315053be5338017dcd09195b8c",
+            "supply": 1024000000000,
+            "transactions": 479872
+          },
+          "passed": true,
+          "anchor_checks": [
+            {
+              "anchor": {
+                "hash": "03a2a2505be0a9bb8dd03c8a9ad6569b715392d7e3e4eb2cecc5c55cfbc4eeea",
+                "height": 26,
+                "transactions": 55552
+              },
+              "matches": true
+            }
+          ]
+        },
+        {
+          "node": "node04",
+          "accounts_checked": 1024,
+          "confirmed": 479872,
+          "height": 187,
+          "head": "f08c29a54eb1ae37b010d923fab37053ecccf08ab6c8141148777c2ce8c5a674",
+          "state": {
+            "burned": 0,
+            "head": "f08c29a54eb1ae37b010d923fab37053ecccf08ab6c8141148777c2ce8c5a674",
+            "state_hash": "e4c393a242c46a3130d96e239f26cfb85bce30315053be5338017dcd09195b8c",
+            "supply": 1024000000000,
+            "transactions": 479872
+          },
+          "passed": true,
+          "anchor_checks": [
+            {
+              "anchor": {
+                "hash": "03a2a2505be0a9bb8dd03c8a9ad6569b715392d7e3e4eb2cecc5c55cfbc4eeea",
+                "height": 26,
+                "transactions": 55552
+              },
+              "matches": true
+            }
+          ]
+        },
+        {
+          "node": "node05",
+          "accounts_checked": 1024,
+          "confirmed": 479872,
+          "height": 187,
+          "head": "f08c29a54eb1ae37b010d923fab37053ecccf08ab6c8141148777c2ce8c5a674",
+          "state": {
+            "burned": 0,
+            "head": "f08c29a54eb1ae37b010d923fab37053ecccf08ab6c8141148777c2ce8c5a674",
+            "state_hash": "e4c393a242c46a3130d96e239f26cfb85bce30315053be5338017dcd09195b8c",
+            "supply": 1024000000000,
+            "transactions": 479872
+          },
+          "passed": true,
+          "anchor_checks": [
+            {
+              "anchor": {
+                "hash": "03a2a2505be0a9bb8dd03c8a9ad6569b715392d7e3e4eb2cecc5c55cfbc4eeea",
+                "height": 26,
+                "transactions": 55552
+              },
+              "matches": true
+            }
+          ]
+        },
+        {
+          "node": "node06",
+          "accounts_checked": 1024,
+          "confirmed": 479872,
+          "height": 187,
+          "head": "f08c29a54eb1ae37b010d923fab37053ecccf08ab6c8141148777c2ce8c5a674",
+          "state": {
+            "burned": 0,
+            "head": "f08c29a54eb1ae37b010d923fab37053ecccf08ab6c8141148777c2ce8c5a674",
+            "state_hash": "e4c393a242c46a3130d96e239f26cfb85bce30315053be5338017dcd09195b8c",
+            "supply": 1024000000000,
+            "transactions": 479872
+          },
+          "passed": true,
+          "anchor_checks": [
+            {
+              "anchor": {
+                "hash": "03a2a2505be0a9bb8dd03c8a9ad6569b715392d7e3e4eb2cecc5c55cfbc4eeea",
+                "height": 26,
+                "transactions": 55552
+              },
+              "matches": true
+            }
+          ]
+        },
+        {
+          "node": "node07",
+          "accounts_checked": 1024,
+          "confirmed": 479872,
+          "height": 187,
+          "head": "f08c29a54eb1ae37b010d923fab37053ecccf08ab6c8141148777c2ce8c5a674",
+          "state": {
+            "burned": 0,
+            "head": "f08c29a54eb1ae37b010d923fab37053ecccf08ab6c8141148777c2ce8c5a674",
+            "state_hash": "e4c393a242c46a3130d96e239f26cfb85bce30315053be5338017dcd09195b8c",
+            "supply": 1024000000000,
+            "transactions": 479872
+          },
+          "passed": true,
+          "anchor_checks": [
+            {
+              "anchor": {
+                "hash": "03a2a2505be0a9bb8dd03c8a9ad6569b715392d7e3e4eb2cecc5c55cfbc4eeea",
+                "height": 26,
+                "transactions": 55552
+              },
+              "matches": true
+            }
+          ]
+        },
+        {
+          "node": "node08",
+          "accounts_checked": 1024,
+          "confirmed": 479872,
+          "height": 187,
+          "head": "f08c29a54eb1ae37b010d923fab37053ecccf08ab6c8141148777c2ce8c5a674",
+          "state": {
+            "burned": 0,
+            "head": "f08c29a54eb1ae37b010d923fab37053ecccf08ab6c8141148777c2ce8c5a674",
+            "state_hash": "e4c393a242c46a3130d96e239f26cfb85bce30315053be5338017dcd09195b8c",
+            "supply": 1024000000000,
+            "transactions": 479872
+          },
+          "passed": true,
+          "anchor_checks": [
+            {
+              "anchor": {
+                "hash": "03a2a2505be0a9bb8dd03c8a9ad6569b715392d7e3e4eb2cecc5c55cfbc4eeea",
+                "height": 26,
+                "transactions": 55552
+              },
+              "matches": true
+            }
+          ]
+        },
+        {
+          "node": "node09",
+          "accounts_checked": 1024,
+          "confirmed": 479872,
+          "height": 187,
+          "head": "f08c29a54eb1ae37b010d923fab37053ecccf08ab6c8141148777c2ce8c5a674",
+          "state": {
+            "burned": 0,
+            "head": "f08c29a54eb1ae37b010d923fab37053ecccf08ab6c8141148777c2ce8c5a674",
+            "state_hash": "e4c393a242c46a3130d96e239f26cfb85bce30315053be5338017dcd09195b8c",
+            "supply": 1024000000000,
+            "transactions": 479872
+          },
+          "passed": true,
+          "anchor_checks": [
+            {
+              "anchor": {
+                "hash": "03a2a2505be0a9bb8dd03c8a9ad6569b715392d7e3e4eb2cecc5c55cfbc4eeea",
+                "height": 26,
+                "transactions": 55552
+              },
+              "matches": true
+            }
+          ]
+        },
+        {
+          "node": "node10",
+          "accounts_checked": 1024,
+          "confirmed": 479872,
+          "height": 187,
+          "head": "f08c29a54eb1ae37b010d923fab37053ecccf08ab6c8141148777c2ce8c5a674",
+          "state": {
+            "burned": 0,
+            "head": "f08c29a54eb1ae37b010d923fab37053ecccf08ab6c8141148777c2ce8c5a674",
+            "state_hash": "e4c393a242c46a3130d96e239f26cfb85bce30315053be5338017dcd09195b8c",
+            "supply": 1024000000000,
+            "transactions": 479872
+          },
+          "passed": true,
+          "anchor_checks": [
+            {
+              "anchor": {
+                "hash": "03a2a2505be0a9bb8dd03c8a9ad6569b715392d7e3e4eb2cecc5c55cfbc4eeea",
+                "height": 26,
+                "transactions": 55552
+              },
+              "matches": true
+            }
+          ]
+        }
+      ],
+      "all_heads_equal": true,
+      "method": "stopped nodes reopened without production or peers; each balance reconstructed from dataset routes and nonce; endpoint hashes checked on persisted canonical chains",
+      "measurement_or_drain_extended": false
+    },
+    "audited_measurement": {
+      "passed": false,
+      "reasons": [
+        "persisted canonical proof failed",
+        "missing exact measurement endpoint"
+      ]
+    },
+    "cleanup_errors": []
+  },
+  {
+    "case": {
+      "suite": "throughput",
+      "mode": "throughput",
+      "rate": 50000,
+      "nodes": 10,
+      "repeat": 1,
+      "pattern": "steady",
+      "group": "baseline",
+      "revision": "1504583cda142c8f50fcc6215864160ae469f333"
+    },
+    "status": "complete",
+    "dataset_sha256": "101b045a90e95dca1ffab93f0dcac0e85486a9c03ba67cf9e06bc44fb61717a0",
+    "metrics": {
+      "offered_tps": 50000,
+      "common_commit_tps": null,
+      "achieved_send_tps": 46630.4,
+      "common_commit_tps_rpc_interval_bounds": null,
+      "common_observation_tps": 44191.82483715277,
+      "proven_common_tps": 44191.82483715277,
+      "common_boundary_proof_passed": true,
+      "common_observation_tps_acquisition_interval_bounds": [
+        41690.57877481287,
+        47012.35328739511
+      ],
+      "common_observation_note": "net common-prefix observation rate; interval spans stats acquisition through prefix checks, no atomic global snapshot or finality claimed",
+      "common_observation_boundary_targets": [
+        2,
+        12
+      ],
+      "measurement_seconds": 10.139154533389956,
+      "measurement_samples": 10,
+      "boundary_canonical_proof_passed": false,
+      "skipped_stats_targets": [],
+      "diagnostic_prefix_observed_tps": null,
+      "diagnostic_prefix_rpc_interval_bounds": null,
+      "diagnostic_prefix_note": "snapshot time corrected, but boundaries may be reorganized; not used as proven TPS",
+      "sent_unique_completed_all_ingress": 566272,
+      "sent_unique_attempted_upper_bound": 566400,
+      "sent_unique": 566272,
+      "sent_wire_copies_completed": 5662720,
+      "completed_per_ingress": [
+        566272,
+        566272,
+        566272,
+        566272,
+        566272,
+        566272,
+        566272,
+        566272,
+        566272,
+        566272
+      ],
+      "partial_batch": {
+        "begin": 566272,
+        "end": 566400,
+        "completed_ingress_indices": [],
+        "cutoff_expected": true,
+        "reason": "Stopped: "
+      },
+      "load_error": null,
+      "cutoff_seconds": 12.139043000061065,
+      "generator_finished_seconds": 12.144441307988018,
+      "p50_ms": 2745.4002130543813,
+      "p95_ms": 4543.211427982897,
+      "p99_ms": 4543.211427982897,
+      "p99_after_send_ms": 4540.627373964526,
+      "latency_label": "first observed identical transaction position on all ten nodes; no finality guarantee",
+      "latency_poll_seconds": 0.05,
+      "latency_sample_hz_total": 2,
+      "latency_note": "upper observation latency includes query/round-trip/polling delay; not node commit timestamp",
+      "samples": 19,
+      "unresolved_samples": 0,
+      "drained": true,
+      "drained_observed_seconds": 13.002739335061051,
+      "checks": {
+        "accounts_checked_per_node": 1024,
+        "state": {
+          "burned": 0,
+          "head": "01fccd4c1aa7451192cf346662cc046aa629671feec4c86b49544fd6b8455a0f",
+          "state_hash": "570e4ce347ec9d5d1ae485a8916c5ca5fe896baf5e5d00bb7d2b85cad10b97b1",
+          "supply": 1024000000000,
+          "transactions": 566272
+        }
+      },
+      "resources": [
+        {
+          "node": "node01",
+          "node_clock_seconds": 10.139155,
+          "cpu_core_equivalents": 3.7495956023948738,
+          "network_received_bytes_per_second": 37093984.45925721,
+          "network_sent_bytes_per_second": 22295741.90354127,
+          "db_write_ms_per_second": 383.2187769099101,
+          "peak_resident_bytes": 605667328
+        },
+        {
+          "node": "node02",
+          "node_clock_seconds": 10.139246,
+          "cpu_core_equivalents": 3.8120074214591497,
+          "network_received_bytes_per_second": 36378923.63988407,
+          "network_sent_bytes_per_second": 27272218.76261805,
+          "db_write_ms_per_second": 395.2564958972294,
+          "peak_resident_bytes": 584097792
+        },
+        {
+          "node": "node03",
+          "node_clock_seconds": 10.139233,
+          "cpu_core_equivalents": 3.8310238062385977,
+          "network_received_bytes_per_second": 36511785.753419414,
+          "network_sent_bytes_per_second": 22423880.68209893,
+          "db_write_ms_per_second": 380.04793370465006,
+          "peak_resident_bytes": 612282368
+        },
+        {
+          "node": "node04",
+          "node_clock_seconds": 9.994232,
+          "cpu_core_equivalents": 3.829944011705952,
+          "network_received_bytes_per_second": 39191315.05052114,
+          "network_sent_bytes_per_second": 16098002.227684928,
+          "db_write_ms_per_second": 425.57953407525457,
+          "peak_resident_bytes": 753356800
+        },
+        {
+          "node": "node05",
+          "node_clock_seconds": 10.139336,
+          "cpu_core_equivalents": 3.761405283343998,
+          "network_received_bytes_per_second": 35099666.68428781,
+          "network_sent_bytes_per_second": 22346809.791094802,
+          "db_write_ms_per_second": 399.95787899720455,
+          "peak_resident_bytes": 576618496
+        },
+        {
+          "node": "node06",
+          "node_clock_seconds": 10.139335,
+          "cpu_core_equivalents": 3.87628912547026,
+          "network_received_bytes_per_second": 40221267.27245919,
+          "network_sent_bytes_per_second": 18134132.761172205,
+          "db_write_ms_per_second": 370.8600097540914,
+          "peak_resident_bytes": 658415616
+        },
+        {
+          "node": "node07",
+          "node_clock_seconds": 10.139538,
+          "cpu_core_equivalents": 3.812513647071494,
+          "network_received_bytes_per_second": 33574540.674338415,
+          "network_sent_bytes_per_second": 43875476.08184909,
+          "db_write_ms_per_second": 381.20624125083407,
+          "peak_resident_bytes": 609030144
+        },
+        {
+          "node": "node08",
+          "node_clock_seconds": 10.188135,
+          "cpu_core_equivalents": 3.735745845535026,
+          "network_received_bytes_per_second": 26338096.12848671,
+          "network_sent_bytes_per_second": 71958500.45175098,
+          "db_write_ms_per_second": 377.94995502120844,
+          "peak_resident_bytes": 539045888
+        },
+        {
+          "node": "node09",
+          "node_clock_seconds": 9.998829,
+          "cpu_core_equivalents": 3.864051380416646,
+          "network_received_bytes_per_second": 40013138.23848773,
+          "network_sent_bytes_per_second": 23061762.132345695,
+          "db_write_ms_per_second": 397.20726767104424,
+          "peak_resident_bytes": 595996672
+        },
+        {
+          "node": "node10",
+          "node_clock_seconds": 10.098159,
+          "cpu_core_equivalents": 3.8079476665003984,
+          "network_received_bytes_per_second": 40759298.40280788,
+          "network_sent_bytes_per_second": 17584174.204426765,
+          "db_write_ms_per_second": 454.4850941641936,
+          "peak_resident_bytes": 662589440
+        }
+      ],
+      "timing": "RPC intervals bound each snapshot; TPS uses limiting stats snapshot, never later prefix query completion",
+      "measurement_quality": "TPS unresolved: canonical boundary proof unavailable/failed"
+    },
+    "state_audit": {
+      "passed": true,
+      "nodes": [
+        {
+          "node": "node01",
+          "accounts_checked": 1024,
+          "confirmed": 566272,
+          "height": 118,
+          "head": "01fccd4c1aa7451192cf346662cc046aa629671feec4c86b49544fd6b8455a0f",
+          "state": {
+            "burned": 0,
+            "head": "01fccd4c1aa7451192cf346662cc046aa629671feec4c86b49544fd6b8455a0f",
+            "state_hash": "570e4ce347ec9d5d1ae485a8916c5ca5fe896baf5e5d00bb7d2b85cad10b97b1",
+            "supply": 1024000000000,
+            "transactions": 566272
+          },
+          "passed": true,
+          "anchor_checks": [
+            {
+              "anchor": {
+                "hash": "8552bba647f0c9aafa9444775d1d33a7fdd4fb95c98f4071175f5968e41f77de",
+                "height": 19,
+                "transactions": 67840
+              },
+              "matches": true
+            },
+            {
+              "anchor": {
+                "hash": "865f5c608928ceecf41c0baddb3f9868d8d31f0aa158106394dc08de53b4d256",
+                "height": 103,
+                "transactions": 519168
+              },
+              "matches": true
+            }
+          ]
+        },
+        {
+          "node": "node02",
+          "accounts_checked": 1024,
+          "confirmed": 566272,
+          "height": 118,
+          "head": "01fccd4c1aa7451192cf346662cc046aa629671feec4c86b49544fd6b8455a0f",
+          "state": {
+            "burned": 0,
+            "head": "01fccd4c1aa7451192cf346662cc046aa629671feec4c86b49544fd6b8455a0f",
+            "state_hash": "570e4ce347ec9d5d1ae485a8916c5ca5fe896baf5e5d00bb7d2b85cad10b97b1",
+            "supply": 1024000000000,
+            "transactions": 566272
+          },
+          "passed": true,
+          "anchor_checks": [
+            {
+              "anchor": {
+                "hash": "8552bba647f0c9aafa9444775d1d33a7fdd4fb95c98f4071175f5968e41f77de",
+                "height": 19,
+                "transactions": 67840
+              },
+              "matches": true
+            },
+            {
+              "anchor": {
+                "hash": "865f5c608928ceecf41c0baddb3f9868d8d31f0aa158106394dc08de53b4d256",
+                "height": 103,
+                "transactions": 519168
+              },
+              "matches": true
+            }
+          ]
+        },
+        {
+          "node": "node03",
+          "accounts_checked": 1024,
+          "confirmed": 566272,
+          "height": 118,
+          "head": "01fccd4c1aa7451192cf346662cc046aa629671feec4c86b49544fd6b8455a0f",
+          "state": {
+            "burned": 0,
+            "head": "01fccd4c1aa7451192cf346662cc046aa629671feec4c86b49544fd6b8455a0f",
+            "state_hash": "570e4ce347ec9d5d1ae485a8916c5ca5fe896baf5e5d00bb7d2b85cad10b97b1",
+            "supply": 1024000000000,
+            "transactions": 566272
+          },
+          "passed": true,
+          "anchor_checks": [
+            {
+              "anchor": {
+                "hash": "8552bba647f0c9aafa9444775d1d33a7fdd4fb95c98f4071175f5968e41f77de",
+                "height": 19,
+                "transactions": 67840
+              },
+              "matches": true
+            },
+            {
+              "anchor": {
+                "hash": "865f5c608928ceecf41c0baddb3f9868d8d31f0aa158106394dc08de53b4d256",
+                "height": 103,
+                "transactions": 519168
+              },
+              "matches": true
+            }
+          ]
+        },
+        {
+          "node": "node04",
+          "accounts_checked": 1024,
+          "confirmed": 566272,
+          "height": 118,
+          "head": "01fccd4c1aa7451192cf346662cc046aa629671feec4c86b49544fd6b8455a0f",
+          "state": {
+            "burned": 0,
+            "head": "01fccd4c1aa7451192cf346662cc046aa629671feec4c86b49544fd6b8455a0f",
+            "state_hash": "570e4ce347ec9d5d1ae485a8916c5ca5fe896baf5e5d00bb7d2b85cad10b97b1",
+            "supply": 1024000000000,
+            "transactions": 566272
+          },
+          "passed": true,
+          "anchor_checks": [
+            {
+              "anchor": {
+                "hash": "8552bba647f0c9aafa9444775d1d33a7fdd4fb95c98f4071175f5968e41f77de",
+                "height": 19,
+                "transactions": 67840
+              },
+              "matches": true
+            },
+            {
+              "anchor": {
+                "hash": "865f5c608928ceecf41c0baddb3f9868d8d31f0aa158106394dc08de53b4d256",
+                "height": 103,
+                "transactions": 519168
+              },
+              "matches": true
+            }
+          ]
+        },
+        {
+          "node": "node05",
+          "accounts_checked": 1024,
+          "confirmed": 566272,
+          "height": 118,
+          "head": "01fccd4c1aa7451192cf346662cc046aa629671feec4c86b49544fd6b8455a0f",
+          "state": {
+            "burned": 0,
+            "head": "01fccd4c1aa7451192cf346662cc046aa629671feec4c86b49544fd6b8455a0f",
+            "state_hash": "570e4ce347ec9d5d1ae485a8916c5ca5fe896baf5e5d00bb7d2b85cad10b97b1",
+            "supply": 1024000000000,
+            "transactions": 566272
+          },
+          "passed": true,
+          "anchor_checks": [
+            {
+              "anchor": {
+                "hash": "8552bba647f0c9aafa9444775d1d33a7fdd4fb95c98f4071175f5968e41f77de",
+                "height": 19,
+                "transactions": 67840
+              },
+              "matches": true
+            },
+            {
+              "anchor": {
+                "hash": "865f5c608928ceecf41c0baddb3f9868d8d31f0aa158106394dc08de53b4d256",
+                "height": 103,
+                "transactions": 519168
+              },
+              "matches": true
+            }
+          ]
+        },
+        {
+          "node": "node06",
+          "accounts_checked": 1024,
+          "confirmed": 566272,
+          "height": 118,
+          "head": "01fccd4c1aa7451192cf346662cc046aa629671feec4c86b49544fd6b8455a0f",
+          "state": {
+            "burned": 0,
+            "head": "01fccd4c1aa7451192cf346662cc046aa629671feec4c86b49544fd6b8455a0f",
+            "state_hash": "570e4ce347ec9d5d1ae485a8916c5ca5fe896baf5e5d00bb7d2b85cad10b97b1",
+            "supply": 1024000000000,
+            "transactions": 566272
+          },
+          "passed": true,
+          "anchor_checks": [
+            {
+              "anchor": {
+                "hash": "8552bba647f0c9aafa9444775d1d33a7fdd4fb95c98f4071175f5968e41f77de",
+                "height": 19,
+                "transactions": 67840
+              },
+              "matches": true
+            },
+            {
+              "anchor": {
+                "hash": "865f5c608928ceecf41c0baddb3f9868d8d31f0aa158106394dc08de53b4d256",
+                "height": 103,
+                "transactions": 519168
+              },
+              "matches": true
+            }
+          ]
+        },
+        {
+          "node": "node07",
+          "accounts_checked": 1024,
+          "confirmed": 566272,
+          "height": 118,
+          "head": "01fccd4c1aa7451192cf346662cc046aa629671feec4c86b49544fd6b8455a0f",
+          "state": {
+            "burned": 0,
+            "head": "01fccd4c1aa7451192cf346662cc046aa629671feec4c86b49544fd6b8455a0f",
+            "state_hash": "570e4ce347ec9d5d1ae485a8916c5ca5fe896baf5e5d00bb7d2b85cad10b97b1",
+            "supply": 1024000000000,
+            "transactions": 566272
+          },
+          "passed": true,
+          "anchor_checks": [
+            {
+              "anchor": {
+                "hash": "8552bba647f0c9aafa9444775d1d33a7fdd4fb95c98f4071175f5968e41f77de",
+                "height": 19,
+                "transactions": 67840
+              },
+              "matches": true
+            },
+            {
+              "anchor": {
+                "hash": "865f5c608928ceecf41c0baddb3f9868d8d31f0aa158106394dc08de53b4d256",
+                "height": 103,
+                "transactions": 519168
+              },
+              "matches": true
+            }
+          ]
+        },
+        {
+          "node": "node08",
+          "accounts_checked": 1024,
+          "confirmed": 566272,
+          "height": 118,
+          "head": "01fccd4c1aa7451192cf346662cc046aa629671feec4c86b49544fd6b8455a0f",
+          "state": {
+            "burned": 0,
+            "head": "01fccd4c1aa7451192cf346662cc046aa629671feec4c86b49544fd6b8455a0f",
+            "state_hash": "570e4ce347ec9d5d1ae485a8916c5ca5fe896baf5e5d00bb7d2b85cad10b97b1",
+            "supply": 1024000000000,
+            "transactions": 566272
+          },
+          "passed": true,
+          "anchor_checks": [
+            {
+              "anchor": {
+                "hash": "8552bba647f0c9aafa9444775d1d33a7fdd4fb95c98f4071175f5968e41f77de",
+                "height": 19,
+                "transactions": 67840
+              },
+              "matches": true
+            },
+            {
+              "anchor": {
+                "hash": "865f5c608928ceecf41c0baddb3f9868d8d31f0aa158106394dc08de53b4d256",
+                "height": 103,
+                "transactions": 519168
+              },
+              "matches": true
+            }
+          ]
+        },
+        {
+          "node": "node09",
+          "accounts_checked": 1024,
+          "confirmed": 566272,
+          "height": 118,
+          "head": "01fccd4c1aa7451192cf346662cc046aa629671feec4c86b49544fd6b8455a0f",
+          "state": {
+            "burned": 0,
+            "head": "01fccd4c1aa7451192cf346662cc046aa629671feec4c86b49544fd6b8455a0f",
+            "state_hash": "570e4ce347ec9d5d1ae485a8916c5ca5fe896baf5e5d00bb7d2b85cad10b97b1",
+            "supply": 1024000000000,
+            "transactions": 566272
+          },
+          "passed": true,
+          "anchor_checks": [
+            {
+              "anchor": {
+                "hash": "8552bba647f0c9aafa9444775d1d33a7fdd4fb95c98f4071175f5968e41f77de",
+                "height": 19,
+                "transactions": 67840
+              },
+              "matches": true
+            },
+            {
+              "anchor": {
+                "hash": "865f5c608928ceecf41c0baddb3f9868d8d31f0aa158106394dc08de53b4d256",
+                "height": 103,
+                "transactions": 519168
+              },
+              "matches": true
+            }
+          ]
+        },
+        {
+          "node": "node10",
+          "accounts_checked": 1024,
+          "confirmed": 566272,
+          "height": 118,
+          "head": "01fccd4c1aa7451192cf346662cc046aa629671feec4c86b49544fd6b8455a0f",
+          "state": {
+            "burned": 0,
+            "head": "01fccd4c1aa7451192cf346662cc046aa629671feec4c86b49544fd6b8455a0f",
+            "state_hash": "570e4ce347ec9d5d1ae485a8916c5ca5fe896baf5e5d00bb7d2b85cad10b97b1",
+            "supply": 1024000000000,
+            "transactions": 566272
+          },
+          "passed": true,
+          "anchor_checks": [
+            {
+              "anchor": {
+                "hash": "8552bba647f0c9aafa9444775d1d33a7fdd4fb95c98f4071175f5968e41f77de",
+                "height": 19,
+                "transactions": 67840
+              },
+              "matches": true
+            },
+            {
+              "anchor": {
+                "hash": "865f5c608928ceecf41c0baddb3f9868d8d31f0aa158106394dc08de53b4d256",
+                "height": 103,
+                "transactions": 519168
+              },
+              "matches": true
+            }
+          ]
+        }
+      ],
+      "all_heads_equal": true,
+      "method": "stopped nodes reopened without production or peers; each balance reconstructed from dataset routes and nonce; endpoint hashes checked on persisted canonical chains",
+      "measurement_or_drain_extended": false
+    },
+    "audited_measurement": {
+      "passed": false,
+      "reasons": [
+        "acquisition span exceeds 0.5s"
+      ],
+      "endpoint_spans": [
+        0.5389320589601994,
+        0.686527070007287
+      ],
+      "height_delta": 84,
+      "transaction_delta": 451328
+    },
+    "cleanup_errors": []
+  },
+  {
+    "case": {
+      "suite": "throughput",
+      "mode": "throughput",
+      "rate": 60000,
+      "nodes": 10,
+      "repeat": 1,
+      "pattern": "steady",
+      "group": "baseline",
+      "revision": "1504583cda142c8f50fcc6215864160ae469f333"
+    },
+    "status": "complete",
+    "dataset_sha256": "101b045a90e95dca1ffab93f0dcac0e85486a9c03ba67cf9e06bc44fb61717a0",
+    "metrics": {
+      "offered_tps": 60000,
+      "common_commit_tps": null,
+      "achieved_send_tps": 49318.4,
+      "common_commit_tps_rpc_interval_bounds": null,
+      "common_observation_tps": 51160.4482518899,
+      "proven_common_tps": 51160.4482518899,
+      "common_boundary_proof_passed": true,
+      "common_observation_tps_acquisition_interval_bounds": [
+        44734.05597235755,
+        59742.98965404118
+      ],
+      "common_observation_note": "net common-prefix observation rate; interval spans stats acquisition through prefix checks, no atomic global snapshot or finality claimed",
+      "common_observation_boundary_targets": [
+        2,
+        12
+      ],
+      "measurement_seconds": 10.14568838046398,
+      "measurement_samples": 10,
+      "boundary_canonical_proof_passed": false,
+      "skipped_stats_targets": [
+        3
+      ],
+      "diagnostic_prefix_observed_tps": null,
+      "diagnostic_prefix_rpc_interval_bounds": null,
+      "diagnostic_prefix_note": "snapshot time corrected, but boundaries may be reorganized; not used as proven TPS",
+      "sent_unique_completed_all_ingress": 613120,
+      "sent_unique_attempted_upper_bound": 613248,
+      "sent_unique": 613120,
+      "sent_wire_copies_completed": 6131456,
+      "completed_per_ingress": [
+        613248,
+        613248,
+        613120,
+        613120,
+        613120,
+        613120,
+        613120,
+        613120,
+        613120,
+        613120
+      ],
+      "partial_batch": {
+        "begin": 613120,
+        "end": 613248,
+        "completed_ingress_indices": [
+          0,
+          1
+        ],
+        "cutoff_expected": true,
+        "reason": "OSError: [Errno 9] Bad file descriptor"
+      },
+      "load_error": null,
+      "cutoff_seconds": 12.143106955103576,
+      "generator_finished_seconds": 12.147091911057942,
+      "p50_ms": 2984.167391085066,
+      "p95_ms": 4177.476701093838,
+      "p99_ms": 4177.476701093838,
+      "p99_after_send_ms": 3162.9576600389555,
+      "latency_label": "first observed identical transaction position on all ten nodes; no finality guarantee",
+      "latency_poll_seconds": 0.05,
+      "latency_sample_hz_total": 2,
+      "latency_note": "upper observation latency includes query/round-trip/polling delay; not node commit timestamp",
+      "samples": 17,
+      "unresolved_samples": 0,
+      "drained": true,
+      "drained_observed_seconds": 14.002782382071018,
+      "checks": {
+        "accounts_checked_per_node": 1024,
+        "state": {
+          "burned": 0,
+          "head": "20a580e06eaebc336ce24756ab03be611af42e1687caf75fcf058d241321eb62",
+          "state_hash": "266195390e994970c825ff51bb01dde40982850997f1351366930f96fb4ab397",
+          "supply": 1024000000000,
+          "transactions": 613248
+        }
+      },
+      "resources": [
+        {
+          "node": "node01",
+          "node_clock_seconds": 10.148325,
+          "cpu_core_equivalents": 3.8288328369459985,
+          "network_received_bytes_per_second": 43369740.62222091,
+          "network_sent_bytes_per_second": 16604034.26181168,
+          "db_write_ms_per_second": 378.2228272153286,
+          "peak_resident_bytes": 658972672
+        },
+        {
+          "node": "node02",
+          "node_clock_seconds": 10.098114,
+          "cpu_core_equivalents": 3.8914181400606087,
+          "network_received_bytes_per_second": 42683704.60068088,
+          "network_sent_bytes_per_second": 17183411.37760972,
+          "db_write_ms_per_second": 448.7571321733939,
+          "peak_resident_bytes": 628039680
+        },
+        {
+          "node": "node03",
+          "node_clock_seconds": 10.289176,
+          "cpu_core_equivalents": 3.9187367384910123,
+          "network_received_bytes_per_second": 35489643.29116345,
+          "network_sent_bytes_per_second": 25175857.52250715,
+          "db_write_ms_per_second": 410.21822223664947,
+          "peak_resident_bytes": 561156096
+        },
+        {
+          "node": "node04",
+          "node_clock_seconds": 10.130288,
+          "cpu_core_equivalents": 3.9070128114817666,
+          "network_received_bytes_per_second": 34865882.095356025,
+          "network_sent_bytes_per_second": 25354783.398063313,
+          "db_write_ms_per_second": 400.7538462874896,
+          "peak_resident_bytes": 581353472
+        },
+        {
+          "node": "node05",
+          "node_clock_seconds": 10.146095,
+          "cpu_core_equivalents": 3.907541472852363,
+          "network_received_bytes_per_second": 39867725.85906203,
+          "network_sent_bytes_per_second": 17080214.99897251,
+          "db_write_ms_per_second": 432.49405766454976,
+          "peak_resident_bytes": 557981696
+        },
+        {
+          "node": "node06",
+          "node_clock_seconds": 10.143056,
+          "cpu_core_equivalents": 3.911470270892717,
+          "network_received_bytes_per_second": 28494820.98886174,
+          "network_sent_bytes_per_second": 65831666.11719387,
+          "db_write_ms_per_second": 388.52135480667755,
+          "peak_resident_bytes": 561799168
+        },
+        {
+          "node": "node07",
+          "node_clock_seconds": 10.134424,
+          "cpu_core_equivalents": 3.9054029118971143,
+          "network_received_bytes_per_second": 36878805.149656266,
+          "network_sent_bytes_per_second": 23630394.87986688,
+          "db_write_ms_per_second": 426.7453840494537,
+          "peak_resident_bytes": 606375936
+        },
+        {
+          "node": "node08",
+          "node_clock_seconds": 10.199159,
+          "cpu_core_equivalents": 3.9189559648986743,
+          "network_received_bytes_per_second": 29040955.33759205,
+          "network_sent_bytes_per_second": 49305360.471387886,
+          "db_write_ms_per_second": 375.34131657325867,
+          "peak_resident_bytes": 543928320
+        },
+        {
+          "node": "node09",
+          "node_clock_seconds": 10.128204,
+          "cpu_core_equivalents": 3.9097066962711255,
+          "network_received_bytes_per_second": 40142477.87663045,
+          "network_sent_bytes_per_second": 19446837.662432548,
+          "db_write_ms_per_second": 439.36107852882907,
+          "peak_resident_bytes": 608841728
+        },
+        {
+          "node": "node10",
+          "node_clock_seconds": 10.06506,
+          "cpu_core_equivalents": 3.905530121032562,
+          "network_received_bytes_per_second": 36387793.41603527,
+          "network_sent_bytes_per_second": 23096232.411927994,
+          "db_write_ms_per_second": 391.42819595710307,
+          "peak_resident_bytes": 612020224
+        }
+      ],
+      "timing": "RPC intervals bound each snapshot; TPS uses limiting stats snapshot, never later prefix query completion",
+      "measurement_quality": "TPS unresolved: canonical boundary proof unavailable/failed"
+    },
+    "state_audit": {
+      "passed": true,
+      "nodes": [
+        {
+          "node": "node01",
+          "accounts_checked": 1024,
+          "confirmed": 613248,
+          "height": 117,
+          "head": "20a580e06eaebc336ce24756ab03be611af42e1687caf75fcf058d241321eb62",
+          "state": {
+            "burned": 0,
+            "head": "20a580e06eaebc336ce24756ab03be611af42e1687caf75fcf058d241321eb62",
+            "state_hash": "266195390e994970c825ff51bb01dde40982850997f1351366930f96fb4ab397",
+            "supply": 1024000000000,
+            "transactions": 613248
+          },
+          "passed": true,
+          "anchor_checks": [
+            {
+              "anchor": {
+                "hash": "f048f2250a2e02ccea7ca627f8556fedb18e69a59057f80e73cf214887ca74db",
+                "height": 11,
+                "transactions": 43392
+              },
+              "matches": true
+            },
+            {
+              "anchor": {
+                "hash": "7f286ccf0942b945f8c6d1e9183f50bfe40916b03f4dcb89914821a2cc48ea12",
+                "height": 96,
+                "transactions": 516512
+              },
+              "matches": true
+            }
+          ]
+        },
+        {
+          "node": "node02",
+          "accounts_checked": 1024,
+          "confirmed": 613248,
+          "height": 117,
+          "head": "20a580e06eaebc336ce24756ab03be611af42e1687caf75fcf058d241321eb62",
+          "state": {
+            "burned": 0,
+            "head": "20a580e06eaebc336ce24756ab03be611af42e1687caf75fcf058d241321eb62",
+            "state_hash": "266195390e994970c825ff51bb01dde40982850997f1351366930f96fb4ab397",
+            "supply": 1024000000000,
+            "transactions": 613248
+          },
+          "passed": true,
+          "anchor_checks": [
+            {
+              "anchor": {
+                "hash": "f048f2250a2e02ccea7ca627f8556fedb18e69a59057f80e73cf214887ca74db",
+                "height": 11,
+                "transactions": 43392
+              },
+              "matches": true
+            },
+            {
+              "anchor": {
+                "hash": "7f286ccf0942b945f8c6d1e9183f50bfe40916b03f4dcb89914821a2cc48ea12",
+                "height": 96,
+                "transactions": 516512
+              },
+              "matches": true
+            }
+          ]
+        },
+        {
+          "node": "node03",
+          "accounts_checked": 1024,
+          "confirmed": 613248,
+          "height": 117,
+          "head": "20a580e06eaebc336ce24756ab03be611af42e1687caf75fcf058d241321eb62",
+          "state": {
+            "burned": 0,
+            "head": "20a580e06eaebc336ce24756ab03be611af42e1687caf75fcf058d241321eb62",
+            "state_hash": "266195390e994970c825ff51bb01dde40982850997f1351366930f96fb4ab397",
+            "supply": 1024000000000,
+            "transactions": 613248
+          },
+          "passed": true,
+          "anchor_checks": [
+            {
+              "anchor": {
+                "hash": "f048f2250a2e02ccea7ca627f8556fedb18e69a59057f80e73cf214887ca74db",
+                "height": 11,
+                "transactions": 43392
+              },
+              "matches": true
+            },
+            {
+              "anchor": {
+                "hash": "7f286ccf0942b945f8c6d1e9183f50bfe40916b03f4dcb89914821a2cc48ea12",
+                "height": 96,
+                "transactions": 516512
+              },
+              "matches": true
+            }
+          ]
+        },
+        {
+          "node": "node04",
+          "accounts_checked": 1024,
+          "confirmed": 613248,
+          "height": 117,
+          "head": "20a580e06eaebc336ce24756ab03be611af42e1687caf75fcf058d241321eb62",
+          "state": {
+            "burned": 0,
+            "head": "20a580e06eaebc336ce24756ab03be611af42e1687caf75fcf058d241321eb62",
+            "state_hash": "266195390e994970c825ff51bb01dde40982850997f1351366930f96fb4ab397",
+            "supply": 1024000000000,
+            "transactions": 613248
+          },
+          "passed": true,
+          "anchor_checks": [
+            {
+              "anchor": {
+                "hash": "f048f2250a2e02ccea7ca627f8556fedb18e69a59057f80e73cf214887ca74db",
+                "height": 11,
+                "transactions": 43392
+              },
+              "matches": true
+            },
+            {
+              "anchor": {
+                "hash": "7f286ccf0942b945f8c6d1e9183f50bfe40916b03f4dcb89914821a2cc48ea12",
+                "height": 96,
+                "transactions": 516512
+              },
+              "matches": true
+            }
+          ]
+        },
+        {
+          "node": "node05",
+          "accounts_checked": 1024,
+          "confirmed": 613248,
+          "height": 117,
+          "head": "20a580e06eaebc336ce24756ab03be611af42e1687caf75fcf058d241321eb62",
+          "state": {
+            "burned": 0,
+            "head": "20a580e06eaebc336ce24756ab03be611af42e1687caf75fcf058d241321eb62",
+            "state_hash": "266195390e994970c825ff51bb01dde40982850997f1351366930f96fb4ab397",
+            "supply": 1024000000000,
+            "transactions": 613248
+          },
+          "passed": true,
+          "anchor_checks": [
+            {
+              "anchor": {
+                "hash": "f048f2250a2e02ccea7ca627f8556fedb18e69a59057f80e73cf214887ca74db",
+                "height": 11,
+                "transactions": 43392
+              },
+              "matches": true
+            },
+            {
+              "anchor": {
+                "hash": "7f286ccf0942b945f8c6d1e9183f50bfe40916b03f4dcb89914821a2cc48ea12",
+                "height": 96,
+                "transactions": 516512
+              },
+              "matches": true
+            }
+          ]
+        },
+        {
+          "node": "node06",
+          "accounts_checked": 1024,
+          "confirmed": 613248,
+          "height": 117,
+          "head": "20a580e06eaebc336ce24756ab03be611af42e1687caf75fcf058d241321eb62",
+          "state": {
+            "burned": 0,
+            "head": "20a580e06eaebc336ce24756ab03be611af42e1687caf75fcf058d241321eb62",
+            "state_hash": "266195390e994970c825ff51bb01dde40982850997f1351366930f96fb4ab397",
+            "supply": 1024000000000,
+            "transactions": 613248
+          },
+          "passed": true,
+          "anchor_checks": [
+            {
+              "anchor": {
+                "hash": "f048f2250a2e02ccea7ca627f8556fedb18e69a59057f80e73cf214887ca74db",
+                "height": 11,
+                "transactions": 43392
+              },
+              "matches": true
+            },
+            {
+              "anchor": {
+                "hash": "7f286ccf0942b945f8c6d1e9183f50bfe40916b03f4dcb89914821a2cc48ea12",
+                "height": 96,
+                "transactions": 516512
+              },
+              "matches": true
+            }
+          ]
+        },
+        {
+          "node": "node07",
+          "accounts_checked": 1024,
+          "confirmed": 613248,
+          "height": 117,
+          "head": "20a580e06eaebc336ce24756ab03be611af42e1687caf75fcf058d241321eb62",
+          "state": {
+            "burned": 0,
+            "head": "20a580e06eaebc336ce24756ab03be611af42e1687caf75fcf058d241321eb62",
+            "state_hash": "266195390e994970c825ff51bb01dde40982850997f1351366930f96fb4ab397",
+            "supply": 1024000000000,
+            "transactions": 613248
+          },
+          "passed": true,
+          "anchor_checks": [
+            {
+              "anchor": {
+                "hash": "f048f2250a2e02ccea7ca627f8556fedb18e69a59057f80e73cf214887ca74db",
+                "height": 11,
+                "transactions": 43392
+              },
+              "matches": true
+            },
+            {
+              "anchor": {
+                "hash": "7f286ccf0942b945f8c6d1e9183f50bfe40916b03f4dcb89914821a2cc48ea12",
+                "height": 96,
+                "transactions": 516512
+              },
+              "matches": true
+            }
+          ]
+        },
+        {
+          "node": "node08",
+          "accounts_checked": 1024,
+          "confirmed": 613248,
+          "height": 117,
+          "head": "20a580e06eaebc336ce24756ab03be611af42e1687caf75fcf058d241321eb62",
+          "state": {
+            "burned": 0,
+            "head": "20a580e06eaebc336ce24756ab03be611af42e1687caf75fcf058d241321eb62",
+            "state_hash": "266195390e994970c825ff51bb01dde40982850997f1351366930f96fb4ab397",
+            "supply": 1024000000000,
+            "transactions": 613248
+          },
+          "passed": true,
+          "anchor_checks": [
+            {
+              "anchor": {
+                "hash": "f048f2250a2e02ccea7ca627f8556fedb18e69a59057f80e73cf214887ca74db",
+                "height": 11,
+                "transactions": 43392
+              },
+              "matches": true
+            },
+            {
+              "anchor": {
+                "hash": "7f286ccf0942b945f8c6d1e9183f50bfe40916b03f4dcb89914821a2cc48ea12",
+                "height": 96,
+                "transactions": 516512
+              },
+              "matches": true
+            }
+          ]
+        },
+        {
+          "node": "node09",
+          "accounts_checked": 1024,
+          "confirmed": 613248,
+          "height": 117,
+          "head": "20a580e06eaebc336ce24756ab03be611af42e1687caf75fcf058d241321eb62",
+          "state": {
+            "burned": 0,
+            "head": "20a580e06eaebc336ce24756ab03be611af42e1687caf75fcf058d241321eb62",
+            "state_hash": "266195390e994970c825ff51bb01dde40982850997f1351366930f96fb4ab397",
+            "supply": 1024000000000,
+            "transactions": 613248
+          },
+          "passed": true,
+          "anchor_checks": [
+            {
+              "anchor": {
+                "hash": "f048f2250a2e02ccea7ca627f8556fedb18e69a59057f80e73cf214887ca74db",
+                "height": 11,
+                "transactions": 43392
+              },
+              "matches": true
+            },
+            {
+              "anchor": {
+                "hash": "7f286ccf0942b945f8c6d1e9183f50bfe40916b03f4dcb89914821a2cc48ea12",
+                "height": 96,
+                "transactions": 516512
+              },
+              "matches": true
+            }
+          ]
+        },
+        {
+          "node": "node10",
+          "accounts_checked": 1024,
+          "confirmed": 613248,
+          "height": 117,
+          "head": "20a580e06eaebc336ce24756ab03be611af42e1687caf75fcf058d241321eb62",
+          "state": {
+            "burned": 0,
+            "head": "20a580e06eaebc336ce24756ab03be611af42e1687caf75fcf058d241321eb62",
+            "state_hash": "266195390e994970c825ff51bb01dde40982850997f1351366930f96fb4ab397",
+            "supply": 1024000000000,
+            "transactions": 613248
+          },
+          "passed": true,
+          "anchor_checks": [
+            {
+              "anchor": {
+                "hash": "f048f2250a2e02ccea7ca627f8556fedb18e69a59057f80e73cf214887ca74db",
+                "height": 11,
+                "transactions": 43392
+              },
+              "matches": true
+            },
+            {
+              "anchor": {
+                "hash": "7f286ccf0942b945f8c6d1e9183f50bfe40916b03f4dcb89914821a2cc48ea12",
+                "height": 96,
+                "transactions": 516512
+              },
+              "matches": true
+            }
+          ]
+        }
+      ],
+      "all_heads_equal": true,
+      "method": "stopped nodes reopened without production or peers; each balance reconstructed from dataset routes and nonce; endpoint hashes checked on persisted canonical chains",
+      "measurement_or_drain_extended": false
+    },
+    "audited_measurement": {
+      "passed": false,
+      "reasons": [
+        "acquisition span exceeds 0.5s"
+      ],
+      "endpoint_spans": [
+        2.223814368015155,
+        0.4332123239291832
+      ],
+      "height_delta": 85,
+      "transaction_delta": 473120
+    },
+    "cleanup_errors": []
+  }
+]

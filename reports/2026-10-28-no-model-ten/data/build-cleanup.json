@@ -1,0 +1,117 @@
+{
+  "test_processes_stopped": true,
+  "databases_cleared": 22,
+  "records": [
+    {
+      "database": "/opt/chain/releases/1504583cda142c8f50fcc6215864160ae469f333/build/check-no-model-20261028/account-network-test-data/1793199535741744637/leader/db",
+      "removed_files": 10,
+      "logs": "/opt/chain/releases/1504583cda142c8f50fcc6215864160ae469f333/validation-db-logs/0"
+    },
+    {
+      "database": "/opt/chain/releases/1504583cda142c8f50fcc6215864160ae469f333/build/check-no-model-20261028/account-network-test-data/1793199535741744637/follower/db",
+      "removed_files": 7,
+      "logs": "/opt/chain/releases/1504583cda142c8f50fcc6215864160ae469f333/validation-db-logs/1"
+    },
+    {
+      "database": "/opt/chain/releases/1504583cda142c8f50fcc6215864160ae469f333/build/check-no-model-20261028/user-test-data/797640578956681/chain",
+      "removed_files": 15,
+      "logs": "/opt/chain/releases/1504583cda142c8f50fcc6215864160ae469f333/validation-db-logs/2"
+    },
+    {
+      "database": "/opt/chain/releases/1504583cda142c8f50fcc6215864160ae469f333/build/check-no-model-20261028/evm-network-test-data/producer/db",
+      "removed_files": 10,
+      "logs": "/opt/chain/releases/1504583cda142c8f50fcc6215864160ae469f333/validation-db-logs/3"
+    },
+    {
+      "database": "/opt/chain/releases/1504583cda142c8f50fcc6215864160ae469f333/build/check-no-model-20261028/evm-network-test-data/follower/db",
+      "removed_files": 12,
+      "logs": "/opt/chain/releases/1504583cda142c8f50fcc6215864160ae469f333/validation-db-logs/4"
+    },
+    {
+      "database": "/opt/chain/releases/1504583cda142c8f50fcc6215864160ae469f333/build/check-no-model-20261028/fork-network-test-data/a/db",
+      "removed_files": 10,
+      "logs": "/opt/chain/releases/1504583cda142c8f50fcc6215864160ae469f333/validation-db-logs/5"
+    },
+    {
+      "database": "/opt/chain/releases/1504583cda142c8f50fcc6215864160ae469f333/build/check-no-model-20261028/fork-network-test-data/b/db",
+      "removed_files": 10,
+      "logs": "/opt/chain/releases/1504583cda142c8f50fcc6215864160ae469f333/validation-db-logs/6"
+    },
+    {
+      "database": "/opt/chain/releases/1504583cda142c8f50fcc6215864160ae469f333/build/check-no-model-20261028/fork-network-test-data/future/db",
+      "removed_files": 7,
+      "logs": "/opt/chain/releases/1504583cda142c8f50fcc6215864160ae469f333/validation-db-logs/7"
+    },
+    {
+      "database": "/opt/chain/releases/1504583cda142c8f50fcc6215864160ae469f333/build/check-no-model-20261028/network-test-data/1793199532277333988/leader/db",
+      "removed_files": 10,
+      "logs": "/opt/chain/releases/1504583cda142c8f50fcc6215864160ae469f333/validation-db-logs/8"
+    },
+    {
+      "database": "/opt/chain/releases/1504583cda142c8f50fcc6215864160ae469f333/build/check-no-model-20261028/network-test-data/1793199532277333988/graceful/db",
+      "removed_files": 7,
+      "logs": "/opt/chain/releases/1504583cda142c8f50fcc6215864160ae469f333/validation-db-logs/9"
+    },
+    {
+      "database": "/opt/chain/releases/1504583cda142c8f50fcc6215864160ae469f333/build/check-no-model-20261028/network-test-data/1793199532277333988/follower/db",
+      "removed_files": 7,
+      "logs": "/opt/chain/releases/1504583cda142c8f50fcc6215864160ae469f333/validation-db-logs/10"
+    },
+    {
+      "database": "/opt/chain/releases/1504583cda142c8f50fcc6215864160ae469f333/build/check-no-model-20261028/admission-network-test-data/1793199542220891207/full-block-batch/full-batch/db",
+      "removed_files": 7,
+      "logs": "/opt/chain/releases/1504583cda142c8f50fcc6215864160ae469f333/validation-db-logs/11"
+    },
+    {
+      "database": "/opt/chain/releases/1504583cda142c8f50fcc6215864160ae469f333/build/check-no-model-20261028/admission-network-test-data/1793199542220891207/admission/db",
+      "removed_files": 7,
+      "logs": "/opt/chain/releases/1504583cda142c8f50fcc6215864160ae469f333/validation-db-logs/12"
+    },
+    {
+      "database": "/opt/chain/releases/1504583cda142c8f50fcc6215864160ae469f333/build/check-no-model-20261028/admission-network-test-data/1793199542220891207/reliable/db",
+      "removed_files": 7,
+      "logs": "/opt/chain/releases/1504583cda142c8f50fcc6215864160ae469f333/validation-db-logs/13"
+    },
+    {
+      "database": "/opt/chain/releases/1504583cda142c8f50fcc6215864160ae469f333/build/check-no-model-20261028/admission-network-test-data/1793199542220891207/large-block-batch/full-batch/db",
+      "removed_files": 7,
+      "logs": "/opt/chain/releases/1504583cda142c8f50fcc6215864160ae469f333/validation-db-logs/14"
+    },
+    {
+      "database": "/opt/chain/releases/1504583cda142c8f50fcc6215864160ae469f333/build/check-no-model-20261028/flow-test-data/797668773340760",
+      "removed_files": 10,
+      "logs": "/opt/chain/releases/1504583cda142c8f50fcc6215864160ae469f333/validation-db-logs/15"
+    },
+    {
+      "database": "/opt/chain/releases/1504583cda142c8f50fcc6215864160ae469f333/build/check-no-model-20261028/flow-test-data/797668773340760/deterministic",
+      "removed_files": 7,
+      "logs": "/opt/chain/releases/1504583cda142c8f50fcc6215864160ae469f333/validation-db-logs/16"
+    },
+    {
+      "database": "/opt/chain/releases/1504583cda142c8f50fcc6215864160ae469f333/build/check-no-model-20261028/flow-test-data/797668773340760/ranked",
+      "removed_files": 7,
+      "logs": "/opt/chain/releases/1504583cda142c8f50fcc6215864160ae469f333/validation-db-logs/17"
+    },
+    {
+      "database": "/opt/chain/releases/1504583cda142c8f50fcc6215864160ae469f333/build/check-no-model-20261028/experiment-test-data/1793199537786855417/index/index/db",
+      "removed_files": 10,
+      "logs": "/opt/chain/releases/1504583cda142c8f50fcc6215864160ae469f333/validation-db-logs/18"
+    },
+    {
+      "database": "/opt/chain/releases/1504583cda142c8f50fcc6215864160ae469f333/build/check-no-model-20261028/fork-state-data/797640693889890",
+      "removed_files": 12,
+      "logs": "/opt/chain/releases/1504583cda142c8f50fcc6215864160ae469f333/validation-db-logs/19"
+    },
+    {
+      "database": "/opt/chain/releases/1504583cda142c8f50fcc6215864160ae469f333/build/check-no-model-20261028/fork-state-data/797640693889890/large-fork",
+      "removed_files": 10,
+      "logs": "/opt/chain/releases/1504583cda142c8f50fcc6215864160ae469f333/validation-db-logs/20"
+    },
+    {
+      "database": "/opt/chain/releases/1504583cda142c8f50fcc6215864160ae469f333/build/check-no-model-20261028/test-data/797640332393087",
+      "removed_files": 15,
+      "logs": "/opt/chain/releases/1504583cda142c8f50fcc6215864160ae469f333/validation-db-logs/21"
+    }
+  ],
+  "code_inputs_and_logs_preserved": true
+}

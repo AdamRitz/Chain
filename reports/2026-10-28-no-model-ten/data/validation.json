@@ -1,0 +1,15 @@
+{
+  "revision": "1504583cda142c8f50fcc6215864160ae469f333",
+  "baseline": "933905448951c600156a8ad2a0b3c3a895916fb5",
+  "tests": 11,
+  "ctest_passed": true,
+  "built_at": 1793199547.0063517,
+  "compiler": "GCC toolset 13; -O2 -g -fno-omit-frame-pointer -DNDEBUG",
+  "source_sha256": "aefef660c0818b8c8406d730d67dca251f0c03d7606c1f8cc68fb2badd192d0d",
+  "binaries": {
+    "boost": "d35647e5599a3882c6b54f87dc22f44dd1f1e289b7761bb51aa2e28e0a3a8e11",
+    "sender": "ca99e83f06416334159fa351c9d4a3cd008610abf5d760d13ebfc5ac18a88fc0",
+    "evm_sender": "e9cb619ed304027a23f785095676c6514d03d1af833cc189667ddf7c6ea702ae"
+  },
+  "binary_archive_sha256": "14d63c3b27b1cb63f21bfc2fe3a88e0004e2f87f22691c28fe42f11dfa14dd06"
+}
