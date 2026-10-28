@@ -16,8 +16,6 @@ using tcp=ip::tcp;
 io_context* nodeIO=nullptr;
 unique_ptr<thread_pool> verifyThreads;
 unique_ptr<thread_pool> candidateThreads;
-unique_ptr<thread_pool> metadataThreads;
-bool workScheduler=false;
 unique_ptr<thread_pool> queryThreads;
 atomic<size_t> pendingQueries{0};
 atomic<uint64_t> queryWaitNs{0},ingressWaitNs{0},syncOwner{0},syncOwnerSkips{0};
@@ -27,7 +25,6 @@ atomic<uint64_t> txQueueWaitNs{0},blockQueueWaitNs{0};
 atomic<size_t> pendingVerify{0},peakPendingVerify{0},connectionCount{0};
 atomic<size_t> pendingVerifyBytes{0};
 atomic<size_t> pendingMetadata{0},pendingBlockReplies{0};
-atomic<size_t> pendingMetadataBytes{0};
 atomic<uint64_t> metadataQueueWaitNs{0},metadataTasks{0},blockTasks{0},blockReplyWaitNs{0};
 atomic<uint64_t> duplicateBlockWork{0};
 atomic<uint64_t> blockReplyReadNs{0},blockReplyTasks{0};
@@ -309,33 +306,13 @@ awaitable<void> SynchronizeClock() {
             if (peer->closed) return;
             auto now=GetSteadyTime();
             if (peer->clockToken&&now-peer->clockSentSteady<1000000000) return;
-            auto mapping=GetClockMapping();
-            peer->clockSentSteady=uint64_t(mapping.steadyUs)*1000; peer->clockSentLogical=mapping.logicalUs; peer->clockToken=now;
+            peer->clockSentSteady=now; peer->clockSentLogical=GetLogicalTimeUs(); peer->clockToken=now;
             array<uint8_t,8> request; WriteU64(request.data(),now);
             SendData(peer,GenerateMessage(27,request));
         });
         timer.expires_after(milliseconds(nodeClock.periodMs));
         co_await timer.async_wait(use_awaitable);
         AdjustClock();
-    }
-}
-void ObserveClock() {
-    double previousCpu=0; int64_t previousAt=0;
-    try {
-        while (nodeRunning) {
-            auto at=int64_t(GetSteadyTime()/1000);
-            auto resources=GetProcessResources(); double cpu=resources.value("process_cpu_seconds",0.0);
-            double cores=previousAt?max(0.0,(cpu-previousCpu)*1e6/(at-previousAt)):0;
-            size_t ready=0;
-            { lock_guard lock(txpoolMutex); ready=readyPoolTx; }
-            UpdateClockModel(cores,pendingTxVerify.load(),pendingBlockVerify.load()+pendingMetadata.load(),ready);
-            FlushClockTrace(); previousCpu=cpu; previousAt=at;
-            this_thread::sleep_for(milliseconds(nodeClock.modelPeriodMs));
-        }
-        FlushClockTrace();
-    } catch (const exception& e) {
-        // If observation fails, prediction TTL and source expiry still force the bounded fallback.
-        spdlog::warn("Clock observer stopped: {}",e.what());
     }
 }
 void WaitLogicalTime(int64_t target) {
@@ -355,301 +332,22 @@ void ProcessTxTimeACKMessage(const vector<uint8_t>& data,system_clock::time_poin
 }
 
 // ------------------------------------------------出块循环------------------------------------------------
-bool WaitSteadyDeadline(int64_t target) {
-    while (nodeRunning) {
-        if (forkReady||syncOwner.load()) return false;
-        auto remaining=target-int64_t(GetSteadyTime()/1000);
-        if (remaining<=0) return true;
-        unique_lock lock(txpoolMutex);
-        txpoolCondition.wait_for(lock,microseconds(min(int64_t(5000),remaining)));
-    }
-    return false;
-}
-bool ProcessTimedForks() {
-    auto start=GetSteadyTime(); auto changed=ProcessForks();
-    if (changed) RecordClockWork(false,int64_t((GetSteadyTime()-start)/1000));
-    return changed;
-}
-struct PendingCandidateOutcome {
-    array<uint8_t,32> hash{};
-    array<uint8_t,32> parent{};
-    uint64_t height=0;
-    int64_t preparedUs=0;
-    CandidateValueFeatures features{};
-    double survivalPrediction=.5,retentionPrediction=.5;
-    bool marginalSample=false;
-    MarginalFeatures marginalFeatures{};
-    double marginalPrediction=0;
-    uint64_t candidateTransactions=0,alternativeTransactions=0,maximumTransactions=1;
-};
-struct MarginalAlternative {
-    array<uint8_t,32> hash{};
-    size_t transactions=0;
-    double poolOverlap=0;
-};
-MarginalAlternative ReadMarginalAlternative(const CandidateRound& round) {
-    MarginalAlternative result; array<array<uint8_t,32>,64> sample{}; size_t count=0;
-    {
-        lock_guard lock(blockBufferLock); const auto& slot=BlockBuffer[0];
-        if (slot.second.empty()||slot.first.height!=round.height||slot.first.previousHash!=round.parent) return result;
-        result.hash=slot.first.hash; result.transactions=slot.first.txs.size();
-        count=min(sample.size(),result.transactions);
-        for (size_t i=0;i<count;++i) sample[i]=GetTransactionHash(slot.first.txs[i*result.transactions/count]);
-    }
-    if (count) {
-        lock_guard lock(txpoolMutex); size_t matched=0;
-        for (size_t i=0;i<count;++i) matched+=txpool.count(sample[i]);
-        result.poolOverlap=double(matched)/count;
-    }
-    return result;
-}
-bool MarginalAlternativeUnchanged(const CandidateRound& round,const MarginalAlternative& alternative) {
-    lock_guard lock(blockBufferLock); const auto& slot=BlockBuffer[0];
-    return !slot.second.empty()&&slot.first.hash==alternative.hash&&slot.first.height==round.height&&slot.first.previousHash==round.parent;
-}
-struct CandidatePolicies {
-    AdaptivePreparation preparation;
-    CandidateValueModel value;
-    CandidateMarginalModel marginal;
-    deque<PendingCandidateOutcome> pending;
-    void ObservePending(bool closing=false) {
-        if (pending.empty()) return;
-        auto now=int64_t(GetSteadyTime()/1000);
-        if (!closing&&now-pending.front().preparedUs<250000) return;
-        auto snapshot=ReadPublishedChain();
-        while (!pending.empty()&&(closing||now-pending.front().preparedUs>=250000)) {
-            auto row=pending.front(); pending.pop_front();
-            auto found=find_if(snapshot.tail.begin(),snapshot.tail.end(),[&](const auto& a) { return a.height==row.height; });
-            auto parent=find_if(snapshot.tail.begin(),snapshot.tail.end(),[&](const auto& a) { return a.height+1==row.height; });
-            bool censored=closing||now-row.preparedUs>500000||
-                (snapshot.head.height>=row.height&&found==snapshot.tail.end())||parent==snapshot.tail.end();
-            bool parentSurvived=parent!=snapshot.tail.end()&&parent->hash==row.parent;
-            bool retained=found!=snapshot.tail.end()&&found->hash==row.hash;
-            auto before=row.retentionPrediction;
-            auto survivalBefore=row.survivalPrediction;
-            if (!censored) {
-                value.survival.Observe(row.features,parentSurvived);
-                if (parentSurvived) value.retention.Observe(row.features,retained);
-            }
-            double marginalTarget=0;
-            if (row.marginalSample) {
-                if (parentSurvived&&retained&&row.candidateTransactions>row.alternativeTransactions)
-                    marginalTarget=min(1.,double(row.candidateTransactions-row.alternativeTransactions)/row.maximumTransactions);
-                if (!censored) marginal.Observe(row.marginalFeatures,marginalTarget,row.marginalPrediction);
-                lock_guard lock(nodeClock.lock);
-                if (censored) ++nodeClock.marginalCensored;
-                else { ++nodeClock.marginalLabels; nodeClock.marginalAbsoluteError+=abs(marginalTarget-row.marginalPrediction); }
-            }
-            {
-                lock_guard lock(nodeClock.lock);
-                if (censored) ++nodeClock.valueCensored;
-                else {
-                    ++nodeClock.valueSurvivalLabels; nodeClock.valueSurvivalBrier+=(survivalBefore-double(parentSurvived))*(survivalBefore-double(parentSurvived));
-                    if (parentSurvived) { ++nodeClock.valueRetentionLabels; nodeClock.valueRetentionBrier+=(before-double(retained))*(before-double(retained)); }
-                }
-            }
-            WriteClockTrace({{"kind","candidate_outcome"},{"hash",U32ToHex(row.hash)},{"height",row.height},
-                {"observed_us",now},{"prepared_us",row.preparedUs},{"age_us",now-row.preparedUs},
-                {"retained",retained},{"censored",censored},{"prediction_before_update",before},
-                {"parent_survived",parentSurvived},{"survival_prediction_before_update",survivalBefore},
-                {"marginal_sample",row.marginalSample},{"marginal_target",censored?nlohmann::json(nullptr):nlohmann::json(marginalTarget)},
-                {"marginal_prediction",row.marginalPrediction},{"marginal_features",row.marginalFeatures},
-                {"candidate_transactions",row.candidateTransactions},{"alternative_transactions",row.alternativeTransactions},
-                {"features",row.features},{"label_source","local_canonical_250_to_500ms"}});
-        }
-    }
-};
-void RunBoundedCandidateRound(int64_t& lastRound,CandidateRiskModel& risk,CandidatePolicies& policies) {
-    size_t ready=0;
-    { lock_guard lock(txpoolMutex); ready=readyPoolTx; }
-    auto pendingBlock=pendingBlockVerify.load()+pendingMetadata.load();
-    ClockFeatures features;
-    auto mapping=GetClockMapping();
-    auto [decisionHead,headAt]=ReadPublishedHead();
-    auto logicalRound=mapping.logicalUs/(int64_t(nodeClock.roundMs)*1000);
-    auto [uncertainty,prepare]=nodeClock.candidateAdaptive?
-        GetAdaptiveBudgets(policies.preparation,decisionHead.version,logicalRound,ready,pendingTxVerify.load(),pendingBlock,features):
-        GetDecisionBudgets(ready,pendingTxVerify.load(),pendingBlock,features);
-    // Feature extraction and inference consume real time. Re-read the mapping
-    // before checking feasibility instead of planning from a stale timestamp.
-    mapping=GetClockMapping();
-    auto bucket=CandidateRiskModel::Bucket(pendingBlock>0,ready>=maxBlockTx/2);
-    auto period=int64_t(nodeClock.roundMs)*1000;
-    auto current=mapping.logicalUs/period;
-    auto remaining=mapping.ToSteady(current*period+int64_t(nodeClock.candidateMs)*1000)-mapping.steadyUs-uncertainty-nodeClock.guardUs;
-    if (nodeClock.candidateRisk&&risk.ShouldDefer(bucket,blockReady,prepare,remaining)) {
-        // Leave the already verified candidate to the ordinary main-loop commit
-        // path. No received-block validation or branch ranking is bypassed.
-        risk.consecutiveSkips++;
-        { lock_guard lock(nodeClock.lock); nodeClock.riskDeferrals++; }
-        WriteClockTrace({{"kind","candidate_defer"},{"round",current},{"risk_bucket",bucket},
-            {"predicted_failure",risk.cells[bucket].failure},{"risk_samples",risk.cells[bucket].samples},
-            {"prepare_budget_us",prepare},{"remaining_us",remaining},{"features",features}});
-        return;
-    }
-    auto planned=PlanCandidateRound(mapping,lastRound,int64_t(nodeClock.roundMs)*1000,
-        int64_t(nodeClock.candidateMs)*1000,prepare,uncertainty,nodeClock.guardUs,nodeClock.joinCurrentRound,nodeClock.candidateTiming||nodeClock.candidateAdaptive);
-    if (!planned) {
-        { lock_guard lock(nodeClock.lock); nodeClock.budgetSkips++; }
-        if (!blockReady) WaitSteadyDeadline(mapping.steadyUs+int64_t(nodeClock.roundMs)*1000);
-        return;
-    }
-    auto round=*planned;
-    auto head=ReadChainHead(); round.parent=head.hash; round.height=head.height+1; round.stateVersion=head.version;
-    MarginalAlternative marginalAlternative;
-    MarginalFeatures marginalFeatures{}; MarginalDecision marginalDecision;
-    if (nodeClock.candidateMarginal) {
-        marginalAlternative=ReadMarginalAlternative(round);
-        marginalFeatures=CandidateMarginalModel::Features(ready,maxBlockTx,pendingTxVerify.load(),pendingBlockVerify.load(),pendingMetadata.load(),
-            prepare,max(int64_t(0),mapping.steadyUs-headAt),marginalAlternative.transactions,marginalAlternative.poolOverlap,
-            round.proposalDeadlineUs-mapping.steadyUs);
-        marginalDecision=policies.marginal.Decide(marginalFeatures,marginalAlternative.transactions,maxBlockTx,prepare,
-            round.proposalDeadlineUs-mapping.steadyUs,period,marginalAlternative.transactions>0);
-        bool suggest=marginalDecision.defer&&MarginalAlternativeUnchanged(round,marginalAlternative);
-        {
-            lock_guard lock(nodeClock.lock); ++nodeClock.marginalPredictions;
-            if (suggest) {
-                ++nodeClock.marginalSuggestions;
-                if (marginalAlternative.transactions>=maxBlockTx) ++nodeClock.marginalRuleSuggestions;
-                if (nodeClock.candidateMarginal==2) ++nodeClock.marginalDeferrals;
-            }
-        }
-        if (suggest) WriteClockTrace({{"kind","marginal_decision"},{"round",round.id},{"reason",marginalDecision.reason},
-            {"action",nodeClock.candidateMarginal==2?"defer":"shadow"},{"features",marginalFeatures},
-            {"prediction",marginalDecision.prediction},{"margin",marginalDecision.margin},{"cost_score",marginalDecision.cost},
-            {"alternative_transactions",marginalAlternative.transactions},{"alternative_hash",U32ToHex(marginalAlternative.hash)},
-            {"labels",policies.marginal.samples}});
-        if (suggest&&nodeClock.candidateMarginal==2) { ++policies.marginal.consecutiveSkips; return; }
-    }
-    bool alternative=false;
-    {
-        lock_guard lock(blockBufferLock);
-        alternative=!BlockBuffer[0].second.empty()&&BlockBuffer[0].first.height==round.height&&
-            BlockBuffer[0].first.previousHash==round.parent;
-    }
-    auto valueFeatures=CandidateValueModel::Features(prepare,max(round.startUs,mapping.steadyUs+prepare)-mapping.steadyUs,
-        max(int64_t(0),mapping.steadyUs-headAt),ready,maxBlockTx,pendingBlock,alternative);
-    auto survivePrediction=policies.value.survival.Predict(valueFeatures);
-    auto retainPrediction=policies.value.retention.Predict(valueFeatures);
-    if (nodeClock.candidateValue) {
-        bool suggest=policies.value.ShouldDefer(valueFeatures,alternative,prepare,round.proposalDeadlineUs-mapping.steadyUs);
-        {
-            lock_guard lock(nodeClock.lock); ++nodeClock.valuePredictions;
-            if (suggest) ++nodeClock.valueSuggestions;
-            if (suggest&&nodeClock.candidateValue==2) ++nodeClock.valueDeferrals;
-        }
-        if (suggest) WriteClockTrace({{"kind","value_decision"},{"round",round.id},{"features",valueFeatures},
-            {"survival",survivePrediction},{"retention",retainPrediction},{"action",nodeClock.candidateValue==2?"defer":"shadow"},
-            {"remaining_us",round.proposalDeadlineUs-mapping.steadyUs}});
-        if (suggest&&nodeClock.candidateValue==2) { ++policies.value.consecutiveSkips; return; }
-    }
-    { lock_guard lock(nodeClock.lock); round.featureVersion=nodeClock.featureVersion; }
-    if (!WaitSteadyDeadline(round.startUs-prepare)) return;
-    if (!produceBlocks) { WaitSteadyDeadline(round.collectionDeadlineUs); return; }
-    if (forkReady||syncOwner.load()) return;
-    head=ReadChainHead();
-    if (head.hash!=round.parent||head.version!=round.stateVersion||head.height+1!=round.height) return;
-    // Reserve the attempt before preparation, including cancellation. Never catch up old rounds.
-    {
-        lock_guard lock(nodeClock.lock);
-        if (lastRound>=0&&round.id>lastRound+1) nodeClock.skippedRounds+=round.id-lastRound-1;
-        nodeClock.rounds++; if (round.joinedCurrent) nodeClock.joinedRounds++;
-    }
-    lastRound=round.id;
-    auto start=GetSteadyTime(); auto data=GenerateBlock(); Block preparedBlock;
-    bool verified=!data.empty()&&VerifyBlock(data,&preparedBlock);
-    bool valid=verified&&DBCheckBlockUsers(data);
-    auto prepared=GetSteadyTime();
-    auto preparedHash=preparedBlock.hash;
-    auto afterPreparation=ReadChainHead();
-    bool survived=afterPreparation.hash==round.parent&&afterPreparation.version==round.stateVersion;
-    string outcome=data.empty()?"empty":"invalid"; bool accepted=false; uint64_t verifyStart=prepared,finished=prepared;
-    if (valid) {
-        if (!WaitSteadyDeadline(round.startUs)) outcome="cancelled";
-        else {
-            verifyStart=GetSteadyTime(); head=ReadChainHead();
-            if (!CandidateRoundFits(round,int64_t(verifyStart/1000),head.height+1,head.version,head.hash))
-                outcome=head.version!=round.stateVersion||head.hash!=round.parent?"stale_parent":"late";
-            else {
-                accepted=SelectBlockCandidate(std::move(preparedBlock),data,&round);
-                outcome=accepted?"offered":"not_selected";
-            }
-            finished=GetSteadyTime();
-        }
-    }
-    auto workUs=int64_t((prepared-start+finished-verifyStart)/1000);
-    if (accepted) { localProposals++; AnnounceBlock(data); }
-    if (!accepted&&outcome=="not_selected") {
-        head=ReadChainHead();
-        if (head.version!=round.stateVersion||head.hash!=round.parent) outcome="stale_parent";
-        else if (int64_t(finished/1000)>=round.proposalDeadlineUs) outcome="late";
-    }
-    bool late=outcome=="late";
-    // Empty and invalid attempts do not teach an outcome model for valid work.
-    if (valid) risk.Observe(bucket,!accepted);
-    if (nodeClock.candidateAdaptive) policies.preparation.Observe(size_t(pendingBlock>0),policies.preparation.rawUs,workUs,valid);
-    if (nodeClock.candidateValue||nodeClock.candidateLifecycle||nodeClock.candidateMarginal) {
-        policies.value.consecutiveSkips=0;
-        policies.marginal.consecutiveSkips=0;
-        if (valid&&survived) {
-            if (policies.pending.size()>=64) {
-                bool marginal=policies.pending.front().marginalSample;
-                policies.pending.pop_front(); lock_guard lock(nodeClock.lock); ++nodeClock.valueCensored;
-                if (marginal) ++nodeClock.marginalCensored;
-            }
-            PendingCandidateOutcome pending{preparedHash,round.parent,round.height,int64_t(prepared/1000),valueFeatures,survivePrediction,retainPrediction};
-            pending.marginalSample=nodeClock.candidateMarginal&&marginalAlternative.transactions>0;
-            pending.marginalFeatures=marginalFeatures; pending.marginalPrediction=marginalDecision.prediction;
-            pending.candidateTransactions=ReadU64(data.data()+72); pending.alternativeTransactions=marginalAlternative.transactions;
-            pending.maximumTransactions=maxBlockTx; policies.pending.push_back(std::move(pending));
-        }
-    }
-    RecordClockWork(true,workUs,late);
-    {
-        lock_guard lock(nodeClock.lock);
-        if (late) nodeClock.lateCandidates++;
-        if (outcome=="stale_parent") nodeClock.staleCandidates++;
-        if (outcome=="cancelled") nodeClock.cancelledCandidates++;
-    }
-    WriteClockTrace({{"kind","candidate"},{"round",round.id},{"clock_version",round.clockVersion},{"feature_version",round.featureVersion},
-        {"features",features},{"risk_bucket",bucket},{"predicted_failure_after",risk.cells[bucket].failure},
-        {"candidate_timing",nodeClock.candidateTiming},{"candidate_risk",nodeClock.candidateRisk},
-        {"candidate_adaptive",nodeClock.candidateAdaptive},{"candidate_value",nodeClock.candidateValue},
-        {"candidate_marginal",nodeClock.candidateMarginal},{"marginal_features",marginalFeatures},{"marginal_reason",marginalDecision.reason},
-        {"alternative_transactions",marginalAlternative.transactions},{"marginal_prediction",marginalDecision.prediction},
-        {"hash",U32ToHex(preparedHash)},{"parent_valid_after_prepare",survived},
-        {"value_features",valueFeatures},{"survival_prediction",survivePrediction},{"retention_prediction",retainPrediction},
-        {"uncalibrated_prepare_us",nodeClock.candidateAdaptive?policies.preparation.rawUs:prepare},
-        {"parent",U32ToHex(round.parent)},{"height",round.height},{"state_version",round.stateVersion},
-        {"start_us",round.startUs},{"proposal_deadline_us",round.proposalDeadlineUs},{"collection_deadline_us",round.collectionDeadlineUs},
-        {"offered_us",round.offeredUs},{"joined_current",round.joinedCurrent},{"outcome",outcome},{"prepare_us",workUs},
-        {"prepare_start_us",start/1000},{"prepare_end_us",prepared/1000},{"prepare_completed",valid},
-        {"prepare_budget_us",prepare},{"time_budget_us",uncertainty},
-        {"censored",outcome=="cancelled"||outcome=="empty"},{"label_source","local_monotonic"}});
-    WaitSteadyDeadline(round.collectionDeadlineUs);
-}
 void MainLoop() {
     try {
         int64_t lastRound=-1;
-        CandidateRiskModel risk;
-        CandidatePolicies policies;
         while (true) {
-            policies.ObservePending();
-            if (ProcessTimedForks()) AnnounceBlock(DBReadBlockByHash(DBReadCurrentBlock()));
+            if (ProcessForks()) AnnounceBlock(DBReadBlockByHash(DBReadCurrentBlock()));
             {
                 unique_lock lock(txpoolMutex);
                 txpoolCondition.wait(lock,[]{return !nodeRunning||forkReady||blockReady||(produceBlocks&&readyPoolTx>0);});
                 if (forkReady) continue;
-                if (!nodeRunning&&nodeClock.scheduler=="bounded"&&!blockReady) break;
                 if (!nodeRunning&&!blockReady&&(!produceBlocks||txpool.empty())) break;
                 if (!nodeClock.roundMs&&produceBlocks&&!blockReady&&nodeRunning&&readyPoolTx<maxBlockTx) {
                     txpoolCondition.wait_for(lock,milliseconds(blockInterval),[]{return !nodeRunning||forkReady||blockReady||readyPoolTx>=maxBlockTx;});
                 }
                 if (forkReady) continue;
             }
-            if (nodeClock.roundMs&&nodeRunning&&nodeClock.scheduler=="bounded") {
-                RunBoundedCandidateRound(lastRound,risk,policies);
-            } else if (nodeClock.roundMs&&nodeRunning) {
+            if (nodeClock.roundMs&&nodeRunning) {
                 auto period=int64_t(nodeClock.roundMs)*1000;
                 auto round=max(lastRound+1,GetLogicalTimeUs()/period+1);
                 WaitLogicalTime(round*period);
@@ -675,19 +373,16 @@ void MainLoop() {
             // 已收到连续后继时复用分支批次，一次同步写盘发布整段状态。
             if (forkReady||HasForkChild(selected.first.hash)) {
                 QueueForkBlock(selected.first,selected.second,false); forkReady=true;
-                if (ProcessTimedForks()) { AnnounceBlock(DBReadBlockByHash(DBReadCurrentBlock())); continue; }
+                if (ProcessForks()) { AnnounceBlock(DBReadBlockByHash(DBReadCurrentBlock())); continue; }
             }
-            auto commitStart=GetSteadyTime();
             if (!CommitBlock(selected.first,selected.second)) {
                 spdlog::warn("Rejected candidate at height {}",selected.first.height);
                 continue;
             }
-            RecordClockWork(false,int64_t((GetSteadyTime()-commitStart)/1000));
             AnnounceBlock(selected.second);
             forkReady=true;
             spdlog::debug("Local block committed. Height:{}, TxNum:{}",selected.first.height,selected.first.txNum);
         }
-        policies.ObservePending(true);
     } catch (const exception& e) {
         spdlog::error("MainLoop stopped: {}",e.what());
         nodeFailed=true;
@@ -711,13 +406,10 @@ nlohmann::json GetNodeStats() {
     auto first=firstTxTime.load();
     auto last=lastCommitTime.load();
     double elapsed=last>first&&first?double(last-first)/1e9:0;
-    auto published=ReadPublishedChain(); auto snapshot=published.head;
+    auto snapshot=ReadChainHead();
     auto height=snapshot.height,chainTx=snapshot.transactions,burned=snapshot.burned;
     auto userCount=snapshot.users,evmCount=snapshot.contracts; auto head=snapshot.hash;
-    auto tail=nlohmann::json::array();
-    for (const auto& anchor:published.tail) tail.push_back({{"height",anchor.height},{"hash",U32ToHex(anchor.hash)},{"transactions",anchor.transactions}});
-    nlohmann::json stats={{"canonical_tail",tail},{"published_state_version",snapshot.version},{"published_at_us",published.atUs},
-        {"received",receivedTx.load()},{"valid",validTx.load()},{"invalid",invalidTx.load()},
+    nlohmann::json stats={{"received",receivedTx.load()},{"valid",validTx.load()},{"invalid",invalidTx.load()},
         {"duplicate",duplicateTx.load()},{"rejected",rejectedTx.load()},{"committed",committedTx.load()},
         {"pool",poolSize},{"ready_pool",readySize},{"pending",pendingVerify.load()},{"peak_pending",peakPendingVerify.load()},
         {"blocks",blockCount.load()},{"height",height},{"head",U32ToHex(head)},
@@ -776,13 +468,6 @@ nlohmann::json GetNodeStats() {
         {"block_reply_read_ms",blockReplyReadNs.load()/1e6},{"block_reply_tasks",blockReplyTasks.load()},
         {"state_version",snapshot.version},
         {"ingress_wait_ms",ingressWaitNs.load()/1e6},{"clock",GetClockStats()},{"experiment_index",experimentIndex}};
-    auto budget=verificationBudget.Snapshot();
-    stats.update({{"work_scheduler",workScheduler},{"metadata_threads",workScheduler?1:0},{"pool_snapshot",poolSnapshot},
-        {"verification_budget",verificationBudget.limit},{"verification_active",budget.active},{"verification_peak",budget.peak},
-        {"verification_waits",budget.waits},{"verification_wait_ms",budget.waitNs/1e6},
-        {"verification_normal_waiting",budget.normalWaiting},{"verification_priority_waiting",budget.priorityWaiting},
-        {"pending_metadata_bytes",pendingMetadataBytes.load()},{"pool_snapshot_chunks",poolSnapshotChunks.load()},
-        {"pool_snapshot_lock_ms",poolSnapshotLockNs.load()/1e6}});
     stats.update(GetProcessResources());
     return stats;
 }

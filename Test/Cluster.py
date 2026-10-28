@@ -69,15 +69,6 @@ def Worker(node, request):
     return response['result']
 
 
-def ReadMeasurementResponse(connection,kind):
-    response,size=struct.unpack('<BI',ReadAll(connection,5))
-    # Stats may contain 256 canonical anchors; other query limits stay small.
-    limit=65536 if kind==13 else 16384
-    if response!=kind+1 or size>limit:
-        raise ValueError('Invalid measurement response')
-    return ReadAll(connection,size)
-
-
 class NodeClient:
     def __init__(self, node):
         self.node, self.socket = node, None
@@ -95,7 +86,10 @@ class NodeClient:
                     self.socket.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
                     self.socket.sendall(b'\x02')
                 self.socket.sendall(Frame(kind, payload))
-                data=ReadMeasurementResponse(self.socket,kind)
+                response, size = struct.unpack('<BI', ReadAll(self.socket, 5))
+                if response != kind+1 or size > 16384:
+                    raise ValueError('Invalid measurement response')
+                data = ReadAll(self.socket, size)
                 return data if raw else json.loads(data)
             except BaseException:
                 self.Close()
@@ -140,10 +134,6 @@ class Cluster:
             # One TCP connection per undirected edge; configured peers reconnect automatically.
             for peer in self.nodes[index+1:]:
                 arguments += ['--seed', f'{peer["host"]}:{peer["port"]}']
-            if settings.get('clock-control', 'legacy') != 'legacy':
-                for peer in self.nodes:
-                    if peer['id'] != node['id']:
-                        arguments += ['--clock-peer', f'{peer["host"]}:{peer["port"]}']
             self.starts[index] = {'action': 'start', 'run': self.run, 'binary': node['binary'],
                                   'genesis': self.genesis, 'arguments': arguments}
         def StartOne(index):

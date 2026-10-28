@@ -30,17 +30,9 @@ void AddConfiguredPeer(const string& value) {
     ip::make_address_v4(host);
     configuredPeers.emplace_back(host,uint16_t(ParseNumber(value.substr(colon+1),1,65535)));
 }
-void AddClockMember(const string& value) {
-    auto colon=value.find(':');
-    if (colon==string::npos) throw invalid_argument("Use IPv4:port for --clock-peer");
-    auto address=ip::make_address_v4(value.substr(0,colon)).to_bytes();
-    auto port=uint16_t(ParseNumber(value.substr(colon+1),1,65535));
-    nodeClock.members.insert(GetPeerKey(address,port));
-    if (nodeClock.members.size()>64) throw invalid_argument("At most 64 clock members");
-}
 int main(int argc,char* argv[]) {
     try {
-        string configPath,dataPath="data/accounts-v7",metricsPath,genesisPath,clockModelPath;
+        string configPath,dataPath="data/accounts-v7",metricsPath,genesisPath;
         int ioNum=4,verifyNum=8,candidateNum=0,blockVerifyCount=0,queryNum=1,runSeconds=0;
         bool sync=true,observeClock=false;
         for (int i=1;i<argc;i++) {
@@ -78,9 +70,6 @@ int main(int argc,char* argv[]) {
             else if (name=="--candidate-threads") candidateNum=int(ParseNumber(value,1,64));
             else if (name=="--block-verify-threads") blockVerifyCount=int(ParseNumber(value,1,64));
             else if (name=="--query-threads") queryNum=int(ParseNumber(value,1,4));
-            else if (name=="--work-scheduler") workScheduler=ParseNumber(value,0,1)!=0;
-            else if (name=="--verification-budget") verificationBudget.limit=size_t(ParseNumber(value,0,64));
-            else if (name=="--pool-snapshot") poolSnapshot=ParseNumber(value,0,1)!=0;
             else if (name=="--signature-cache") maxVerifiedPerBucket=(ParseNumber(value,16,4194304)+15)/16;
             else if (name=="--recent-tx-cache") {
                 maxRecentBlockTransactions=ParseNumber(value,16,2097152);
@@ -110,44 +99,14 @@ int main(int argc,char* argv[]) {
             else if (name=="--sync-gain") nodeClock.gain=ParseReal(value,0.001,1);
             else if (name=="--round-ms") nodeClock.roundMs=int(ParseNumber(value,0,5000));
             else if (name=="--candidate-ms") nodeClock.candidateMs=int(ParseNumber(value,0,5000));
-            else if (name=="--clock-control") {
-                if (value!="legacy"&&value!="robust"&&value!="shadow"&&value!="learned") throw invalid_argument("Invalid clock control mode");
-                nodeClock.control=value; observeClock=true;
-            }
-            else if (name=="--clock-peer") AddClockMember(value);
-            else if (name=="--clock-min-peers") nodeClock.minPeers=int(ParseNumber(value,1,64));
-            else if (name=="--clock-max-slew-ppm") nodeClock.maxSlewPpm=ParseReal(value,1,10000);
-            else if (name=="--clock-model") clockModelPath=value;
-            else if (name=="--clock-model-period-ms") nodeClock.modelPeriodMs=int(ParseNumber(value,100,10000));
-            else if (name=="--clock-model-ttl-ms") nodeClock.modelTtlMs=int(ParseNumber(value,100,60000));
-            else if (name=="--clock-prepare-quantile") nodeClock.prepareQuantile=ParseReal(value,.5,.99);
-            else if (name=="--clock-trace") nodeClock.tracePath=value;
-            else if (name=="--proposal-guard-us") nodeClock.guardUs=int64_t(ParseNumber(value,100,1000000));
-            else if (name=="--join-current-round") nodeClock.joinCurrentRound=ParseNumber(value,0,1)!=0;
-            else if (name=="--candidate-timing") nodeClock.candidateTiming=ParseNumber(value,0,1)!=0;
-            else if (name=="--candidate-risk") nodeClock.candidateRisk=ParseNumber(value,0,1)!=0;
-            else if (name=="--candidate-adaptive") nodeClock.candidateAdaptive=ParseNumber(value,0,1)!=0;
-            else if (name=="--candidate-value") nodeClock.candidateValue=int(ParseNumber(value,0,2));
-            else if (name=="--candidate-marginal") nodeClock.candidateMarginal=int(ParseNumber(value,0,2));
-            else if (name=="--candidate-lifecycle") nodeClock.candidateLifecycle=ParseNumber(value,0,1)!=0;
-            else if (name=="--round-scheduler") {
-                if (value!="legacy"&&value!="bounded") throw invalid_argument("Invalid round scheduler");
-                nodeClock.scheduler=value;
-            }
             else throw invalid_argument("Unknown argument: "+name);
         }
         if (ioNum<1||ioNum>64||verifyNum<1||verifyNum>64||blockInterval<1||blockInterval>5000||listenPort==0) throw invalid_argument("Invalid node configuration");
         if (!candidateNum) candidateNum=min(4,verifyNum);
         if (!blockVerifyCount) blockVerifyCount=min(4,verifyNum);
-        if (workScheduler&&!verificationBudget.limit) verificationBudget.limit=min(64u,max(1u,thread::hardware_concurrency()>1?thread::hardware_concurrency()-1:1));
         if (candidateNum<1||candidateNum>64||blockVerifyCount<1||blockVerifyCount>64||queryNum<1||queryNum>4) throw invalid_argument("Invalid worker configuration");
         if (nodeClock.roundMs&&!nodeClock.candidateMs) nodeClock.candidateMs=max(1,nodeClock.roundMs/4);
         if (nodeClock.candidateMs>=nodeClock.roundMs&&nodeClock.candidateMs) throw invalid_argument("Candidate window must be shorter than round");
-        if (nodeClock.scheduler=="bounded"&&(!nodeClock.roundMs||nodeClock.control=="legacy"))
-            throw invalid_argument("Bounded scheduler requires rounds and a continuous clock control mode");
-        if (nodeClock.candidateMarginal&&(nodeClock.scheduler!="bounded"||nodeClock.candidateRisk||nodeClock.candidateValue==2))
-            throw invalid_argument("Marginal policy requires bounded scheduling and no other active value controller");
-        if (!clockModelPath.empty()&&!nodeClock.model.Load(clockModelPath)) cerr<<"Clock model fallback: "<<nodeClock.model.error<<endl;
         InitTime();
         InitSodium();
         if (!genesisPath.empty()) LoadGenesisUsers(genesisPath);
@@ -160,7 +119,6 @@ int main(int argc,char* argv[]) {
         nodeIO=&io;
         verifyThreads=make_unique<thread_pool>(verifyNum);
         candidateThreads=make_unique<thread_pool>(candidateNum);
-        if (workScheduler) metadataThreads=make_unique<thread_pool>(1);
         queryThreads=make_unique<thread_pool>(queryNum);
         blockVerifyNum=size_t(blockVerifyCount);
         blockVerifyThreads=make_unique<thread_pool>(blockVerifyNum);
@@ -184,8 +142,6 @@ int main(int argc,char* argv[]) {
         if (observeClock) co_spawn(make_strand(io),SynchronizeClock(),onError);
         spdlog::info("Node ready. IO:{}, Verify:{}, BlockMs:{}, Produce:{}",ioNum,verifyNum,blockInterval,produceBlocks);
         thread blockThread(MainLoop);
-        thread clockThread;
-        if (nodeClock.control!="legacy") clockThread=thread(ObserveClock);
         vector<thread> threads;
         for (int i=0;i<ioNum;i++) threads.emplace_back([&] {
             try { io.run(); } catch (...) { onError(current_exception()); }
@@ -193,16 +149,13 @@ int main(int argc,char* argv[]) {
         for (auto& t:threads) t.join();
         // 先停止网络接收，再完成已经入队的验证，最后提交剩余交易。
         verifyThreads->join();
-        if (metadataThreads) metadataThreads->join();
         candidateThreads->join();
         queryThreads->join();
         queryThreads.reset();
         candidateThreads.reset();
-        metadataThreads.reset();
         nodeRunning=false;
         WakeMainLoop();
         blockThread.join();
-        if (clockThread.joinable()) clockThread.join();
         blockVerifyThreads->join();
         blockVerifyThreads.reset();
         // 所有工作线程结束后，在 io_context 析构前释放全局节点连接。

@@ -1,0 +1,186 @@
+{
+  "baseline": "933905448951c600156a8ad2a0b3c3a895916fb5",
+  "restored_files": [
+    {
+      "path": "CMakeLists.txt",
+      "sha256": "05fc3bf252e833d083c885bb3857d75077f9faceefb9d6a26983a58031f32d68",
+      "matches_baseline": true
+    },
+    {
+      "path": "main.cpp",
+      "sha256": "3e2771cadda3e7abca23d16d19c38af1df6d18bde04ae98e3a19ad9d603876de",
+      "matches_baseline": true
+    },
+    {
+      "path": "DB/DB.h",
+      "sha256": "7a6c20e64130df1ea110d0d3de0431526a899bfd677df6057295af122e3f7427",
+      "matches_baseline": true
+    },
+    {
+      "path": "Network/Client.h",
+      "sha256": "f04c8e31dc8a3f43c50c3f8139a262367ebaf01819885998997d49e7a71a0566",
+      "matches_baseline": true
+    },
+    {
+      "path": "Network/Server.h",
+      "sha256": "ac345c71dee763fe2079dbe2b4ab5b980cf9ddcc4d7febb924f34f8bf436dd32",
+      "matches_baseline": true
+    },
+    {
+      "path": "Time/Time.h",
+      "sha256": "70fe0d99eb7c4ee224deae5ff96476e991b4c0827bfdfae1bec1dcdfab8daf90",
+      "matches_baseline": true
+    },
+    {
+      "path": "Transaction/Block.h",
+      "sha256": "22551b64a615518522da0e3498051043633d49aa65fc9a35992d5908a20ce737",
+      "matches_baseline": true
+    },
+    {
+      "path": "Transaction/Transaction.h",
+      "sha256": "f48031f56fe1ef90026a724467034516fe74dcc3cabaef11462a265d954fb795",
+      "matches_baseline": true
+    },
+    {
+      "path": "Test/Cluster.py",
+      "sha256": "199fc7b21c1c5b31afbef4e2944f73cc631f9c29b49b2e0fa99e3dbb6102d593",
+      "matches_baseline": true
+    },
+    {
+      "path": "Test/EvmNetworkTest.py",
+      "sha256": "0e82bac27c2c555ef0727c9c3d74df660d6ed748e2ee181a578cee269a04cb31",
+      "matches_baseline": true
+    },
+    {
+      "path": "Test/FlowTest.cpp",
+      "sha256": "3d2fef37989623729e9dc33c72b879af0a4477f27e0f10729f84367c6093873c",
+      "matches_baseline": true
+    },
+    {
+      "path": "Test/ForkStateTest.cpp",
+      "sha256": "bf9a5cd9a8469ef1a591323e69c42a3386e981cf9ec3566e8f6231fb2088df65",
+      "matches_baseline": true
+    },
+    {
+      "path": "Test/UserTest.cpp",
+      "sha256": "c17fe6c1c7faa165cc1fecbb6e269ed4677fd89f0945a791e30f831a2853f71c",
+      "matches_baseline": true
+    }
+  ],
+  "protected_fisco_files": 39,
+  "fisco_unchanged": true,
+  "preexisting_changes_preserved": true,
+  "unsupported_model_cli": {
+    "returncode": 1,
+    "stdout": "",
+    "stderr": "Node failed: Unknown argument: --clock-control\n",
+    "database_created": false
+  },
+  "compiled_binary_sha256": "7639cc9a18e6aafe0fe75244fda117bcbfbf81fea7c586abf4643fb284b76477",
+  "test_data_root": "D:/Project/Chain/build/no-model-20261028-94429cdd8d",
+  "all_active_project_dependencies_match_ignoring_line_endings": true,
+  "active_dependency_checks": [
+    {
+      "path": "Crypto/MerkleTree.h",
+      "working_sha256": "380b361ed489a46c2760eae60382daa5e82fe597061e272cd31ceeec145efb3d",
+      "baseline_git_sha256": "56938b078b41751b03cd7a4873e5f56a104c406f1925f7eda02e37adebf85058",
+      "matches_ignoring_line_endings": true
+    },
+    {
+      "path": "DB/DB.h",
+      "working_sha256": "7a6c20e64130df1ea110d0d3de0431526a899bfd677df6057295af122e3f7427",
+      "baseline_git_sha256": "7a6c20e64130df1ea110d0d3de0431526a899bfd677df6057295af122e3f7427",
+      "matches_ignoring_line_endings": true
+    },
+    {
+      "path": "EVM/Encoding.h",
+      "working_sha256": "64cbde5de76fbc0752aea19c5edb2f482e7240f822a5f87cf43dcde0f45e5838",
+      "baseline_git_sha256": "f830d0233aaec3027d5b4040224494e20776c3aadde4c47b2b073aed71e14b7c",
+      "matches_ignoring_line_endings": true
+    },
+    {
+      "path": "EVM/Execute.h",
+      "working_sha256": "a1b501709ad12b7040544c533fe86c555c55bba3fb2f00811b4ba7ae9105867a",
+      "baseline_git_sha256": "35b4587a0bf38f648d0d4919389d42c62307d18a98fb7f7f6e3c09de6daf29d4",
+      "matches_ignoring_line_endings": true
+    },
+    {
+      "path": "Key/Key.h",
+      "working_sha256": "d81bb42366cdfcb46fed63a26dfaa6c7c6e2ab8cb2dc601c7622f80478ce789f",
+      "baseline_git_sha256": "d81bb42366cdfcb46fed63a26dfaa6c7c6e2ab8cb2dc601c7622f80478ce789f",
+      "matches_ignoring_line_endings": true
+    },
+    {
+      "path": "Message/Message.h",
+      "working_sha256": "c695984a6ae10253c95664d873a4dbcd7fbcff94cda27fb4fd46f766e28e6a2a",
+      "baseline_git_sha256": "1c1859a2de94a07d5e6cebbdabbda2b1bbc7a96b973821bd87b736473d4ca3f0",
+      "matches_ignoring_line_endings": true
+    },
+    {
+      "path": "Network/Blocks.h",
+      "working_sha256": "a4fa3739bf11962203b5549ccd05481df81655b8eb98212fa6549ab02769f542",
+      "baseline_git_sha256": "dd6462cbe10a464f83ce2ebb8c993329b8b3321fc709f4a33ec9aecec9bb2dc9",
+      "matches_ignoring_line_endings": true
+    },
+    {
+      "path": "Network/Client.h",
+      "working_sha256": "f04c8e31dc8a3f43c50c3f8139a262367ebaf01819885998997d49e7a71a0566",
+      "baseline_git_sha256": "f04c8e31dc8a3f43c50c3f8139a262367ebaf01819885998997d49e7a71a0566",
+      "matches_ignoring_line_endings": true
+    },
+    {
+      "path": "Network/Server.h",
+      "working_sha256": "ac345c71dee763fe2079dbe2b4ab5b980cf9ddcc4d7febb924f34f8bf436dd32",
+      "baseline_git_sha256": "ac345c71dee763fe2079dbe2b4ab5b980cf9ddcc4d7febb924f34f8bf436dd32",
+      "matches_ignoring_line_endings": true
+    },
+    {
+      "path": "Time/Time.h",
+      "working_sha256": "70fe0d99eb7c4ee224deae5ff96476e991b4c0827bfdfae1bec1dcdfab8daf90",
+      "baseline_git_sha256": "70fe0d99eb7c4ee224deae5ff96476e991b4c0827bfdfae1bec1dcdfab8daf90",
+      "matches_ignoring_line_endings": true
+    },
+    {
+      "path": "Tool/Resource.h",
+      "working_sha256": "88d67936b31407e8bd3d44711852c4c5812943d05662ed9db29e7a4d18cdaa91",
+      "baseline_git_sha256": "88d67936b31407e8bd3d44711852c4c5812943d05662ed9db29e7a4d18cdaa91",
+      "matches_ignoring_line_endings": true
+    },
+    {
+      "path": "Tool/Tool.h",
+      "working_sha256": "d4f5f7dc716d5c9c5de4a3515498a571aa70ac34118506b2157472ecf41cc87b",
+      "baseline_git_sha256": "7711284a3b3be4008b34e4549394317c9142639c3b903985694fcd82f78a62be",
+      "matches_ignoring_line_endings": true
+    },
+    {
+      "path": "Transaction/Block.h",
+      "working_sha256": "22551b64a615518522da0e3498051043633d49aa65fc9a35992d5908a20ce737",
+      "baseline_git_sha256": "22551b64a615518522da0e3498051043633d49aa65fc9a35992d5908a20ce737",
+      "matches_ignoring_line_endings": true
+    },
+    {
+      "path": "Transaction/Fork.h",
+      "working_sha256": "002744a350ca1033c8b55ff12f1c84cf77b806e165de9d1ff1044da60b8576cd",
+      "baseline_git_sha256": "ba2c0e491785c10625595c9a27c92c97c3979d6fb7c7dcc987db404277d4666f",
+      "matches_ignoring_line_endings": true
+    },
+    {
+      "path": "Transaction/Transaction.h",
+      "working_sha256": "f48031f56fe1ef90026a724467034516fe74dcc3cabaef11462a265d954fb795",
+      "baseline_git_sha256": "f48031f56fe1ef90026a724467034516fe74dcc3cabaef11462a265d954fb795",
+      "matches_ignoring_line_endings": true
+    },
+    {
+      "path": "User/User.h",
+      "working_sha256": "0ac9e10a980f5c16aeadadca460d16aedbd3b284705314ad60aeee07d3a895e1",
+      "baseline_git_sha256": "0ac9e10a980f5c16aeadadca460d16aedbd3b284705314ad60aeee07d3a895e1",
+      "matches_ignoring_line_endings": true
+    },
+    {
+      "path": "main.cpp",
+      "working_sha256": "3e2771cadda3e7abca23d16d19c38af1df6d18bde04ae98e3a19ad9d603876de",
+      "baseline_git_sha256": "3e2771cadda3e7abca23d16d19c38af1df6d18bde04ae98e3a19ad9d603876de",
+      "matches_ignoring_line_endings": true
+    }
+  ]
+}

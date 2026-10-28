@@ -39,7 +39,7 @@ bool VerifyBlockTransactions(const Block& block,const vector<bool>& verified) {
         try {
             for (size_t j=begin;j<end&&valid.load();j++) {
                 auto i=cold[j]; auto input=block.evm.find(i);
-                if (!VerifyTransaction(block.txs[i],input==block.evm.end()?span<const uint8_t>{}:span<const uint8_t>{input->second},true)) valid=false;
+                if (!VerifyTransaction(block.txs[i],input==block.evm.end()?span<const uint8_t>{}:span<const uint8_t>{input->second})) valid=false;
             }
         } catch (...) { lock_guard lock(failureMutex); failure=current_exception(); valid=false; }
     };
@@ -102,74 +102,6 @@ vector<uint8_t> SerializeBlockALL(Block& block) {
 }
 
 // ------------------------------------------------区块生成和验证------------------------------------------------
-// Caller holds the state read lock. No map iterator survives a pool unlock.
-// Only 64 account-front transactions (plus their bounded EVM payloads) are
-// copied at once; account checks and selection run without the pool lock.
-void SelectSnapshotTransactions(vector<pair<array<uint8_t,32>,array<uint8_t,176>>>& selected,
-        unordered_map<array<uint8_t,32>,vector<uint8_t>,GetMapHash>& payloads) {
-    struct Cursor { array<uint8_t,32> key; User available; bool done=false; };
-    vector<Cursor> accounts;
-    {
-        lock_guard guard(txpoolMutex); auto held=GetSteadyTime();
-        accounts.reserve(txUserPool.size());
-        for (const auto& [key,entry]:txUserPool) {
-            auto user=GetUser(users,key);
-            if (!entry.txs.empty()&&entry.txs.rbegin()->first>user.nonce) accounts.push_back({key,user,false});
-        }
-        poolSnapshotLockNs+=GetSteadyTime()-held; ++poolSnapshotChunks;
-    }
-    sort(accounts.begin(),accounts.end(),[](const auto& a,const auto& b) { return a.key<b.key; });
-    struct Front { size_t index; array<uint8_t,32> hash; array<uint8_t,176> tx; vector<uint8_t> payload; };
-    vector<Front> fronts; fronts.reserve(64);
-    struct Drop { array<uint8_t,32> key,hash; uint64_t nonce; };
-    vector<Drop> drops;
-    size_t bytes=120; uint64_t gasUsed=0;
-    while (!accounts.empty()&&selected.size()<maxBlockTx) {
-        for (size_t begin=0;begin<accounts.size()&&selected.size()<maxBlockTx;begin+=64) {
-            fronts.clear();
-            {
-                lock_guard guard(txpoolMutex); auto held=GetSteadyTime();
-                for (size_t i=begin;i<min(accounts.size(),begin+64);++i) {
-                    auto& cursor=accounts[i]; if (cursor.done) continue;
-                    auto found=txUserPool.find(cursor.key);
-                    if (found==txUserPool.end()) { cursor.done=true; continue; }
-                    auto next=found->second.txs.upper_bound(cursor.available.nonce);
-                    if (next==found->second.txs.end()) { cursor.done=true; continue; }
-                    Front front{i,next->second,txpool.at(next->second),{}};
-                    if (auto input=evmPool.find(front.hash);input!=evmPool.end()) front.payload=input->second;
-                    fronts.push_back(std::move(front));
-                }
-                poolSnapshotLockNs+=GetSteadyTime()-held; ++poolSnapshotChunks;
-            }
-            for (auto& front:fronts) {
-                if (selected.size()==maxBlockTx) break;
-                auto& cursor=accounts[front.index]; auto& available=cursor.available;
-                auto amount=ReadU64(front.tx.data()+64),nonce=ReadU64(front.tx.data()+72);
-                bool contract=!front.payload.empty(); auto gas=contract?ReadU64(front.payload.data()+5):0;
-                auto extra=contract?front.payload.size()+8:0;
-                if (bytes+176+extra>maxBlockBytes||gas>maxBlockGas-gasUsed) { cursor.done=true; continue; }
-                if (!(contract?CheckEvmUserTx(available,front.tx,front.payload):CheckUserTx(available,amount,nonce))) {
-                    if (available.nonce<UINT64_MAX&&nonce==available.nonce+1) drops.push_back({cursor.key,front.hash,nonce});
-                    cursor.done=true; continue;
-                }
-                available.nonce=nonce; available.balance-=baseFee;
-                if (contract||memcmp(front.tx.data(),front.tx.data()+32,32)!=0) available.balance-=amount;
-                if (contract) { available.balance-=gas; payloads.emplace(front.hash,std::move(front.payload)); }
-                gasUsed+=gas; bytes+=176+extra; selected.emplace_back(front.hash,front.tx);
-            }
-        }
-        erase_if(accounts,[](const auto& cursor) { return cursor.done; });
-    }
-    if (!drops.empty()) {
-        lock_guard guard(txpoolMutex); auto held=GetSteadyTime();
-        for (const auto& drop:drops) {
-            auto found=txUserPool.find(drop.key); if (found==txUserPool.end()) continue;
-            auto tx=found->second.txs.find(drop.nonce);
-            if (tx!=found->second.txs.end()&&tx->second==drop.hash) DropUserPoolFrom(drop.key,drop.nonce);
-        }
-        poolSnapshotLockNs+=GetSteadyTime()-held; ++poolSnapshotChunks;
-    }
-}
 vector<uint8_t> GenerateBlock() {
     auto start=GetSteadyTime();
     Block block;
@@ -183,49 +115,46 @@ vector<uint8_t> GenerateBlock() {
         if (height==UINT64_MAX) throw runtime_error("Block height overflow");
         block.height=height+1;
         block.previousHash=DBReadCurrentBlock();
-        if (poolSnapshot) SelectSnapshotTransactions(selected,payloads);
-        else {
-            lock_guard lock(txpoolMutex);
-            selected.reserve(min(maxBlockTx,txpool.size()));
-            vector<pair<array<uint8_t,32>,uint64_t>> dropped;
-            struct ReadyUser {
-                array<uint8_t,32> key; User available;
-                map<uint64_t,array<uint8_t,32>>::const_iterator next,end;
-            };
-            vector<ReadyUser> ready;
-            ready.reserve(txUserPool.size());
-            for (const auto& [key,entry]:txUserPool) {
-                auto user=GetUser(users,key); auto next=entry.txs.upper_bound(user.nonce);
-                if (next!=entry.txs.end()) ready.push_back({key,user,next,entry.txs.end()});
-            }
-            sort(ready.begin(),ready.end(),[](const auto& a,const auto& b) { return a.key<b.key; });
-            // 公钥顺序固定，每轮每账户取一笔，连续序号在块满之前公平推进。
-            while (!ready.empty()&&selected.size()<maxBlockTx) {
-                for (auto& item:ready) {
-                    if (selected.size()==maxBlockTx) break;
-                    auto& available=item.available; const auto& key=item.key;
-                    const auto& tx=txpool.at(item.next->second);
-                    auto amount=ReadU64(tx.data()+64),nonce=ReadU64(tx.data()+72);
-                    auto evm=evmPool.find(item.next->second);
-                    bool contract=evm!=evmPool.end();
-                    auto extra=contract?evm->second.size()+8:0;
-                    auto gas=contract?ReadU64(evm->second.data()+5):0;
-                    if (blockBytes+176+extra>maxBlockBytes||gas>maxBlockGas-gasBudget) { item.next=item.end; continue; }
-                    if (!(contract?CheckEvmUserTx(available,tx,evm->second):CheckUserTx(available,amount,nonce))) {
-                        if (available.nonce<UINT64_MAX&&nonce==available.nonce+1) dropped.emplace_back(key,nonce);
-                        item.next=item.end; continue;
-                    }
-                    available.nonce=nonce;
-                    available.balance-=baseFee;
-                    if (contract||memcmp(tx.data(),tx.data()+32,32)!=0) available.balance-=amount;
-                    if (contract) { available.balance-=gas; payloads.emplace(item.next->second,evm->second); }
-                    gasBudget+=gas; blockBytes+=176+extra;
-                    selected.emplace_back(item.next->second,tx); ++item.next;
-                }
-                erase_if(ready,[](const auto& item) { return item.next==item.end; });
-            }
-            for (const auto& [key,nonce]:dropped) DropUserPoolFrom(key,nonce);
+        lock_guard lock(txpoolMutex);
+        selected.reserve(min(maxBlockTx,txpool.size()));
+        vector<pair<array<uint8_t,32>,uint64_t>> dropped;
+        struct ReadyUser {
+            array<uint8_t,32> key; User available;
+            map<uint64_t,array<uint8_t,32>>::const_iterator next,end;
+        };
+        vector<ReadyUser> ready;
+        ready.reserve(txUserPool.size());
+        for (const auto& [key,entry]:txUserPool) {
+            auto user=GetUser(users,key); auto next=entry.txs.upper_bound(user.nonce);
+            if (next!=entry.txs.end()) ready.push_back({key,user,next,entry.txs.end()});
         }
+        sort(ready.begin(),ready.end(),[](const auto& a,const auto& b) { return a.key<b.key; });
+        // 公钥顺序固定，每轮每账户取一笔，连续序号在块满之前公平推进。
+        while (!ready.empty()&&selected.size()<maxBlockTx) {
+            for (auto& item:ready) {
+                if (selected.size()==maxBlockTx) break;
+                auto& available=item.available; const auto& key=item.key;
+                const auto& tx=txpool.at(item.next->second);
+                auto amount=ReadU64(tx.data()+64),nonce=ReadU64(tx.data()+72);
+                auto evm=evmPool.find(item.next->second);
+                bool contract=evm!=evmPool.end();
+                auto extra=contract?evm->second.size()+8:0;
+                auto gas=contract?ReadU64(evm->second.data()+5):0;
+                if (blockBytes+176+extra>maxBlockBytes||gas>maxBlockGas-gasBudget) { item.next=item.end; continue; }
+                if (!(contract?CheckEvmUserTx(available,tx,evm->second):CheckUserTx(available,amount,nonce))) {
+                    if (available.nonce<UINT64_MAX&&nonce==available.nonce+1) dropped.emplace_back(key,nonce);
+                    item.next=item.end; continue;
+                }
+                available.nonce=nonce;
+                available.balance-=baseFee;
+                if (contract||memcmp(tx.data(),tx.data()+32,32)!=0) available.balance-=amount;
+                if (contract) { available.balance-=gas; payloads.emplace(item.next->second,evm->second); }
+                gasBudget+=gas; blockBytes+=176+extra;
+                selected.emplace_back(item.next->second,tx); ++item.next;
+            }
+            erase_if(ready,[](const auto& item) { return item.next==item.end; });
+        }
+        for (const auto& [key,nonce]:dropped) DropUserPoolFrom(key,nonce);
     }
     if (selected.empty()) return {};
     // 先按序号、再按发送者排序，保证每个账户的交易严格依次执行。
@@ -260,9 +189,9 @@ bool VerifyBlock(const vector<uint8_t>& data,Block* result=nullptr) {
     unordered_set<array<uint8_t,32>,GetMapHash> unique;
     unique.reserve(block.txNum);
     vector<bool> verified(block.txNum,false);
-    for (size_t begin=0;begin<block.txNum;begin+=poolSnapshot?64:block.txNum) {
+    {
         lock_guard lock(txpoolMutex);
-        for (size_t i=begin;i<min(size_t(block.txNum),begin+(poolSnapshot?64:size_t(block.txNum)));i++) {
+        for (size_t i=0;i<block.txNum;i++) {
             const auto& tx=block.txs[i];
             auto txHash=GetTransactionHash(tx);
             auto found=txpool.find(txHash);
@@ -335,27 +264,6 @@ void GenerateGenesisBlock() {
 // 维护三个高度的候选窗口，按交易数量和哈希比较。
 bool QueueForkBlock(Block block,vector<uint8_t> data,bool notify);
 bool HasForkBlock(const array<uint8_t,32>& hash,const vector<uint8_t>& data);
-// Local prepared work is offered only by MainLoop, the sole state publisher. A version
-// mismatch discards it; network candidates always use the full ProcessBlock path below.
-bool SelectBlockCandidate(Block block,vector<uint8_t> data,CandidateRound* localRound=nullptr) {
-    if (localRound) {
-        auto state=ReadChainHead();
-        if (block.height!=localRound->height||block.previousHash!=localRound->parent||
-            !CandidateRoundFits(*localRound,int64_t(GetSteadyTime()/1000),state.height+1,state.version,state.hash)) return false;
-    }
-    {
-        lock_guard lock(blockBufferLock);
-        auto now=int64_t(GetSteadyTime()/1000);
-        if (localRound&&now>=localRound->proposalDeadlineUs) return false;
-        if (block.height<epoch||block.height-epoch>=3) return false;
-        auto& slot=BlockBuffer[block.height-epoch];
-        if (!slot.second.empty()&&(block.txNum<slot.first.txNum||(block.txNum==slot.first.txNum&&block.hash>=slot.first.hash))) return false;
-        if (localRound) localRound->offeredUs=now;
-        slot={std::move(block),std::move(data)};
-        blockReady=!BlockBuffer[0].second.empty();
-    }
-    WakeMainLoop(); return true;
-}
 bool ProcessBlock(vector<uint8_t> data) {
     if (data.size()<112) return false;
     auto height=ReadU64(data.data()+64);
@@ -383,7 +291,16 @@ bool ProcessBlock(vector<uint8_t> data) {
         return QueueForkBlock(std::move(block),std::move(data),true);
     }
     if (!DBCheckBlockUsers(data)) { invalidUserBlocks++; return false; }
-    return SelectBlockCandidate(std::move(block),std::move(data));
+    {
+        lock_guard lock(blockBufferLock);
+        if (height<epoch||height-epoch>=3) return false;
+        auto& slot=BlockBuffer[height-epoch];
+        if (!slot.second.empty()&&(block.txNum<slot.first.txNum||(block.txNum==slot.first.txNum&&block.hash>=slot.first.hash))) return false;
+        slot={std::move(block),std::move(data)};
+        blockReady=!BlockBuffer[0].second.empty();
+    }
+    WakeMainLoop();
+    return true;
 }
 bool CommitBlock(const Block& block,const vector<uint8_t>& data) {
     auto start=GetSteadyTime();

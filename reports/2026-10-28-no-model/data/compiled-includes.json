@@ -1,0 +1,22 @@
+{
+  "project_files": [
+    "Crypto/MerkleTree.h",
+    "DB/DB.h",
+    "EVM/Encoding.h",
+    "EVM/Execute.h",
+    "Key/Key.h",
+    "Message/Message.h",
+    "Network/Blocks.h",
+    "Network/Client.h",
+    "Network/Server.h",
+    "Time/Time.h",
+    "Tool/Resource.h",
+    "Tool/Tool.h",
+    "Transaction/Block.h",
+    "Transaction/Fork.h",
+    "Transaction/Transaction.h",
+    "User/User.h",
+    "main.cpp"
+  ],
+  "learned_modules_in_node_dependencies": false
+}

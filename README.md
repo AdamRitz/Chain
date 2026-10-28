@@ -2,6 +2,8 @@
 
 C++20 区块链原型，使用 Boost.Asio、libsodium、默克尔树、RocksDB 和 evmone。支持账户转账、并发验签、原子状态落库、分叉恢复与以太坊虚拟机（Ethereum Virtual Machine，EVM）合约部署和执行。
 
+当前 Chain 运行实现已恢复到 `933905448951c600156a8ad2a0b3c3a895916fb5` 的无学习模型基线，沿用四时间戳/中位数时钟同步及固定轮次候选收集。通过新的提交保留完整 Git 历史；FISCO 3.7.3 的 [原生转账驱动](Test/Fisco/Aligned/README.md)、[容量测试方法](Test/Fisco/Capacity/README.md) 和 [60 秒三次复测](reports/2026-10-27-fisco-long/REPORT.md)继续保留。切换范围和验证见 [基线恢复记录](reports/2026-10-28-no-model/REPORT.md)。
+
 修改前阅读 [MODULE_GUIDE.md](MODULE_GUIDE.md)。合约操作与分叉规则见 [EVM_GUIDE.md](EVM_GUIDE.md)，最新性能测试见 [十节点吞吐量复测](reports/2026-10-14-ten-node/REPORT.md)，前次优化见 [传播、同步与执行优化](reports/2026-10-13-throughput/REPORT.md)，合约接入测试见 [分叉与 EVM 报告](reports/2026-09-16-fork-evm/REPORT.md)。
 
 同父块候选按交易数、哈希排序。分支按累计有效交易数、高度和链头哈希比较，在 256 块窗口内通过原子回滚与重放收敛。每秒交易数（Transactions Per Second，TPS）统计完成执行与同步落盘的交易。
@@ -21,9 +23,9 @@ cmake --build build -j 4
 ctest --test-dir build --output-on-failure
 ```
 
-十四项测试覆盖原生交易、账户状态、网络复制、钱包、分叉恢复、EVM 合约、实验测量接口及学习辅助时钟。全部使用新数据库。运行前安装 `Experiments/requirements.txt`，其中进程采样使用 `psutil`，图表使用 `matplotlib`。再次运行网络测试时，通过 `CHAIN_TEST_DATA_ROOT` 设置新的测试目录。
+十一项基线测试覆盖原生交易、账户状态、网络复制、钱包、分叉恢复、EVM 合约和实验测量接口。全部使用新数据库。运行前安装 `Experiments/requirements.txt`，其中进程采样使用 `psutil`，图表使用 `matplotlib`。再次运行网络测试时，通过 `CHAIN_TEST_DATA_ROOT` 设置新的测试目录。
 
-学习辅助时钟、离线模型训练、模型旁路观察、限速校正与候选窗口内补入已实现，程序默认关闭。模式、来源约束和 A/B/C/D 对照见 [时间模块说明](Time/README.md)。十台服务器已显式启用新模式并完成二十组短测，见 [部署与测试报告](reports/2026-10-21-clock-cloud/REPORT.md)。附带模型只经过受控模拟训练，高负载时全部越域回退，目前没有稳定的 TPS/确认延迟收益证据。
+学习模型、候选策略及其专属测试源码保留为历史研究资料，当前节点和默认 CMake 测试不编入这些模块。复现模型实验需构建对应报告记载的历史提交，说明见 [时间模块说明](Time/README.md)。当前节点使用原有 `--clock-sync`、`--round-ms`、`--candidate-ms` 参数；模型版本的 `--clock-control`、`--clock-model`、`--round-scheduler` 等参数不适用于当前基线。
 
 Ubuntu 24.04 构建与回归入口：
 

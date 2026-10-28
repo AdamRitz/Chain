@@ -1,0 +1,124 @@
+{
+  "status": "blocked_by_execution_policy",
+  "reason": "Recursive Remove-Item command rejected by tool policy: blocked by policy.",
+  "test_data_root": "D:\\Project\\Chain\\build\\no-model-20261028-94429cdd8d",
+  "active_test_processes": [],
+  "retained_database_count": 23,
+  "databases": [
+    {
+      "path": "D:\\Project\\Chain\\build\\no-model-20261028-94429cdd8d\\account-network-test-data\\1793198087399753400\\follower\\db",
+      "bytes": 59592,
+      "retained": true
+    },
+    {
+      "path": "D:\\Project\\Chain\\build\\no-model-20261028-94429cdd8d\\account-network-test-data\\1793198087399753400\\leader\\db",
+      "bytes": 118964,
+      "retained": true
+    },
+    {
+      "path": "D:\\Project\\Chain\\build\\no-model-20261028-94429cdd8d\\admission-network-test-data\\1793198139512875500\\admission\\db",
+      "bytes": 59270,
+      "retained": true
+    },
+    {
+      "path": "D:\\Project\\Chain\\build\\no-model-20261028-94429cdd8d\\admission-network-test-data\\1793198139512875500\\full-block-batch\\full-batch\\db",
+      "bytes": 6411960,
+      "retained": true
+    },
+    {
+      "path": "D:\\Project\\Chain\\build\\no-model-20261028-94429cdd8d\\admission-network-test-data\\1793198139512875500\\large-block-batch\\full-batch\\db",
+      "bytes": 10620908,
+      "retained": true
+    },
+    {
+      "path": "D:\\Project\\Chain\\build\\no-model-20261028-94429cdd8d\\admission-network-test-data\\1793198139512875500\\reliable\\db",
+      "bytes": 5416774,
+      "retained": true
+    },
+    {
+      "path": "D:\\Project\\Chain\\build\\no-model-20261028-94429cdd8d\\evm-network-test-data\\follower\\db",
+      "bytes": 187295,
+      "retained": true
+    },
+    {
+      "path": "D:\\Project\\Chain\\build\\no-model-20261028-94429cdd8d\\evm-network-test-data\\producer\\db",
+      "bytes": 132211,
+      "retained": true
+    },
+    {
+      "path": "D:\\Project\\Chain\\build\\no-model-20261028-94429cdd8d\\experiment-test-data\\1793198096853163000\\index\\index\\db",
+      "bytes": 121516,
+      "retained": true
+    },
+    {
+      "path": "D:\\Project\\Chain\\build\\no-model-20261028-94429cdd8d\\experiment-test-data\\1793198297705391700\\index\\index\\db",
+      "bytes": 121848,
+      "retained": true
+    },
+    {
+      "path": "D:\\Project\\Chain\\build\\no-model-20261028-94429cdd8d\\flow-test-data\\3661999864470900",
+      "bytes": 186545,
+      "retained": true
+    },
+    {
+      "path": "D:\\Project\\Chain\\build\\no-model-20261028-94429cdd8d\\flow-test-data\\3661999864470900\\deterministic",
+      "bytes": 44010,
+      "retained": true
+    },
+    {
+      "path": "D:\\Project\\Chain\\build\\no-model-20261028-94429cdd8d\\flow-test-data\\3661999864470900\\ranked",
+      "bytes": 40840,
+      "retained": true
+    },
+    {
+      "path": "D:\\Project\\Chain\\build\\no-model-20261028-94429cdd8d\\fork-network-test-data\\a\\db",
+      "bytes": 228517,
+      "retained": true
+    },
+    {
+      "path": "D:\\Project\\Chain\\build\\no-model-20261028-94429cdd8d\\fork-network-test-data\\b\\db",
+      "bytes": 230277,
+      "retained": true
+    },
+    {
+      "path": "D:\\Project\\Chain\\build\\no-model-20261028-94429cdd8d\\fork-network-test-data\\future\\db",
+      "bytes": 222047,
+      "retained": true
+    },
+    {
+      "path": "D:\\Project\\Chain\\build\\no-model-20261028-94429cdd8d\\fork-state-data\\3661985407253500",
+      "bytes": 81630820,
+      "retained": true
+    },
+    {
+      "path": "D:\\Project\\Chain\\build\\no-model-20261028-94429cdd8d\\fork-state-data\\3661985407253500\\large-fork",
+      "bytes": 81498093,
+      "retained": true
+    },
+    {
+      "path": "D:\\Project\\Chain\\build\\no-model-20261028-94429cdd8d\\network-test-data\\1793198063084943600\\follower\\db",
+      "bytes": 1975227,
+      "retained": true
+    },
+    {
+      "path": "D:\\Project\\Chain\\build\\no-model-20261028-94429cdd8d\\network-test-data\\1793198063084943600\\graceful\\db",
+      "bytes": 220380,
+      "retained": true
+    },
+    {
+      "path": "D:\\Project\\Chain\\build\\no-model-20261028-94429cdd8d\\network-test-data\\1793198063084943600\\leader\\db",
+      "bytes": 1490512,
+      "retained": true
+    },
+    {
+      "path": "D:\\Project\\Chain\\build\\no-model-20261028-94429cdd8d\\test-data\\3661983092900600",
+      "bytes": 584019,
+      "retained": true
+    },
+    {
+      "path": "D:\\Project\\Chain\\build\\no-model-20261028-94429cdd8d\\user-test-data\\3661984360729400\\chain",
+      "bytes": 194089,
+      "retained": true
+    }
+  ]
+}

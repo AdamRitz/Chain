@@ -31,7 +31,6 @@ int main(int argc,char** argv) {
             {{"public_key",U32ToHex(owner.public_key)},{"balance",1000000}},
             {{"public_key",U32ToHex(other.public_key)},{"balance",1000000}},
             {{"public_key",U32ToHex(third.public_key)},{"balance",1000000}}})}});
-        experimentIndex=true;
         InitDB(root.string()); GenerateGenesisBlock(); auto genesis=DBReadCurrentBlock();
         auto left=Deploy(owner,"6001600c60003960016000f300");
         auto right=Deploy(owner,"6002600c60003960026000f35f00");
@@ -65,19 +64,15 @@ int main(int argc,char** argv) {
         db.reset(readOnly);
         bool failed=false; try { AdoptFork(better,detached); } catch (const exception&) { failed=true; }
         Require(failed,"write failure surfaced");
-        Require(ReadPublishedChain().head.hash==first.first.hash&&ReadPublishedChain().tail.front().hash==first.first.hash,"failed branch write cannot publish an uncommitted ancestry snapshot");
         Require(poolUsers==beforeUsers,"failed branch write preserves published admission accounts");
         Require(DBReadCurrentBlock()==first.first.hash&&users==beforeUsers&&userBurned==beforeBurned&&SerializeEvmAccount(evmState.get(address))==before,"failed switch restores native and EVM caches");
         db.reset(); InitDB(root.string());
         Require(AdoptFork(better,detached)==1,"better branch adopted");
-        Require(ReadPublishedChain().tail.size()==2&&ReadPublishedChain().tail[0].hash==better.first.hash&&ReadPublishedChain().tail[1].hash==genesis,"published ancestry replaces detached branch atomically");
         auto checksBefore=signatureChecks.load();
         RefreshTxPool(lastBranchUsers);
         auto refreshed=txpool; auto refreshedInputs=evmPool; auto refreshedReady=readyPoolTx;
         RefreshTxPool();
         Require(txpool==refreshed&&evmPool==refreshedInputs&&readyPoolTx==refreshedReady,"affected-account refresh matches full native and EVM refresh");
-        auto baselineSelection=GenerateBlock(); poolSnapshot=true; auto snapshotSelection=GenerateBlock(); poolSnapshot=false;
-        Require(snapshotSelection==baselineSelection&&VerifyBlock(snapshotSelection),"snapshot selection preserves EVM payloads after a reorganization");
         Require(signatureChecks==checksBefore,"pool refresh preserves signature verification");
         Require(txpool.size()==3&&readyPoolTx==3,"pool refresh restores executable native and contract prefixes");
         Require(!txpool.count(GetTransactionHash(transfer))&&!txpool.count(GetTransactionHash(expensive)),"pool refresh removes confirmed and unaffordable transactions");
@@ -116,9 +111,6 @@ int main(int argc,char** argv) {
         Require(DBReadCurrentBlock()==target&&DBReadNumber("ChainTx")==420000&&GetUser(users,owner.public_key).nonce==420000,
                 "large branch head and ordered execution");
         Require(GetUser(users,owner.public_key).balance==1160000&&GetUser(users,third.public_key).balance==840000,"large branch balances");
-        auto published=ReadPublishedChain();
-        Require(published.tail.size()==71&&published.tail[0].transactions==420000,"grouped branch publication contains every new ancestor");
-        for (const auto& anchor:published.tail) Require(DBReadBlockHashByHeight(anchor.height)==anchor.hash&&DBReadNumber(DBHashKey("score/",anchor.hash))==anchor.transactions,"published tail matches persisted canonical indexes");
         db.reset();InitDB((root/"large-fork").string());Require(DBReadCurrentBlock()==target,"large branch restart");
         db.reset(); cout<<"Fork state, large-branch and write-failure checks passed\n"; return 0;
     } catch (const exception& e) { cerr<<e.what()<<endl; return 1; }

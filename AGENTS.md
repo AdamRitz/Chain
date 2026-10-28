@@ -1,5 +1,11 @@
 # Chain 项目工作规则
 
+## 当前运行基线（2026-10-28）
+
+- 用户要求将 Chain 恢复为 `933905448951c600156a8ad2a0b3c3a895916fb5` 的无学习模型运行实现，同时保留最新 FISCO 原生转账/容量测试和已有报告。使用向前提交恢复指定文件，保持 Git 历史。
+- 当前 CMake 默认测试集为该基线的十一项；模型专属的 ClockCorrectness、ClockToolsCorrectness、ClockNetwork 保留为历史源码，复现时使用对应模型版本，不纳入当前节点构建。
+- `Test/Fisco/Aligned`、`Test/Fisco/Capacity` 及 FISCO 最新测试方法继续保留。历史模型报告和工具不能直接用于判断当前节点支持的参数；节点参数以当前 main.cpp 为准。
+
 ## 性能测试与数据清理偏好（2026-10-14）
 
 - 正式性能测试固定十台服务器，每台一个节点。本机运行正确性回归。
@@ -32,7 +38,7 @@
 - 测试使用全新数据库和明确的创世分配。旧 schema 2、3、4、5、6 数据库保留原样，采用新目录运行。两个版本比较时固定数据集、发送端、核心亲和性、线程、区块参数和同步写入方式。
 - 嵌套取锁顺序为 dbCommitMutex → poolUsersMutex → txpoolMutex；blockBufferLock 单独持有。保持 txpool、txUserPool 和 readyPoolTx 同步，满块触发依据 readyPoolTx。
 - 验签缓存只保存通过验证的完整交易与合约输入摘要，分桶有界；账户余额与序号仍按当前分支检查。重复区块路径比较完整字节，分叉后使用 `RefreshTxPool` 重建索引。修改这些路径时保留签名篡改、合约输入绑定和分叉账户变化的回归覆盖。
-- 账户、交易池、EVM 或分叉变更应运行全部十四项 CTest。网络测试目录每次使用新路径。包含 ForkStateCorrectness、ForkNetwork、EvmNetwork 的状态约束、写盘失败和分区重连覆盖，以及 ExperimentNetwork 的测量索引回滚、重启和逻辑轮次覆盖；FlowCorrectness 和 AdmissionNetwork 覆盖账户发布镜像、序号缺口预留、紧凑索引、状态反馈及重试；ClockCorrectness、ClockToolsCorrectness 和 ClockNetwork 覆盖连续时钟、冻结窗口、父状态、标签和模型回退。
+- 账户、交易池、EVM 或分叉变更应运行当前基线全部十一项 CTest。网络测试目录每次使用新路径。包含 ForkStateCorrectness、ForkNetwork、EvmNetwork 的状态约束、写盘失败和分区重连覆盖，以及 ExperimentNetwork 的测量索引回滚、重启和逻辑轮次覆盖；FlowCorrectness 和 AdmissionNetwork 覆盖账户发布镜像、序号缺口预留、紧凑索引、状态反馈及重试。历史模型版本另有三项 Clock 回归；恢复其运行实现时再执行十四项集合。
 - 多节点实验入口为 Test/Experiments.py，参数与测量口径见 EXPERIMENTS.md。时间模块的四时间戳/中位数同步器作为研究基线，萤火虫相位响应公式仍需接入。正式数据记录全部节点共同链与独立状态核对，保持实际发送速率和目标负载分别可见。
 - EVM 接入方式、执行环境和费用规则见 EVM_GUIDE.md；依赖版本及上游补丁见 ThirdParty/VERSIONS.md。实际编译不链接上游预编译输入输出占位表。
 - 更改 Git 配置只作用于本仓库，不修改其他仓库或用户的全局 Git 配置。
@@ -46,7 +52,7 @@
 - 本地实施与十一项回归见 `reports/2026-10-14-tps-local/REPORT.md`；用户随后授权的十台五档短测见 `reports/2026-10-14-a5-ten/REPORT.md`。本次各档一次、测量 10 秒、全部最终状态核对通过，每轮停止并清理数据库。`db-profile` 和 `parallel_ingress` 为可选诊断/发送设置，默认关闭；跨版本对照统一配置与计量口径。
 - 高负载优化重点包括 `MainLoop` 的轮次选择：候选收集与同步提交共用主循环，提交跨轮后选择未来整轮会产生额外等待。6 万档每节点本地候选约 7.39 次/秒，写调用约 40 毫秒；后续修改核对候选窗口、每轮一次生成、时钟校正、父状态版本和分叉恢复。最新短测的 5 万档为 48,562 TPS，6 万档为 47,224 TPS，历史数据按各自实际窗口解释。
 
-## 学习辅助时钟（2026-10-21）
+## 历史学习辅助时钟（2026-10-21，当前不编入节点）
 
 - 初次实现仅在 `D:\Project\Chain` 本地并推送 GitHub；用户随后已授权十台部署与测试。运行代码 `070fbb4` 已部署，二十组短测及状态核对见 `reports/2026-10-21-clock-cloud/REPORT.md`，常驻服务显式采用 `learned + bounded`。
 - 时间模块的新模式默认关闭，说明见 `Time/README.md`。时钟映射保持连续正速率，来源失效时保持；模型不直接给出目标时间、不改变共识有效性或分支排名。

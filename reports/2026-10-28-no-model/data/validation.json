@@ -1,0 +1,29 @@
+{
+  "baseline": "933905448951c600156a8ad2a0b3c3a895916fb5",
+  "build_success": true,
+  "ctest_final_passed": 11,
+  "ctest_total": 11,
+  "ctest_final_results": {
+    "ChainCorrectness": true,
+    "AccountCorrectness": true,
+    "ForkStateCorrectness": true,
+    "ThroughputCorrectness": true,
+    "FlowCorrectness": true,
+    "ChainNetwork": true,
+    "AccountNetwork": true,
+    "ForkNetwork": true,
+    "EvmNetwork": true,
+    "ExperimentNetwork": true,
+    "AdmissionNetwork": true
+  },
+  "first_attempt_failed": [
+    "ExperimentNetwork"
+  ],
+  "retry_reason": "Windows socket bind returned WSAEACCES/system:10013; same test passed with fresh isolated test databases.",
+  "fisco_capacity_tests_passed": 3,
+  "fisco_analysis_tests_passed": 7,
+  "performance_tests_run": false,
+  "cloud_deployment_performed": false,
+  "database_cleanup_status": "blocked_by_execution_policy",
+  "retained_test_databases": 23
+}
