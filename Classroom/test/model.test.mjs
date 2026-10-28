@@ -1,6 +1,11 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { MergeMessages, CanSend } from "../src/model.ts";
+import {
+  MergeMessages,
+  CanSend,
+  SelectedMessage,
+  RestartMatches,
+} from "../src/model.ts";
 test("fresh canonical metadata replaces an older cached location of a replayed transaction", () => {
   const old = {
     id: "same-tx-0",
@@ -41,4 +46,31 @@ test("keyboard and button share permissions and a UTF-8 byte limit", () => {
     assert(!CanSend("hello", { ...state, [key]: false }));
   assert(!CanSend("hello", { ...state, busy: true }));
   assert(!CanSend("   ", state));
+});
+test("message inspector ignores transfer selections and follows current canonical metadata", () => {
+  const canonical = { body: "hello", tx_hash: "chat", height: 12 };
+  assert.equal(
+    SelectedMessage({ hash: "transfer", height: 3 }, [canonical]),
+    undefined,
+  );
+  assert.equal(
+    SelectedMessage({ ...canonical, height: 10 }, [canonical]),
+    canonical,
+  );
+  assert.equal(SelectedMessage(canonical, []), undefined);
+});
+test("restart lesson requires a resumed contract and the same network and canonical head", () => {
+  const checkpoint = { id: "class-a", head: "head-a" };
+  const state = {
+    running: true,
+    contract_ready: true,
+    network: { id: "class-a" },
+    stats: { head: "head-a" },
+  };
+  assert(RestartMatches(checkpoint, state));
+  assert(!RestartMatches(null, state));
+  assert(!RestartMatches(checkpoint, { ...state, running: false }));
+  assert(!RestartMatches(checkpoint, { ...state, contract_ready: false }));
+  assert(!RestartMatches(checkpoint, { ...state, network: { id: "class-b" } }));
+  assert(!RestartMatches(checkpoint, { ...state, stats: { head: "head-b" } }));
 });

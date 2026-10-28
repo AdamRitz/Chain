@@ -1,0 +1,39 @@
+{
+  "collected_at": "2026-10-29T02:13:49.091500+08:00",
+  "four_nodes_same_head": true,
+  "head": "ed5b1238b9cd4058cdb99822337bf5143a9b591ba41b0bb4c37286e6de0435ab",
+  "height": 15,
+  "same_genesis_and_contract": true,
+  "pure_ipv6_student_seed": [
+    "[::1]:52411"
+  ],
+  "canonical_messages_equal": true,
+  "canonical_message_count": 4,
+  "student_transaction": "ce8792340ede84f3e090e22aa3c8435a1ec167c49788111d5c0fdc9209ca6fbe",
+  "student_message_height": 15,
+  "denied_transaction": "21025ea6375781405b3b48dded423c28dfa3b94d5cbe67b88b143003301d9188",
+  "denied_execution_status": 2,
+  "denied_not_a_message_event": true,
+  "read_only_message_count": {
+    "gas_used": 2361,
+    "head": "ed5b1238b9cd4058cdb99822337bf5143a9b591ba41b0bb4c37286e6de0435ab",
+    "height": 15,
+    "output": "0000000000000000000000000000000000000000000000000000000000000004",
+    "read_only": true,
+    "status": 0
+  },
+  "initial_native_transfer": {
+    "amount": "100",
+    "block_hash": "6d788c19eccaa558ba734afaf3ba1f74ee520441bb8e03d576474eaad711be12",
+    "hash": "2a773c81f4ec8d87f73e6e4502f03cb41b11d15c33f7acd197e0f02c84c190ed",
+    "height": 3,
+    "kind": "transfer",
+    "last_sent_ms": 1793209765627,
+    "nonce": "1",
+    "receiver": "501779dbbcacd5a19ccb901064c073adf63a39b99a2ca4c2704262c944202b66",
+    "sender": "bb2fee4da8b990853561a87d85951b4867013397692efef9abae1074dfcdd4ad",
+    "state": "included",
+    "submitted_ms": 1793209765627,
+    "type": 1
+  }
+}

@@ -1126,8 +1126,10 @@ footer button {
   display: flex;
   flex-direction: column;
   min-width: 0;
+  min-height: 0;
 }
 .chat-top {
+  flex-shrink: 0;
   padding: 19px 20px;
   border-bottom: 1px solid #eaf0f2;
   display: flex;
@@ -1283,6 +1285,7 @@ footer button {
   border-style: dashed;
 }
 .composer {
+  flex-shrink: 0;
   padding: 16px 19px;
   border-top: 1px solid #ebf0f2;
 }
@@ -1320,6 +1323,8 @@ footer button {
   min-height: 32px;
 }
 .message-inspector {
+  min-height: 0;
+  overflow: auto;
   border-left: 1px solid #eaf0f2;
   padding: 26px 18px;
   background: #fdfefe;

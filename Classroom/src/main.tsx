@@ -40,7 +40,12 @@ import { api, bytes, download, number, Row, short } from "./api";
 import chatSource from "../../Contracts/ClassroomChat.sol?raw";
 import artifact from "../../Contracts/ClassroomChat.compiled.json";
 import "./style.css";
-import { MergeMessages, CanSend } from "./model";
+import {
+  MergeMessages,
+  CanSend,
+  SelectedMessage,
+  RestartMatches,
+} from "./model";
 
 type View =
   | "home"
@@ -128,6 +133,8 @@ function App() {
   const [member, setMember] = useState("");
   const [historyRows, setHistoryRows] = useState<Row[]>([]);
   const [historyOffset, setHistoryOffset] = useState(50);
+  const [restartCheckpoint, setRestartCheckpoint] = useState<Row | null>(null);
+  const [restartVerified, setRestartVerified] = useState("");
   const [samples, setSamples] = useState<{ t: number; v: number }[]>([]);
   const polling = useRef(false);
   const lastReorg = useRef<number | undefined>(undefined);
@@ -173,6 +180,12 @@ function App() {
     setError("");
     try {
       const result = await api(name, values);
+      if (name === "stop" && !result.running && result.network?.id) {
+        setRestartCheckpoint({
+          id: result.network.id,
+          head: result.stats?.head,
+        });
+      }
       if (result.has_wallet !== undefined) setS(result);
       else await refresh();
       return result;
@@ -197,6 +210,7 @@ function App() {
   const currentRoom = rooms.find((r) => r.id === room);
   const allMessages = MergeMessages(historyRows, s.messages || []);
   const messages = allMessages.filter((m) => m.room === room);
+  const selectedMessage = SelectedMessage(selected, messages);
   const pending = (s.outbox || []).filter(
     (x: Row) =>
       x.body &&
@@ -268,6 +282,12 @@ function App() {
     roomOpen: !!currentRoom?.open,
     busy: !!busy,
   });
+  useEffect(() => {
+    if (RestartMatches(restartCheckpoint, s)) {
+      setRestartVerified(s.network.id);
+      setRestartCheckpoint(null);
+    }
+  }, [s, restartCheckpoint]);
   useEffect(() => {
     if (view === "chat" && chatEnd.current?.parentElement) {
       const scroll = chatEnd.current.parentElement;
@@ -385,7 +405,7 @@ function App() {
               )}
             </div>
           </div>
-          {error && (
+          {error && !modal && (
             <div className="alert error" role="alert">
               <span>{error}</span>
               <button aria-label="关闭错误" onClick={() => setError("")}>
@@ -1121,7 +1141,7 @@ function App() {
               <aside className="message-inspector">
                 <span className="eyebrow">BEHIND THE MESSAGE</span>
                 <h3>
-                  {selected?.body ? "这条消息怎样上链？" : "一条消息的旅程"}
+                  {selectedMessage ? "这条消息怎样上链？" : "一条消息的旅程"}
                 </h3>
                 <ol className="journey">
                   {[
@@ -1133,11 +1153,17 @@ function App() {
                     <li
                       key={label}
                       className={
-                        selected?.height && (i < 3 || same > 1) ? "done" : ""
+                        selectedMessage?.height && (i < 3 || same > 1)
+                          ? "done"
+                          : ""
                       }
                     >
                       <span>
-                        {selected?.height ? <Check size={12} /> : i + 1}
+                        {selectedMessage?.height && (i < 3 || same > 1) ? (
+                          <Check size={12} />
+                        ) : (
+                          i + 1
+                        )}
                       </span>
                       <div>
                         <b>{label}</b>
@@ -1155,32 +1181,37 @@ function App() {
                     </li>
                   ))}
                 </ol>
-                {selected?.body ? (
+                {selectedMessage ? (
                   <>
                     <dl className="compact-details">
                       <dt>交易哈希</dt>
                       <dd>
                         <button
                           className="text-button mono"
-                          onClick={() => copy(selected.tx_hash)}
+                          onClick={() => copy(selectedMessage.tx_hash)}
                         >
-                          {short(selected.tx_hash, 9)} <Copy size={12} />
+                          {short(selectedMessage.tx_hash, 9)} <Copy size={12} />
                         </button>
                       </dd>
                       <dt>区块高度</dt>
-                      <dd>#{selected.height}</dd>
+                      <dd>#{selectedMessage.height}</dd>
                       <dt>后续区块</dt>
                       <dd>
-                        {Math.max(0, (s.stats?.height || 0) - selected.height)}
+                        {Math.max(
+                          0,
+                          (s.stats?.height || 0) - selectedMessage.height,
+                        )}
                       </dd>
                       <dt>本机首次观察</dt>
                       <dd>
-                        {new Date(selected.observed_ms).toLocaleTimeString()}
+                        {new Date(
+                          selectedMessage.observed_ms,
+                        ).toLocaleTimeString()}
                       </dd>
                     </dl>
                     <button
                       className="button secondary full"
-                      onClick={() => openBlock(selected.height)}
+                      onClick={() => openBlock(selectedMessage.height)}
                     >
                       打开所在区块 <ArrowUpRight size={14} />
                     </button>
@@ -1252,7 +1283,7 @@ function App() {
                   {
                     title: "停止、重启，再观察",
                     text: "安全停止节点再恢复，检查余额与聊天历史是否保留。",
-                    done: false,
+                    done: !!network?.id && restartVerified === network.id,
                     go: () => setView("network"),
                     icon: RefreshCw,
                   },
@@ -1550,6 +1581,14 @@ function App() {
             >
               <X size={19} />
             </button>
+            {error && (
+              <div className="alert error" role="alert">
+                <span>{error}</span>
+                <button aria-label="关闭错误" onClick={() => setError("")}>
+                  <X size={16} />
+                </button>
+              </div>
+            )}
             {(modal === "wallet" ||
               modal === "unlock" ||
               modal === "backup") && (

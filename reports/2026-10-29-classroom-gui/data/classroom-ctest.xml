@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="(empty)"
+	tests="3"
+	failures="0"
+	disabled="0"
+	skipped="0"
+	hostname=""
+	time="58"
+	timestamp="2026-10-29T01:58:56"
+	>
+	<testcase name="ClassroomIndex" classname="ClassroomIndex" time="6.46131" status="run">
+		<properties/>
+		<system-out>Classroom canonical index checks passed
+</system-out>
+	</testcase>
+	<testcase name="ClassroomNetwork" classname="ClassroomNetwork" time="35.1195" status="run">
+		<properties/>
+		<system-out>{"checks": ["encrypted wallet create lock unlock and backup; wrong password rejected", "three real nodes, idempotent deployment and a signed native transfer", "UTF-8 chat event and receipt, bounded body, read-only call and duplicate-ID contract revert", "IPv6 ::1 and IPv4 share one canonical ledger", "gateway rejects foreign origins and missing token; diagnostics exclude raw outbox and seeds", "index rebuild and full node restart preserve contract and canonical chat", "desktop restart recovers deployment metadata from the signed outbox without unlocking or redeploying"]}
+</system-out>
+	</testcase>
+	<testcase name="ClassroomJoin" classname="ClassroomJoin" time="16.4638" status="run">
+		<properties/>
+		<system-out>{"checks": ["two independently encrypted app vaults join through IPv6; normal teacher transfer funds student chat", "student app cannot invoke teacher administration", "on-chain room closure and membership restrictions reject calls; explicit authorization restores chat", "new experiments have distinct genesis fingerprints even when reusing the local wallet"]}
+</system-out>
+	</testcase>
+</testsuite>

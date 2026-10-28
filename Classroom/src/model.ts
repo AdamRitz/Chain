@@ -9,6 +9,22 @@ export function MergeMessages(history: Row[], canonical: Row[]): Row[] {
       a.log_index - b.log_index,
   );
 }
+export function SelectedMessage(
+  selected: Row | null,
+  canonical: Row[],
+): Row | undefined {
+  if (!selected?.body) return undefined;
+  return canonical.find((row) => row.tx_hash === selected.tx_hash);
+}
+export function RestartMatches(checkpoint: Row | null, state: Row): boolean {
+  return !!(
+    checkpoint?.head &&
+    state.running &&
+    state.contract_ready &&
+    state.network?.id === checkpoint.id &&
+    state.stats?.head === checkpoint.head
+  );
+}
 export function CanSend(
   body: string,
   state: {

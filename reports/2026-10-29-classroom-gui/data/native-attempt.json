@@ -1,0 +1,14 @@
+{
+  "pid": 73032,
+  "exe": "D:\\Project\\Chain\\build\\classroom-gui-20261029-01\\bundle\\ChainClassroom.exe",
+  "data": "D:\\Project\\Chain\\build\\classroom-gui-20261029-01\\data",
+  "started": "2026-10-29T01:46:18.461689+08:00",
+  "sha256": "4f8549f78b2eadfdea23880ca0ee1a25298d50067fb231ef744c190739a45930",
+  "path": "C:\\Windows\\System32",
+  "status": "blocked_by_windows_lock",
+  "native_input_performed": false,
+  "screenshot": "Lock screen returned; not saved as application evidence",
+  "native_baseline_commit": "b484e511b89dab4309e8d6fdb9736ee516ac0b9d",
+  "complete_native_ui_test": false,
+  "updated_installer_ui_tested": false
+}

@@ -111,6 +111,15 @@ class ClassroomApp {
     void Stop() {
         children.clear();
         cache["running"] = false;
+        cache["contract_ready"] = false;
+        cache["recent_tps"] = 0;
+        cache["recent_block_ms"] = nullptr;
+        if (cache.contains("nodes"))
+            for (auto &node : cache["nodes"]) {
+                node["online"] = false;
+                node["peers"] = 0;
+                node["connections"] = Json::array();
+            }
     }
     void Start() {
         if (!profile.is_object())

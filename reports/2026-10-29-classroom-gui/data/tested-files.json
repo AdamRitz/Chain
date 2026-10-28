@@ -1,0 +1,38 @@
+{
+  "base_commit": "b484e511b89dab4309e8d6fdb9736ee516ac0b9d",
+  "platform": "Windows-11-10.0.26100-SP0",
+  "files": [
+    {
+      "path": "Classroom/src-tauri/target/release/chain-classroom.exe",
+      "sha256": "bdbef0b9291c8a8a3e3606aba2d3882f1a4ebb5eefd3cbc870e2ccb102d3dbbc"
+    },
+    {
+      "path": "build/classroom-20261028/chain_classroom.exe",
+      "sha256": "da64bf766cdc6506580af962bb7b45542b3091c85a641586b68f14b9dcaf8a65"
+    },
+    {
+      "path": "build/classroom-20261028/boost.exe",
+      "sha256": "d39bc1e62cefcf2db1ce4448180c15e5702b2bbabf5d607707f88d48fab667e1"
+    },
+    {
+      "path": "Contracts/ClassroomChat.compiled.json",
+      "sha256": "676511d9fa1299795c3f22288fba8b3ca9fee54157c6cf666c9f234a5c5c6cf9"
+    },
+    {
+      "path": "Classroom/src/main.tsx",
+      "sha256": "47d71bad0962fc6a8a911084d1eebd738959a4f2b5c380ce8cac3a9ba22f0672"
+    },
+    {
+      "path": "Classroom/src/model.ts",
+      "sha256": "778bca21626291032290ecf14696e9e39093780b52e1bdb3170a3859eeca1e15"
+    },
+    {
+      "path": "Classroom/src/style.css",
+      "sha256": "f979dcaf5528f2e0c0a63bbc7508e356372a56d2e0acece05af3ab7dbe4be9bf"
+    },
+    {
+      "path": "Classroom/Gateway/App.h",
+      "sha256": "6b460308384e8ac45ca36cccb015ee2e16d729cd5e9d7abe18cd3e407b834992"
+    }
+  ]
+}

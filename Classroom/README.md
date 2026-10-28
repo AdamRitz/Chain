@@ -87,3 +87,5 @@ build/classroom/chain_classroom.exe --node build/classroom/boost.exe `
 - 本次在本地 Windows 验证，未部署云端，未重跑十节点 TPS；不能把界面观测速率当成之前的性能实验结果。
 
 验证记录见 [2026-10-29 实施报告](../reports/2026-10-29-classroom/REPORT.md)。
+
+图形界面的操作、截图与问题修复见 [2026-10-29 GUI 测试报告](../reports/2026-10-29-classroom-gui/REPORT.md)。实验引导的重启完成标记仅在当前界面会话中，完成安全停止、恢复并重新观测到同一课堂和相同链头后点亮；刷新窗口后重新检查。

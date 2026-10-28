@@ -1,0 +1,12 @@
+{
+  "installer": {
+    "path": "Classroom\\release\\ChainClassroom-0.1.0-windows-x64-setup.exe",
+    "bytes": 229309878,
+    "sha256": "9af9b5c05cae2a6c879cb8bea1ae6b012774413a4aad42a9fc6c69be88241c23"
+  },
+  "desktop_sha256": "bdbef0b9291c8a8a3e3606aba2d3882f1a4ebb5eefd3cbc870e2ccb102d3dbbc",
+  "runtime_manifest_verified": true,
+  "final_web_index_matches_dist": true,
+  "installation_wizard_run": false,
+  "signed": false
+}

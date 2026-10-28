@@ -1,0 +1,125 @@
+{
+  "source": "Actual in-app browser screenshots; no native desktop screenshots",
+  "files": [
+    {
+      "file": "01-welcome-browser.jpg",
+      "bytes": 48991,
+      "sha256": "7de8fc89feadc65b4bc8bce208e0741842f576283c7d2b29ac6f852d436fa3ad"
+    },
+    {
+      "file": "02-overview-browser.jpg",
+      "bytes": 54086,
+      "sha256": "ac3ebe7c2d69f0c8eefd7ad63860bb82d7c4c7eadcbbf2c26452ea8031e8922e"
+    },
+    {
+      "file": "03-wallet-transfer-browser.jpg",
+      "bytes": 60641,
+      "sha256": "c527899aa2ff4fd119ec7c2a0f90f97efa52c82dcd406b693abda5434a1f668f"
+    },
+    {
+      "file": "04-block-browser.jpg",
+      "bytes": 49445,
+      "sha256": "b007c9e3a30e5d635f6ad8e5d35899afa8c2018eedcd1a2e021d6d1f5b6f1078"
+    },
+    {
+      "file": "05-chat-byte-limit-browser.jpg",
+      "bytes": 58032,
+      "sha256": "1ee6fc6b8d852af524df7c85e60d9e71b107cf9c9dcc4fc5389e0f57feb6f92a"
+    },
+    {
+      "file": "06-chat-confirmed-browser.jpg",
+      "bytes": 47413,
+      "sha256": "b83f1fcae31e054547123881f2c7f7cc6461074475b6599391d9fafa7e20973d"
+    },
+    {
+      "file": "07-chat-two-identities-browser.jpg",
+      "bytes": 52710,
+      "sha256": "07ec982f3970584a1c03e032c9e2dc8ab400a50df64780ed12dbe15869c1f7c0"
+    },
+    {
+      "file": "08-room-closed-browser.jpg",
+      "bytes": 46517,
+      "sha256": "4515062fa79d35089de9c40dd7fffcb969e4eac9b6a0392e021566acb66d85d1"
+    },
+    {
+      "file": "09-stopped-browser.jpg",
+      "bytes": 54075,
+      "sha256": "8dada3ce01f3227a069fb2e765aef72218463fc9ba24a313f31e78c1f39c165e"
+    },
+    {
+      "file": "10-lessons-restart-browser.jpg",
+      "bytes": 50408,
+      "sha256": "5f673c87df7be2f9713cddec625e4ca889aeba8669152b64423114baf001e02e"
+    },
+    {
+      "file": "11-member-denied-browser.jpg",
+      "bytes": 55915,
+      "sha256": "32cac1eb4f56650d05470d57db2650801a07a40c18365ca12437fb96706c0f78"
+    },
+    {
+      "file": "12-member-allowed-browser.jpg",
+      "bytes": 49734,
+      "sha256": "ca37d817519432e866e8261a816f84a5da7b19b8b500770098946981e2a70e4d"
+    },
+    {
+      "file": "13-readonly-count-browser.jpg",
+      "bytes": 55736,
+      "sha256": "128c3f093ea9fbe65c6767495adf79bd94a716884d5d856711407ca8c8c3d38b"
+    },
+    {
+      "file": "14-network-ipv6-browser.jpg",
+      "bytes": 46733,
+      "sha256": "840c9d8e5cfde33f433965d3578c52ff1a6e052bbaea39e74663f1626347ae80"
+    },
+    {
+      "file": "15-invalid-invite-browser.jpg",
+      "bytes": 31554,
+      "sha256": "0cde2e47011e5d13932639a05a93845f397d59d091523cb9c76fb3a99d9ceecf"
+    },
+    {
+      "file": "16-invalid-invite-fixed-browser.jpg",
+      "bytes": 33362,
+      "sha256": "55ffc3e40edbcb5b97604894f9c9d896dff66ccee141c84f671343fd2505822f"
+    },
+    {
+      "file": "17-student-funded-browser.jpg",
+      "bytes": 56127,
+      "sha256": "d0737a3c59f27346661ac2c2a4543cd77e3fbd4b9a33e6f2cc590449e298f545"
+    },
+    {
+      "file": "18-student-chat-browser.jpg",
+      "bytes": 56789,
+      "sha256": "3bcafd611d07a71c5dbe01525da2b146f23ec296fd997814f63c4e8457e552a2"
+    },
+    {
+      "file": "19-student-ipv6-browser.jpg",
+      "bytes": 46269,
+      "sha256": "fd8ab6a0158acf71ab074749ffaf9f1b1a18973695f804fe06624bc15fe4c776"
+    },
+    {
+      "file": "20-stopped-fixed-browser.jpg",
+      "bytes": 48221,
+      "sha256": "3c3a382f4c5f07f560ee2730ab5fbebcffcebf60ef3b122bffe1e85b5bbfb711"
+    },
+    {
+      "file": "21-restart-lesson-fixed-browser.jpg",
+      "bytes": 53297,
+      "sha256": "27202036294d8e9be900c06c1efc52e7d68b7c989437b2cc0422247fd7cfecd4"
+    },
+    {
+      "file": "22-teacher-received-student-browser.jpg",
+      "bytes": 57928,
+      "sha256": "8352a70289ffe9eac1cbd96aa27fa136833e7d4f0c71c3164df1396e563e12b2"
+    },
+    {
+      "file": "24-contract-source-browser.jpg",
+      "bytes": 55581,
+      "sha256": "2b9b2b965bc3c13545e9db334b76967073ed90bde5926c012df9823c4e8d6f69"
+    },
+    {
+      "file": "25-inspector-fixed-browser.jpg",
+      "bytes": 56602,
+      "sha256": "a86923390c75702f25133fec98caaa8cfd24e755596b98d5cf5f872690df5acd"
+    }
+  ]
+}

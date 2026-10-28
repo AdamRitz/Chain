@@ -77,7 +77,10 @@ def Main(args):
         assert '"raw":' not in json.dumps(Api('diagnostics'))
         checks.append('gateway rejects foreign origins and missing token; diagnostics exclude raw outbox and seeds')
         Api('rebuild_index');Wait(lambda s:any(m['client_id']==client_id for m in s.get('messages',[])))
-        Api('stop');assert not Api('status')['running'];Api('start')
+        Api('stop');stopped=Api('status')
+        assert not stopped['running'] and not stopped['contract_ready']
+        assert stopped['recent_tps']==0 and all(not n['online'] and n['peers']==0 and not n['connections'] for n in stopped['nodes'])
+        Api('start')
         status=Wait(lambda s:s.get('contract_ready') and any(m['client_id']==client_id for m in s.get('messages',[])))
         assert status['network']['contract']==contract
         checks.append('index rebuild and full node restart preserve contract and canonical chat')

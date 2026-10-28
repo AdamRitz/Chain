@@ -1,0 +1,36 @@
+[
+  {
+    "root": "D:\\Project\\Chain\\build\\classroom-gui-browser-20261029-01",
+    "gateway_stopped": true,
+    "already_exited": true
+  },
+  {
+    "root": "D:\\Project\\Chain\\build\\classroom-gui-student-20261029-01",
+    "gateway_stopped": true,
+    "children": [
+      {
+        "pid": 86344,
+        "exe": "C:\\Windows\\System32\\conhost.exe",
+        "created": 1793210531.5686142
+      },
+      {
+        "pid": 62804,
+        "exe": "D:\\Project\\Chain\\build\\classroom-gui-student-20261029-01\\runtime\\boost.exe",
+        "created": 1793210792.4156733
+      },
+      {
+        "pid": 51120,
+        "exe": "C:\\Windows\\System32\\conhost.exe",
+        "created": 1793210792.4197323
+      }
+    ]
+  },
+  {
+    "root": "D:\\Project\\Chain\\build\\classroom-gui-20261029-01",
+    "desktop_pid": 73032,
+    "gateway_stopped_before_desktop": true,
+    "desktop_stopped": true,
+    "native_ui_status": "blocked_by_windows_lock",
+    "native_inputs_performed": false
+  }
+]

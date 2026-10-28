@@ -1,0 +1,33 @@
+{
+  "processes_stopped": true,
+  "roots": [
+    "D:\\Project\\Chain\\build\\classroom-gui-20261029-01",
+    "D:\\Project\\Chain\\build\\classroom-gui-browser-20261029-01",
+    "D:\\Project\\Chain\\build\\classroom-gui-student-20261029-01",
+    "D:\\Project\\Chain\\build\\classroom-gui-check-20261029-01"
+  ],
+  "databases_cleared": 4,
+  "records": [
+    {
+      "database": "D:\\Project\\Chain\\build\\classroom-gui-browser-20261029-01\\data\\networks\\447194d1155583b2ec24a607\\node1\\db",
+      "files_removed": 10,
+      "evidence": "D:\\Project\\Chain\\build\\classroom-gui-browser-20261029-01-db-evidence\\0"
+    },
+    {
+      "database": "D:\\Project\\Chain\\build\\classroom-gui-browser-20261029-01\\data\\networks\\447194d1155583b2ec24a607\\node2\\db",
+      "files_removed": 10,
+      "evidence": "D:\\Project\\Chain\\build\\classroom-gui-browser-20261029-01-db-evidence\\1"
+    },
+    {
+      "database": "D:\\Project\\Chain\\build\\classroom-gui-browser-20261029-01\\data\\networks\\447194d1155583b2ec24a607\\node3\\db",
+      "files_removed": 10,
+      "evidence": "D:\\Project\\Chain\\build\\classroom-gui-browser-20261029-01-db-evidence\\2"
+    },
+    {
+      "database": "D:\\Project\\Chain\\build\\classroom-gui-student-20261029-01\\data\\networks\\e419b0ef2832c7aef9681f40\\node1\\db",
+      "files_removed": 10,
+      "evidence": "D:\\Project\\Chain\\build\\classroom-gui-student-20261029-01-db-evidence\\3"
+    }
+  ],
+  "code_inputs_profiles_and_logs_preserved": true
+}

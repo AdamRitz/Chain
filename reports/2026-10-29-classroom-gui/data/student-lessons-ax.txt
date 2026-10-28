@@ -1,0 +1,113 @@
+Browser tab: 3, Title: "Chain 区块链实验室", URL: "http://127.0.0.1:57350/".
+1 AXWebArea Chain 区块链实验室, URL: 127.0.0.1:57350/
+	2 container root
+		3 container
+			4 image
+			5 text CHAIN 区块链实验室 边动手，边理解
+			6 button 实验概览
+				7 image
+				8 text 实验概览
+			9 button 我的钱包
+				10 image
+				11 text 我的钱包
+			12 button 区块浏览器
+				13 image
+				14 text 区块浏览器
+			15 button 节点与网络
+				16 image
+				17 text 节点与网络
+			18 button 链上聊天室
+				19 image
+				20 text 链上聊天室
+			21 button 实验引导
+				22 image
+				23 text 实验引导
+			24 image
+			25 text 你的第一条区块链 这里的转账和聊天都发生在真实的教学链上。
+			26 button 开始探索
+				27 text 开始探索
+				28 image
+			29 text 教学版 0.1.0 本地签名 · 测试币
+		30 container
+			31 text Chain 实验室
+			32 image
+			33 text 实验引导 本地节点运行中
+			34 button 帮助
+				35 image
+			36 button 钱包与密码
+				37 image
+			38 text LEARN BY BUILDING
+			39 heading 实验引导, Value: 1
+				40 text 实验引导
+			41 text 完成六个小实验，把概念变成亲身体验。
+			69 button 停止节点
+				75 image
+				71 text 停止节点
+			72 button 新实验
+				73 image
+				74 text 新实验
+			76 text 一堂可以亲手完成的课
+			77 heading 从“听说过”，到“我试过”。, Value: 2
+				78 text 从“听说过”，到“我试过”。
+			79 text 完成下面的实验。每一步都使用真实节点、真实签名和真实合约。
+			80 button 实验 01 创建自己的身份 创建加密钱包，区分公钥、私钥与 EVM 地址。 已完成
+				81 text 实验
+				82 text 01
+				83 image
+				84 heading 创建自己的身份, Value: 3
+					85 text 创建自己的身份
+				86 text 创建加密钱包，区分公钥、私钥与 EVM 地址。
+				87 image
+				88 text 已完成
+			89 button 实验 02 启动三个节点 一键创建本地网络，观察它们怎样保存相同账本。 开始操作
+				90 text 实验
+				91 text 02
+				92 image
+				93 heading 启动三个节点, Value: 3
+					94 text 启动三个节点
+				95 text 一键创建本地网络，观察它们怎样保存相同账本。
+				96 text 开始操作
+				97 image
+			98 button 实验 03 完成第一笔转账 给 Bob 转一点测试币，比较余额、费用与账户序号。 开始操作
+				99 text 实验
+				100 text 03
+				101 image
+				102 heading 完成第一笔转账, Value: 3
+					103 text 完成第一笔转账
+				104 text 给 Bob 转一点测试币，比较余额、费用与账户序号。
+				105 text 开始操作
+				106 image
+			107 button 实验 04 用一句话调用合约 在聊天室发消息，找到执行回执和 MessageSent 事件。 已完成
+				108 text 实验
+				109 text 04
+				110 image
+				111 heading 用一句话调用合约, Value: 3
+					112 text 用一句话调用合约
+				113 text 在聊天室发消息，找到执行回执和 MessageSent 事件。
+				114 image
+				115 text 已完成
+			116 button 实验 05 打开区块看一看 查看父哈希、Merkle 根和其中的交易。 开始操作
+				117 text 实验
+				118 text 05
+				119 image
+				120 heading 打开区块看一看, Value: 3
+					121 text 打开区块看一看
+				122 text 查看父哈希、Merkle 根和其中的交易。
+				123 text 开始操作
+				124 image
+			125 button 实验 06 停止、重启，再观察 安全停止节点再恢复，检查余额与聊天历史是否保留。 已完成
+				126 text 实验
+				127 text 06
+				128 image
+				129 heading 停止、重启，再观察, Value: 3
+					130 text 停止、重启，再观察
+				131 text 安全停止节点再恢复，检查余额与聊天历史是否保留。
+				132 image
+				133 text 已完成
+			134 image
+			135 text 观察真实状态，也认识它的边界。 界面上的 TPS 是短窗口教学观测值；动画不是共识机制。出块时间、交易确认时间和最终性是不同概念。 Chain 区块链实验室 让每一个概念，都有一次亲手实践。
+			66 button 使用帮助
+				67 text 使用帮助
+				68 image
+
+The focused UI element is 21 button 实验引导

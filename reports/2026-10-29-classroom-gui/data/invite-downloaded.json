@@ -1,0 +1,32 @@
+{
+  "contract": "e99b60e7a71e0a5406d6da16f2bc32fea881b6d1",
+  "contract_code_sha256": "ffd5375e26e7cae27dbfa4ac7971c6c7564e28dd684057a74e51f909b17a4eb2",
+  "genesis": {
+    "accounts": [
+      {
+        "balance": 1000000000000,
+        "public_key": "bb2fee4da8b990853561a87d85951b4867013397692efef9abae1074dfcdd4ad"
+      },
+      {
+        "balance": 1000000000000,
+        "public_key": "501779dbbcacd5a19ccb901064c073adf63a39b99a2ca4c2704262c944202b66"
+      },
+      {
+        "balance": 1000000000000,
+        "public_key": "aad07618c8912248697dde54c61875cf72074f8998c1522cbad5dc2ce0788dbc"
+      },
+      {
+        "balance": 0,
+        "public_key": "62197796916a93d9f6c2f48603e24f20153cd261a694e8f58ad64a7da6b44de8"
+      }
+    ],
+    "base_fee": 1
+  },
+  "genesis_root": "ca0b26ddc987f8a8b2f55e7f9d7ef159503f2b5b3c153062571d4abde3436cb4",
+  "seeds": [
+    "127.0.0.1:52411",
+    "[::1]:52411"
+  ],
+  "title": "我的区块链课堂GUI 图形界面验收课堂",
+  "version": 1
+}
