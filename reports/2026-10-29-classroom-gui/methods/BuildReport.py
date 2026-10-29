@@ -81,18 +81,41 @@ def Main():
     artifacts = json.loads((DATA / "artifacts.json").read_text(encoding="utf-8"))
     testxml = ElementTree.parse(DATA / "classroom-ctest.xml").getroot()
     assert testxml.attrib["failures"] == "0" and testxml.attrib["tests"] == "3"
-    (DATA/"test-matrix.json").write_text(json.dumps({"gui": CASES, "pending": PENDING}, ensure_ascii=False, indent=2), encoding="utf-8")
+    native_path = DATA / "native-results.json"
+    native = json.loads(native_path.read_text(encoding="utf-8")) if native_path.exists() else {}
+    native_cases = native.get("cases", [])
+    shots = SHOTS + native.get("screenshots", [])
+    pending = list(PENDING)
+    complete = native.get("core_flow_complete", False)
+    if complete:
+        assert native_cases and all(row[2].startswith("通过") for row in native_cases)
+        pending = [row for row in pending if row[0] != "P01"]
+        pending = [(code, title, reason) if code not in {"P03", "P05"} else
+                   (code, "高 DPI 与多显示器", "最小窗口与消息弹窗已通过；其他缩放比例和跨显示器组合未覆盖。") if code == "P03" and native.get("minimum_window_tested") else
+                   (code, title, reason) if code == "P03" else
+                   (code, "钱包备份恢复的完整 UI 流程", "用户手动创建测试钱包已通过；备份恢复仍只有后端回归覆盖。")
+                   for code, title, reason in pending]
+        if native.get("keyboard_limit"):
+            pending.append(("P06", "Windows 原生 Enter 快捷键", native["keyboard_limit"]))
+    (DATA/"test-matrix.json").write_text(json.dumps({"gui": CASES, "native": native_cases, "pending": pending}, ensure_ascii=False, indent=2), encoding="utf-8")
     intro = "浏览器图形界面已完成 22 项用例验证，发现并修复 4 处状态/反馈问题；前端 5 项检查和教学网关 3 项回归通过。Windows 原生窗口完整操作与截图仍因电脑锁屏受阻，不能认定整个桌面版验收完成。"
+    if complete:
+        intro = f"浏览器 22 项用例及 Windows 桌面版 {len(native_cases)} 项主要流程补测通过，发现的 4 处状态/反馈问题已修复。前端 5 项检查和教学网关 3 项回归通过，共保留 {len(shots)} 张实际界面截图。安装向导、校园网入站及额外 DPI 组合不在已通过结论内。"
     lines = ["# Chain 教学图形界面测试报告", "", "日期：2026-10-29（Asia/Shanghai）", "", intro, "",
         "## 环境、方法与证据口径", "", "- 代码基线：b484e511b89dab4309e8d6fdb9736ee516ac0b9d，加本报告对应的修复提交。",
         "- Windows 本机真实 C++ 节点，隔离教师和学生目录；教师 3 节点，学生 1 节点；未部署云端、未做 TPS 压测。",
         "- 浏览器操作使用随安装包发布的 React 静态前端，调用实际 C++ 网关和普通部署的 ClassroomChat 合约；不是静态原型或模拟消息。",
-        "- 24 张截图均来自实际内置浏览器，默认视口 innerWidth 1280、innerHeight 720，带滚动条截图为 1265x712。没有把锁屏画面当作应用截图。",
-        "- 合成钱包由 API 准备并保持本机加密，界面测试没有输入真实用户密码。密码/备份恢复的后端正确性与完整 UI 测试分别列示。",
+        f"- 浏览器原图 24 张，Windows 原生窗口补测原图 {len(native.get('screenshots', []))} 张。浏览器默认视口 innerWidth 1280、innerHeight 720，带滚动条截图为 1265x712。没有把锁屏画面当作应用截图。",
+        "- 浏览器夹具的合成钱包由 API 准备；原生窗口补测由用户手动创建独立测试钱包。密码不进入测试报告。密码/备份恢复的后端正确性与完整 UI 测试分别列示。" if complete else "- 合成钱包由 API 准备并保持本机加密，界面测试没有输入真实用户密码。密码/备份恢复的后端正确性与完整 UI 测试分别列示。",
         "- 前半程验证初版，发现问题后构建前端与网关；学生端使用修复后的网关；截图说明明确标识修复前后。最终安装包包含全部修复。", "",
         "## 测试矩阵", "", "| 编号 | 测试内容 | 结果 | 实际观察 |", "|---|---|---|---|"]
     lines += ["| " + " | ".join(cell.replace("<", "&lt;").replace(">", "&gt;") for cell in row) + " |" for row in CASES]
-    lines += ["", "另完成：基线 b484e51 桌面程序在仅 System32 的 PATH 下启动（native-attempt.json 保存该程序的 SHA256）；本次更新后的桌面安装包完整交互仍待验证。npm test 5/5；本轮 ClassroomIndex、ClassroomNetwork、ClassroomJoin 3/3，58.20 秒。原有 15 项全量回归在前次实施报告中通过，本轮未重跑无关的共识/账户测试。", "",
+    lines += ["", "补充回归：npm test 5/5；ClassroomIndex、ClassroomNetwork、ClassroomJoin 3/3，58.20 秒。原有 15 项全量回归在前次实施报告中通过，本轮未重跑无关的共识/账户测试。", ""]
+    if native_cases:
+        lines += ["## Windows 原生窗口补测", "", f"测试桌面程序 SHA256：`{native['desktop_sha256']}`。使用与当前安装包一致的桌面程序及 runtime 载荷，PATH 仅包含 System32，测试目录独立于浏览器实验。", "", "| 编号 | 测试内容 | 结果 | 实际观察 |", "|---|---|---|---|"]
+        lines += ["| " + " | ".join(row) + " |" for row in native_cases]
+        lines += ["", native.get("summary", ""), ""]
+    lines += [
         "## 问题修复", "",
         "1. 消息流程图会复用转账回执的高度。现在仅从当前房间的消息集合取得选中交易的规范链位置；消息移出索引后不再沿用旧位置；第四步只在观察到多个本机节点同头时显示完成。",
         "2. 第六个实验的 done 固定为 false。现在只在当前界面会话内安全停止后，恢复同一个课堂、同一个链头且合约已校验时点亮；这不是最终性证明。",
@@ -108,9 +131,9 @@ def Main():
         "- 原生转账 100 的发送者余额减少 101，接收者增加 100，额外 1 是本链基础费用。",
         "- 提交、入块、最近观测链头相同和不可逆最终性含义不同。本测试不能给出 TPS 上限、确认延迟分布或最终性证明。", "",
         "## 尚未完成与适用范围", "", "| 编号 | 项目 | 状态与原因 |", "|---|---|---|"]
-    lines += ["| " + " | ".join(row) + " |" for row in PENDING]
+    lines += ["| " + " | ".join(row) + " |" for row in pending]
     lines += ["", "浏览器视口覆盖尝试没有改变实际尺寸，已恢复默认值；未将该尝试计为最小窗口通过。复制配置按钮显示成功，但工具读到的剪贴板为空，因此只将实际下载并解析的 JSON 计为导出通过。", "",
-        "桌面截图受阻依据 computer-use/docs/guidance.md 的要求：\"If the Windows desktop is locked, stop immediately and ask the user to unlock the desktop.\" 已请求解锁，未通过锁屏继续操作。", "",
+        "此前锁屏时已停止桌面操作；用户解锁后继续完成原生窗口补测。钱包凭据由用户自行输入，未自动化认证对话框。" if complete else "桌面截图受阻依据 computer-use/docs/guidance.md 的要求：\"If the Windows desktop is locked, stop immediately and ask the user to unlock the desktop.\" 已请求解锁，未通过锁屏继续操作。", "",
         "## 可复核材料与安装包", "",
         "- `data/test-matrix.json`：用例、结果及待验证项。",
         "- `data/ledger-checks.json`、teacher-final.json、student-final.json：公开状态和四节点核对。",
@@ -118,10 +141,12 @@ def Main():
         "- `data/frontend-tests.txt`、classroom-ctest.xml、package-build.txt：本轮构建与回归记录。",
         "- `data/tested-files.json`、artifacts.json、screenshots.json：源文件、程序、安装包和原图校验值。",
         "- `data/database-cleanup.json`：停止测试进程后清理独立 RocksDB，保留参数、日志和索引证据。",
+        "- `data/native-results.json`、native-after-*.json、native-processes.json：原生窗口用例、节点公开状态和退出核对；存在时纳入本报告。",
+        "- `data/native-database-cleanup.json`：本次原生窗口测试的三个节点数据库清理记录。",
         "- `methods/CollectEvidence.py` 仅对已启动的指定本机夹具读取公开状态；`BuildReport.py` 仅从保存的证据重建报告，不启动节点。", "",
         "最新安装包仍为 0.1.0，使用 SHA256 区分本次修复构建：", "", f"`{artifacts['installer']['sha256']}`", "",
         "安装包未签名；构建成功和载荷一致不等于安装向导已验证。", "", "## 截图记录", ""]
-    for index, (file, caption) in enumerate(SHOTS, 1):
+    for index, (file, caption) in enumerate(shots, 1):
         lines += [f"### 图 {index:02d} - {caption}", "", f"![{caption}](figures/{file})", ""]
     (ROOT / "REPORT.md").write_text("\n".join(lines), encoding="utf-8")
 
@@ -141,9 +166,9 @@ def Main():
         im = PILImage.open(FIG/file)
         ratio = min(width/im.width, 395/im.height)
         story.extend([Image(str(FIG/file), width=im.width*ratio, height=im.height*ratio), Spacer(1, 7), P(caption, small)])
-    PageTitle("Chain 教学图形界面测试报告", "验收状态：浏览器界面验证完成，Windows 原生窗口待解锁补测")
+    PageTitle("Chain 教学图形界面测试报告", "验收状态：浏览器及 Windows 桌面主要流程验证通过" if complete else "验收状态：浏览器界面验证完成，Windows 原生窗口待解锁补测")
     story.extend([P(intro), Spacer(1, 7), P("验证结果", section)])
-    for t in ["22 项图形界面用例通过；前端 5/5、教学网关 3/3。", "4 个真实节点最终同头，成功消息 4 条，纯 IPv6 学生入口已验证。", "发现并修复：消息流程图状态串用、重启引导不完成、停止后在线缓存、弹窗错误不可见。", "24 张实际界面原图、公开状态、测试日志和 SHA256 随 Markdown 报告保存。", "Windows 电脑锁屏，原生窗口输入、截图、安装向导与最小窗口测试尚未完成。"]:
+    for t in [f"22 项浏览器用例、{len(native_cases)} 项桌面用例；前端 5/5、教学网关 3/3。", "4 个真实节点最终同头，成功消息 4 条，纯 IPv6 学生入口已验证。", "发现并修复：消息流程图状态串用、重启引导不完成、停止后在线缓存、弹窗错误不可见。", f"{len(shots)} 张实际界面原图、公开状态、测试日志和 SHA256 随 Markdown 报告保存。", "Windows 桌面启动、转账、聊天、区块、节点停止恢复及正常关闭重启已补测。" if complete else "Windows 电脑锁屏，原生窗口输入、截图、安装向导与最小窗口测试尚未完成。"]:
         story.append(P("- " + t))
     story.append(P("范围：本地正确性与使用流程；不涉及十台服务器部署、TPS 压测或校园网 IPv6 可达性结论。", small))
     story.append(PageBreak())
@@ -169,19 +194,30 @@ def Main():
         PageTitle(title)
         Shot(file, caption)
         story.append(PageBreak())
-    PageTitle("尚未验证与材料索引", "本报告保留限制，不能替代 Windows 原生桌面验收")
-    for code,title,reason in PENDING:
+    if native_cases:
+        PageTitle("Windows 桌面补测矩阵", "同一发布程序 | 独立课堂 | 用户手动创建测试钱包")
+        rows = [[P("编号", small), P("测试内容", small), P("结果", small), P("实际观察", small)]]
+        rows += [[P(c, small) for c in row] for row in native_cases]
+        tab = Table(rows, colWidths=[37,132,74,width-243], repeatRows=1)
+        tab.setStyle(TableStyle([("BACKGROUND",(0,0),(-1,0),colors.HexColor("#e5f2ec")),("VALIGN",(0,0),(-1,-1),"TOP"),("GRID",(0,0),(-1,-1),.35,colors.HexColor("#d5e3e0")),("TOPPADDING",(0,0),(-1,-1),5),("BOTTOMPADDING",(0,0),(-1,-1),5)]))
+        story.extend([tab, PageBreak()])
+        for file, caption in native.get("pdf_screenshots", []):
+            PageTitle("Windows 桌面窗口实测", "原生 Tauri/WebView2 窗口截图")
+            Shot(file, caption)
+            story.append(PageBreak())
+    PageTitle("尚未验证与材料索引", "保留安装向导、跨网络可达性和额外环境组合的验证边界")
+    for code,title,reason in pending:
         story.append(P(f"{code}  {title}：{reason}", small))
     story.extend([Spacer(1,10),P("证据定位",section),P("完整截图与逐项说明见同目录 REPORT.md；机器可读结果、公开链状态、构建日志和文件校验位于 data/。测试结束后停止所属进程，清理独立节点 RocksDB，保留日志、配置、索引与截图。",small),P("安装包 SHA256: "+artifacts["installer"]["sha256"],small)])
     def Footer(canvas, doc):
         canvas.saveState()
         canvas.setStrokeColor(colors.HexColor("#d5e3e0"));canvas.line(36,28,size[0]-36,28)
         canvas.setFont("Chinese",8);canvas.setFillColor(colors.HexColor("#687f87"))
-        canvas.drawString(36,16,"Chain Classroom | GUI 测试 | 实际浏览器截图")
+        canvas.drawString(36,16,"Chain Classroom | GUI 测试 | 实际界面截图")
         canvas.drawRightString(size[0]-36,16,str(doc.page))
         canvas.restoreState()
     SimpleDocTemplate(str(ROOT/"GUI-TEST-REPORT.pdf"), pagesize=size, leftMargin=36,rightMargin=36,topMargin=30,bottomMargin=38,title="Chain 教学图形界面测试报告",author="Chain Classroom").build(story,onFirstPage=Footer,onLaterPages=Footer)
-    print(json.dumps({"markdown":str(ROOT/"REPORT.md"),"pdf":str(ROOT/"GUI-TEST-REPORT.pdf"),"screenshots":len(SHOTS)},ensure_ascii=True))
+    print(json.dumps({"markdown":str(ROOT/"REPORT.md"),"pdf":str(ROOT/"GUI-TEST-REPORT.pdf"),"screenshots":len(shots)},ensure_ascii=True))
 
 
 if __name__ == "__main__":

@@ -1,5 +1,5 @@
 {
-  "source": "Actual in-app browser screenshots; no native desktop screenshots",
+  "source": "24 actual in-app browser screenshots and 15 native Windows window screenshots",
   "files": [
     {
       "file": "01-welcome-browser.jpg",
@@ -120,6 +120,81 @@
       "file": "25-inspector-fixed-browser.jpg",
       "bytes": 56602,
       "sha256": "a86923390c75702f25133fec98caaa8cfd24e755596b98d5cf5f872690df5acd"
+    },
+    {
+      "file": "26-native-welcome.jpg",
+      "bytes": 86835,
+      "sha256": "23fd289f428a08cbcbb65025d0fc95cd6cbe66875100f5e5986198b90c12dbee"
+    },
+    {
+      "file": "27-native-overview.jpg",
+      "bytes": 98320,
+      "sha256": "b138d6dd14fdbee183fdc876286063ad98d063446176d8f14c2a7c69ec9e25f5"
+    },
+    {
+      "file": "28-native-transfer.jpg",
+      "bytes": 106607,
+      "sha256": "594d067b17f9d639b706e3b7bd74925868461d7b31906bb7a2539e7253f857eb"
+    },
+    {
+      "file": "29-native-chat.jpg",
+      "bytes": 98401,
+      "sha256": "9a318bfaad77c63c9750442dfbea8b2610a658dfb695d0d4c249b73595e3cd81"
+    },
+    {
+      "file": "30-native-block.jpg",
+      "bytes": 99663,
+      "sha256": "8ad1ac0274b62a6207cd9826b7d1dc353ed08feeb1277e35c762412a675645bf"
+    },
+    {
+      "file": "31-native-block-detail.jpg",
+      "bytes": 91903,
+      "sha256": "6b74517c80dd8376b20553ca67d05fb8562f96898921bfd777ccecd124ae5d64"
+    },
+    {
+      "file": "32-native-receipt.jpg",
+      "bytes": 100065,
+      "sha256": "e17a52e2198e909359f4ca19e76539e2ae53ad72840946d0fe8fe5423ad411e3"
+    },
+    {
+      "file": "33-native-network.jpg",
+      "bytes": 94633,
+      "sha256": "8e29653fba8d72da11d845e707693b469082fdb360e27722087027043ed1c573"
+    },
+    {
+      "file": "34-native-stopped.jpg",
+      "bytes": 91672,
+      "sha256": "bbd1f53a3bd59ad3fb3080aa54d92c2d76adfc2a76ca47469c06d7c720862b05"
+    },
+    {
+      "file": "35-native-maximized.jpg",
+      "bytes": 157874,
+      "sha256": "318900c3461a0768e70e59b0185a4360de937f6e042248eab93f6f4cf47a29a8"
+    },
+    {
+      "file": "36-native-minimum-window.jpg",
+      "bytes": 61377,
+      "sha256": "ec256b79be6f1dd5be6643a28ca3233c41361f142c0b357bae59ec1d9ae07f87"
+    },
+    {
+      "file": "37-native-small-message-detail.jpg",
+      "bytes": 46707,
+      "sha256": "a6e1f573a629189c04aa96c1b1fbad3ef7a374540c860526c50d607c1e5dbf03"
+    },
+    {
+      "file": "38-native-lessons.jpg",
+      "bytes": 60604,
+      "sha256": "4347d0017602733703677b4c40c7aeda2e4968f5df34fade24598bc0fec005a8"
+    },
+    {
+      "file": "39-native-reopened.jpg",
+      "bytes": 98092,
+      "sha256": "6772f946c79e890f4a666463a14e1e477501e7ca4aff5cec7e1f775cda73a9c4"
+    },
+    {
+      "file": "40-native-reopened-locked-chat.jpg",
+      "bytes": 95886,
+      "sha256": "4b0559fc8517318d77952e5f0eacda0c2e28d7afcd9f269656e9805e948731df"
     }
   ]
 }

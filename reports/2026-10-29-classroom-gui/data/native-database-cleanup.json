@@ -1,0 +1,25 @@
+{
+  "processes_stopped": true,
+  "roots": [
+    "D:\\Project\\Chain\\build\\classroom-native-gui-20261029-02"
+  ],
+  "databases_cleared": 3,
+  "records": [
+    {
+      "database": "D:\\Project\\Chain\\build\\classroom-native-gui-20261029-02\\data\\networks\\bcf8cc54e936a77b2ba4dc85\\node1\\db",
+      "files_removed": 11,
+      "evidence": "D:\\Project\\Chain\\build\\classroom-native-gui-20261029-02-db-evidence\\0"
+    },
+    {
+      "database": "D:\\Project\\Chain\\build\\classroom-native-gui-20261029-02\\data\\networks\\bcf8cc54e936a77b2ba4dc85\\node2\\db",
+      "files_removed": 11,
+      "evidence": "D:\\Project\\Chain\\build\\classroom-native-gui-20261029-02-db-evidence\\1"
+    },
+    {
+      "database": "D:\\Project\\Chain\\build\\classroom-native-gui-20261029-02\\data\\networks\\bcf8cc54e936a77b2ba4dc85\\node3\\db",
+      "files_removed": 11,
+      "evidence": "D:\\Project\\Chain\\build\\classroom-native-gui-20261029-02-db-evidence\\2"
+    }
+  ],
+  "code_inputs_profiles_and_logs_preserved": true
+}

@@ -1,0 +1,98 @@
+[
+  {
+    "path": "boost.exe",
+    "sha256": "d39bc1e62cefcf2db1ce4448180c15e5702b2bbabf5d607707f88d48fab667e1"
+  },
+  {
+    "path": "chain_classroom.exe",
+    "sha256": "da64bf766cdc6506580af962bb7b45542b3091c85a641586b68f14b9dcaf8a65"
+  },
+  {
+    "path": "ClassroomChat.compiled.json",
+    "sha256": "676511d9fa1299795c3f22288fba8b3ca9fee54157c6cf666c9f234a5c5c6cf9"
+  },
+  {
+    "path": "libbz2-1.dll",
+    "sha256": "669a4bf9266d5f020e843aa5fd75b93ce8ebde27014d5ac466a8b3cf39d8aba7"
+  },
+  {
+    "path": "libgcc_s_seh-1.dll",
+    "sha256": "a955ab07e75e8773d20821fb94774267f2f5a8773641646c809024b2e298ef31"
+  },
+  {
+    "path": "liblz4.dll",
+    "sha256": "5e83fd34144fa033c12e22718317ec2123f8a3460903932b0bfddb8aad379cfd"
+  },
+  {
+    "path": "libsodium-26.dll",
+    "sha256": "fe80e06f5844fe01229b6a6767a288ab5daa0a511480958a2ba61fdc68a1de5f"
+  },
+  {
+    "path": "libspdlog-1.15.dll",
+    "sha256": "9b41bc3179c79cb70e9979c5c6261fa039a58c16a0c07954a948cfbbde26570e"
+  },
+  {
+    "path": "libsqlite3-0.dll",
+    "sha256": "4b1943ace15d9c1aa32ae00a7276518c7393c243d7eedb0b1695fee6439f90a7"
+  },
+  {
+    "path": "libstdc++-6.dll",
+    "sha256": "81836382ea9c84175fbec2a67dcace716bf3db30706a604c7a7f55ee58cb5b4a"
+  },
+  {
+    "path": "libwinpthread-1.dll",
+    "sha256": "6372a2613b3ac725e24e8a08ac7b081886d53c01728e732f56cefc6551c8409f"
+  },
+  {
+    "path": "libyaml-cpp.dll",
+    "sha256": "79dd0f9b2532b9b7017641257a450388db7759230745f199b8e465e15132a0dc"
+  },
+  {
+    "path": "libzstd.dll",
+    "sha256": "a25427164f8775046eb8ce488d7d08842c3b33224c5817d4c0c3628b5b588129"
+  },
+  {
+    "path": "manifest.json",
+    "sha256": "226c6ddff9c85d471481fc64e8dc3cbb1678dd9d1e1f2301bb4ed251dccc7fed"
+  },
+  {
+    "path": "zlib1.dll",
+    "sha256": "1dc85208162ee57fe97e892bb5160fe9588903992995f90adc3a3a358dac6fc6"
+  },
+  {
+    "path": "web/index.html",
+    "sha256": "fbe90f2d3d34b9d62a100f8339984dc1ddd7fe1153664fcc634c895cb35fca0b"
+  },
+  {
+    "path": "web/assets/index-7XZ2mvK3.css",
+    "sha256": "837cd8bcdbe7e37e689acd9748494233f696ce9d2b8ed4a5614513bb3cbb64da"
+  },
+  {
+    "path": "web/assets/index-CP2sGrDJ.css",
+    "sha256": "5cf2b130c317a3f1f1033dfb4d4fcd3b938c3995c8bc4bb79d084d06de280cc3"
+  },
+  {
+    "path": "web/assets/index-CWAfKcUO.js",
+    "sha256": "24129c318f0377fd4d9be0fe130e1d81c033b4e361f5d8113021491d30a7e27c"
+  },
+  {
+    "path": "web/assets/index-D1hUpcXA.js",
+    "sha256": "5178f516f3c7e440a87f16c704a59de0ed5d0e5b5eea944b5a021ae3fb269071"
+  },
+  {
+    "path": "web/assets/index-D7-zptec.js",
+    "sha256": "e36537a3cfaee5d470007b8fd9292a04aaceb9144f6f4e10f0d1a339e320c531"
+  },
+  {
+    "path": "web/assets/index-Dhm9sbiL.js",
+    "sha256": "12e8f6e99cfdda66f1a2d114c9f70fad22b0e3f29adaa3671bf9d93fac3219c3"
+  },
+  {
+    "path": "web/assets/index-DU1GfXfr.css",
+    "sha256": "3b9e37b7979047081d263e466dc54315a10c87133861c03a70ee7ffd437e7cb9"
+  },
+  {
+    "path": "web/assets/index-JmFQ5U8Q.js",
+    "sha256": "f5d4cd07a372b37f92301b76f99ac50191b829160cd71f9eb5b5b1fbbbd573d0"
+  }
+]

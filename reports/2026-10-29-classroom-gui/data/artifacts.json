@@ -8,5 +8,8 @@
   "runtime_manifest_verified": true,
   "final_web_index_matches_dist": true,
   "installation_wizard_run": false,
-  "signed": false
+  "signed": false,
+  "native_core_flow_tested": true,
+  "native_desktop_sha256_verified": "bdbef0b9291c8a8a3e3606aba2d3882f1a4ebb5eefd3cbc870e2ccb102d3dbbc",
+  "native_minimum_window_tested": true
 }

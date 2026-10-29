@@ -1,12 +1,14 @@
 {
-  "pdf_pages": 13,
+  "pdf_pages": 20,
   "pdf_text_validated": true,
   "pdf_all_pages_rendered": true,
   "render_dpi": 90,
-  "visual_review": "All 13 pages reviewed as contact sheets; pages 2 and 9 additionally at full render size",
-  "screenshot_count": 24,
+  "visual_review": "All 20 pages reviewed as contact sheets; native matrix, small-window detail and limitations reviewed at full render size",
+  "browser_cases": 22,
+  "native_cases": 11,
+  "screenshot_count": 39,
   "secret_fields_absent": true,
-  "pdf_sha256": "042c065c5b66b74a4ee5fdb3a7e6cd80cfbfbaea2b9a49f40f8582e5b78848bf",
-  "final_rerender_checked": true,
-  "screenshots_format": "Original JPEG bytes, correct .jpg extension"
+  "pdf_sha256": "224bb476b0eee070d0f3f5dfff2e5dfaf0ea3070eb2604554e578e8365498db9",
+  "native_database_cleanup": 3,
+  "native_owned_processes_remaining": 0
 }

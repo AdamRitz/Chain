@@ -1,0 +1,150 @@
+{
+  "launch": {
+    "pid": 50780,
+    "created": 1793245453.0731971,
+    "exe": "D:\\Project\\Chain\\build\\classroom-native-gui-20261029-02\\bundle\\ChainClassroom.exe",
+    "data": "D:\\Project\\Chain\\build\\classroom-native-gui-20261029-02\\data",
+    "started": "2026-10-29T11:44:13.166004+08:00",
+    "sha256": "bdbef0b9291c8a8a3e3606aba2d3882f1a4ebb5eefd3cbc870e2ccb102d3dbbc",
+    "path": "C:\\Windows\\System32"
+  },
+  "processes": [
+    {
+      "pid": 50780,
+      "created": 1793245453.0731971,
+      "exe": "D:\\Project\\Chain\\build\\classroom-native-gui-20261029-02\\bundle\\ChainClassroom.exe"
+    },
+    {
+      "pid": 33452,
+      "created": 1793245453.2515252,
+      "exe": "D:\\Project\\Chain\\build\\classroom-native-gui-20261029-02\\bundle\\runtime\\chain_classroom.exe"
+    },
+    {
+      "pid": 29236,
+      "created": 1793247458.5895748,
+      "exe": "D:\\Project\\Chain\\build\\classroom-native-gui-20261029-02\\bundle\\runtime\\boost.exe"
+    },
+    {
+      "pid": 82960,
+      "created": 1793247458.7019596,
+      "exe": "D:\\Project\\Chain\\build\\classroom-native-gui-20261029-02\\bundle\\runtime\\boost.exe"
+    },
+    {
+      "pid": 81224,
+      "created": 1793247458.7056305,
+      "exe": "D:\\Project\\Chain\\build\\classroom-native-gui-20261029-02\\bundle\\runtime\\boost.exe"
+    }
+  ],
+  "profile": {
+    "contract": "3d051921e8f6862722ca0ce7741a5da5edb63d47",
+    "deploy_tx": "55ca0e58d299b683dfc1b4bd5d223f8e5dccf4789993bca6d73ee576bbe4be4a",
+    "genesis": {
+      "accounts": [
+        {
+          "balance": 1000000000000,
+          "public_key": "d62cb05946c8b56a240b47234cf821dc3f64642ffd41046d46947680450d4b1b"
+        },
+        {
+          "balance": 1000000000000,
+          "public_key": "714fe92314d5f7695d78dbe644218e142e342b1aa39cf44c9a42a37c56aaab9a"
+        },
+        {
+          "balance": 1000000000000,
+          "public_key": "50f9f0142b6a25303876ecafe4f5a36901f9c6b11d2ecd28bada4c8aeb4963bf"
+        },
+        {
+          "balance": 0,
+          "public_key": "c7ea58ce8e7bb950efb8af5c129d6f20ba1ccc0e02937c1bfdea7d883f3e3bb3"
+        }
+      ],
+      "base_fee": 1
+    },
+    "genesis_root": "44f2b8d398ad6716fcbaff5d0b994aa551d3687d00fec0f58afdda030cc8c9de",
+    "id": "bcf8cc54e936a77b2ba4dc85",
+    "mode": "demo",
+    "ports": [
+      52869,
+      52870,
+      52871
+    ],
+    "seeds": [],
+    "teacher": true,
+    "title": "我的区块链课堂"
+  },
+  "runtime_matches_release": true,
+  "stop_button": {
+    "all_three_node_processes_exited": true,
+    "gui_and_gateway_remain": true
+  },
+  "before_normal_close": [
+    {
+      "pid": 50780,
+      "created": 1793245453.0731971,
+      "exe": "D:\\Project\\Chain\\build\\classroom-native-gui-20261029-02\\bundle\\ChainClassroom.exe"
+    },
+    {
+      "pid": 33452,
+      "created": 1793245453.2515252,
+      "exe": "D:\\Project\\Chain\\build\\classroom-native-gui-20261029-02\\bundle\\runtime\\chain_classroom.exe"
+    },
+    {
+      "pid": 48708,
+      "created": 1793248340.1544108,
+      "exe": "D:\\Project\\Chain\\build\\classroom-native-gui-20261029-02\\bundle\\runtime\\boost.exe"
+    },
+    {
+      "pid": 78796,
+      "created": 1793248340.1580749,
+      "exe": "D:\\Project\\Chain\\build\\classroom-native-gui-20261029-02\\bundle\\runtime\\boost.exe"
+    },
+    {
+      "pid": 37856,
+      "created": 1793248340.1610677,
+      "exe": "D:\\Project\\Chain\\build\\classroom-native-gui-20261029-02\\bundle\\runtime\\boost.exe"
+    }
+  ],
+  "normal_close": {
+    "gui_gateway_three_nodes_exited": true,
+    "remaining_owned_pids": []
+  },
+  "relaunch": {
+    "pid": 80812,
+    "created": 1793248898.968644,
+    "exe": "D:\\Project\\Chain\\build\\classroom-native-gui-20261029-02\\bundle\\ChainClassroom.exe",
+    "data": "D:\\Project\\Chain\\build\\classroom-native-gui-20261029-02\\data",
+    "started": "2026-10-29T12:41:38.971833+08:00",
+    "sha256": "bdbef0b9291c8a8a3e3606aba2d3882f1a4ebb5eefd3cbc870e2ccb102d3dbbc",
+    "path": "C:\\Windows\\System32"
+  },
+  "before_final_close": [
+    {
+      "pid": 80812,
+      "created": 1793248898.968644,
+      "exe": "D:\\Project\\Chain\\build\\classroom-native-gui-20261029-02\\bundle\\ChainClassroom.exe"
+    },
+    {
+      "pid": 67368,
+      "created": 1793248898.994356,
+      "exe": "D:\\Project\\Chain\\build\\classroom-native-gui-20261029-02\\bundle\\runtime\\chain_classroom.exe"
+    },
+    {
+      "pid": 39272,
+      "created": 1793248899.0263033,
+      "exe": "D:\\Project\\Chain\\build\\classroom-native-gui-20261029-02\\bundle\\runtime\\boost.exe"
+    },
+    {
+      "pid": 85392,
+      "created": 1793248899.02975,
+      "exe": "D:\\Project\\Chain\\build\\classroom-native-gui-20261029-02\\bundle\\runtime\\boost.exe"
+    },
+    {
+      "pid": 89028,
+      "created": 1793248899.032635,
+      "exe": "D:\\Project\\Chain\\build\\classroom-native-gui-20261029-02\\bundle\\runtime\\boost.exe"
+    }
+  ],
+  "final_close": {
+    "gui_gateway_three_nodes_exited": true,
+    "remaining_owned_pids": []
+  }
+}
