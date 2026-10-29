@@ -1,0 +1,45 @@
+
+added 82 packages in 8s
+
+> chain-classroom@0.1.2 build
+> tsc --noEmit && vite build
+
+vite v7.3.7 building client environment for production...
+transforming...
+✓ 1583 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                   0.41 kB │ gzip:  0.32 kB
+dist/assets/index-CwJYM7Jf.css   24.62 kB │ gzip:  6.53 kB
+dist/assets/index-B76FsWHA.js   297.00 kB │ gzip: 90.98 kB
+✓ built in 1.09s
+
+> chain-classroom@0.1.2 tauri
+> tauri build
+
+        Info Looking up installed tauri packages to check mismatched versions...
+     Running beforeBuildCommand `npm run build`
+
+> chain-classroom@0.1.2 build
+> tsc --noEmit && vite build
+
+vite v7.3.7 building client environment for production...
+transforming...
+✓ 1583 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                   0.41 kB │ gzip:  0.32 kB
+dist/assets/index-CwJYM7Jf.css   24.62 kB │ gzip:  6.53 kB
+dist/assets/index-B76FsWHA.js   297.00 kB │ gzip: 90.98 kB
+✓ built in 1.10s
+   Compiling chain-classroom v0.1.2 (D:\Project\Chain\Classroom\src-tauri)
+    Finished `release` profile [optimized] target(s) in 1m 12s
+       Built application at: D:\Project\Chain\Classroom\src-tauri\target\release\chain-classroom.exe
+        Info Patching D:\Project\Chain\Classroom\src-tauri\target\release\chain-classroom.exe with bundle type information: nsis
+        Info Target: x64
+     Running makensis to produce D:\Project\Chain\Classroom\src-tauri\target\release\bundle\nsis\NornV2 区块链实验室_0.1.2_x64-setup.exe
+    Finished 1 bundle at:
+        D:\Project\Chain\Classroom\src-tauri\target\release\bundle\nsis\NornV2 区块链实验室_0.1.2_x64-setup.exe (218.65 MiB)
+
+One-click installer: D:\Project\Chain\Classroom\release\NornV2-0.1.2-windows-x64-setup.exe
+SHA256: 194ee302518268c02eba278527464d85129833dee40ba25dee1e233ad8c468ad

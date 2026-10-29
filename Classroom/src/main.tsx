@@ -303,10 +303,9 @@ function App() {
             <Layers3 size={25} />
           </span>
           <div>
-            CHAIN<span>区块链实验室</span>
+            NornV2<span>区块链实验室</span>
           </div>
         </div>
-        <div className="sidebar-label">边动手，边理解</div>
         <nav>
           {views
             .filter((v) => v.id !== "teacher" || network?.teacher)
@@ -340,7 +339,7 @@ function App() {
       <main>
         <header>
           <div className="breadcrumb">
-            Chain 实验室 <ChevronRight size={14} />
+            NornV2 实验室 <ChevronRight size={14} />
             <span>{selectedView.title}</span>
           </div>
           <div className="header-right">
@@ -898,7 +897,7 @@ function App() {
                     onClick={async () => {
                       try {
                         download(
-                          "chain-diagnostics.json",
+                          "nornv2-diagnostics.json",
                           await action("diagnostics"),
                         );
                       } catch {}
@@ -1360,7 +1359,7 @@ function App() {
                       <button
                         className="button secondary"
                         onClick={() =>
-                          download("chain-classroom-invite.json", exported)
+                          download("nornv2-classroom-invite.json", exported)
                         }
                       >
                         <Download size={15} /> 下载配置
@@ -1541,7 +1540,7 @@ function App() {
           )}
         </div>
         <footer>
-          <span>Chain 区块链实验室</span>
+          <span>NornV2 区块链实验室</span>
           <span>让每一个概念，都有一次亲手实践。</span>
           <button onClick={() => setView("learn")}>
             使用帮助 <ArrowUpRight size={12} />
@@ -1617,7 +1616,7 @@ function App() {
                     try {
                       if (modal === "backup") {
                         download(
-                          "chain-wallet-backup.json",
+                          "nornv2-wallet-backup.json",
                           await action("backup", { password }),
                         );
                         setNotice("加密备份已导出。");

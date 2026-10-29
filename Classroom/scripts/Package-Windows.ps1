@@ -8,7 +8,7 @@ $appRoot = Split-Path $PSScriptRoot -Parent
 $repoRoot = Split-Path $appRoot -Parent
 $buildPath = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot $BuildDirectory))
 $resourcePath = Join-Path $appRoot 'src-tauri/resources'
-$configuration = Get-Content -LiteralPath (Join-Path $appRoot 'src-tauri/tauri.conf.json') -Raw | ConvertFrom-Json
+$configuration = Get-Content -LiteralPath (Join-Path $appRoot 'src-tauri/tauri.conf.json') -Raw -Encoding UTF8 | ConvertFrom-Json
 $version = $configuration.version
 Push-Location $appRoot
 try {
@@ -59,17 +59,17 @@ try {
         }
     }
     $manifest = @{
-        product = 'Chain Classroom'; version = $version
+        product = $configuration.productName; version = $version
         files = @(Get-ChildItem -LiteralPath $resourcePath -File -Recurse | Sort-Object FullName | ForEach-Object { @{name=$_.FullName.Substring($resourcePath.Length + 1).Replace('\','/');sha256=(Get-FileHash -LiteralPath $_.FullName -Algorithm SHA256).Hash.ToLowerInvariant()} })
     } | ConvertTo-Json -Depth 5
     [System.IO.File]::WriteAllText((Join-Path $resourcePath 'manifest.json'), $manifest, [System.Text.UTF8Encoding]::new($false))
     if ($Installer) {
         npm.cmd run tauri -- build
         if ($LASTEXITCODE -ne 0) { throw 'Tauri installer build failed' }
-        $installerPath = Join-Path $appRoot "src-tauri/target/release/bundle/nsis/Chain Classroom_${version}_x64-setup.exe"
+        $installerPath = Join-Path $appRoot "src-tauri/target/release/bundle/nsis/$($configuration.productName)_${version}_x64-setup.exe"
         $releasePath = Join-Path $appRoot 'release'
         New-Item -ItemType Directory -Force -Path $releasePath | Out-Null
-        $releaseInstaller = Join-Path $releasePath "ChainClassroom-${version}-windows-x64-setup.exe"
+        $releaseInstaller = Join-Path $releasePath "NornV2-${version}-windows-x64-setup.exe"
         Copy-Item -LiteralPath $installerPath -Destination $releaseInstaller -Force
         $hash = (Get-FileHash -LiteralPath $releaseInstaller -Algorithm SHA256).Hash.ToLowerInvariant()
         [System.IO.File]::WriteAllText("$releaseInstaller.sha256", "$hash  $([System.IO.Path]::GetFileName($releaseInstaller))`n", [System.Text.UTF8Encoding]::new($false))

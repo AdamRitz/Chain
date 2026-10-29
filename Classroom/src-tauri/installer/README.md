@@ -12,4 +12,6 @@
 
 安装流程是当前用户级别，安装文件默认在 `%LOCALAPPDATA%/Chain Classroom`，数据在独立的 `%LOCALAPPDATA%/edu.chain.classroom`。安装程序不创建钱包，不保存默认密码，不自动修改防火墙。
 
+0.1.2 的显示名称为 NornV2 区块链实验室；`INSTALLIDENTITY` 固定为旧名称，仅用于程序目录及安装注册键，应用标识也不变，以便识别旧版本并保留原数据。桌面和开始菜单旧快捷方式只有在目标为该安装的主程序时才迁移为新名称。NSIS 模板的编译输入文件名从 tauri.conf.json 读取，分发文件使用 `NornV2-<version>-windows-x64-setup.exe`。
+
 Tauri 自定义模板入口参见[官方 Windows 安装文档](https://v2.tauri.app/distribute/windows-installer/#installer-template)。

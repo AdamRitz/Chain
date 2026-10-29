@@ -42,6 +42,8 @@ ${StrLoc}
 
 !define MANUFACTURER "{{manufacturer}}"
 !define PRODUCTNAME "{{product_name}}"
+; Chain: keep the installation identity across the NornV2 display-name change.
+!define INSTALLIDENTITY "Chain Classroom"
 !define VERSION "{{version}}"
 !define VERSIONWITHBUILD "{{version_with_build}}"
 !define HOMEPAGE "{{homepage}}"
@@ -66,9 +68,9 @@ ${StrLoc}
 !define WEBVIEW2BOOTSTRAPPERPATH "{{webview2_bootstrapper_path}}"
 !define WEBVIEW2INSTALLERPATH "{{webview2_installer_path}}"
 !define MINIMUMWEBVIEW2VERSION "{{minimum_webview2_version}}"
-!define UNINSTKEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCTNAME}"
+!define UNINSTKEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\${INSTALLIDENTITY}"
 !define MANUKEY "Software\${MANUFACTURER}"
-!define MANUPRODUCTKEY "${MANUKEY}\${PRODUCTNAME}"
+!define MANUPRODUCTKEY "${MANUKEY}\${INSTALLIDENTITY}"
 !define UNINSTALLERSIGNCOMMAND "{{uninstaller_sign_cmd}}"
 !define ESTIMATEDSIZE "{{estimated_size}}"
 !define STARTMENUFOLDER "{{start_menu_folder}}"
@@ -546,8 +548,8 @@ LangString choowHowToInstall 0 ""
 {{/each}}
 
 ; Chain: explain the safe retry instead of force-killing the application.
-LangString ChainCloseFirst ${LANG_SIMPCHINESE} "Chain 区块链实验室仍在运行。请先正常关闭窗口，等待节点退出后再运行安装程序。钱包和课堂数据会保留。"
-LangString ChainCloseFirst ${LANG_ENGLISH} "Chain Classroom is still running. Close its window normally and wait for its nodes to stop, then run setup again. Wallets and classroom data will be kept."
+LangString ChainCloseFirst ${LANG_SIMPCHINESE} "NornV2 区块链实验室仍在运行。请先正常关闭窗口，等待节点退出后再运行安装程序。钱包和课堂数据会保留。"
+LangString ChainCloseFirst ${LANG_ENGLISH} "NornV2 is still running. Close its window normally and wait for its nodes to stop, then run setup again. Wallets and classroom data will be kept."
 LangString ChainCheckFailed ${LANG_SIMPCHINESE} "无法检查应用是否已退出。安装未继续，请稍后重试。"
 LangString ChainCheckFailed ${LANG_ENGLISH} "Could not check whether the application has stopped. Setup did not continue. Please retry later."
 
@@ -601,7 +603,7 @@ Function .onInit
         StrCpy $INSTDIR "$PROGRAMFILES\${PRODUCTNAME}"
       ${EndIf}
     !else if "${INSTALLMODE}" == "currentUser"
-      StrCpy $INSTDIR "$LOCALAPPDATA\${PRODUCTNAME}"
+      StrCpy $INSTDIR "$LOCALAPPDATA\${INSTALLIDENTITY}"
     !endif
 
     Call RestorePreviousInstallLocation
@@ -1026,7 +1028,19 @@ Function un.SkipIfPassive
   ${IfThen} $PassiveMode = 1  ${|} Abort ${|}
 FunctionEnd
 
+; Chain: rename only shortcuts targeting this installation; preserve app identity
+; and never rename an unrelated user shortcut with the old display name.
+!macro NornMigrateShortcut folder
+  !insertmacro IsShortcutTarget "${folder}\${INSTALLIDENTITY}.lnk" "$INSTDIR\${MAINBINARYNAME}.exe"
+  Pop $0
+  ${If} $0 = 1
+    Rename "${folder}\${INSTALLIDENTITY}.lnk" "${folder}\${PRODUCTNAME}.lnk"
+  ${EndIf}
+!macroend
+
 Function CreateOrUpdateStartMenuShortcut
+  !insertmacro NornMigrateShortcut "$SMPROGRAMS"
+  !insertmacro NornMigrateShortcut "$SMPROGRAMS\$AppStartMenuFolder"
   ; We used to use product name as MAINBINARYNAME
   ; migrate old shortcuts to target the new MAINBINARYNAME
   StrCpy $R0 0
@@ -1069,6 +1083,7 @@ Function CreateOrUpdateStartMenuShortcut
 FunctionEnd
 
 Function CreateOrUpdateDesktopShortcut
+  !insertmacro NornMigrateShortcut "$DESKTOP"
   ; We used to use product name as MAINBINARYNAME
   ; migrate old shortcuts to target the new MAINBINARYNAME
   !insertmacro IsShortcutTarget "$DESKTOP\${PRODUCTNAME}.lnk" "$INSTDIR\$OldMainBinaryName"

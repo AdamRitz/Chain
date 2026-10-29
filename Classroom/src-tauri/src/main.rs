@@ -19,8 +19,8 @@ fn startup_error(message: &str) {
     #[cfg(windows)] unsafe {
         #[link(name="user32")]
         extern "system" { fn MessageBoxW(window:*mut std::ffi::c_void,text:*const u16,caption:*const u16,kind:u32)->i32; }
-        let text:Vec<u16>=format!("无法启动 Chain 区块链实验室。\n\n{message}\n\n请使用完整安装包，并查看应用目录中的 desktop.log。").encode_utf16().chain(Some(0)).collect();
-        let title:Vec<u16>="Chain 区块链实验室".encode_utf16().chain(Some(0)).collect();
+        let text:Vec<u16>=format!("无法启动 NornV2 区块链实验室。\n\n{message}\n\n请使用完整安装包，并查看应用目录中的 desktop.log。").encode_utf16().chain(Some(0)).collect();
+        let title:Vec<u16>="NornV2 区块链实验室".encode_utf16().chain(Some(0)).collect();
         MessageBoxW(std::ptr::null_mut(),text.as_ptr(),title.as_ptr(),0x10);
     }
 }
@@ -53,7 +53,7 @@ fn main() {
         if url.host_str()!=Some("127.0.0.1")||url.scheme()!="http"{let _=child.kill();return Err("Invalid gateway URL".into());}
         let origin=url.origin();app.manage(Runtime{child:Mutex::new(Some(child)),stop});
         tauri::WebviewWindowBuilder::new(app,"main",tauri::WebviewUrl::External(url))
-            .title("Chain 区块链实验室").inner_size(1380.0,900.0).min_inner_size(900.0,680.0)
+            .title("NornV2 区块链实验室").inner_size(1380.0,900.0).min_inner_size(900.0,680.0)
             .on_navigation(move|next| next.origin()==origin).build()?;
         Ok(())
     }).on_window_event(|window,event|{
