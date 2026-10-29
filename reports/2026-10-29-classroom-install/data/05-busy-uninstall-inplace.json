@@ -1,0 +1,200 @@
+{
+  "label": "05-busy-uninstall-inplace",
+  "action": "uninstall",
+  "before": {
+    "registry": {
+      "DisplayVersion": "0.1.1",
+      "InstallLocation": "\"C:\\Users\\61485\\AppData\\Local\\Chain Classroom\"",
+      "UninstallString": "\"C:\\Users\\61485\\AppData\\Local\\Chain Classroom\\uninstall.exe\""
+    },
+    "processes": [
+      {
+        "create_time": 1793279060.4848588,
+        "pid": 80476,
+        "exe": "C:\\Users\\61485\\AppData\\Local\\Packages\\OpenAI.Codex_2p2nqsd0c76g0\\LocalCache\\Local\\Chain Classroom\\chain-classroom.exe"
+      },
+      {
+        "create_time": 1793279060.697639,
+        "pid": 86168,
+        "exe": "C:\\Users\\61485\\AppData\\Local\\Packages\\OpenAI.Codex_2p2nqsd0c76g0\\LocalCache\\Local\\Chain Classroom\\runtime\\chain_classroom.exe"
+      }
+    ],
+    "physical_install": "C:\\Users\\61485\\AppData\\Local\\Packages\\OpenAI.Codex_2p2nqsd0c76g0\\LocalCache\\Local\\Chain Classroom",
+    "installed_exe": "C:\\Users\\61485\\AppData\\Local\\Chain Classroom\\chain-classroom.exe",
+    "main_sha256": "d6d980b7c2d1e33ebd4e40c0ff2caed59ea4ac2651e493798e1091e84190a17e",
+    "runtime_files": [
+      {
+        "file": "boost.exe",
+        "matches": true
+      },
+      {
+        "file": "chain_classroom.exe",
+        "matches": true
+      },
+      {
+        "file": "ClassroomChat.compiled.json",
+        "matches": true
+      },
+      {
+        "file": "libbz2-1.dll",
+        "matches": true
+      },
+      {
+        "file": "libgcc_s_seh-1.dll",
+        "matches": true
+      },
+      {
+        "file": "liblz4.dll",
+        "matches": true
+      },
+      {
+        "file": "libsodium-26.dll",
+        "matches": true
+      },
+      {
+        "file": "libspdlog-1.15.dll",
+        "matches": true
+      },
+      {
+        "file": "libsqlite3-0.dll",
+        "matches": true
+      },
+      {
+        "file": "libstdc++-6.dll",
+        "matches": true
+      },
+      {
+        "file": "libwinpthread-1.dll",
+        "matches": true
+      },
+      {
+        "file": "libyaml-cpp.dll",
+        "matches": true
+      },
+      {
+        "file": "libzstd.dll",
+        "matches": true
+      },
+      {
+        "file": "web/assets/index-CP2sGrDJ.css",
+        "matches": true
+      },
+      {
+        "file": "web/assets/index-JmFQ5U8Q.js",
+        "matches": true
+      },
+      {
+        "file": "web/index.html",
+        "matches": true
+      },
+      {
+        "file": "zlib1.dll",
+        "matches": true
+      }
+    ],
+    "data_probe_preserved": true,
+    "start_menu_shortcut": true
+  },
+  "command": [
+    "C:\\Users\\61485\\AppData\\Local\\Chain Classroom\\uninstall.exe",
+    "/S",
+    "_?=C:\\Users\\61485\\AppData\\Local\\Chain Classroom"
+  ],
+  "installer_sha256": "eb6aacb98c5567db62638d248341f32018ed6aa4e9bf88cdfbb1eca23a9a766b",
+  "exit_code": 2,
+  "elapsed_seconds": 0.141,
+  "after": {
+    "registry": {
+      "DisplayVersion": "0.1.1",
+      "InstallLocation": "\"C:\\Users\\61485\\AppData\\Local\\Chain Classroom\"",
+      "UninstallString": "\"C:\\Users\\61485\\AppData\\Local\\Chain Classroom\\uninstall.exe\""
+    },
+    "processes": [
+      {
+        "create_time": 1793279060.4848588,
+        "pid": 80476,
+        "exe": "C:\\Users\\61485\\AppData\\Local\\Packages\\OpenAI.Codex_2p2nqsd0c76g0\\LocalCache\\Local\\Chain Classroom\\chain-classroom.exe"
+      },
+      {
+        "create_time": 1793279060.697639,
+        "pid": 86168,
+        "exe": "C:\\Users\\61485\\AppData\\Local\\Packages\\OpenAI.Codex_2p2nqsd0c76g0\\LocalCache\\Local\\Chain Classroom\\runtime\\chain_classroom.exe"
+      }
+    ],
+    "physical_install": "C:\\Users\\61485\\AppData\\Local\\Packages\\OpenAI.Codex_2p2nqsd0c76g0\\LocalCache\\Local\\Chain Classroom",
+    "installed_exe": "C:\\Users\\61485\\AppData\\Local\\Chain Classroom\\chain-classroom.exe",
+    "main_sha256": "d6d980b7c2d1e33ebd4e40c0ff2caed59ea4ac2651e493798e1091e84190a17e",
+    "runtime_files": [
+      {
+        "file": "boost.exe",
+        "matches": true
+      },
+      {
+        "file": "chain_classroom.exe",
+        "matches": true
+      },
+      {
+        "file": "ClassroomChat.compiled.json",
+        "matches": true
+      },
+      {
+        "file": "libbz2-1.dll",
+        "matches": true
+      },
+      {
+        "file": "libgcc_s_seh-1.dll",
+        "matches": true
+      },
+      {
+        "file": "liblz4.dll",
+        "matches": true
+      },
+      {
+        "file": "libsodium-26.dll",
+        "matches": true
+      },
+      {
+        "file": "libspdlog-1.15.dll",
+        "matches": true
+      },
+      {
+        "file": "libsqlite3-0.dll",
+        "matches": true
+      },
+      {
+        "file": "libstdc++-6.dll",
+        "matches": true
+      },
+      {
+        "file": "libwinpthread-1.dll",
+        "matches": true
+      },
+      {
+        "file": "libyaml-cpp.dll",
+        "matches": true
+      },
+      {
+        "file": "libzstd.dll",
+        "matches": true
+      },
+      {
+        "file": "web/assets/index-CP2sGrDJ.css",
+        "matches": true
+      },
+      {
+        "file": "web/assets/index-JmFQ5U8Q.js",
+        "matches": true
+      },
+      {
+        "file": "web/index.html",
+        "matches": true
+      },
+      {
+        "file": "zlib1.dll",
+        "matches": true
+      }
+    ],
+    "data_probe_preserved": true,
+    "start_menu_shortcut": true
+  }
+}

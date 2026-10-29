@@ -1,0 +1,10 @@
+{
+  "osVersion": "Microsoft Windows NT 10.0.26100.0",
+  "process64Bit": true,
+  "webviewVersion": "156.0.4314.50",
+  "installerBytes": 229265541,
+  "installerSHA256": "374e0041794891d11e817e88dc879dbadd282a62286e69acddf2e0708cae3f6b",
+  "signature": "NotSigned",
+  "version": "0.1.1",
+  "nativeCodeChanged": false
+}

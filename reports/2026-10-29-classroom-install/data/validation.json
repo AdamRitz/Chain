@@ -1,0 +1,80 @@
+{
+  "version": "0.1.1",
+  "installer_sha256": "374e0041794891d11e817e88dc879dbadd282a62286e69acddf2e0708cae3f6b",
+  "expected_installed_exe_sha256": "aa9f14ebd3366452b2dc0f7f083f57ba716a16e96580a25ee83243ca7edb694b",
+  "cases": [
+    {
+      "case": "0.1.0 升级到最终 0.1.1，保留数据",
+      "result": "PASS",
+      "seconds": 16.953,
+      "evidence": "08-upgrade-final"
+    },
+    {
+      "case": "重复安装，自动启动",
+      "result": "PASS",
+      "seconds": 32.953,
+      "evidence": "09-repeat-final-auto-launch"
+    },
+    {
+      "case": "无已安装程序时一键安装，自动启动",
+      "result": "PASS",
+      "seconds": 16.906,
+      "evidence": "13-final-clean-install"
+    },
+    {
+      "case": "10-final-busy-install",
+      "result": "PASS",
+      "evidence": "10-final-busy-install"
+    },
+    {
+      "case": "11-final-busy-uninstall",
+      "result": "PASS",
+      "evidence": "11-final-busy-uninstall"
+    },
+    {
+      "case": "正常卸载及数据保留",
+      "result": "PASS",
+      "evidence": "18-cleanup-uninstall"
+    },
+    {
+      "case": "桌面/开始菜单快捷方式与注册入口重开",
+      "result": "PASS",
+      "evidence": "final-shortcuts / 15 / 16"
+    },
+    {
+      "case": "/WIZARD 完整向导与取消",
+      "result": "PASS",
+      "evidence": "17-wizard-cancel"
+    },
+    {
+      "case": "前端回归",
+      "result": "PASS",
+      "passed": 5,
+      "total": 5
+    }
+  ],
+  "screenshots": [
+    {
+      "file": "01-auto-launch.jpg",
+      "sha256": "77397aca67d6b2b74d84d6aab54ed8f28cbdee563b8b3db39ca9b04e01a8c115"
+    },
+    {
+      "file": "02-final-auto-launch.jpg",
+      "sha256": "3cfbf9d9feedfbf0d12f2e73157fe8982442f58d1600755e5462c9b8c082823b"
+    },
+    {
+      "file": "03-registered-launch.jpg",
+      "sha256": "9403e18d7c887a2a11752e0c4708147320494496031860cca68e94580497c148"
+    },
+    {
+      "file": "04-advanced-wizard.jpg",
+      "sha256": "1011f95055226775c56cc38d4c040f5de303315c525606801f2036ef9c44e0a9"
+    }
+  ],
+  "limits": [
+    "WebView2 already installed; missing-runtime installation not executed.",
+    "Windows 11 only; packaged host virtualizes LocalAppData.",
+    "Preservation probe is non-secret test data; this run did not create or unlock wallets.",
+    "Cleanup deletion of residual files blocked by policy; see cleanup.json."
+  ]
+}

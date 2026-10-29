@@ -1,0 +1,170 @@
+{
+  "label": "15-stopped-before-launch",
+  "action": "inspect",
+  "before": {
+    "registry": {
+      "DisplayVersion": "0.1.1",
+      "InstallLocation": "\"C:\\Users\\61485\\AppData\\Local\\Chain Classroom\"",
+      "UninstallString": "\"C:\\Users\\61485\\AppData\\Local\\Chain Classroom\\uninstall.exe\""
+    },
+    "processes": [],
+    "physical_install": "C:\\Users\\61485\\AppData\\Local\\Packages\\OpenAI.Codex_2p2nqsd0c76g0\\LocalCache\\Local\\Chain Classroom",
+    "installed_exe": "C:\\Users\\61485\\AppData\\Local\\Chain Classroom\\chain-classroom.exe",
+    "main_sha256": "aa9f14ebd3366452b2dc0f7f083f57ba716a16e96580a25ee83243ca7edb694b",
+    "runtime_files": [
+      {
+        "file": "boost.exe",
+        "matches": true
+      },
+      {
+        "file": "chain_classroom.exe",
+        "matches": true
+      },
+      {
+        "file": "ClassroomChat.compiled.json",
+        "matches": true
+      },
+      {
+        "file": "libbz2-1.dll",
+        "matches": true
+      },
+      {
+        "file": "libgcc_s_seh-1.dll",
+        "matches": true
+      },
+      {
+        "file": "liblz4.dll",
+        "matches": true
+      },
+      {
+        "file": "libsodium-26.dll",
+        "matches": true
+      },
+      {
+        "file": "libspdlog-1.15.dll",
+        "matches": true
+      },
+      {
+        "file": "libsqlite3-0.dll",
+        "matches": true
+      },
+      {
+        "file": "libstdc++-6.dll",
+        "matches": true
+      },
+      {
+        "file": "libwinpthread-1.dll",
+        "matches": true
+      },
+      {
+        "file": "libyaml-cpp.dll",
+        "matches": true
+      },
+      {
+        "file": "libzstd.dll",
+        "matches": true
+      },
+      {
+        "file": "web/assets/index-40iJjVTK.js",
+        "matches": true
+      },
+      {
+        "file": "web/assets/index-CP2sGrDJ.css",
+        "matches": true
+      },
+      {
+        "file": "web/index.html",
+        "matches": true
+      },
+      {
+        "file": "zlib1.dll",
+        "matches": true
+      }
+    ],
+    "data_probe_preserved": true,
+    "start_menu_shortcut": true
+  },
+  "after": {
+    "registry": {
+      "DisplayVersion": "0.1.1",
+      "InstallLocation": "\"C:\\Users\\61485\\AppData\\Local\\Chain Classroom\"",
+      "UninstallString": "\"C:\\Users\\61485\\AppData\\Local\\Chain Classroom\\uninstall.exe\""
+    },
+    "processes": [],
+    "physical_install": "C:\\Users\\61485\\AppData\\Local\\Packages\\OpenAI.Codex_2p2nqsd0c76g0\\LocalCache\\Local\\Chain Classroom",
+    "installed_exe": "C:\\Users\\61485\\AppData\\Local\\Chain Classroom\\chain-classroom.exe",
+    "main_sha256": "aa9f14ebd3366452b2dc0f7f083f57ba716a16e96580a25ee83243ca7edb694b",
+    "runtime_files": [
+      {
+        "file": "boost.exe",
+        "matches": true
+      },
+      {
+        "file": "chain_classroom.exe",
+        "matches": true
+      },
+      {
+        "file": "ClassroomChat.compiled.json",
+        "matches": true
+      },
+      {
+        "file": "libbz2-1.dll",
+        "matches": true
+      },
+      {
+        "file": "libgcc_s_seh-1.dll",
+        "matches": true
+      },
+      {
+        "file": "liblz4.dll",
+        "matches": true
+      },
+      {
+        "file": "libsodium-26.dll",
+        "matches": true
+      },
+      {
+        "file": "libspdlog-1.15.dll",
+        "matches": true
+      },
+      {
+        "file": "libsqlite3-0.dll",
+        "matches": true
+      },
+      {
+        "file": "libstdc++-6.dll",
+        "matches": true
+      },
+      {
+        "file": "libwinpthread-1.dll",
+        "matches": true
+      },
+      {
+        "file": "libyaml-cpp.dll",
+        "matches": true
+      },
+      {
+        "file": "libzstd.dll",
+        "matches": true
+      },
+      {
+        "file": "web/assets/index-40iJjVTK.js",
+        "matches": true
+      },
+      {
+        "file": "web/assets/index-CP2sGrDJ.css",
+        "matches": true
+      },
+      {
+        "file": "web/index.html",
+        "matches": true
+      },
+      {
+        "file": "zlib1.dll",
+        "matches": true
+      }
+    ],
+    "data_probe_preserved": true,
+    "start_menu_shortcut": true
+  }
+}

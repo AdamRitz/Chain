@@ -1,0 +1,18 @@
+{
+  "applicationUninstalled": true,
+  "processesStopped": true,
+  "residualDeletion": "blocked_by_policy",
+  "reason": "Tool returned blocked by policy without a more specific reason; no alternate deletion attempted.",
+  "installationRemnants": [
+    "C:\\Users\\61485\\AppData\\Local\\Chain Classroom\\uninstall.exe",
+    "C:\\Users\\61485\\AppData\\Local\\Chain Classroom\\runtime\\web\\assets\\index-7XZ2mvK3.css",
+    "C:\\Users\\61485\\AppData\\Local\\Chain Classroom\\runtime\\web\\assets\\index-CWAfKcUO.js",
+    "C:\\Users\\61485\\AppData\\Local\\Chain Classroom\\runtime\\web\\assets\\index-D1hUpcXA.js",
+    "C:\\Users\\61485\\AppData\\Local\\Chain Classroom\\runtime\\web\\assets\\index-D7-zptec.js",
+    "C:\\Users\\61485\\AppData\\Local\\Chain Classroom\\runtime\\web\\assets\\index-Dhm9sbiL.js",
+    "C:\\Users\\61485\\AppData\\Local\\Chain Classroom\\runtime\\web\\assets\\index-DU1GfXfr.css",
+    "C:\\Users\\61485\\AppData\\Local\\Chain Classroom\\runtime\\web\\assets\\index-JmFQ5U8Q.js"
+  ],
+  "probe": "C:\\Users\\61485\\AppData\\Local\\edu.chain.classroom\\installer-preservation-probe-20261029.txt",
+  "applicationDataPreserved": true
+}

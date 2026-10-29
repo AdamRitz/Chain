@@ -1,0 +1,18 @@
+Window: "Chain Classroom 安装", App: ChainClassroom-0.1.1-windows-x64-setup.exe.
+	0 对话框 Chain Classroom 安装 Secondary Actions: Raise
+		1 按钮 下一步(N) > ID: 1
+		2 按钮 取消(C) ID: 2
+		3 图像 ID: 1036
+		4 图像 ID: 1045
+		5 文本 Nullsoft Install System v3.13 ID: 1034
+		6 图像 ID: 1200
+		7 文本 欢迎使用 Chain Classroom 安装程序 ID: 1201
+		8 文本 此程序将引导你完成 Chain Classroom 的安装。 在安装之前，请先关闭其他所有应用程序。这将确保安装程序能够更新所需的系统文件，从而避免在安装后重新启动计算机。 点击 [下一步(N)] 继续。 ID: 1202
+		9 标题栏 (settable, string) Value: Chain Classroom 安装
+			10 菜单栏 系统 ID: MenuBar
+				11 菜单项 系统
+			12 按钮 最小化
+			13 按钮 (disabled) 最大化
+			14 按钮 关闭
+
+The focused UI element is 0 对话框 Chain Classroom 安装 Secondary Actions: Raise.

@@ -4,12 +4,22 @@
 
 ## 学生开始使用
 
-1. 安装 `Chain Classroom_0.1.0_x64-setup.exe`，打开“Chain Classroom”。离线安装包包含 WebView2 安装程序和 C++ 运行依赖；目标为 Windows 10 1903 及以上、Windows 11，x64。
+1. 双击 `ChainClassroom-0.1.1-windows-x64-setup.exe`，等待进度完成，应用自动打开。默认不需要选择语言、目录或逐页点击“下一步”；自动创建桌面和开始菜单快捷方式。离线安装包包含 WebView2 安装程序和 C++ 运行依赖；目标为 Windows 10 1903 及以上、Windows 11，x64，不需要安装编译器、Node.js 或 Python。
 2. 点击“开始本地实验”，设置至少 8 字节的钱包密码。再次选择实验入口，程序生成独立创世配置、三个节点和测试币，并发送一笔真实的聊天室部署交易。
 3. 在“我的钱包”给 Bob 转账；在“链上聊天室”发消息。点击消息可查看交易与区块。Alice、Bob 和教师是本机独立的演示钱包，不是其他同学的身份。
 4. 关闭窗口会正常停止本应用所属节点，桌面进程异常退出也由网关监测并停止所属节点。重新打开会恢复上次网络；签名之前仍需解锁钱包。启动新实验保留旧实验目录。
 
 金额均为本项目最小单位的测试币。聊天室需要保留足够余额支付 Gas 上限，成功执行后仅实际 Gas 和基础费被销毁。昵称不等于身份认证，身份以钱包地址为准。
+
+### 安装、更新和卸载
+
+安装程序默认只为当前 Windows 用户安装，程序目录为 `%LOCALAPPDATA%/Chain Classroom`，钱包和课堂数据另存在 `%LOCALAPPDATA%/edu.chain.classroom`。首次启动仍需自己创建钱包密码，安装器不设置默认密码。
+
+更新或重复安装前，请正常关闭“Chain 区块链实验室”并等待节点退出，再运行新安装包。若相关程序仍在运行，安装器会停止并提示，不会强制杀死节点。安装和重复安装保留钱包及课堂数据；Windows“已安装的应用”可以卸载，默认也保留数据，只有明确勾选卸载页面的删除数据选项才会清除。
+
+高级使用可以通过 `/WIZARD` 打开完整向导以选择目录；`/NOLAUNCH` 安装后不自动启动；`/P` 显示进度而不自动启动；`/S` 静默安装，附加 `/R` 才自动启动。这些选项供教师批量安装或调试使用，普通学生直接双击即可。
+
+安装包尚未进行发布者代码签名，Windows 可能显示发布者或信誉提示；这类系统提示不属于应用安装步骤，软件不会自动绕过。缺少 WebView2 时会运行包内微软安装程序，系统策略可能要求额外确认。
 
 ## 教师创建课堂
 
@@ -65,7 +75,7 @@ powershell -NoProfile -File scripts/Package-Windows.ps1 `
 
 已有本机 MinGW 构建可参考仓库根 README。`CHAIN_BUILD_CLASSROOM` 默认 OFF，原节点构建不增加 SQLite/npm/Rust 依赖；开启后新增网关、索引测试和两项真实教学网络测试。原有十一项继续保留，另有默认 IPv6 网络回归；开启教学网关后共十五项。
 
-安装包位于 `Classroom/src-tauri/target/release/bundle/nsis/`。`Package-Windows.ps1` 从所选构建目录复制节点和网关，递归检查并收集其 MinGW DLL 依赖。Windows 主程序包含 UTF-8 进程清单，中文目录不需要改变系统区域设置。Tauri 桌面壳与网关均防止同一应用目录重复启动。
+安装包位于 `Classroom/src-tauri/target/release/bundle/nsis/`，打包脚本同时将可分发的同一文件和 SHA256 校验文件写入 `Classroom/release/`。`Package-Windows.ps1` 从所选构建目录复制节点和网关，递归检查并收集其 MinGW DLL 依赖；清理生成资源中的旧哈希文件后，记录包含前端的完整运行文件校验清单。Windows 主程序包含 UTF-8 进程清单，中文目录不需要改变系统区域设置。Tauri 桌面壳与网关均防止同一应用目录重复启动。一键安装模板及上游来源见 [installer/README.md](src-tauri/installer/README.md)。
 
 本地浏览器调试也可使用：
 
@@ -89,3 +99,5 @@ build/classroom/chain_classroom.exe --node build/classroom/boost.exe `
 验证记录见 [2026-10-29 实施报告](../reports/2026-10-29-classroom/REPORT.md)。
 
 图形界面的操作、截图与问题修复见 [2026-10-29 GUI 测试报告](../reports/2026-10-29-classroom-gui/REPORT.md)。实验引导的重启完成标记仅在当前界面会话中，完成安全停止、恢复并重新观测到同一课堂和相同链头后点亮；刷新窗口后重新检查。
+
+0.1.1 一键安装、旧版升级、重复安装、快捷方式及卸载的数据保留验证见 [安装测试报告](../reports/2026-10-29-classroom-install/REPORT.md)。

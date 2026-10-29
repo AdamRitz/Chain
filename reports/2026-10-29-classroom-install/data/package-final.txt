@@ -1,0 +1,45 @@
+
+added 82 packages in 8s
+
+> chain-classroom@0.1.1 build
+> tsc --noEmit && vite build
+
+vite v7.3.7 building client environment for production...
+transforming...
+✓ 1583 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                   0.41 kB │ gzip:  0.31 kB
+dist/assets/index-CP2sGrDJ.css   24.75 kB │ gzip:  6.56 kB
+dist/assets/index-40iJjVTK.js   297.07 kB │ gzip: 91.00 kB
+✓ built in 1.23s
+
+> chain-classroom@0.1.1 tauri
+> tauri build
+
+        Info Looking up installed tauri packages to check mismatched versions...
+     Running beforeBuildCommand `npm run build`
+
+> chain-classroom@0.1.1 build
+> tsc --noEmit && vite build
+
+vite v7.3.7 building client environment for production...
+transforming...
+✓ 1583 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                   0.41 kB │ gzip:  0.31 kB
+dist/assets/index-CP2sGrDJ.css   24.75 kB │ gzip:  6.56 kB
+dist/assets/index-40iJjVTK.js   297.07 kB │ gzip: 91.00 kB
+✓ built in 1.18s
+   Compiling chain-classroom v0.1.1 (D:\Project\Chain\Classroom\src-tauri)
+    Finished `release` profile [optimized] target(s) in 1m 12s
+       Built application at: D:\Project\Chain\Classroom\src-tauri\target\release\chain-classroom.exe
+        Info Patching D:\Project\Chain\Classroom\src-tauri\target\release\chain-classroom.exe with bundle type information: nsis
+        Info Target: x64
+     Running makensis to produce D:\Project\Chain\Classroom\src-tauri\target\release\bundle\nsis\Chain Classroom_0.1.1_x64-setup.exe
+    Finished 1 bundle at:
+        D:\Project\Chain\Classroom\src-tauri\target\release\bundle\nsis\Chain Classroom_0.1.1_x64-setup.exe (218.64 MiB)
+
+One-click installer: D:\Project\Chain\Classroom\release\ChainClassroom-0.1.1-windows-x64-setup.exe
+SHA256: 374e0041794891d11e817e88dc879dbadd282a62286e69acddf2e0708cae3f6b

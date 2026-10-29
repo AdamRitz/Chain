@@ -1,0 +1,12 @@
+{
+  "displayName": "Chain Classroom",
+  "id": "edu.chain.classroom",
+  "isRunning": true,
+  "windows": [
+    {
+      "app": "process:C:\\Users\\61485\\AppData\\Local\\Packages\\OpenAI.Codex_2p2nqsd0c76g0\\LocalCache\\Local\\Chain Classroom\\chain-classroom.exe",
+      "id": 27268848,
+      "title": "Chain 区块链实验室"
+    }
+  ]
+}

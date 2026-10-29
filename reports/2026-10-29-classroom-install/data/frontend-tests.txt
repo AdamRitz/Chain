@@ -1,0 +1,46 @@
+
+> chain-classroom@0.1.1 test
+> node --experimental-strip-types --test test/*.test.mjs
+
+TAP version 13
+# (node:86604) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: fresh canonical metadata replaces an older cached location of a replayed transaction
+ok 1 - fresh canonical metadata replaces an older cached location of a replayed transaction
+  ---
+  duration_ms: 0.6508
+  type: 'test'
+  ...
+# Subtest: message order uses canonical block, transaction and event positions instead of local wall-clock
+ok 2 - message order uses canonical block, transaction and event positions instead of local wall-clock
+  ---
+  duration_ms: 0.6038
+  type: 'test'
+  ...
+# Subtest: keyboard and button share permissions and a UTF-8 byte limit
+ok 3 - keyboard and button share permissions and a UTF-8 byte limit
+  ---
+  duration_ms: 0.1671
+  type: 'test'
+  ...
+# Subtest: message inspector ignores transfer selections and follows current canonical metadata
+ok 4 - message inspector ignores transfer selections and follows current canonical metadata
+  ---
+  duration_ms: 0.1075
+  type: 'test'
+  ...
+# Subtest: restart lesson requires a resumed contract and the same network and canonical head
+ok 5 - restart lesson requires a resumed contract and the same network and canonical head
+  ---
+  duration_ms: 0.2662
+  type: 'test'
+  ...
+1..5
+# tests 5
+# suites 0
+# pass 5
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 171.4485

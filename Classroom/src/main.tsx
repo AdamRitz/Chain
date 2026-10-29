@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
+import { version } from "../package.json";
 import { createRoot } from "react-dom/client";
 import {
   Activity,
@@ -332,7 +333,7 @@ function App() {
           </button>
         </div>
         <div className="sidebar-foot">
-          <span className="tiny-dot" /> 教学版 0.1.0
+          <span className="tiny-dot" /> 教学版 {version}
           <span>本地签名 · 测试币</span>
         </div>
       </aside>
