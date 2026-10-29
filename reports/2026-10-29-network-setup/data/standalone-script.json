@@ -1,0 +1,7 @@
+{
+  "passed": true,
+  "real_firewall_changed": false,
+  "rule_count": 0,
+  "supported": true,
+  "installed_node_matches": true
+}

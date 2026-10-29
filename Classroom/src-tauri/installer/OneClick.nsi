@@ -115,6 +115,7 @@ Var OneClickLaunch
   !insertmacro ChainRequireStopped "$INSTDIR\${MAINBINARYNAME}.exe"
   !insertmacro ChainRequireStopped "$INSTDIR\runtime\chain_classroom.exe"
   !insertmacro ChainRequireStopped "$INSTDIR\runtime\boost.exe"
+  !insertmacro ChainRequireStopped "$INSTDIR\runtime\norn-network.exe"
 !macroend
 
 Name "${PRODUCTNAME}"
@@ -411,7 +412,16 @@ Function PageLeaveReinstall
     ${Else}
       ReadRegStr $4 SHCTX "${MANUPRODUCTKEY}" ""
       ReadRegStr $R1 SHCTX "${UNINSTKEY}" "UninstallString"
-      ${IfThen} $UpdateMode = 1 ${|} StrCpy $R1 "$R1 /UPDATE" ${|} ; append /UPDATE
+      ; Passive upgrades cannot subsequently change the directory. Keep their
+      ; rule only when the old and destination paths match; wizard uninstalls
+      ; still perform cleanup because the user may choose a different path.
+      ${If} $PassiveMode = 1
+      ${AndIf} $INSTDIR == $4
+      ${AndIf} $R0 != 0
+        StrCpy $R1 "$R1 /UPDATE"
+      ${ElseIf} $UpdateMode = 1
+        StrCpy $R1 "$R1 /UPDATE"
+      ${EndIf}
       ${IfThen} $PassiveMode = 1 ${|} StrCpy $R1 "$R1 /P" ${|} ; append /P
       StrCpy $R1 "$R1 _?=$4" ; append uninstall directory
       ExecWait '$R1' $0
@@ -897,6 +907,21 @@ Section Uninstall
   !endif
 
   !insertmacro ChainRequireAllStopped
+
+  ; NornV2: upgrades keep path-scoped rules. Normal uninstall removes only the
+  ; current runtime's owned rule. Cancellation keeps the helper available.
+  ${If} $UpdateMode <> 1
+    IfFileExists "$INSTDIR\runtime\norn-network.exe" 0 norn_cleanup_done
+    nsExec::ExecToStack '"$INSTDIR\runtime\norn-network.exe" remove'
+    Pop $0
+    Pop $1
+    ${If} $0 != 0
+      MessageBox MB_OK|MB_ICONEXCLAMATION "网络规则清理未完成，卸载已停止。请在应用的节点与网络页面撤销规则，或请管理员运行 runtime\Configure-Network.ps1 -Action remove，然后重试。" /SD IDOK
+      SetErrorLevel 4
+      Abort
+    ${EndIf}
+    norn_cleanup_done:
+  ${EndIf}
 
   ; Delete the app directory and its content from disk
   ; Copy main executable

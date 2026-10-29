@@ -1879,3 +1879,15 @@ footer button {
     display: none;
   }
 }
+.network-setup { margin-bottom: 20px; }
+.network-setup .diagnostic { gap: 16px; flex-wrap: wrap; }
+.network-setup .diagnostic b { text-align: right; }
+.network-fields { margin: 20px 0 0; gap: 18px; }
+.network-actions { display: flex; flex-wrap: wrap; gap: 10px; margin: 14px 0; }
+.network-warning { color: #80561b; background: #fff5df; padding: 12px 15px; border-radius: 10px; font-size: 13px; overflow-wrap: anywhere; }
+.network-consent { display: flex; align-items: flex-start; gap: 10px; margin: 14px 0; font-size: 13px; }
+.network-consent input { width: auto; margin-top: 3px; }
+.network-setup details { margin: 16px 0; font-size: 13px; overflow-wrap: anywhere; }
+.network-setup summary { cursor: pointer; color: #315d6e; }
+.network-probe { border-top: 1px solid #e5ecee; padding-top: 14px; margin-top: 20px; }
+.network-probe h4 { display: flex; gap: 8px; align-items: center; }

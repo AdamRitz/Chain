@@ -1,0 +1,14 @@
+{
+  "checks": [
+    "demo cannot request an inbound rule",
+    "real Windows policy/profile/address inspection finishes asynchronously",
+    "nodes keep progressing while diagnostic helper is running",
+    "removing an absent rule does not ask for elevation",
+    "real node queries work over IPv4 and IPv6",
+    "unreachable node gives bounded failure instead of success",
+    "malformed endpoint and unauthorized management requests rejected"
+  ],
+  "passed": 7,
+  "firewall_changed": false,
+  "uac_interaction_tested": false
+}

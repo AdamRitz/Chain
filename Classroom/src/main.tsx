@@ -41,6 +41,7 @@ import { api, bytes, download, number, Row, short } from "./api";
 import chatSource from "../../Contracts/ClassroomChat.sol?raw";
 import artifact from "../../Contracts/ClassroomChat.compiled.json";
 import "./style.css";
+import { NetworkPanel } from "./NetworkPanel";
 import {
   MergeMessages,
   CanSend,
@@ -250,7 +251,7 @@ function App() {
       setModal("");
       setHistoryRows([]);
       setHistoryOffset(50);
-      setView("home");
+      setView(joining || mode !== "demo" ? "network" : "home");
       setBody("");
       setSelected(null);
       setBlock(null);
@@ -857,6 +858,7 @@ function App() {
           )}
           {view === "network" && network && (
             <>
+              <NetworkPanel key={network.id} status={s} action={action} />
               <div className="two-columns">
                 <section className="panel">
                   <PanelTitle icon={Network} title="本机节点连接" />

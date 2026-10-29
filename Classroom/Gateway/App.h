@@ -1,5 +1,6 @@
 #pragma once
 #include "Support.h"
+#include "NetworkSetup.h"
 
 string Word(uint64_t value) {
     ostringstream s;
@@ -46,6 +47,7 @@ class ClassroomApp {
     Database index;
     vector<unique_ptr<Child>> children;
     mutex guard;
+    NetworkSetup networkSetup;
     string active = "alice", nickname = "同学";
     bool ipv6 = HasIPv6();
     string lastError;
@@ -552,6 +554,7 @@ class ClassroomApp {
     }
     Json Status() {
         auto result = cache;
+        result["network_tools"] = networkSetup.Status();
         result.update({{"unlocked", vault.Unlocked()},
                        {"has_wallet", fs::exists(vault.path)},
                        {"active_wallet", active},
@@ -593,6 +596,17 @@ class ClassroomApp {
         auto action = request.at("action").get<string>();
         if (action == "status")
             return Status();
+        if (action == "network_status" || action == "network_configure" || action == "network_remove") {
+            if (action == "network_configure" && (!profile.is_object() || profile.value("mode", string{}) == "demo"))
+                throw runtime_error("单机演示无需放行入站连接，请先创建或加入联网课堂");
+            networkSetup.Start(action == "network_status" ? "status" : action == "network_configure" ? "configure" : "remove", request, binary, root);
+            return Status();
+        }
+        if (action == "network_probe") {
+            if (!profile.is_object()) throw runtime_error("请先创建或加入课堂");
+            networkSetup.Probe(request.at("endpoint").get<string>(), profile.value("id", string{}));
+            return Status();
+        }
         if (action == "wallet_create") {
             vault.Create(request.at("password"));
             cache.erase("wallets");

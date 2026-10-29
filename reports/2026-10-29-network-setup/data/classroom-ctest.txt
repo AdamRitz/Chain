@@ -1,0 +1,51 @@
+Start testing: Oct 29 22:45 中国标准时间
+----------------------------------------------------------
+12/15 Testing: ClassroomIndex
+12/15 Test: ClassroomIndex
+Command: "D:/Project/Chain/build/classroom-20261028/classroom_index_test.exe" "D:/Project/Chain/build/classroom-network-tools-20261029-01/classroom-index" "D:/Project/Chain/Contracts/ClassroomChat.compiled.json"
+Directory: D:/Project/Chain/build/classroom-20261028
+"ClassroomIndex" start time: Oct 29 22:45 中国标准时间
+Output:
+----------------------------------------------------------
+Classroom canonical index checks passed
+<end of output>
+Test time =   0.59 sec
+----------------------------------------------------------
+Test Passed.
+"ClassroomIndex" end time: Oct 29 22:45 中国标准时间
+"ClassroomIndex" time elapsed: 00:00:00
+----------------------------------------------------------
+
+13/15 Testing: ClassroomNetwork
+13/15 Test: ClassroomNetwork
+Command: "D:/Software/Code/Tool/Anaconda/python.exe" "D:/Project/Chain/Test/ClassroomNetworkTest.py" "--bin" "D:/Project/Chain/build/classroom-20261028" "--work" "D:/Project/Chain/build/classroom-network-tools-20261029-01/classroom-network"
+Directory: D:/Project/Chain/build/classroom-20261028
+"ClassroomNetwork" start time: Oct 29 22:45 中国标准时间
+Output:
+----------------------------------------------------------
+{"checks": ["encrypted wallet create lock unlock and backup; wrong password rejected", "three real nodes, idempotent deployment and a signed native transfer", "UTF-8 chat event and receipt, bounded body, read-only call and duplicate-ID contract revert", "IPv6 ::1 and IPv4 share one canonical ledger", "gateway rejects foreign origins and missing token; diagnostics exclude raw outbox and seeds", "index rebuild and full node restart preserve contract and canonical chat", "desktop restart recovers deployment metadata from the signed outbox without unlocking or redeploying"]}
+<end of output>
+Test time =   9.67 sec
+----------------------------------------------------------
+Test Passed.
+"ClassroomNetwork" end time: Oct 29 22:45 中国标准时间
+"ClassroomNetwork" time elapsed: 00:00:09
+----------------------------------------------------------
+
+14/15 Testing: ClassroomJoin
+14/15 Test: ClassroomJoin
+Command: "D:/Software/Code/Tool/Anaconda/python.exe" "D:/Project/Chain/Test/ClassroomJoinTest.py" "--bin" "D:/Project/Chain/build/classroom-20261028" "--work" "D:/Project/Chain/build/classroom-network-tools-20261029-01/classroom-join"
+Directory: D:/Project/Chain/build/classroom-20261028
+"ClassroomJoin" start time: Oct 29 22:45 中国标准时间
+Output:
+----------------------------------------------------------
+{"checks": ["two independently encrypted app vaults join through IPv6; normal teacher transfer funds student chat", "student app cannot invoke teacher administration", "on-chain room closure and membership restrictions reject calls; explicit authorization restores chat", "new experiments have distinct genesis fingerprints even when reusing the local wallet"]}
+<end of output>
+Test time =  14.24 sec
+----------------------------------------------------------
+Test Passed.
+"ClassroomJoin" end time: Oct 29 22:45 中国标准时间
+"ClassroomJoin" time elapsed: 00:00:14
+----------------------------------------------------------
+
+End testing: Oct 29 22:45 中国标准时间

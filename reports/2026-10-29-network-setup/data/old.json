@@ -1,0 +1,99 @@
+{
+  "action": "old",
+  "exit_code": 0,
+  "seconds": 17.219,
+  "installer_sha256": "194ee302518268c02eba278527464d85129833dee40ba25dee1e233ad8c468ad",
+  "before": {
+    "registry": {},
+    "processes": [],
+    "physical_install": "D:\\Project\\Chain\\build\\classroom-network-install-20261029-01\\installed",
+    "installed_exe": "D:\\Project\\Chain\\build\\classroom-network-install-20261029-01\\installed\\chain-classroom.exe",
+    "main_sha256": null,
+    "runtime_files": [],
+    "data_probe_preserved": false,
+    "start_menu_shortcut": false
+  },
+  "after": {
+    "registry": {
+      "DisplayVersion": "0.1.2",
+      "InstallLocation": "\"D:\\Project\\Chain\\build\\classroom-network-install-20261029-01\\installed\"",
+      "UninstallString": "\"D:\\Project\\Chain\\build\\classroom-network-install-20261029-01\\installed\\uninstall.exe\""
+    },
+    "processes": [],
+    "physical_install": "D:\\Project\\Chain\\build\\classroom-network-install-20261029-01\\installed",
+    "installed_exe": "D:\\Project\\Chain\\build\\classroom-network-install-20261029-01\\installed\\chain-classroom.exe",
+    "main_sha256": "3832e0d6b45bddde5c963f883b5a05271043161c3981b90d1b0ba57ce875259e",
+    "runtime_files": [
+      {
+        "file": "boost.exe",
+        "matches": true
+      },
+      {
+        "file": "chain_classroom.exe",
+        "matches": true
+      },
+      {
+        "file": "ClassroomChat.compiled.json",
+        "matches": true
+      },
+      {
+        "file": "libbz2-1.dll",
+        "matches": true
+      },
+      {
+        "file": "libgcc_s_seh-1.dll",
+        "matches": true
+      },
+      {
+        "file": "liblz4.dll",
+        "matches": true
+      },
+      {
+        "file": "libsodium-26.dll",
+        "matches": true
+      },
+      {
+        "file": "libspdlog-1.15.dll",
+        "matches": true
+      },
+      {
+        "file": "libsqlite3-0.dll",
+        "matches": true
+      },
+      {
+        "file": "libstdc++-6.dll",
+        "matches": true
+      },
+      {
+        "file": "libwinpthread-1.dll",
+        "matches": true
+      },
+      {
+        "file": "libyaml-cpp.dll",
+        "matches": true
+      },
+      {
+        "file": "libzstd.dll",
+        "matches": true
+      },
+      {
+        "file": "web/assets/index-B76FsWHA.js",
+        "matches": true
+      },
+      {
+        "file": "web/assets/index-CwJYM7Jf.css",
+        "matches": true
+      },
+      {
+        "file": "web/index.html",
+        "matches": true
+      },
+      {
+        "file": "zlib1.dll",
+        "matches": true
+      }
+    ],
+    "data_probe_preserved": false,
+    "start_menu_shortcut": false
+  }
+}

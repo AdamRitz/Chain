@@ -1,0 +1,14 @@
+{
+    "real_firewall_changed":  false,
+    "checks":  [
+                   "bounded dual-stack scopes",
+                   "path-specific identity",
+                   "create/update without duplicate",
+                   "IPv6 and managed policy reporting",
+                   "remove only own installation",
+                   "no-op remove",
+                   "policy failure surfaces",
+                   "ownership collision rejected"
+               ],
+    "passed":  8
+}
