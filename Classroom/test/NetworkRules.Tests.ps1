@@ -26,7 +26,7 @@ function Remove-NetFirewallRule { param($PolicyStore,$Name,$ErrorAction) $script
 function Test-Path { param($LiteralPath,$PathType) $true }
 $node='C:\Norn 测试\runtime\boost.exe'; $other='C:\Other installation\runtime\boost.exe'
 Assert ((Get-NornRuleIdentity $node) -ne (Get-NornRuleIdentity $other)) 'Installations overlap'
-foreach ($remote in @('Any','*','::/0','0.0.0.0/0','1.2.3.4;exit','127.1','::ffff:127.0.0.1','1.2.3.4/33')) {
+foreach ($remote in @('Any,LocalSubnet','*','::/0','0.0.0.0/0','1.2.3.4;exit','127.1','::ffff:127.0.0.1','1.2.3.4/33')) {
     $rejected=$false;try {Assert-NornScope 'Private' $remote} catch {$rejected=$true}; Assert $rejected "Accepted $remote"
 }
 Set-NornNetworkRule $node 'Private' 'LocalSubnet'
@@ -36,13 +36,17 @@ Assert ($script:rules.Count -eq 2) 'Duplicate rule created'
 $status=Get-NornNetworkStatus $node
 Assert ($status.rules.Count -eq 1 -and $status.rules[0].profile -eq 'Public' -and $status.addresses[0].family -eq 'IPv6') 'Status lost scope or IPv6'
 Assert ($status.policy[0].allow_local_rules -eq 'False') 'Managed policy hidden'
+Set-NornNetworkRule $node 'Any' 'Any'
+$status=Get-NornNetworkStatus $node
+Assert ($status.rules.Count -eq 1 -and $status.rules[0].profile -eq 'Any' -and $status.rules[0].remote[0] -eq 'Any') 'Open dual-stack scope not applied'
+Assert ($script:rules.Count -eq 2 -and ($script:rules | Where-Object Program -eq $other).Profile -eq 'Domain') 'Opening node scope affected another installation'
 Remove-NornNetworkRule $node
 Assert ($script:rules.Count -eq 1 -and $script:rules[0].Program -eq $other) 'Removed unrelated installation rule'
 Remove-NornNetworkRule $node
-Assert ($script:changes.Count -eq 4) 'No-op remove mutated firewall'
+Assert ($script:changes.Count -eq 5) 'No-op remove mutated firewall'
 $script:deny=$true
 $failed=$false;try {Get-NornNetworkStatus $node} catch {$failed=$true}; Assert $failed 'Policy read failure mistaken for empty rule'
 $script:deny=$false
 $script:rules[0].Name=Get-NornRuleIdentity $node
 $failed=$false;try {Remove-NornNetworkRule $node} catch {$failed=$true};Assert $failed 'Ownership collision was removed'
-@{passed=8;checks=@('bounded dual-stack scopes','path-specific identity','create/update without duplicate','IPv6 and managed policy reporting','remove only own installation','no-op remove','policy failure surfaces','ownership collision rejected');real_firewall_changed=$false} | ConvertTo-Json -Depth 4
+@{passed=9;checks=@('literal dual-stack scopes','path-specific identity','create/update without duplicate','IPv6 and managed policy reporting','all profiles and all remote addresses on owned node only','remove only own installation','no-op remove','policy failure surfaces','ownership collision rejected');real_firewall_changed=$false} | ConvertTo-Json -Depth 4

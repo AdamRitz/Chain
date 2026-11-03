@@ -14,8 +14,11 @@ fn validate(action: &str, profile: &str, remote: &str) -> Result<(), String> {
     if !["status", "configure", "remove"].contains(&action) {
         return Err("Invalid action".into());
     }
-    if !["Private", "Domain", "Public"].contains(&profile) {
+    if !["Any", "Private", "Domain", "Public"].contains(&profile) {
         return Err("Invalid network profile".into());
+    }
+    if remote == "Any" {
+        return Ok(());
     }
     if remote.len() > 1024 || remote.split(',').count() > 16 {
         return Err("Too many addresses".into());
@@ -213,7 +216,7 @@ fn elevate(_: &str, _: &str, _: &str) -> Result<u32, String> {
 }
 
 fn address_key(value: &str) -> String {
-    if value == "LocalSubnet" {
+    if value == "LocalSubnet" || value == "Any" {
         return value.into();
     }
     let parts: Vec<_> = value.split('/').collect();
@@ -270,7 +273,7 @@ fn same_rule(status: &Value, profile: &str, remote: &str) -> bool {
     rule["enabled"] == "True"
         && rule["action"] == "Allow"
         && rule["direction"] == "Inbound"
-        && rule["profile"] == profile
+        && (rule["profile"] == profile || (profile == "Any" && rule["profile"] == "Domain, Private, Public"))
         && ["TCP", "6"].iter().any(|s| rule["protocol"] == *s)
         && rule["local_port"] == json!(["Any"])
         && actual == expected
@@ -285,8 +288,8 @@ fn run() -> Result<Value, String> {
         return Err("Too many arguments".into());
     }
     let action = args.first().map(String::as_str).unwrap_or("status");
-    let profile = args.get(1).map(String::as_str).unwrap_or("Private");
-    let remote = args.get(2).map(String::as_str).unwrap_or("LocalSubnet");
+    let profile = args.get(1).map(String::as_str).unwrap_or("Any");
+    let remote = args.get(2).map(String::as_str).unwrap_or("Any");
     validate(action, profile, remote)?;
     let exe = dunce::canonicalize(env::current_exe().map_err(|e| e.to_string())?)
         .map_err(|e| e.to_string())?;
@@ -338,9 +341,9 @@ fn main() {
 mod tests {
     use super::*;
     #[test]
-    fn rejects_unbounded_and_command_arguments() {
+    fn rejects_malformed_and_command_arguments() {
         for s in [
-            "Any",
+            "Any,LocalSubnet",
             "*",
             "0.0.0.0/0",
             "::/0",
@@ -367,7 +370,8 @@ mod tests {
             assert!(validate("configure", "Public", s).is_ok());
         }
         assert!(validate("shell", "Private", "LocalSubnet").is_err());
-        assert!(validate("configure", "Any", "LocalSubnet").is_err());
+        assert!(validate("configure", "All", "LocalSubnet").is_err());
+        assert!(validate("configure", "Any", "Any").is_ok());
     }
     #[test]
     fn escapes_paths_as_data() {
@@ -394,5 +398,9 @@ mod tests {
         assert!(same_rule(&s, "Private", "LocalSubnet"));
         assert!(!same_rule(&s, "Public", "LocalSubnet"));
         assert!(!same_rule(&s, "Private", "10.0.0.0/24"));
+        assert!(!same_rule(&s, "Any", "Any"));
+        let open = json!({"rules":[{"enabled":"True","action":"Allow","direction":"Inbound","profile":"Any","protocol":"TCP","local_port":["Any"],"remote":["Any"]}]});
+        assert!(same_rule(&open, "Any", "Any"));
+        assert!(!same_rule(&open, "Private", "LocalSubnet"));
     }
 }

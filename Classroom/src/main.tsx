@@ -15,7 +15,6 @@ import {
   Copy,
   Download,
   ExternalLink,
-  Fingerprint,
   Globe2,
   GraduationCap,
   Hash,
@@ -119,7 +118,6 @@ function App() {
   const [password, setPassword] = useState("");
   const [title, setTitle] = useState("我的区块链课堂");
   const [invite, setInvite] = useState("");
-  const [restore, setRestore] = useState<Row | null>(null);
   const [body, setBody] = useState("");
   const [room, setRoom] = useState(1);
   const [selected, setSelected] = useState<Row | null>(null);
@@ -361,14 +359,14 @@ function App() {
             </button>
             <button
               className="avatar"
-              title="钱包与密码"
+              title="钱包与昵称"
               onClick={() =>
                 setModal(
                   s.unlocked ? "account" : s.has_wallet ? "unlock" : "wallet",
                 )
               }
             >
-              {s.unlocked ? <Wallet size={18} /> : <LockKeyhole size={18} />}
+              <Wallet size={18} />
             </button>
           </div>
         </header>
@@ -380,7 +378,7 @@ function App() {
               <p>{selectedView.caption}</p>
             </div>
             <div className="page-actions">
-              {network && (
+              {network && view === "network" && (
                 <>
                   <button
                     className="button secondary"
@@ -613,25 +611,49 @@ function App() {
                 <section className="wallet-card">
                   <span>我的教学钱包</span>
                   <div className="wallet-card-top">
-                    <h2>
-                      {s.active_wallet === "teacher"
-                        ? "教师"
-                        : s.active_wallet === "bob"
-                          ? "Bob"
-                          : "Alice"}
-                    </h2>
+                    <select
+                      className="wallet-select"
+                      aria-label="当前钱包"
+                      value={s.active_wallet || "alice"}
+                      disabled={!s.unlocked || !!busy}
+                      onChange={(e) =>
+                        run("select_wallet", { wallet: e.target.value })
+                      }
+                    >
+                      {(s.wallets || []).map((w: Row) => (
+                        <option key={w.id} value={w.id}>
+                          {w.id === "teacher"
+                            ? "教师"
+                            : w.id === "bob"
+                              ? "Bob"
+                              : "Alice"}
+                        </option>
+                      ))}
+                    </select>
                     <Wallet size={30} />
                   </div>
                   <div className="balance">
-                    {s.unlocked ? number(balance) : "已锁定"}
+                    {s.unlocked ? number(balance) : "待登录"}
                     <span>测试币</span>
                   </div>
-                  <label>原生账户公钥 · Ed25519</label>
+                  <label>转账地址 · Ed25519 公钥</label>
                   <button
                     className="key-copy mono"
-                    onClick={() => copy(wallet?.public_key || "")}
+                    aria-label="复制转账地址"
+                    disabled={!wallet?.public_key}
+                    onClick={() => copy(wallet.public_key)}
                   >
-                    {short(wallet?.public_key, 17)}
+                    <span>{wallet?.public_key || "登录钱包后显示"}</span>
+                    <Copy size={15} />
+                  </button>
+                  <label>EVM 地址</label>
+                  <button
+                    className="key-copy mono"
+                    aria-label="复制 EVM 地址"
+                    disabled={!wallet?.evm_address}
+                    onClick={() => copy(wallet.evm_address)}
+                  >
+                    <span>{wallet?.evm_address || "登录钱包后显示"}</span>
                     <Copy size={15} />
                   </button>
                   <div className="wallet-bottom">
@@ -689,46 +711,6 @@ function App() {
                   </button>
                 </section>
               </div>
-              <section className="panel padded">
-                <PanelTitle icon={Fingerprint} title="认识两个地址" />
-                <p>
-                  上面的 32 字节公钥用于原生转账。下面的 20 字节 EVM
-                  地址用于合约身份，它们属于同一个钱包。
-                </p>
-                <code className="code-line">
-                  EVM 地址：{wallet?.evm_address || "解锁钱包后显示"}
-                </code>
-                <div className="wallet-tools">
-                  <label>
-                    切换演示身份
-                    <select
-                      value={s.active_wallet || "alice"}
-                      disabled={!s.unlocked}
-                      onChange={(e) =>
-                        run("select_wallet", { wallet: e.target.value })
-                      }
-                    >
-                      {(s.wallets || []).map((w: Row) => (
-                        <option key={w.id} value={w.id}>
-                          {w.id}
-                        </option>
-                      ))}
-                    </select>
-                  </label>
-                  <button
-                    className="button secondary"
-                    onClick={() => setModal("backup")}
-                  >
-                    <Download size={16} /> 加密备份
-                  </button>
-                  <button
-                    className="button secondary"
-                    onClick={() => run("lock")}
-                  >
-                    <LockKeyhole size={16} /> 锁定钱包
-                  </button>
-                </div>
-              </section>
               <section className="panel">
                 <PanelTitle icon={ArrowUpRight} title="本机发送记录" />
                 <Outbox
@@ -1591,42 +1573,25 @@ function App() {
                 </button>
               </div>
             )}
-            {(modal === "wallet" ||
-              modal === "unlock" ||
-              modal === "backup") && (
+            {(modal === "wallet" || modal === "unlock") && (
               <>
                 <span className="modal-icon">
                   <KeyRound size={26} />
                 </span>
-                <h2>
-                  {modal === "wallet"
-                    ? "创建你的加密钱包"
-                    : modal === "unlock"
-                      ? "解锁本机钱包"
-                      : "导出加密备份"}
-                </h2>
+                <h2>{modal === "wallet" ? "创建本机钱包" : "登录本机钱包"}</h2>
                 <p>
                   {modal === "wallet"
-                    ? "设置密码。程序会在本机生成 Alice、Bob 和教师三个教学身份。"
-                    : modal === "unlock"
-                      ? "密码只用于解锁这台电脑上的钱包。"
-                      : "为备份设置至少 8 字节的密码，妥善保存备份与密码。"}
+                    ? "设置密码，创建 Alice、Bob 和教师三个教学钱包。"
+                    : "输入这台电脑上的钱包密码。"}
                 </p>
                 <form
                   onSubmit={async (e) => {
                     e.preventDefault();
                     try {
-                      if (modal === "backup") {
-                        download(
-                          "nornv2-wallet-backup.json",
-                          await action("backup", { password }),
-                        );
-                        setNotice("加密备份已导出。");
-                      } else
-                        await action(
-                          modal === "wallet" ? "wallet_create" : "unlock",
-                          { password },
-                        );
+                      await action(
+                        modal === "wallet" ? "wallet_create" : "unlock",
+                        { password },
+                      );
                       setPassword("");
                       setModal("");
                     } catch {}
@@ -1653,64 +1618,12 @@ function App() {
                     disabled={
                       !!busy ||
                       !password ||
-                      (modal !== "unlock" && bytes(password) < 8)
+                      (modal === "wallet" && bytes(password) < 8)
                     }
                   >
-                    {modal === "backup"
-                      ? "下载加密备份"
-                      : modal === "unlock"
-                        ? "解锁钱包"
-                        : "创建钱包"}
+                    {modal === "unlock" ? "登录钱包" : "创建钱包"}
                   </button>
                 </form>
-                {modal === "wallet" && (
-                  <label className="file-link">
-                    已有备份？导入恢复
-                    <input
-                      type="file"
-                      accept=".json"
-                      onChange={async (e) => {
-                        const file = e.target.files?.[0];
-                        if (file) {
-                          try {
-                            setRestore(JSON.parse(await file.text()));
-                            setModal("restore");
-                          } catch {
-                            setError("备份文件格式不正确");
-                          }
-                        }
-                      }}
-                    />
-                  </label>
-                )}
-              </>
-            )}
-            {modal === "restore" && (
-              <>
-                <h2>恢复加密备份</h2>
-                <p>输入备份密码。只允许在尚未创建钱包的应用目录中恢复。</p>
-                <label className="field">
-                  备份密码
-                  <input
-                    type="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                  />
-                </label>
-                <button
-                  className="button primary full"
-                  disabled={!restore || !password || !!busy}
-                  onClick={async () => {
-                    try {
-                      await action("restore", { backup: restore, password });
-                      setModal("");
-                      setPassword("");
-                      setRestore(null);
-                    } catch {}
-                  }}
-                >
-                  恢复钱包
-                </button>
               </>
             )}
             {(modal === "choose" ||
@@ -1847,23 +1760,6 @@ function App() {
                 >
                   保存昵称
                 </button>
-                <div className="export-actions">
-                  <button
-                    className="button secondary"
-                    onClick={() => setModal("backup")}
-                  >
-                    加密备份
-                  </button>
-                  <button
-                    className="button secondary"
-                    onClick={() => {
-                      run("lock");
-                      setModal("");
-                    }}
-                  >
-                    锁定钱包
-                  </button>
-                </div>
               </>
             )}
             {modal === "message" && selected && (

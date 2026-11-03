@@ -16,6 +16,18 @@ export function FirewallSummary(firewall: Row | undefined) {
     )
   )
     return "现有规则需要重新配置";
+  if (
+    rules.some(
+      (r) =>
+        r.enabled === "True" &&
+        r.action === "Allow" &&
+        r.direction === "Inbound" &&
+        ["TCP", "6"].includes(r.protocol) &&
+        ["Any", "Domain, Private, Public"].includes(r.profile) &&
+        r.remote?.includes("Any"),
+    )
+  )
+    return "已允许所有地址连接，外部可达性待验证";
   return "已保存本应用规则，入站可达性待验证";
 }
 
@@ -28,9 +40,19 @@ export function NetworkWarnings(firewall: Row | undefined): string[] {
     p.category === "DomainAuthenticated" ? "Domain" : p.category,
   );
   profiles.forEach((p, i) => {
-    if (rules.length && !rules.some((r) => r.profile === categories[i]))
+    if (
+      rules.length &&
+      !rules.some(
+        (r) =>
+          r.profile === "Any" ||
+          String(r.profile)
+            .split(",")
+            .map((p) => p.trim())
+            .includes(categories[i]),
+      )
+    )
       warnings.push(
-        `${p.interface || "当前连接"}（${categories[i]}）不在规则的网络类型内。若课堂使用此连接，请选择对应类型后重新配置。`,
+        `${p.interface || "当前连接"}（${categories[i]}）不在旧规则的网络类型内，点击“允许所有人连接”即可更新。`,
       );
   });
   if (rules.length && firewall.active_rule_count === 0)

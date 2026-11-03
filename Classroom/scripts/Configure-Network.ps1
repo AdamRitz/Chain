@@ -1,7 +1,7 @@
 param(
     [ValidateSet('status','configure','remove')][string]$Action = 'status',
-    [ValidateSet('Private','Domain','Public')][string]$Profile = 'Private',
-    [string]$Remote = 'LocalSubnet'
+    [ValidateSet('Any','Private','Domain','Public')][string]$Profile = 'Any',
+    [string]$Remote = 'Any'
 )
 $ErrorActionPreference = 'Stop'
 # Installed alongside the fixed-purpose helper and boost.exe. No arbitrary

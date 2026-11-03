@@ -40,3 +40,25 @@ test("current network and managed-policy limitations are surfaced", () => {
   );
   assert.deepEqual(NetworkWarnings({ error: "unavailable" }), []);
 });
+
+test("all-network rules cover Public and Domain without claiming reachability", () => {
+  for (const profile of ["Any", "Domain, Private, Public"]) {
+    const firewall = {
+      rules: [
+        {
+          profile,
+          enabled: "True",
+          action: "Allow",
+          direction: "Inbound",
+          protocol: "TCP",
+          remote: ["Any"],
+        },
+      ],
+      profiles: [{ category: "Public" }, { category: "DomainAuthenticated" }],
+      active_rule_count: 1,
+      policy: [],
+    };
+    assert.deepEqual(NetworkWarnings(firewall), []);
+    assert.match(FirewallSummary(firewall), /所有地址.*待验证/);
+  }
+});

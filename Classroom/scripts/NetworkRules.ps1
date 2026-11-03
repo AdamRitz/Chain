@@ -10,7 +10,8 @@ function Get-NornRuleIdentity([string]$NodePath) {
 }
 
 function Assert-NornScope([string]$Profile, [string]$Remote) {
-    if ($Profile -cnotin @('Private', 'Domain', 'Public')) { throw 'Select Private, Domain or Public' }
+    if ($Profile -cnotin @('Any', 'Private', 'Domain', 'Public')) { throw 'Select Any, Private, Domain or Public' }
+    if ($Remote -ceq 'Any') { return }
     $entries = @($Remote.Split(','))
     if ($entries.Count -gt 16 -or $Remote.Length -gt 1024) { throw 'Too many remote addresses' }
     foreach ($entry in $entries) {

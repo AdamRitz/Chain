@@ -1,0 +1,90 @@
+{
+  "date": "2026-11-03",
+  "version": "0.1.4",
+  "tests": {
+    "frontend": {
+      "passed": 8
+    },
+    "rust_network_helper": {
+      "passed": 5
+    },
+    "firewall_policy_mocks": {
+      "passed": 9,
+      "real_firewall_changed": false
+    },
+    "classroom_ctest": {
+      "passed": 3,
+      "names": [
+        "ClassroomIndex",
+        "ClassroomNetwork",
+        "ClassroomJoin"
+      ]
+    },
+    "gateway_network_tools": {
+      "checks": [
+        "demo cannot request an inbound rule",
+        "real Windows policy/profile/address inspection finishes asynchronously",
+        "nodes keep progressing while diagnostic helper is running",
+        "removing an absent rule does not ask for elevation",
+        "real node queries work over IPv4 and IPv6",
+        "unreachable node gives bounded failure instead of success",
+        "malformed endpoint and unauthorized management requests rejected"
+      ],
+      "passed": 7,
+      "firewall_changed": false,
+      "uac_interaction_tested": false
+    }
+  },
+  "ui": {
+    "surface": "production frontend in browser backed by real C++ gateway and three local nodes",
+    "viewport": {
+      "width": 1380,
+      "height": 900,
+      "reason": "matches the Tauri default window"
+    },
+    "checked": [
+      "wallet shows two full addresses with copy buttons",
+      "no manual lock or backup controls on wallet page or account menu",
+      "stop and new experiment controls occur only on network page",
+      "network button requires no profile or remote address form",
+      "Alice signed and sent 100 test units to Bob; transaction included",
+      "wallet switch to Bob shows credited balance"
+    ],
+    "alice_balance": "999999999899",
+    "bob_balance": "1000000000100",
+    "transfer_hash": "52119e72e7706aa684e459a7a4ce5ed2f7d9833d25d7fea41c5033b3d041f047",
+    "transfer_state": "included"
+  },
+  "initial_allocation": {
+    "genesis_balances": [
+      1000000000000,
+      1000000000000,
+      1000000000000,
+      0
+    ],
+    "wallet_balances_after_contract_deployment": {
+      "alice": "1000000000000",
+      "bob": "1000000000000",
+      "teacher": "999999120761"
+    }
+  },
+  "package": {
+    "name": "NornV2-0.1.4-windows-x64-setup.exe",
+    "size": 229595299,
+    "sha256": "b083ac08b170e89872a0f948c6904841865ea2ea145fb5a13a398f079b5dfdcf",
+    "runtime_files_verified": 19
+  },
+  "limitations": [
+    "Actual UAC and persistent firewall mutations were not automated; policy functions were mocked.",
+    "Cross-computer Internet/campus IPv6 inbound reachability was not verified.",
+    "This release was built and its runtime manifest verified; installer upgrade and uninstall were not repeated in this task."
+  ],
+  "cleanup": {
+    "ui_test_processes_stopped": true,
+    "ui_test_databases_remaining": 0,
+    "gateway_tools": {
+      "processes_stopped": true,
+      "remaining_databases": []
+    }
+  }
+}

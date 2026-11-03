@@ -37,11 +37,11 @@ class NetworkSetup {
         if (!fs::is_regular_file(path)) throw runtime_error("缺少网络配置组件，请安装完整新版应用");
         vector<string> args{action};
         if (action == "configure") {
-            auto profile = request.value("profile", string("Private"));
-            auto remote = request.value("remote", string("LocalSubnet"));
-            if ((profile != "Private" && profile != "Domain" && profile != "Public") || remote.empty() ||
-                remote.size() > 1024 || remote.find_first_not_of("0123456789abcdefABCDEF:.,/LocalSubnet") != string::npos)
-                throw invalid_argument("请选择网络类型，并填写 LocalSubnet 或 IPv4/IPv6 地址与网段");
+            auto profile = request.value("profile", string("Any"));
+            auto remote = request.value("remote", string("Any"));
+            if ((profile != "Any" && profile != "Private" && profile != "Domain" && profile != "Public") || remote.empty() ||
+                remote.size() > 1024 || (remote != "Any" && remote.find_first_not_of("0123456789abcdefABCDEF:.,/LocalSubnet") != string::npos))
+                throw invalid_argument("网络范围无效，请使用默认的所有地址或明确的 IPv4/IPv6 网段");
             args.push_back(profile); args.push_back(remote);
         }
         auto directory = root / "network-tools";

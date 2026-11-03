@@ -13,10 +13,7 @@ export function NetworkPanel({
   const network = status.network;
   const tools = status.network_tools || {};
   const firewall = tools.firewall;
-  const [profile, setProfile] = useState("Private");
-  const [remote, setRemote] = useState("LocalSubnet");
   const [endpoint, setEndpoint] = useState(network?.seeds?.[0] || "");
-  const [consent, setConsent] = useState(false);
   const [requesting, setRequesting] = useState(false);
   const demo = network?.mode === "demo";
   const pending = requesting || tools.busy;
@@ -98,67 +95,22 @@ export function NetworkPanel({
       ) : (
         <>
           <p className="small muted">
-            老师接受同学连接时需要配置；学生仅主动连接老师通常无需配置。规则只用于节点
-            TCP 连接，管理接口仍仅供本机访问。
+            点击下方按钮并确认 Windows 授权，即可允许所有地址连接本机的 NornV2
+            节点。适用于专用、公用和域网络，支持 IPv4 / IPv6，无需逐个添加同学。
           </p>
-          <div className="two-columns network-fields">
-            <label className="field">
-              允许连接的网络类型
-              <select
-                value={profile}
-                onChange={(e) => {
-                  setProfile(e.target.value);
-                  setConsent(false);
-                }}
-              >
-                <option value="Private">专用网络（Private）</option>
-                <option value="Domain">学校域网络（Domain）</option>
-                <option value="Public">公用网络（Public）</option>
-              </select>
-            </label>
-            <label className="field">
-              允许连接的同学地址或网段
-              <input
-                value={remote}
-                maxLength={1024}
-                onChange={(e) => {
-                  setRemote(e.target.value);
-                  setConsent(false);
-                }}
-                placeholder="LocalSubnet"
-              />
-            </label>
-          </div>
-          <p className="small muted">
-            LocalSubnet 表示同一子网。跨网段可填写学校提供的 IPv4 网段或 IPv6
-            前缀，多个地址用英文逗号分隔，例如
-            192.168.1.0/24,2001:db8::/64（示例请替换）。
-          </p>
-          {profile === "Public" && (
-            <label className="network-consent">
-              <input
-                type="checkbox"
-                checked={consent}
-                onChange={(e) => setConsent(e.target.checked)}
-              />
-              我确认当前课堂使用公用网络，并已核对允许连接的地址范围。
-            </label>
-          )}
           <div className="network-actions">
             <button
               className="button primary"
-              disabled={
-                pending || !remote.trim() || (profile === "Public" && !consent)
-              }
+              disabled={pending}
               onClick={() =>
                 void invoke("network_configure", {
-                  profile,
-                  remote: remote.trim(),
+                  profile: "Any",
+                  remote: "Any",
                 })
               }
             >
               <ShieldCheck size={16} />
-              一键配置网络
+              允许所有人连接
             </button>
             <button
               className="button secondary"
@@ -176,7 +128,8 @@ export function NetworkPanel({
             </button>
           </div>
           <p className="small muted">
-            添加、修改或撤销规则时可能出现管理员授权提示；本应用不会更改系统的网络类型。
+            放行仅针对本应用节点的 TCP
+            入站连接。校园网或路由器是否允许外部连接，可用下方检测工具核实。
           </p>
         </>
       )}
