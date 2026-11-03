@@ -56,7 +56,7 @@ export function NetworkWarnings(firewall: Row | undefined): string[] {
       );
   });
   if (rules.length && firewall.active_rule_count === 0)
-    warnings.push("规则尚未出现在有效策略中，请联系学校管理员检查组策略。");
+    warnings.push("规则尚未出现在有效策略中，请联系系统管理员检查组策略。");
   for (const p of firewall.policy || []) {
     if (!categories.includes(p.name)) continue;
     if (p.allow_local_rules === "False" || p.allow_inbound === "False")

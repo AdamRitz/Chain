@@ -8,11 +8,11 @@ def Main(args):
     app=App(args.bin.resolve(),Path(__file__).resolve().parents[1],root/'app')
     checks=[]
     try:
-        state=app.Api('create',mode='demo',title='Network tools integration')
+        try:app.Api('network_configure');raise AssertionError('Unconnected app configured a node rule')
+        except urllib.error.HTTPError as error:assert error.code==400
+        checks.append('unconnected app cannot request a node firewall rule')
+        state=app.Api('create',title='Network tools integration')
         port=state['network']['ports'][0]
-        try: app.Api('network_configure');raise AssertionError('Demo opened inbound firewall')
-        except urllib.error.HTTPError as e: assert e.code==400
-        checks.append('demo cannot request an inbound rule')
         start=time.monotonic();reply=app.Api('network_status')
         assert reply['network_tools']['busy'] and time.monotonic()-start<2
         before=reply['stats']['height']

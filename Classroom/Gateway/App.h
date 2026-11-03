@@ -42,13 +42,13 @@ string Sha256(const string &text) {
 class ClassroomApp {
   public:
     fs::path root, binary, artifactPath;
-    Json artifact, profile, cache = Json::object();
+    Json artifact, legacyArtifact, profile, cache = Json::object();
     Vault vault;
     Database index;
     vector<unique_ptr<Child>> children;
     mutex guard;
     NetworkSetup networkSetup;
-    string active = "alice", nickname = "同学";
+    string active = "main", nickname = "成员";
     bool ipv6 = HasIPv6();
     string lastError;
     uint64_t reorgs = 0;
@@ -59,6 +59,7 @@ class ClassroomApp {
         fs::create_directories(root / "networks");
         vault.path = root / "wallet.vault.json";
         artifact = ReadJson(artifactPath).at("contracts").at("ClassroomChat");
+        legacyArtifact = ReadJson(artifactPath.parent_path() / "ClassroomChat.legacy-v1.compiled.json").at("contracts").at("ClassroomChat");
         if (fs::exists(root / "session.json")) {
             auto saved = ReadJson(root / "session.json");
             auto id = saved.at("id").get<string>();
@@ -68,7 +69,7 @@ class ClassroomApp {
             if (profile.at("id").get<string>() != id)
                 throw runtime_error("Saved network path mismatch");
             active = saved.value("active", string("alice"));
-            nickname = saved.value("nickname", string("同学"));
+            nickname = saved.value("nickname", string("成员"));
             index.Open(NetworkDir() / "index.sqlite");
         }
     }
@@ -87,11 +88,17 @@ class ClassroomApp {
     Json NodeQuery(const Json &request) {
         return ClassroomRpc(Host(), Port(), request);
     }
-    string Method(const string &signature) {
-        return artifact.at("evm").at("methodIdentifiers").at(signature);
+    int ChatVersion() const { return profile.is_object() ? profile.value("chat_version", 1) : 2; }
+    const Json &ChatArtifact(int version) const {
+        if (version == 1) return legacyArtifact;
+        if (version == 2) return artifact;
+        throw invalid_argument("不支持的聊天室合约版本");
     }
-    string Runtime() {
-        return artifact.at("evm").at("deployedBytecode").at("object");
+    string Method(const string &signature) {
+        return ChatArtifact(ChatVersion()).at("evm").at("methodIdentifiers").at(signature);
+    }
+    string Runtime(int version = 0) const {
+        return ChatArtifact(version ? version : ChatVersion()).at("evm").at("deployedBytecode").at("object");
     }
     void Persist() {
         SaveJson(NetworkDir() / "profile.json", profile);
@@ -101,11 +108,11 @@ class ClassroomApp {
         Json wallets = Json::array();
         if (!vault.Unlocked())
             return wallets;
-        for (auto name : {"alice", "bob", "teacher"}) {
+        for (const auto &[name, secret] : vault.secrets.items()) {
             auto key = vault.Key(name);
             auto evm = GetEvmAddress(key.public_key);
             wallets.push_back(
-                {{"id", name}, {"public_key", U32ToHex(key.public_key)}, {"evm_address", EvmHex(evm.bytes)}});
+                {{"id", name}, {"name", "账户 " + to_string(wallets.size() + 1)}, {"public_key", U32ToHex(key.public_key)}, {"evm_address", EvmHex(evm.bytes)}});
             sodium_memzero(key.private_key.data(), key.private_key.size());
         }
         return wallets;
@@ -125,18 +132,20 @@ class ClassroomApp {
     }
     void Start() {
         if (!profile.is_object())
-            throw runtime_error("请先创建或加入课堂");
+            throw runtime_error("请先创建或加入链");
         Stop();
         SetGenesisUsers(profile.at("genesis"));
         auto directory = NetworkDir();
         SaveJson(directory / "genesis.json", profile["genesis"]);
-        auto demo = profile.value("mode", string{}) == "demo";
-        if (!demo && profile.at("ports").size() > 1) {
-            // Older teacher classrooms started three local nodes. Keep the
-            // primary node, its endpoint and ledger; leave the other DBs intact.
+        bool migrate = profile.value("mode", string{}) != "network" || profile.contains("teacher");
+        if (profile.at("ports").size() > 1) {
             profile["ports"] = Json::array({profile["ports"].at(0)});
-            Persist();
+            migrate = true;
         }
+        if (!profile.contains("chat_version")) { profile["chat_version"] = 1; migrate = true; }
+        profile["mode"] = "network";
+        profile.erase("teacher");
+        if (migrate) Persist();
         auto ports = profile.at("ports");
         try {
             for (size_t i = 0; i < ports.size(); i++) {
@@ -153,7 +162,7 @@ class ClassroomApp {
                                        "--port",
                                        to_string(ports[i].get<unsigned>()),
                                        "--bind",
-                                       demo ? "127.0.0.1" : "0.0.0.0",
+                                       "0.0.0.0",
                                        "--io-threads",
                                        "2",
                                        "--verify-threads",
@@ -176,7 +185,7 @@ class ClassroomApp {
                                        "12"};
                 if (ipv6) {
                     args.push_back("--bind-v6");
-                    args.push_back(demo ? "::1" : "::");
+                    args.push_back("::");
                 }
                 for (size_t j = 0; j < i; j++) {
                     args.push_back("--seed");
@@ -224,89 +233,82 @@ class ClassroomApp {
         return true;
     }
     void NewNetwork(const Json &request, bool joining) {
-        if (!vault.Unlocked())
-            throw runtime_error("请先创建或解锁钱包");
-        auto mode = joining ? string("student") : request.value("mode", string("demo"));
-        if (!joining && mode != "demo" && mode != "teacher")
-            throw invalid_argument("请选择单机实验或创建教学课堂");
+        if (!vault.Unlocked()) throw runtime_error("请先登录本机账户");
+        Json next = {{"id", RandomHex(12)}, {"mode", "network"}, {"chat_version", 2},
+                     {"title", request.value("title", string("学术交流"))}, {"contract", ""},
+                     {"seeds", Json::array()}};
+        auto identity = vault.secrets.contains("main") ? string("main") : active;
+        // Validate everything that can be checked locally before touching the
+        // running chain. Genesis parsing uses process-global account metadata.
+        auto previousGenesis = GetGenesisConfig();
+        try {
+            if (joining) {
+                auto invite = request.at("invite");
+                if (invite.is_string()) invite = Json::parse(invite.get<string>());
+                auto version = invite.at("version").get<int>();
+                if ((version != 1 && version != 2) || invite.at("contract_code_sha256") != Sha256(Runtime(version)))
+                    throw invalid_argument("链邀请与支持的聊天室合约版本不匹配");
+                next["chat_version"] = version;
+                next["title"] = invite.at("title");
+                next["genesis"] = invite.at("genesis");
+                SetGenesisUsers(next["genesis"]);
+                if (U32ToHex(genesisRoot) != invite.at("genesis_root").get<string>())
+                    throw invalid_argument("链的创世指纹不匹配");
+                auto address = EvmBytes(invite.at("contract"));
+                if (address.size() != 20) throw invalid_argument("聊天室合约地址无效");
+                next["contract"] = EvmHex(address);
+                next["genesis_root"] = invite["genesis_root"];
+                auto seeds = invite.at("seeds");
+                if (!seeds.is_array() || seeds.empty() || seeds.size() > 8)
+                    throw invalid_argument("链邀请需要 1 至 8 个节点入口");
+                for (const auto &seed : seeds) ParseEndpoint(seed.get<string>());
+                next["seeds"] = seeds;
+            } else {
+                auto key = vault.Key(identity), anchor = GenerateWallet();
+                next["genesis"] = {{"base_fee", 1}, {"accounts", Json::array({
+                    {{"public_key", U32ToHex(key.public_key)}, {"balance", 1000000000000ULL}},
+                    {{"public_key", U32ToHex(anchor.public_key)}, {"balance", 0}}})}};
+                sodium_memzero(key.private_key.data(), key.private_key.size());
+                sodium_memzero(anchor.private_key.data(), anchor.private_key.size());
+                SetGenesisUsers(next["genesis"]);
+                next["genesis_root"] = U32ToHex(genesisRoot);
+            }
+            auto title = next["title"].get<string>();
+            if (title.empty() || title.size() > 160) throw invalid_argument("链名称需要 1 至 160 个 UTF-8 字节");
+            io_context io;
+            tcp::acceptor probe(io, tcp::endpoint(ip::address_v4::loopback(), 0));
+            next["ports"] = Json::array({probe.local_endpoint().port()});
+        } catch (...) { SetGenesisUsers(previousGenesis); throw; }
+        if (joining && profile.is_object() && profile.value("genesis_root", string{}) == next.at("genesis_root").get<string>() &&
+            profile.value("contract", string{}) == next.at("contract").get<string>() && ChatVersion() == next.at("chat_version").get<int>()) {
+            if (children.empty()) Start();
+            Tick();
+            return;
+        }
         Stop();
-        active = "alice";
-        Json next = {{"id", RandomHex(12)},
-                     {"mode", mode},
-                     {"title", request.value("title", string("区块链课堂"))},
-                     {"teacher", !joining},
-                     {"contract", ""},
-                     {"seeds", Json::array()},
-                     {"grants", Json::object()}};
-        if (next["title"].get<string>().size() > 160)
-            throw invalid_argument("课堂名称过长");
-        if (joining) {
-            auto invite = request.at("invite");
-            if (invite.is_string())
-                invite = Json::parse(invite.get<string>());
-            if (invite.at("version") != 1 || invite.at("contract_code_sha256") != Sha256(Runtime()))
-                throw invalid_argument("课堂版本不兼容");
-            next["title"] = invite.at("title");
-            next["genesis"] = invite.at("genesis");
-            SetGenesisUsers(next["genesis"]);
-            if (U32ToHex(genesisRoot) != invite.at("genesis_root").get<string>())
-                throw invalid_argument("创世指纹不匹配");
-            auto address = EvmBytes(invite.at("contract"));
-            if (address.size() != 20)
-                throw invalid_argument("Invalid classroom contract");
-            next["contract"] = EvmHex(address);
-            next["genesis_root"] = invite["genesis_root"];
-            auto seeds = invite.at("seeds");
-            if (!seeds.is_array() || seeds.empty() || seeds.size() > 8)
-                throw invalid_argument("课堂需要 1 至 8 个入口");
-            for (const auto &seed : seeds)
-                ParseEndpoint(seed.get<string>());
-            next["seeds"] = seeds;
-        } else {
-            auto accounts = Json::array();
-            for (const auto &wallet : PublicWallets())
-                accounts.push_back({{"public_key", wallet["public_key"]}, {"balance", 1000000000000ULL}});
-            auto anchor = GenerateWallet();
-            accounts.push_back({{"public_key", U32ToHex(anchor.public_key)}, {"balance", 0}});
-            sodium_memzero(anchor.private_key.data(), 64);
-            next["genesis"] = {{"base_fee", 1}, {"accounts", accounts}};
-            SetGenesisUsers(next["genesis"]);
-            next["genesis_root"] = U32ToHex(genesisRoot);
-        }
-        io_context io;
-        vector<unique_ptr<tcp::acceptor>> probes;
-        next["ports"] = Json::array();
-        for (int i = 0; i < (mode == "demo" ? 3 : 1); i++) {
-            auto a = make_unique<tcp::acceptor>(io, tcp::endpoint(ip::address_v4::loopback(), 0));
-            next["ports"].push_back(a->local_endpoint().port());
-            probes.push_back(std::move(a));
-        }
-        probes.clear();
         profile = next;
+        active = identity;
         fs::create_directories(NetworkDir());
         index.Open(NetworkDir() / "index.sqlite");
         Persist();
         Start();
         if (!joining) {
-            auto code = EvmBytes(artifact.at("evm").at("bytecode").at("object"));
-            auto sent = Submit("teacher", "deploy", {}, code, 0, 2000000, Json::object());
-            auto hash = sent.at("hash").get<string>();
-            profile["deploy_tx"] = hash;
+            auto code = EvmBytes(ChatArtifact(ChatVersion()).at("evm").at("bytecode").at("object"));
+            auto sent = Submit(active, "deploy", {}, code, 0, 2000000, Json::object());
+            profile["deploy_tx"] = sent.at("hash");
             Persist();
             auto deadline = Clock::now() + std::chrono::seconds(20);
             Json receipt;
             do {
-                receipt = Query(Host(), Port(), 23, EvmBytes(hash));
-                if (!receipt.is_null())
-                    break;
+                receipt = Query(Host(), Port(), 23, EvmBytes(sent.at("hash")));
+                if (!receipt.is_null()) break;
                 this_thread::sleep_for(std::chrono::milliseconds(100));
             } while (Clock::now() < deadline);
             if (receipt.is_null() || receipt.at("status") != 0)
-                throw runtime_error("聊天室部署尚未成功，请保留诊断信息并重试启动");
+                throw runtime_error("聊天室部署尚未成功，请查看交易记录后恢复节点");
             profile["contract"] = receipt.at("contract");
             Persist();
-            if (!ContractPresent())
-                throw runtime_error("聊天室代码未同步");
+            if (!ContractPresent()) throw runtime_error("聊天室合约尚未同步");
         }
         Tick();
     }
@@ -326,7 +328,7 @@ class ClassroomApp {
         auto account = Account(Host(), Port(), publicKey);
         auto nonce = stoull(account["nonce"].get<string>()), balance = stoull(account["balance"].get<string>());
         if (nonce == UINT64_MAX || amount > balance || baseFee > balance - amount || gas > balance - amount - baseFee)
-            throw runtime_error("余额不足以支付金额和费用，请向教师领取测试币");
+            throw runtime_error("余额不足以支付本次交易费用，请通过普通转账接收链上余额");
         auto head = Rpc(Host(), Port(), 19);
         if (head.size() != 80 || memcmp(head.data(), genesisRoot.data(), 32))
             throw runtime_error("节点创世指纹发生变化");
@@ -480,8 +482,6 @@ class ClassroomApp {
         }
     }
     void RecoverDeployment() {
-        if (!profile.value("teacher", false))
-            return;
         auto deployments =
             index.Rows("SELECT data FROM outbox WHERE json_extract(data,'$.kind')='deploy' ORDER BY rowid LIMIT 1");
         if (deployments.empty())
@@ -550,6 +550,9 @@ class ClassroomApp {
             }
         } catch (const exception &e) {
             lastError = e.what();
+            cache["running"] = false;
+            cache["contract_ready"] = false;
+            if (cache.contains("nodes")) for (auto &node : cache["nodes"]) node["online"] = false;
         }
     }
     Json History(uint64_t offset = 0, uint64_t limit = 50) {
@@ -606,13 +609,13 @@ class ClassroomApp {
         if (action == "status")
             return Status();
         if (action == "network_status" || action == "network_configure" || action == "network_remove") {
-            if (action == "network_configure" && (!profile.is_object() || profile.value("mode", string{}) == "demo"))
-                throw runtime_error("单机演示无需放行入站连接，请先创建或加入联网课堂");
+            if (action == "network_configure" && !profile.is_object())
+                throw runtime_error("请先创建或加入链");
             networkSetup.Start(action == "network_status" ? "status" : action == "network_configure" ? "configure" : "remove", request, binary, root);
             return Status();
         }
         if (action == "network_probe") {
-            if (!profile.is_object()) throw runtime_error("请先创建或加入课堂");
+            if (!profile.is_object()) throw runtime_error("请先创建或加入链");
             networkSetup.Probe(request.at("endpoint").get<string>(), profile.value("id", string{}));
             return Status();
         }
@@ -623,6 +626,7 @@ class ClassroomApp {
         }
         if (action == "unlock") {
             vault.Unlock(request.at("password"));
+            if (!vault.secrets.contains(active)) active = vault.secrets.begin().key();
             cache.erase("wallets");
             return Status();
         }
@@ -642,6 +646,7 @@ class ClassroomApp {
             auto value = vault.Decrypt(request.at("password"), request.at("backup"));
             SaveJson(vault.path, request.at("backup"));
             vault.secrets = value;
+            if (!vault.secrets.contains(active)) active = vault.secrets.begin().key();
             return Status();
         }
         if (action == "create" || action == "join") {
@@ -691,14 +696,14 @@ class ClassroomApp {
             return NodeQuery(q);
         }
         if (action == "invite") {
-            if (!profile.value("teacher", false))
-                throw runtime_error("只有本机创建的课堂可以生成邀请");
+            if (!profile.is_object() || !ContractPresent())
+                throw runtime_error("请先等待链和聊天室同步完成");
             auto seeds = request.at("seeds");
             if (!seeds.is_array() || seeds.empty() || seeds.size() > 8)
-                throw invalid_argument("请填写学生可访问的课堂入口");
+                throw invalid_argument("请填写其他成员可访问的节点入口");
             for (const auto &seed : seeds)
                 ParseEndpoint(seed.get<string>());
-            return {{"version", 1},
+            return {{"version", ChatVersion()},
                     {"title", profile["title"]},
                     {"genesis", profile["genesis"]},
                     {"genesis_root", profile["genesis_root"]},
@@ -706,19 +711,13 @@ class ClassroomApp {
                     {"contract_code_sha256", Sha256(Runtime())},
                     {"seeds", seeds}};
         }
-        if (action == "transfer" || action == "fund") {
-            auto wallet = action == "fund" ? string("teacher") : active;
-            if (action == "fund" && !profile.value("teacher", false))
-                throw runtime_error("当前设备不是课堂教师");
+        if (action == "transfer") {
             auto receiver = EvmBytes(request.at("receiver"));
             auto text = request.at("amount").get<string>();
             if (text.empty() || text.size() > 20 || text.find_first_not_of("0123456789") != string::npos)
                 throw invalid_argument("金额必须是正整数");
-            auto amount = stoull(text);
-            if (action == "fund" && amount > 100000000)
-                throw invalid_argument("每次最多发放一亿测试币");
-            return Submit(wallet, "transfer", receiver, {}, amount, 0,
-                          {{"receiver", request["receiver"]}, {"amount", to_string(amount)}});
+            return Submit(active, "transfer", receiver, {}, stoull(text), 0,
+                          {{"receiver", request["receiver"]}, {"amount", text}});
         }
         if (action == "retry") {
             auto hash = request.at("hash").get<string>();
@@ -726,66 +725,45 @@ class ClassroomApp {
             auto rows = index.Rows("SELECT data FROM outbox WHERE hash='" + hash + "'");
             if (rows.empty())
                 throw runtime_error("找不到原交易");
+            if (rows[0].value("state", string{}) == "included")
+                throw runtime_error("交易已入块；执行失败时请重新发送一笔消息");
             auto bytes = EvmBytes(rows[0].at("raw"));
             Rpc(Host(), Port(), rows[0].at("type").get<uint8_t>(), bytes, false);
             return {{"hash", hash}};
         }
-        if (action == "message" || action == "room" || action == "room_open" || action == "member" ||
-            action == "members_only") {
-            if (!ContractPresent())
-                throw runtime_error("聊天室合约尚未同步，请等待或检查课堂入口");
+        if (action == "message" || action == "room") {
+            if (!ContractPresent()) throw runtime_error("聊天室合约尚未同步，请等待或检查链入口");
             string input;
             Json extra = Json::object();
-            auto wallet = active;
             if (action == "message") {
                 auto body = request.at("body").get<string>();
-                if (body.empty() || body.size() > 512)
-                    throw invalid_argument("消息需要 1 至 512 个 UTF-8 字节");
+                if (body.empty() || body.size() > 512) throw invalid_argument("消息需要 1 至 512 个 UTF-8 字节");
                 auto room = request.value("room", uint64_t(1));
-                auto id = request.value("client_id", RandomHex(32));
-                HexToU32(id);
+                auto id = request.value("client_id", RandomHex(32)); HexToU32(id);
                 auto first = EncodeString(body), second = EncodeString(nickname);
                 input = Method("SendMessage(uint256,bytes32,string,string)") + Word(room) + id + Word(128) +
                         Word(128 + first.size() / 2) + first + second;
                 extra = {{"body", body}, {"nickname", nickname}, {"room", room}, {"client_id", id}};
             } else {
-                if (!profile.value("teacher", false))
-                    throw runtime_error("当前设备不是课堂教师");
-                wallet = "teacher";
-                if (action == "room") {
-                    auto name = request.at("name").get<string>();
-                    if (name.empty() || name.size() > 96)
-                        throw invalid_argument("房间名称需要 1 至 96 个 UTF-8 字节");
-                    input = Method("CreateRoom(string)") + Word(32) + EncodeString(name);
-                }
-                if (action == "room_open")
-                    input = Method("SetRoomOpen(uint256,bool)") + Word(request.at("room")) +
-                            Word(request.at("open").get<bool>());
-                if (action == "members_only")
-                    input = Method("SetMembersOnly(bool)") + Word(request.at("enabled").get<bool>());
-                if (action == "member") {
-                    auto member = EvmBytes(request.at("member"));
-                    if (member.size() != 20)
-                        throw invalid_argument("成员需要 20 字节 EVM 地址");
-                    input = Method("SetMember(address,bool)") + string(24, '0') + EvmHex(member) +
-                            Word(request.at("allowed").get<bool>());
-                }
+                auto name = request.at("name").get<string>();
+                if (name.empty() || name.size() > 96) throw invalid_argument("讨论分组名称需要 1 至 96 个 UTF-8 字节");
+                input = Method("CreateRoom(string)") + Word(32) + EncodeString(name);
             }
-            return Submit(wallet, "call", EvmBytes(profile.at("contract")), EvmBytes(input), 0, 500000, extra);
+            return Submit(active, "call", EvmBytes(profile.at("contract")), EvmBytes(input), 0, 500000, extra);
         }
         if (action == "rebuild_index") {
             if (!index.handle)
-                throw runtime_error("请先加入课堂");
+                throw runtime_error("请先加入链");
             index.Exec("BEGIN IMMEDIATE; DELETE FROM events;DELETE FROM transactions;DELETE FROM blocks;COMMIT;");
             Tick();
             return Status();
         }
         if (action == "diagnostics")
             return {{"schema", 1},
-                    {"application", "Chain Classroom 0.1.0"},
+                    {"application", "NornV2 Peer Chat 0.2.0"},
                     {"ipv6_available", ipv6},
                     {"status", Status()},
                     {"note", "No wallet seeds, signed outbox bytes or node log bodies included"}};
-        throw invalid_argument("Unknown classroom action");
+        throw invalid_argument("Unknown chat action");
     }
 };

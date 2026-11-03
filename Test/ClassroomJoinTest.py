@@ -5,14 +5,14 @@ import psutil
 from NetworkTest import FLAGS,ExeName
 
 class App:
-    def __init__(self,binary,source,root):
+    def __init__(self,binary,source,root,artifact=None):
         self.root=root;root.mkdir(parents=True);self.log=(root/'stderr.txt').open('w')
-        self.binary=binary;self.source=source
+        self.binary=binary;self.source=source;self.artifact=artifact or source/'Contracts/ClassroomChat.compiled.json'
         self.Launch()
         self.Api('wallet_create',password='isolated-classroom-test')
     def Launch(self):
         binary,source,root=self.binary,self.source,self.root
-        self.process=subprocess.Popen([str(binary/ExeName('chain_classroom')),'--data',str(root/'data'),'--node',str(binary/ExeName('boost')),'--web',str(source/'Classroom/dist'),'--contract',str(source/'Contracts/ClassroomChat.compiled.json'),'--stop-file',str(root/'stop.request')],stdout=subprocess.PIPE,stderr=self.log,text=True,encoding='utf-8',creationflags=FLAGS)
+        self.process=subprocess.Popen([str(binary/ExeName('chain_classroom')),'--data',str(root/'data'),'--node',str(binary/ExeName('boost')),'--web',str(source/'Classroom/dist'),'--contract',str(self.artifact),'--stop-file',str(root/'stop.request')],stdout=subprocess.PIPE,stderr=self.log,text=True,encoding='utf-8',creationflags=FLAGS)
         ready=json.loads(self.process.stdout.readline());self.origin,self.token=ready['url'].split('/#')
     def NodeProcesses(self):
         return [child for child in psutil.Process(self.process.pid).children(recursive=True)
@@ -55,92 +55,76 @@ class App:
 
 def Main(args):
     source=Path(__file__).resolve().parents[1];root=args.work.resolve();root.mkdir(exist_ok=False,parents=True);apps=[];checks=[]
+    def Included(app,tx):
+        return app.Wait(lambda s:any(t['hash']==tx['hash'] and t['state']=='included' for t in s.get('outbox',[])))
     try:
-        teacher=App(args.bin.resolve(),source,root/'teacher');apps.append(teacher)
-        status=teacher.Api('create',mode='teacher',title='IPv6 同班教学测试');port=status['network']['ports'][0]
-        status=teacher.Wait(lambda s:s.get('contract_ready') and len(s.get('nodes',[]))==1 and s['nodes'][0].get('online'))
-        assert len(status['network']['ports'])==1 and len(teacher.NodeProcesses())==1
-        contract=status['network']['contract']
-        teacherWallets={w['id']:w['public_key'] for w in status['wallets']}
-        checks.append('teacher alone starts exactly one real node and deploys the chat contract before students join')
-        original=status['network']['genesis_root'];invite=teacher.Api('invite',seeds=[f'[::1]:{port}'])
-        student=App(args.bin.resolve(),source,root/'student');apps.append(student);student.Api('join',invite=invite)
-        studentStatus=student.Wait(lambda s:s.get('contract_ready') and s.get('messages') is not None)
-        assert len(studentStatus['network']['ports'])==len(studentStatus['nodes'])==len(student.NodeProcesses())==1
-        own=next(w for w in studentStatus['wallets'] if w['id']=='alice');assert own['balance']=='0'
-        teacher.Api('fund',receiver=own['public_key'],amount='10000000')
-        student.Wait(lambda s:any(w['id']=='alice' and int(w.get('balance','0'))>=10000000 for w in s['wallets']))
-        student.Api('nickname',nickname='加入课堂的学生');student.Api('message',room=1,body='来自独立学生钱包的 IPv6 消息')
-        teacher.Wait(lambda s:any(m['body']=='来自独立学生钱包的 IPv6 消息' and m['sender']==own['evm_address'] for m in s.get('messages',[])))
-        checks.append('two independently encrypted app vaults join through IPv6; normal teacher transfer funds student chat')
-        try:student.Api('members_only',enabled=True);raise AssertionError('Student became teacher')
-        except urllib.error.HTTPError as e:assert e.code==400
-        checks.append('student app cannot invoke teacher administration')
-        teacher.Api('room',name='实验分组')
-        teacher.Wait(lambda s:len(s.get('rooms',[]))==2)
-        teacher.Api('room_open',room=2,open=False)
-        student.Wait(lambda s:any(r['id']==2 and not r['open'] for r in s.get('rooms',[])))
-        closed=student.Api('message',room=2,body='关闭房间的拒绝测试')
-        student.Wait(lambda s:any(t['hash']==closed['hash'] and t.get('execution_status',0)!=0 for t in s.get('outbox',[])))
-        teacher.Api('members_only',enabled=True)
-        teacher.Wait(lambda s:all(t['state']=='included' for t in s.get('outbox',[])))
-        denied=student.Api('message',room=1,body='尚未授权的成员')
-        student.Wait(lambda s:any(t['hash']==denied['hash'] and t.get('execution_status',0)!=0 for t in s.get('outbox',[])))
-        teacher.Api('member',member=own['evm_address'],allowed=True)
-        teacher.Wait(lambda s:all(t['state']=='included' for t in s.get('outbox',[])))
-        student.Api('message',room=1,body='授权成员恢复正常发言')
-        teacher.Wait(lambda s:any(m['body']=='授权成员恢复正常发言' for m in s.get('messages',[])))
-        checks.append('on-chain room closure and membership restrictions reject calls; explicit authorization restores chat')
-        try:teacher.Api('create',mode='invalid');raise AssertionError('Invalid classroom mode accepted')
-        except urllib.error.HTTPError as e:assert e.code==400
-        assert teacher.Api('status')['running'] and teacher.Api('status')['network']['genesis_root']==original
-        checks.append('unknown creation mode is rejected without stopping the current classroom')
-
-        # Model a saved pre-upgrade teacher profile, keeping a real primary ledger
-        # and sentinel records for the other two retired node directories.
-        student.Api('stop')
-        before=teacher.Api('status');teacher.Api('stop')
-        assert not teacher.NodeProcesses()
-        profilePath=teacher.root/'data/networks'/before['network']['id']/'profile.json'
-        legacy=json.loads(profilePath.read_text(encoding='utf-8'))
-        legacy['ports']=[port]+[value for value in range(40000,40003) if value!=port][:2]
-        profilePath.write_text(json.dumps(legacy),encoding='utf-8')
-        sentinels=[]
-        for number in [2,3]:
-            folder=profilePath.parent/f'node{number}'/'db';folder.mkdir(parents=True,exist_ok=True)
-            marker=folder/'legacy-data-kept.txt';marker.write_text('preserve');sentinels.append(marker)
-        stop=teacher.root/'stop.request';stop.write_text('stop');teacher.process.wait(timeout=45)
-        teacher.process.stdout.close();stop.unlink();teacher.Launch()
-        teacher.Api('unlock',password='isolated-classroom-test')
-        status=teacher.Wait(lambda s:s.get('contract_ready') and len(s.get('nodes',[]))==1 and s['nodes'][0].get('online'))
-        assert status['network']['ports']==[port] and status['network']['id']==before['network']['id']
-        assert status['network']['genesis_root']==original and status['network']['contract']==contract
-        assert status['stats']['head']==before['stats']['head'] and len(teacher.NodeProcesses())==1
-        assert {w['id']:w['public_key'] for w in status['wallets']}==teacherWallets
-        assert any(m['body']=='授权成员恢复正常发言' for m in status['messages'])
-        assert all(marker.read_text()=='preserve' for marker in sentinels)
-        assert json.loads(profilePath.read_text(encoding='utf-8'))['ports']==[port]
-        teacher.Api('start')
-        assert len(teacher.Api('status')['network']['ports'])==len(teacher.NodeProcesses())==1
-        student.Api('start')
-        student.Wait(lambda s:s.get('contract_ready') and len(s.get('nodes',[]))==1)
-        student.Api('message',room=1,body='教师升级后继续使用原课堂聊天')
-        teacher.Wait(lambda s:any(m['body']=='教师升级后继续使用原课堂聊天' for m in s.get('messages',[])))
-        student.Api('stop')
-        checks.append('legacy three-node teacher profile resumes with one process and keeps endpoint, genesis, wallet, contract, head, messages and retired node data; repeated start is idempotent and the existing student reconnects and chats')
-
-        teacher.Api('create',mode='demo',title='另一个独立实验')
-        status=teacher.Wait(lambda s:len(s.get('nodes',[]))==3 and all(n.get('online') for n in s['nodes']))
-        assert len(status['network']['ports'])==len(teacher.NodeProcesses())==3
-        assert teacher.Api('status')['network']['genesis_root']!=original
-        checks.append('switching back to a demo starts exactly three real nodes with a distinct genesis')
-        (root/'result.json').write_text(json.dumps(dict(checks=checks),ensure_ascii=False,indent=2),encoding='utf-8');print(json.dumps(dict(checks=checks),ensure_ascii=False))
+        creator=App(args.bin.resolve(),source,root/'creator');apps.append(creator)
+        first=creator.Api('create',title='研究交流链')
+        assert first['network']['chat_version']==2 and 'teacher' not in first['network']
+        assert len(first['wallets'])==len(first['nodes'])==len(creator.NodeProcesses())==1
+        assert first['wallets'][0]['id']=='main' and first['contract_ready']
+        invite=creator.Api('invite',seeds=[f"[::1]:{first['network']['ports'][0]}"])
+        member=App(args.bin.resolve(),source,root/'member');apps.append(member);member.Api('join',invite=invite)
+        status=member.Wait(lambda s:s.get('contract_ready') and bool(s.get('rooms')))
+        identity=status['wallets'][0];assert identity['balance']=='0' and len(member.NodeProcesses())==1
+        Included(creator,creator.Api('transfer',receiver=identity['public_key'],amount='10000000'))
+        member.Wait(lambda s:int(s['wallets'][0].get('balance','0'))>=10000000)
+        member.Api('nickname',nickname='研究者乙');Included(member,member.Api('room',name='论文讨论'))
+        creator.Wait(lambda s:any(r['name']=='论文讨论' for r in s['rooms']))
+        member.Api('message',room=1,body='任何成员都可以聊天和创建分组')
+        creator.Wait(lambda s:any(m['body']=='任何成员都可以聊天和创建分组' for m in s['messages']))
+        checks.append('one identity and one node per app; ordinary transfer funds joining member; noncreator creates a group and chats without approval')
+        for action,values in [('fund',{}),('members_only',{'enabled':True}),('member',{}),('room_open',{})]:
+            try:creator.Api(action,**values);raise AssertionError('Privileged action still available: '+action)
+            except urllib.error.HTTPError as error:assert error.code==400
+        checks.append('creator has no funding, membership approval or room shutdown API')
+        memberInvite=member.Api('invite',seeds=[f"[::1]:{member.Api('status')['network']['ports'][0]}"])
+        same=member.Api('status');pid=member.NodeProcesses()[0].pid
+        member.Api('join',invite=memberInvite)
+        assert member.Api('status')['network']['id']==same['network']['id'] and member.NodeProcesses()[0].pid==pid
+        checks.append('importing an invitation for the connected chain reuses the current identity, node and ledger')
+        creator.Api('stop')
+        peer=App(args.bin.resolve(),source,root/'peer');apps.append(peer);peer.Api('join',invite=memberInvite)
+        peer.Wait(lambda s:s.get('contract_ready'))
+        peerKey=peer.Api('status')['wallets'][0]['public_key']
+        Included(member,member.Api('transfer',receiver=peerKey,amount='2000000'))
+        peer.Wait(lambda s:int(s['wallets'][0].get('balance','0'))>=2000000)
+        peer.Api('message',room=1,body='创建者离线后，其他成员仍然可以交流')
+        member.Wait(lambda s:any(m['body']=='创建者离线后，其他成员仍然可以交流' for m in s['messages']))
+        checks.append('joined member exports a valid invite, transfers funds and receives peer chat while creator is offline')
+        before=member.Api('status')
+        for bad in [{'version':99},dict(memberInvite,genesis_root='00'*32)]:
+            try:member.Api('join',invite=bad);raise AssertionError('Invalid invite accepted')
+            except urllib.error.HTTPError as error:assert error.code==400
+            after=member.Api('status');assert after['running'] and after['network']['id']==before['network']['id']
+        checks.append('invalid invitations are rejected without stopping or replacing the active chain')
+        peer.Api('stop');member.Api('stop')
+        # A real pre-change gateway creates the compatibility fixture when supplied.
+        legacyBin=Path(os.environ.get('CHAIN_LEGACY_CHAT_BIN',''))
+        if os.environ.get('CHAIN_LEGACY_CHAT_BIN'):
+            legacy=App(legacyBin.resolve(),source,root/'legacy',artifact=source/'Contracts/ClassroomChat.legacy-v1.compiled.json');apps.append(legacy)
+            old=legacy.Api('create',mode='demo',title='保留的既有链')
+            legacy.Api('message',room=1,body='保留原有链上记录')
+            old=legacy.Wait(lambda s:any(m['body']=='保留原有链上记录' for m in s['messages']))
+            head=old['stats']['head'];publicKeys={w['id']:w['public_key'] for w in old['wallets']}
+            legacy.Api('stop');stop=legacy.root/'stop.request';stop.write_text('stop');legacy.process.wait(timeout=45);legacy.process.stdout.close();stop.unlink()
+            legacy.binary=args.bin.resolve();legacy.artifact=source/'Contracts/ClassroomChat.compiled.json';legacy.Launch();legacy.Api('unlock',password='isolated-classroom-test')
+            upgraded=legacy.Wait(lambda s:s.get('contract_ready') and len(s.get('nodes',[]))==1)
+            assert upgraded['network']['id']==old['network']['id'] and upgraded['network']['contract']==old['network']['contract']
+            assert upgraded['network']['ports']==old['network']['ports'][:1] and upgraded['stats']['head']==head
+            assert upgraded['network']['chat_version']==1 and 'teacher' not in upgraded['network']
+            assert {w['id']:w['public_key'] for w in upgraded['wallets']}==publicKeys
+            assert any(m['body']=='保留原有链上记录' for m in upgraded['messages'])
+            assert len(legacy.NodeProcesses())==1
+            checks.append('real 0.1.5 three-node chain resumes as one peer node with all original keys, endpoint, ledger, contract and messages intact')
+        (root/'result.json').write_text(json.dumps({'checks':checks,'passed':len(checks)},ensure_ascii=False,indent=2),encoding='utf-8')
+        print(json.dumps({'checks':checks,'passed':len(checks)},ensure_ascii=False))
     finally:
         errors=[]
         for app in reversed(apps):
             try:app.Stop()
             except Exception as error:errors.append(repr(error))
-        (root/'database-cleanup.json').write_text(json.dumps(dict(processes_stopped=True,remaining_databases=[str(p) for p in root.glob('*/data/networks/*/node*/db')]),indent=2))
+        (root/'database-cleanup.json').write_text(json.dumps({'processes_stopped':not errors,'remaining_databases':[str(p) for p in root.glob('*/data/networks/*/node*/db')]},indent=2))
         if errors:raise RuntimeError('; '.join(errors))
 
 if __name__=='__main__':

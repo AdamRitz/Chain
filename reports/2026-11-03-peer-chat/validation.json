@@ -1,0 +1,105 @@
+{
+  "date": "2026-11-03",
+  "version": "0.2.0",
+  "product": "NornV2 学术聊天室",
+  "scope": [
+    "one identity and one node for new installations",
+    "create and join chain/chat; no teacher or student roles",
+    "no funding approval, membership management, owner or shutdown functions in v2 chat",
+    "every member can create discussion groups, share invitations and transfer fee balance"
+  ],
+  "contract_v2_methods": [
+    "CreateRoom(string)",
+    "SendMessage(uint256,bytes32,string,string)",
+    "messageCount()",
+    "roomCount()",
+    "rooms(uint256)",
+    "usedIds(address,bytes32)"
+  ],
+  "validation": {
+    "frontend": {
+      "passed": 8,
+      "production_build": true
+    },
+    "full_ctest": {
+      "passed": 15,
+      "failed": 0,
+      "elapsed_seconds": 97.09,
+      "note": "followed by targeted ClassroomJoin rerun after current-chain invitation reuse was added"
+    },
+    "peer_integration": {
+      "checks": [
+        "one identity and one node per app; ordinary transfer funds joining member; noncreator creates a group and chats without approval",
+        "creator has no funding, membership approval or room shutdown API",
+        "importing an invitation for the connected chain reuses the current identity, node and ledger",
+        "joined member exports a valid invite, transfers funds and receives peer chat while creator is offline",
+        "invalid invitations are rejected without stopping or replacing the active chain",
+        "real 0.1.5 three-node chain resumes as one peer node with all original keys, endpoint, ledger, contract and messages intact"
+      ],
+      "passed": 6
+    },
+    "network_tools": {
+      "checks": [
+        "unconnected app cannot request a node firewall rule",
+        "real Windows policy/profile/address inspection finishes asynchronously",
+        "nodes keep progressing while diagnostic helper is running",
+        "removing an absent rule does not ask for elevation",
+        "real node queries work over IPv4 and IPv6",
+        "unreachable node gives bounded failure instead of success",
+        "malformed endpoint and unauthorized management requests rejected"
+      ],
+      "passed": 7,
+      "firewall_changed": false,
+      "uac_interaction_tested": false
+    },
+    "ui": {
+      "surface": "browser using production frontend, real C++ gateways and two nodes",
+      "checks": [
+        "zero balance shows ordinary-transfer fee funding notice",
+        "one generic account without demo identity selector",
+        "normal transfer enables member chat",
+        "member message mined and observed by another member",
+        "noncreator creates discussion group",
+        "noncreator generates invite",
+        "no teacher/classroom/lab navigation"
+      ],
+      "result": {
+        "messages": [
+          "论文讨论可以在这里进行，每位成员都可以参与。"
+        ],
+        "rooms": [
+          "公共讨论",
+          "论文讨论"
+        ],
+        "member_balance": "9847275",
+        "identity_count": 1,
+        "local_nodes": 1
+      }
+    }
+  },
+  "package": {
+    "file": "NornV2-0.2.0-windows-x64-setup.exe",
+    "size": 229574403,
+    "sha256": "11d3ed5d64d15b4170a23a60cb4819f1ef719747196420c0874efa001bf74aca",
+    "runtime_files_verified": 20,
+    "contains_legacy_v1_artifact": true
+  },
+  "cleanup": {
+    "peer_integration": {
+      "processes_stopped": true,
+      "remaining_databases": []
+    },
+    "ui_processes_stopped": true,
+    "ui_remaining_databases": [],
+    "network_tools": {
+      "processes_stopped": true,
+      "remaining_databases": []
+    }
+  },
+  "limits": [
+    "Existing v1 contract bytecode and its on-chain restrictions are preserved, not rewritten.",
+    "Native transfer signatures still do not bind the genesis; the previously reproduced cross-chain replay issue remains outside this product/contract update.",
+    "Real UAC/firewall mutation, cross-computer inbound access and installer upgrade/uninstall were not repeated in this task.",
+    "This does not introduce irreversible consensus finality or private encrypted chat."
+  ]
+}

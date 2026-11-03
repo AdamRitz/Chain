@@ -15,7 +15,6 @@ export function NetworkPanel({
   const firewall = tools.firewall;
   const [endpoint, setEndpoint] = useState(network?.seeds?.[0] || "");
   const [requesting, setRequesting] = useState(false);
-  const demo = network?.mode === "demo";
   const pending = requesting || tools.busy;
   const invoke = async (name: string, values: Row = {}) => {
     setRequesting(true);
@@ -36,25 +35,21 @@ export function NetworkPanel({
       <div className="panel-title">
         <h3>
           <ShieldCheck size={18} />
-          联网课堂配置
+          连接设置
         </h3>
         <span className="pill">Windows · IPv4 / IPv6</span>
       </div>
       <div className="diagnostic">
         <span>本机节点</span>
-        <b>
-          {status.running
-            ? demo
-              ? "单机演示 · 本机 3 个节点"
-              : `${network?.mode === "student" ? "学生" : "教师"}课堂 · 本机 ${network?.ports?.length || 0} 个节点`
-            : "未启动"}
-        </b>
+        <b>{status.running ? "本机 1 个节点运行中" : "未启动"}</b>
       </div>
       <div className="diagnostic">
         <span>防火墙</span>
         <b>
           {pending
-            ? "处理中，请留意 Windows 权限提示…"
+            ? tools.action === "status"
+              ? "正在检查…"
+              : "处理中，请留意 Windows 权限提示…"
             : FirewallSummary(firewall)}
         </b>
       </div>
@@ -64,7 +59,7 @@ export function NetworkPanel({
       </div>
       {firewall?.operation === "cancelled" && (
         <p className="network-warning" role="status">
-          已取消管理员授权。本地实验仍可使用；可以稍后再配置。
+          已取消管理员授权。节点仍可使用，可以稍后再配置。
         </p>
       )}
       {firewall?.operation === "unchanged" && (
@@ -77,7 +72,7 @@ export function NetworkPanel({
       )}
       {firewall?.error && (
         <p className="network-warning" role="alert">
-          {firewall.error}。受学校管理的电脑请联系管理员。
+          {firewall.error}。受组织管理的电脑请联系管理员。
         </p>
       )}
       {NetworkWarnings(firewall).map((w) => (
@@ -90,51 +85,25 @@ export function NetworkPanel({
           当前连接：{p.interface} · {p.category} · IPv4 {p.ipv4} / IPv6 {p.ipv6}
         </p>
       ))}
-      {demo ? (
-        <p>单机演示无需放行入站连接。创建或加入联网课堂后，可以在这里配置。</p>
-      ) : (
-        <>
-          <p className="small muted">
-            点击下方按钮并确认 Windows 授权，即可允许所有地址连接本机的 NornV2
-            节点。适用于专用、公用和域网络，支持 IPv4 / IPv6，无需逐个添加同学。
-          </p>
-          <div className="network-actions">
-            <button
-              className="button primary"
-              disabled={pending}
-              onClick={() =>
-                void invoke("network_configure", {
-                  profile: "Any",
-                  remote: "Any",
-                })
-              }
-            >
-              <ShieldCheck size={16} />
-              允许所有人连接
-            </button>
-            <button
-              className="button secondary"
-              disabled={pending}
-              onClick={() => void invoke("network_status")}
-            >
-              重新检查
-            </button>
-            <button
-              className="button secondary"
-              disabled={pending || !firewall?.rules?.length}
-              onClick={() => void invoke("network_remove")}
-            >
-              撤销本应用规则
-            </button>
-          </div>
-          <p className="small muted">
-            放行仅针对本应用节点的 TCP
-            入站连接。校园网或路由器是否允许外部连接，可用下方检测工具核实。
-          </p>
-        </>
-      )}
-      {demo && (
+      <>
+        <p className="small muted">
+          点击下方按钮并确认 Windows 授权，即可允许所有地址连接本机的 NornV2
+          节点。适用于专用、公用和域网络，支持 IPv4 / IPv6，无需逐个添加成员。
+        </p>
         <div className="network-actions">
+          <button
+            className="button primary"
+            disabled={pending}
+            onClick={() =>
+              void invoke("network_configure", {
+                profile: "Any",
+                remote: "Any",
+              })
+            }
+          >
+            <ShieldCheck size={16} />
+            允许所有人连接
+          </button>
           <button
             className="button secondary"
             disabled={pending}
@@ -150,14 +119,18 @@ export function NetworkPanel({
             撤销本应用规则
           </button>
         </div>
-      )}
+        <p className="small muted">
+          放行仅针对本应用节点的 TCP
+          入站连接。校园网或路由器是否允许外部连接，可用下方检测工具核实。
+        </p>
+      </>
       <details>
         <summary>查看规则范围和本机地址</summary>
         <p className="small mono">节点程序：{firewall?.node || "尚未读取"}</p>
         {(firewall?.rules || []).map((r: Row) => (
           <p className="small" key={r.name}>
             {r.profile} · {r.direction} · {r.protocol} ·{" "}
-            {r.enabled === "True" ? "启用" : "禁用"} · 同学地址：
+            {r.enabled === "True" ? "启用" : "禁用"} · 成员地址：
             {r.remote.join(", ")}
           </p>
         ))}
@@ -167,7 +140,7 @@ export function NetworkPanel({
           </p>
         ))}
         <p className="small muted">
-          请选用同学可达的网卡地址。链路本地 IPv6 地址（fe80
+          请选用成员可达的网卡地址。链路本地 IPv6 地址（fe80
           开头）需要接口标识，不能直接作为跨网段入口。
         </p>
       </details>
@@ -177,7 +150,7 @@ export function NetworkPanel({
           检测另一台电脑的节点
         </h4>
         <label className="field">
-          对方课堂入口
+          对方链入口
           <input
             value={endpoint}
             maxLength={300}
@@ -212,13 +185,13 @@ export function NetworkPanel({
         )}
         <p className="small muted">
           此检测方向是“本机 →
-          填写的节点”，成功不代表属于同一个课堂。请让同学在他们的电脑上填写你的入口，验证能否连入你。使用本机地址测试不能证明外部可达。
+          填写的节点”，成功不代表属于同一个链。请让成员在他们的电脑上填写你的入口，验证能否连入你。使用本机地址测试不能证明外部可达。
         </p>
       </div>
       <details>
-        <summary>学校管理员与故障排查</summary>
+        <summary>系统管理员与故障排查</summary>
         <p className="small muted">
-          校园网、路由器或学校策略仍可能阻止入站。可把安装目录 runtime 中的
+          校园网、路由器或网络策略仍可能阻止入站。可把安装目录 runtime 中的
           Configure-Network.ps1 交给管理员，使用 status 检查、configure
           配置、remove
           撤销；脚本与界面使用同一套规则。无需为本机管理网页开放端口。

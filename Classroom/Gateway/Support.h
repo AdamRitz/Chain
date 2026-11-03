@@ -256,16 +256,17 @@ struct Vault {
         }
         auto result = Json::parse(plain.begin(), plain.end());
         sodium_memzero(plain.data(), plain.size());
-        for (auto name : {"alice", "bob", "teacher"})
-            HexToU32(result.at(name));
+        if (!result.is_object() || (result.contains("main") ? result.size() != 1 : result.size() != 3))
+            throw invalid_argument("Invalid account keys");
+        if (result.contains("main")) HexToU32(result.at("main"));
+        else for (auto name : {"alice", "bob", "teacher"}) HexToU32(result.at(name));
         return result;
     }
     void Create(const string &password) {
         if (fs::exists(path))
             throw runtime_error("Wallet already exists");
         Json value;
-        for (auto name : {"alice", "bob", "teacher"})
-            value[name] = RandomHex(32);
+        value["main"] = RandomHex(32);
         SaveJson(path, Encrypt(password, value));
         secrets = value;
     }
@@ -274,7 +275,7 @@ struct Vault {
         secrets = Decrypt(password, ReadJson(path));
     }
     Wallet Key(const string &name) {
-        if (!Unlocked() || (name != "alice" && name != "bob" && name != "teacher"))
+        if (!Unlocked() || (name != "main" && name != "alice" && name != "bob" && name != "teacher") || !secrets.contains(name))
             throw runtime_error("请先解锁钱包");
         auto seed = HexToU32(secrets.at(name));
         Wallet wallet;
