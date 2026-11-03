@@ -130,8 +130,14 @@ class ClassroomApp {
         SetGenesisUsers(profile.at("genesis"));
         auto directory = NetworkDir();
         SaveJson(directory / "genesis.json", profile["genesis"]);
-        auto ports = profile.at("ports");
         auto demo = profile.value("mode", string{}) == "demo";
+        if (!demo && profile.at("ports").size() > 1) {
+            // Older teacher classrooms started three local nodes. Keep the
+            // primary node, its endpoint and ledger; leave the other DBs intact.
+            profile["ports"] = Json::array({profile["ports"].at(0)});
+            Persist();
+        }
+        auto ports = profile.at("ports");
         try {
             for (size_t i = 0; i < ports.size(); i++) {
                 auto node = directory / ("node" + to_string(i + 1));
@@ -220,10 +226,13 @@ class ClassroomApp {
     void NewNetwork(const Json &request, bool joining) {
         if (!vault.Unlocked())
             throw runtime_error("请先创建或解锁钱包");
+        auto mode = joining ? string("student") : request.value("mode", string("demo"));
+        if (!joining && mode != "demo" && mode != "teacher")
+            throw invalid_argument("请选择单机实验或创建教学课堂");
         Stop();
         active = "alice";
         Json next = {{"id", RandomHex(12)},
-                     {"mode", joining ? "student" : request.value("mode", string("demo"))},
+                     {"mode", mode},
                      {"title", request.value("title", string("区块链课堂"))},
                      {"teacher", !joining},
                      {"contract", ""},
@@ -267,7 +276,7 @@ class ClassroomApp {
         io_context io;
         vector<unique_ptr<tcp::acceptor>> probes;
         next["ports"] = Json::array();
-        for (int i = 0; i < (joining ? 1 : 3); i++) {
+        for (int i = 0; i < (mode == "demo" ? 3 : 1); i++) {
             auto a = make_unique<tcp::acceptor>(io, tcp::endpoint(ip::address_v4::loopback(), 0));
             next["ports"].push_back(a->local_endpoint().port());
             probes.push_back(std::move(a));

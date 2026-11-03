@@ -1,4 +1,20 @@
 import type { Row } from "./api";
+export function NodeLesson(state: Row) {
+  const demo = !state.network || state.network.mode === "demo";
+  const count = demo ? 3 : 1;
+  const nodes: Row[] = state.nodes || [];
+  return {
+    title: demo ? "启动三个演示节点" : "启动本机课堂节点",
+    text: demo
+      ? "一键创建三个本地节点，观察它们怎样保存相同账本。"
+      : "本机运行一个节点，与老师和同学的电脑共同组网。",
+    done:
+      !!state.running &&
+      state.network?.ports?.length === count &&
+      nodes.length === count &&
+      nodes.every((node) => node.online),
+  };
+}
 export function MergeMessages(history: Row[], canonical: Row[]): Row[] {
   const records = new Map<string, Row>();
   for (const row of [...history, ...canonical]) records.set(row.id, row);

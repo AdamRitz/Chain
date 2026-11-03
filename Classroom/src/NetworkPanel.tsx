@@ -45,8 +45,8 @@ export function NetworkPanel({
         <b>
           {status.running
             ? demo
-              ? "单机回环演示"
-              : "已启动联网课堂"
+              ? "单机演示 · 本机 3 个节点"
+              : `${network?.mode === "student" ? "学生" : "教师"}课堂 · 本机 ${network?.ports?.length || 0} 个节点`
             : "未启动"}
         </b>
       </div>

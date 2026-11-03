@@ -46,6 +46,7 @@ import {
   CanSend,
   SelectedMessage,
   RestartMatches,
+  NodeLesson,
 } from "./model";
 
 type View =
@@ -220,6 +221,11 @@ function App() {
   const nodes: Row[] = s.nodes || [];
   const online = nodes.filter((n) => n.online);
   const same = online.filter((n) => n.head === s.stats?.head).length;
+  const peerCount = nodes.reduce(
+    (total, n) => total + (n.connections || []).length,
+    0,
+  );
+  const nodeLesson = NodeLesson(s);
   const selectedView = views.find((v) => v.id === view)!;
   const openBlock = async (h: number, offset = 0) => {
     try {
@@ -450,7 +456,7 @@ function App() {
                     <Users />
                   </span>
                   <b>加入课堂</b>
-                  <p>导入教师发来的课堂配置，和同学一起聊天。</p>
+                  <p>导入课堂配置，在本机启动 1 个节点，与同学一起聊天。</p>
                   <span>
                     连接真实的课堂网络 <ArrowRight size={17} />
                   </span>
@@ -460,7 +466,7 @@ function App() {
                     <GraduationCap />
                   </span>
                   <b>创建教学课堂</b>
-                  <p>启动可供其他电脑连接的网络，分享课堂入口。</p>
+                  <p>本机启动 1 个教师节点，分享入口供同学加入。</p>
                   <span>
                     教师与小组组织者 <ArrowRight size={17} />
                   </span>
@@ -487,10 +493,11 @@ function App() {
                 </div>
                 <span className="pill">
                   {network.mode === "demo"
-                    ? "单机 · 三节点"
+                    ? "单机演示"
                     : network.mode === "student"
-                      ? "课堂 · 学生节点"
-                      : "课堂 · 教师节点"}
+                      ? "课堂 · 学生"
+                      : "课堂 · 教师"}
+                  {` · 本机 ${network.ports.length} 个节点`}
                 </span>
                 <div className="banner-tip">
                   <ShieldCheck size={18} />
@@ -526,9 +533,11 @@ function App() {
                   title="本机在线节点"
                   value={`${online.length} / ${network.ports.length}`}
                   foot={
-                    same > 1
-                      ? `${same} 个节点最近观测链头相同`
-                      : "可前往网络页查看连接"
+                    network.mode !== "demo"
+                      ? `${peerCount} 条对等连接，详情见网络页`
+                      : same > 1
+                        ? `${same} 个节点最近观测链头相同`
+                        : "可前往网络页查看连接"
                   }
                 />
               </div>
@@ -549,7 +558,9 @@ function App() {
                   <Topology nodes={nodes} />
                   <div className="panel-caption">
                     <span className="tiny-dot" />{" "}
-                    显示真实本地进程与连接，链头相同表示最近观测账本一致。
+                    {network.mode === "demo"
+                      ? "显示本机三个演示节点，比较它们最近观测的链头。"
+                      : "本机运行一个课堂节点；其他电脑的连接可在网络页查看。"}
                   </div>
                 </section>
                 <section className="panel">
@@ -866,9 +877,15 @@ function App() {
                     <code>{network.ports.join(" / ")}</code>
                   </div>
                   <div className="diagnostic">
-                    <span>本机观测链头一致</span>
+                    <span>
+                      {network.mode === "demo"
+                        ? "本机观测链头一致"
+                        : "当前对等连接"}
+                    </span>
                     <b>
-                      {same} / {nodes.length}
+                      {network.mode === "demo"
+                        ? `${same} / ${nodes.length}`
+                        : `${peerCount} 条`}
                     </b>
                   </div>
                   <p className="small muted">
@@ -1231,9 +1248,7 @@ function App() {
                     icon: KeyRound,
                   },
                   {
-                    title: "启动三个节点",
-                    text: "一键创建本地网络，观察它们怎样保存相同账本。",
-                    done: s.running && nodes.length === 3,
+                    ...nodeLesson,
                     go: () =>
                       network ? setView("network") : needWallet("demo"),
                     icon: Network,
@@ -1700,7 +1715,7 @@ function App() {
                   <>
                     <p>
                       {modal === "teacher"
-                        ? "启动三个教学节点，随后在课堂管理中填写可达地址并分享给同学。"
+                        ? "本机启动一个教师节点并部署聊天室，随后在课堂管理中分享入口。同学每台电脑运行一个节点。"
                         : "自动创建独立数据库、三个节点和聊天室。已有实验数据会保留。"}
                     </p>
                     <label className="field">

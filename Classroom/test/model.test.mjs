@@ -5,7 +5,27 @@ import {
   CanSend,
   SelectedMessage,
   RestartMatches,
+  NodeLesson,
 } from "../src/model.ts";
+
+test("classroom lesson accepts one live node and keeps the demo at three", () => {
+  for (const mode of ["teacher", "student", "demo"]) {
+    const count = mode === "demo" ? 3 : 1;
+    const state = {
+      running: true,
+      network: { mode, ports: Array(count).fill(10000) },
+      nodes: Array.from({ length: count }, () => ({ online: true })),
+    };
+    assert(NodeLesson(state).done);
+    assert(!NodeLesson({ ...state, running: false }).done);
+    assert(!NodeLesson({ ...state, nodes: [{ online: false }] }).done);
+    assert(
+      !NodeLesson({ ...state, nodes: [...state.nodes, { online: true }] }).done,
+    );
+  }
+  assert(!NodeLesson({}).done);
+  assert.match(NodeLesson({ network: { mode: "teacher" } }).title, /本机课堂/);
+});
 test("fresh canonical metadata replaces an older cached location of a replayed transaction", () => {
   const old = {
     id: "same-tx-0",

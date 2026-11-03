@@ -1,0 +1,58 @@
+{
+  "date": "2026-11-03",
+  "version": "0.1.5",
+  "behavior": {
+    "demo_nodes": 3,
+    "teacher_nodes": 1,
+    "student_nodes": 1,
+    "legacy_teacher": "reuse primary endpoint and node1 ledger; persist one port; retain retired node directories"
+  },
+  "tests": {
+    "frontend_passed": 9,
+    "classroom_ctest_passed": [
+      "ClassroomIndex",
+      "ClassroomNetwork",
+      "ClassroomJoin"
+    ],
+    "classroom_join_checks": [
+      "teacher alone starts exactly one real node and deploys the chat contract before students join",
+      "two independently encrypted app vaults join through IPv6; normal teacher transfer funds student chat",
+      "student app cannot invoke teacher administration",
+      "on-chain room closure and membership restrictions reject calls; explicit authorization restores chat",
+      "unknown creation mode is rejected without stopping the current classroom",
+      "legacy three-node teacher profile resumes with one process and keeps endpoint, genesis, wallet, contract, head, messages and retired node data; repeated start is idempotent and the existing student reconnects and chats",
+      "switching back to a demo starts exactly three real nodes with a distinct genesis"
+    ],
+    "legacy_fixture": "saved teacher profile expanded to three ports with preserved markers in retired node DB directories; primary ledger and existing student are real",
+    "windows_test_encoding": "initial test run used the system GBK default to read a UTF-8 profile; fixed the test to explicitly read UTF-8 and reran with fresh test directories"
+  },
+  "ui": {
+    "surface": "production frontend in browser with real C++ gateway and teacher node",
+    "checks": [
+      "overview displays teacher and one local node",
+      "one online local node and zero peer connections shown separately",
+      "network page lists only local node 1",
+      "classroom lesson marks one live node as completed"
+    ]
+  },
+  "package": {
+    "name": "NornV2-0.1.5-windows-x64-setup.exe",
+    "size": 229587292,
+    "sha256": "9efe96afbd903dfe91d267d0335d5948cd84ff8675e3ac059974586a7e986226",
+    "runtime_files_verified": 19
+  },
+  "cleanup": {
+    "join_test": {
+      "processes_stopped": true,
+      "remaining_databases": []
+    },
+    "ui_test_processes_stopped": true,
+    "ui_test_databases_remaining": 0
+  },
+  "limits": [
+    "Teacher and student integration uses separate local app instances over IPv6 loopback, not two physical computers.",
+    "Legacy migration uses a saved-profile fixture; an old installer was not run during this task.",
+    "Installer was built and manifest verified; install/upgrade/uninstall were not repeated.",
+    "No real UAC/firewall mutations or external server deployments in this task."
+  ]
+}
