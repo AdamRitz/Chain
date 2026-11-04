@@ -72,9 +72,11 @@ vector<uint8_t> Rpc(const string &host, uint16_t port, uint8_t kind, const vecto
     tcp::socket socket(io);
     tcp::resolver resolver(io);
     steady_timer timer(io);
+    bool timedOut = false;
     timer.expires_after(std::chrono::seconds(seconds));
     timer.async_wait([&](boost::system::error_code ec) {
         if (!ec) {
+            timedOut = true;
             resolver.cancel();
             boost::system::error_code ignored;
             socket.close(ignored);
@@ -105,7 +107,11 @@ vector<uint8_t> Rpc(const string &host, uint16_t port, uint8_t kind, const vecto
     while (future.wait_for(std::chrono::seconds(0)) != future_status::ready)
         io.run_one();
     timer.cancel();
-    return future.get();
+    try { return future.get(); }
+    catch (...) {
+        if (timedOut) throw boost::system::system_error(boost::asio::error::timed_out);
+        throw;
+    }
 }
 Json Query(const string &host, uint16_t port, uint8_t kind, const vector<uint8_t> &data = {}) {
     auto bytes = Rpc(host, port, kind, data);

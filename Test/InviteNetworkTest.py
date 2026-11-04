@@ -19,7 +19,8 @@ def Main(args):
         with socket.socket(socket.AF_INET6) as free:free.bind(('::1',0));closed=free.getsockname()[1]
         good=f"[::1]:{first['network']['ports'][0]}"
         prepared=a.Api('invite_prepare',seeds=[f'[::1]:{closed}',good])
-        assert '点击“加入聊天室”' in prepared['share_text'] and 'NORN1:' in prepared['share_text']
+        assert prepared['share_text']==prepared['token'] and prepared['token'].startswith('NORN1:')
+        assert prepared['token'].isascii() and not any(c.isspace() for c in prepared['token'])
         addresses=a.Api('network_addresses');assert addresses['external_verified'] is False
         b=New('member');preview=Preview(b,prepared['share_text'])
         assert preview['seeds']==[good] and len(preview['endpoints'])==2
@@ -27,9 +28,21 @@ def Main(args):
         member=b.Wait(lambda s:s.get('connection_state',{}).get('phase')=='ready')
         Included(a,a.Api('transfer',receiver=member['wallets'][0]['public_key'],amount='5000000'))
         b.Wait(lambda s:int(s['wallets'][0].get('balance','0'))>=5000000)
-        checks.append('whole human invitation; unreachable IPv6 fallback; asynchronous preflight; real ready state')
+        # Windows may exhaust our bounded deadline before reporting a refused
+        # localhost connect; both accurately identify the failed first entry.
+        assert preview['endpoints'][0]['code'] in ('refused','timeout'),preview['endpoints']
+        checks.append('pure ASCII invitation; closed-port timeout/refusal diagnostics; IPv6 fallback; asynchronous preflight; real ready state')
 
-        peer=New('peer');peer.Api('join',invite=prepared['invite']);peer.Wait(lambda s:s.get('contract_ready'))
+        peer=New('peer');ipv4=f"127.0.0.1:{first['network']['ports'][0]}"
+        peer.Api('join',invite=a.Api('invite',seeds=[ipv4]));peer.Wait(lambda s:s.get('contract_ready'))
+        for app,family in [(b,True),(peer,False)]:
+            app.Wait(lambda s:any(p['port']==first['network']['ports'][0] and p['ipv6']==family for n in s.get('nodes',[]) for p in n.get('connections',[])))
+        peer_state=peer.Api('status')
+        Included(a,a.Api('transfer',receiver=peer_state['wallets'][0]['public_key'],amount='3000000'))
+        peer.Wait(lambda s:int(s['wallets'][0].get('balance','0'))>=3000000)
+        Included(peer,peer.Api('message',room=1,body='IPv4 节点与 IPv6 节点互通'))
+        b.Wait(lambda s:any(m['body']=='IPv4 节点与 IPv6 节点互通' for m in s['messages']))
+        checks.append('IPv4 and IPv6 invitations establish matching peer families and exchange funded contract messages')
         newseed=f"[::1]:{peer.Api('status')['network']['ports'][0]}"
         newinvite=peer.Api('invite',seeds=[newseed]);before=b.Api('status');pid=b.NodeProcesses()[0].pid
         updated=Preview(b,json.dumps(newinvite));assert updated['same_chain']

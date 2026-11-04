@@ -39,6 +39,7 @@ bool HostOnlyAdapter(string name) {
 }
 Json SelectInviteAddresses(Json addresses, uint16_t port) {
     vector<Json> selected; set<string> seen;
+    unsigned global6 = 0, link6 = 0; bool default6 = false;
     for (auto &a : addresses) {
         boost::system::error_code ec;
         auto address = ip::make_address(a.at("address").get<string>(), ec);
@@ -47,6 +48,12 @@ Json SelectInviteAddresses(Json addresses, uint16_t port) {
         a["family"] = !ec && address.is_v6() ? "IPv6" : "IPv4";
         a["endpoint"] = ec ? string{} : FormatEndpoint(CanonicalAddress(address).to_string(), port);
         a["selected"] = false;
+        if (!ec && address.is_v6() && a.value("preferred", false) && a.value("up", false) &&
+            !a.value("skip_as_source", false) && !HostOnlyAdapter(a.value("interface", string{}))) {
+            global6 += scope == "internet_candidate";
+            link6 += address.to_v6().is_link_local();
+            default6 |= a.value("default_route", false);
+        }
         if (scope == "excluded" || !a.value("preferred", false) || !a.value("up", false) ||
             a.value("skip_as_source", false) || HostOnlyAdapter(a.value("interface", string{}))) continue;
         // Default-route preference does not discard usable same-site addresses.
@@ -78,12 +85,26 @@ Json SelectInviteAddresses(Json addresses, uint16_t port) {
     }
     for (auto &a : addresses) a["selected"] = seen.count(a["endpoint"].get<string>()) != 0;
     return {{"addresses", addresses}, {"seeds", endpoints}, {"checked_ms", NowMs()},
+            {"ipv6", {{"global_addresses", global6}, {"link_local_addresses", link6}, {"default_route", default6}}},
             {"scope", internet ? "internet_candidate" : endpoints.empty() ? "none" : "local"},
             {"external_verified", false}};
 }
 Json CollectInviteAddresses(uint16_t port) {
     Json addresses = Json::array();
+    bool routeChecked = false;
 #ifdef _WIN32
+    // Gateways reported by adapters are a fallback; inspect the actual route
+    // table when available, without requiring administrator privileges.
+    set<pair<ULONG64, int>> defaultRoutes; MIB_IPFORWARD_TABLE2 *routes = nullptr;
+    if (GetIpForwardTable2(AF_UNSPEC, &routes) == NO_ERROR) {
+        routeChecked = true;
+        for (ULONG i = 0; i < routes->NumEntries; ++i) {
+            const auto &row = routes->Table[i];
+            if (!row.DestinationPrefix.PrefixLength && row.ValidLifetime)
+                defaultRoutes.emplace(row.InterfaceLuid.Value, row.DestinationPrefix.Prefix.si_family);
+        }
+        FreeMibTable(routes);
+    }
     ULONG size = 16384; vector<unsigned char> buffer(size);
     ULONG result = ERROR_BUFFER_OVERFLOW;
     for (unsigned attempt = 0; attempt < 3 && result == ERROR_BUFFER_OVERFLOW; attempt++) {
@@ -97,6 +118,10 @@ Json CollectInviteAddresses(uint16_t port) {
         for (auto *g = a->FirstGatewayAddress; g; g = g->Next) {
             if (g->Address.lpSockaddr->sa_family == AF_INET) route4 = true;
             if (g->Address.lpSockaddr->sa_family == AF_INET6) route6 = true;
+        }
+        if (routeChecked) {
+            route4 = defaultRoutes.count({a->Luid.Value, AF_INET}) != 0;
+            route6 = defaultRoutes.count({a->Luid.Value, AF_INET6}) != 0;
         }
         auto name = a->FriendlyName ? PathUtf8(fs::path(a->FriendlyName)) : string{};
         for (auto *u = a->FirstUnicastAddress; u; u = u->Next) {
@@ -132,5 +157,7 @@ Json CollectInviteAddresses(uint16_t port) {
     }
     freeifaddrs(list);
 #endif
-    return SelectInviteAddresses(addresses, port);
+    auto selected = SelectInviteAddresses(addresses, port);
+    selected["ipv6"]["route_checked"] = routeChecked;
+    return selected;
 }

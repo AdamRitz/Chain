@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Globe2, LoaderCircle, ShieldCheck } from "lucide-react";
 import type { Row } from "./api";
-import { FirewallSummary, NetworkWarnings } from "./network";
+import { FirewallSummary, NetworkWarnings, IPv6Summary } from "./network";
 
 export function NetworkPanel({
   status,
@@ -58,6 +58,7 @@ export function NetworkPanel({
         <span>外部电脑能否连入本机</span>
         <b>需要从另一台电脑检测</b>
       </div>
+      <div className="diagnostic"><span>本机 IPv6</span><b>{IPv6Summary(status.network_addresses)}</b></div>
       {firewall?.operation === "cancelled" && (
         <p className="network-warning" role="status">
           已取消管理员授权。节点仍可使用，可以稍后再配置。

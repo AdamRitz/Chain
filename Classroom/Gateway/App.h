@@ -148,12 +148,10 @@ class ClassroomApp {
         invitePreview["phase"] = result["ok"] == true ? "ready" : "error";
         invitePreview["checked_ms"] = NowMs();
         if (result["ok"] != true) {
-            string reason = "暂时联系不上这个聊天室，请让朋友保持软件运行，或发送最新邀请。局域网邀请需要处于可互通的网络。";
-            for (const auto &entry : result["endpoints"]) {
-                if (entry.value("code", string{}) == "wrong_chain" || entry.value("code", string{}) == "wrong_contract")
-                    reason = "入口对应的聊天室与邀请不一致，请重新获取邀请。";
-            }
-            invitePreview["error"] = reason;
+            Json local = Json::object();
+            try { addressState = CollectInviteAddresses(profile.is_object() ? Port() : 0); local = addressState.at("ipv6"); } catch (...) {}
+            invitePreview["local_ipv6"] = local;
+            invitePreview["error"] = InviteFailureMessage(result, local);
         }
     }
     void Persist() {
@@ -855,9 +853,11 @@ class ClassroomApp {
                         catch (...) {}
                     }
                     if (!listening) {
+                        auto diagnostic = addressState.at("ipv6");
                         auto addresses = addressState["addresses"];
                         for (auto &entry : addresses) if (entry["family"] == "IPv6") entry["preferred"] = false;
                         addressState = SelectInviteAddresses(addresses, Port());
+                        addressState["ipv6"] = diagnostic;
                     }
                     addressState["ipv6_listening"] = listening;
                 } catch (const exception &e) {
@@ -881,9 +881,7 @@ class ClassroomApp {
             invite["created_ms"] = NowMs();
             invite["scope"] = request.contains("seeds") ? "custom" : addressState.at("scope");
             auto token = EncodeInvite(invite);
-            auto text = "邀请你加入 NornV2「" + profile.at("title").get<string>() + "」\n\n打开 NornV2，点击“加入聊天室”，将这整段内容粘贴进去即可。\n";
-            if (invite["scope"] == "local") text += "当前邀请适用于同一局域网或可互通的专用网络。\n";
-            return {{"invite", invite}, {"file", InviteEnvelope(invite)}, {"token", token}, {"share_text", text + "\n" + token}, {"connectivity", addressState}};
+            return {{"invite", invite}, {"file", InviteEnvelope(invite)}, {"token", token}, {"share_text", token}, {"connectivity", addressState}};
         }
         if (action == "transfer") {
             auto receiver = EvmBytes(request.at("receiver"));
@@ -934,7 +932,7 @@ class ClassroomApp {
         }
         if (action == "diagnostics")
             return {{"schema", 1},
-                    {"application", "NornV2 Peer Chat 0.3.0"},
+                    {"application", "NornV2 Peer Chat 0.3.1"},
                     {"ipv6_available", ipv6},
                     {"status", Status()},
                     {"note", "No wallet seeds, signed outbox bytes or node log bodies included"}};

@@ -1,5 +1,18 @@
 import type { Row } from "./api";
 
+export function IPv6Summary(addresses: Row | undefined): string {
+  const v6 = addresses?.ipv6;
+  if (!v6) return "尚未检查";
+  if (addresses?.ipv6_listening === false) return "节点尚未监听 IPv6，请恢复节点后重试";
+  if (!v6.global_addresses) return v6.link_local_addresses ? "仅链路本地 IPv6，不能用于跨网络连接" : "未检测到可用的全局 IPv6 地址";
+  if (!v6.route_checked) return "已获取 IPv6 地址，默认路由状态待核实";
+  return v6.default_route ? "已获取全局 IPv6 和默认路由，外部可达性待验证" : "已获取 IPv6 地址，但没有 IPv6 默认路由";
+}
+export function InviteEndpointText(entry: Row): string {
+  if (entry.ok) return "连接与聊天室检查通过";
+  return ({no_route:"无可用路由",refused:"端口拒绝连接",timeout:"连接超时",dns:"域名无法解析",wrong_chain:"不属于这条链",wrong_contract:"聊天室合约不匹配",unreachable:"入口不可达"} as Record<string,string>)[entry.code] || "连接失败";
+}
+
 export function FirewallSummary(firewall: Row | undefined) {
   if (!firewall) return "尚未检查";
   if (firewall.error) return "检查或配置失败";

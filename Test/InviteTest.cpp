@@ -22,11 +22,15 @@ int main() {
         Require(selected["external_verified"] == false, "local selection is not external proof");
         auto onlyLan = SelectInviteAddresses(Json::array({raw[1]}),8787);
         Require(onlyLan["scope"] == "local", "LAN must not claim Internet");
+        Require(onlyLan["ipv6"]["global_addresses"]==0 && onlyLan["ipv6"]["default_route"]==false,"IPv4 does not imply IPv6 Internet");
         for (unsigned i = 1; i <= 10; i++) add("Ethernet", "240e::" + to_string(i));
         auto many = SelectInviteAddresses(raw,8787);
         Require(many["seeds"].size() == 8 && find(many["seeds"].begin(), many["seeds"].end(), "192.168.1.2:8787") != many["seeds"].end(), "temporary IPv6 addresses cannot crowd out IPv4 fallback");
         Json invite = {{"title","论文讨论"},{"version",2},{"seeds",Json::array({"[240e::123]:8787"})}};
         auto encoded = EncodeInvite(invite);
+        string wrapped;
+        for (size_t i=0;i<encoded.size();++i) { wrapped+=encoded[i]; if (i>6 && i%80==0) wrapped+="\r\n"; }
+        Require(DecodeInvite(wrapped)==invite,"copy/paste line wrapping");
         Require(DecodeInvite("邀请你加入\n\n" + encoded + "\n") == invite, "whole message roundtrip");
         Require(DecodeInvite(invite.dump()) == invite && DecodeInvite(invite) == invite, "legacy JSON");
         auto file = InviteEnvelope(invite);
@@ -40,6 +44,10 @@ int main() {
         rejected=false;
         try { DecodeInvite(string(MaxInviteBytes*2+1,'x')); } catch (...) { rejected=true; }
         Require(rejected,"input size bound");
+        Json unreachable={{"endpoints",Json::array({{{"family","IPv6"},{"scope","internet_candidate"},{"code","no_route"}}})}};
+        auto reason=InviteFailureMessage(unreachable,{{"route_checked",true},{"default_route",false},{"global_addresses",0}});
+        Require(reason.find("默认路由")!=string::npos,"missing IPv6 route diagnosis");
+        Require(InviteFailureMessage({{"endpoints",Json::array({{{"code","refused"}}})}},Json::object()).find("拒绝")!=string::npos,"refused port diagnosis");
         auto real = CollectInviteAddresses(8787);
         Require(real["seeds"].size()<=8 && real["external_verified"]==false,"native adapter collector");
         std::cout << "Invite scope, native adapters, envelope, legacy and bounds passed\n";

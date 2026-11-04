@@ -1,6 +1,14 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { CanJoinPreview, ConnectionText, ReceiptText } from '../src/invite.ts';
+import { IPv6Summary, InviteEndpointText } from '../src/network.ts';
+test('link-local IPv6 and a missing default route are distinct from IPv6 Internet access',()=>{
+  assert.match(IPv6Summary({ipv6:{global_addresses:0,link_local_addresses:1,default_route:false,route_checked:true}}),/链路本地/);
+  assert.match(IPv6Summary({ipv6:{global_addresses:1,link_local_addresses:1,default_route:false,route_checked:true}}),/没有.*默认路由/);
+  assert.match(IPv6Summary({ipv6:{global_addresses:1,default_route:true,route_checked:true}}),/待验证/);
+  assert.equal(InviteEndpointText({code:'refused'}),'端口拒绝连接');
+  assert.equal(InviteEndpointText({code:'no_route'}),'无可用路由');
+});
 test('node startup is not reported as a connected and ready chat', () => {
   assert.equal(ConnectionText({running:true,connection_state:{phase:'connecting'}}),'正在连接聊天室');
   assert.equal(ConnectionText({running:true,connection_state:{phase:'syncing'}}),'正在同步聊天记录');

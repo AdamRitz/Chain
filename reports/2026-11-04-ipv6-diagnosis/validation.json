@@ -1,0 +1,165 @@
+{
+  "version": "0.3.1",
+  "host": {
+    "ipv6": {
+      "default_route": false,
+      "global_addresses": 0,
+      "link_local_addresses": 1,
+      "route_checked": true
+    },
+    "selected_families": [
+      "IPv4"
+    ],
+    "scope": "local",
+    "external_verified": false
+  },
+  "live_node_readonly": {
+    "families": [
+      "IPv4 loopback",
+      "IPv6 loopback",
+      "IPv6 link-local interface"
+    ],
+    "all_responded": true,
+    "identical_chain_and_head": true
+  },
+  "ctest_initial": {
+    "passed": 16,
+    "total": 17,
+    "cases": [
+      {
+        "name": "ChainCorrectness",
+        "passed": true
+      },
+      {
+        "name": "AccountCorrectness",
+        "passed": true
+      },
+      {
+        "name": "ForkStateCorrectness",
+        "passed": true
+      },
+      {
+        "name": "ThroughputCorrectness",
+        "passed": true
+      },
+      {
+        "name": "FlowCorrectness",
+        "passed": true
+      },
+      {
+        "name": "ChainNetwork",
+        "passed": true
+      },
+      {
+        "name": "AccountNetwork",
+        "passed": true
+      },
+      {
+        "name": "ForkNetwork",
+        "passed": true
+      },
+      {
+        "name": "EvmNetwork",
+        "passed": true
+      },
+      {
+        "name": "ExperimentNetwork",
+        "passed": true
+      },
+      {
+        "name": "AdmissionNetwork",
+        "passed": true
+      },
+      {
+        "name": "InviteCorrectness",
+        "passed": true
+      },
+      {
+        "name": "ClassroomIndex",
+        "passed": true
+      },
+      {
+        "name": "ClassroomNetwork",
+        "passed": true
+      },
+      {
+        "name": "ClassroomJoin",
+        "passed": true
+      },
+      {
+        "name": "InviteNetwork",
+        "passed": false
+      },
+      {
+        "name": "IPv6Network",
+        "passed": true
+      }
+    ],
+    "failure": "InviteNetwork required immediate refusal; Windows reaches configured 2s deadline first"
+  },
+  "invite_network_after_test_correction": {
+    "checks": [
+      "pure ASCII invitation; closed-port timeout/refusal diagnostics; IPv6 fallback; asynchronous preflight; real ready state",
+      "IPv4 and IPv6 invitations establish matching peer families and exchange funded contract messages",
+      "same-chain invitation merges entry without PID change; peer connection and chat survive original creator stopping",
+      "wrong-chain endpoint and invalid preview cannot replace the running chain",
+      "native-file inbox previews content once and never automatically switches chains"
+    ],
+    "cross_physical_network_tested": false
+  },
+  "frontend": {
+    "passed": 12,
+    "total": 12
+  },
+  "ui": {
+    "version_visible": "0.3.1",
+    "pure_token_ascii": true,
+    "pure_token_no_whitespace": true,
+    "pure_token_length": 970,
+    "paste_preflight_passed": true,
+    "join_ready": true,
+    "local_ipv6_diagnosis_visible": true,
+    "clipboard_copy_notice_visible": true,
+    "virtual_clipboard_reads_system_clipboard": false,
+    "cleanup": {
+      "stopped": true,
+      "remaining_databases": 0
+    }
+  },
+  "package": {
+    "manifest_files": 20,
+    "all_staged_hashes_verified": true,
+    "node_gateway_match_build": true,
+    "web_matches_dist": true,
+    "variants_share_app_build": true,
+    "installed_into_user_directory": false,
+    "assets": {
+      "NornV2-0.3.1-windows-x64-offline-setup.exe": {
+        "bytes": 227166369,
+        "sha256": "2ec7543e7f86733c359fad048685c564a930651cfb65708223525594489e3eb9"
+      },
+      "NornV2-0.3.1-windows-x64-setup.exe": {
+        "bytes": 13949649,
+        "sha256": "ff302b58d5d7ab706c3902380f53671227b83d3fcf43690fdbee0bd44956299d"
+      }
+    }
+  },
+  "remaining_test_database_directories": {
+    "ipv6-diagnosis-20261104-01": 15,
+    "ipv6-diagnosis-invite-20261104-02": 0,
+    "ipv6-diagnosis-invite-20261104-03": 0,
+    "ipv6-ui-20261104-01": 0
+  },
+  "cross_physical_computers_tested": false,
+  "public_ipv6_tested": false,
+  "user_firewall_modified": false,
+  "router_modified": false,
+  "user_running_app_preserved": true,
+  "database_cleanup": {
+    "status": "blocked_by_automatic_approval_review",
+    "reason": "Tool returned blocked by policy with no more specific reason; narrowed explicit-directory attempt also rejected",
+    "regression_database_directories_retained": 15,
+    "regression_processes_stopped": true,
+    "invite_and_ui_test_databases_removed": true
+  }
+}
