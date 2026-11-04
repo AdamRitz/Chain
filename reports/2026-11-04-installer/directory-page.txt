@@ -1,0 +1,25 @@
+Window: "NornV2 学术聊天室 安装", App: NornV2-0.2.1-windows-x64-setup.exe.
+	0 对话框 NornV2 学术聊天室 安装 Secondary Actions: Raise
+		1 按钮 < 上一步(P) ID: 3
+		2 按钮 下一步(N) > ID: 1
+		3 按钮 取消(C) ID: 2
+		4 图像 ID: 1035
+		5 图像 ID: 1036
+		6 文本 Nullsoft Install System v3.13 ID: 1256
+		7 文本 Nullsoft Install System v3.13 ID: 1028
+		8 文本 Nullsoft Install System v3.13 ID: 1034
+		9 文本 选择安装位置 ID: 1037
+		10 文本 选择 NornV2 学术聊天室 的安装文件夹。 ID: 1038
+		11 图像 选择 NornV2 学术聊天室 的安装文件夹。 ID: 1039
+		12 编辑 (settable, string) Value: D:\Project\Chain\build\installer-20261104-ui\NornV2 ID: 1019
+		13 按钮 浏览(B)... ID: 1001
+		14 文本 可用空间: 121.3 GB ID: 1024
+		15 文本 所需空间: 47.8 MB ID: 1023
+		16 文本 选择 NornV2 的程序安装目录，然后继续安装。账户和链数据仍保存在当前用户的独立数据目录，修改程序目录不会搬移或删除它们。 ID: 1006
+		17 组 安装目录 ID: 1020
+		18 标题栏 (settable, string) Value: NornV2 学术聊天室 安装
+			19 菜单栏 系统 ID: MenuBar
+				20 菜单项 系统
+			21 按钮 最小化
+			22 按钮 (disabled) 最大化
+			23 按钮 关闭

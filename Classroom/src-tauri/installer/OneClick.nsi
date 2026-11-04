@@ -11,8 +11,9 @@ ManifestDPIAwareness PerMonitorV2
 !if "{{compression}}" == "none"
   SetCompress off
 !else
-  ; Set the compression algorithm. We default to LZMA.
-  SetCompressor /SOLID "{{compression}}"
+  ; Chain: keep files independent so an already installed WebView2 runtime
+  ; can be skipped without decoding the large offline installer before it.
+  SetCompressor "{{compression}}"
 !endif
 
 ; Keep above !include to stay ahead of any plugin command
@@ -80,7 +81,7 @@ Var UpdateMode
 Var NoShortcutMode
 Var WixMode
 Var OldMainBinaryName
-; Chain: default double-click installation, with /WIZARD as an explicit opt-out.
+; Chain: default directory selection followed by automatic installation/launch.
 Var OneClickLaunch
 
 ; Chain: never force-terminate a node while it may be committing its database.
@@ -222,6 +223,13 @@ VIAddVersionKey "ProductVersion" "${VERSION}"
   !define MUI_PAGE_CUSTOMFUNCTION_PRE SkipIfPassive
   !insertmacro MULTIUSER_PAGE_INSTALLMODE
 !endif
+
+; Chain: choose the final target BEFORE uninstalling an older installation.
+; This also makes same-path firewall preservation safe when relocating an app.
+!define MUI_PAGE_CUSTOMFUNCTION_PRE ChainDirectoryPre
+!define MUI_PAGE_CUSTOMFUNCTION_LEAVE ChainDirectoryLeave
+!define MUI_DIRECTORYPAGE_TEXT_TOP "$(ChainDirectoryText)"
+!insertmacro MUI_PAGE_DIRECTORY
 
 ; 4. Custom page to ask user if he wants to reinstall/uninstall
 ;    only if a previous installation was detected
@@ -366,7 +374,12 @@ Function PageReinstallUpdateSelection
   ${EndIf}
 FunctionEnd
 Function PageLeaveReinstall
-  ${NSD_GetState} $R2 $R1
+  ; Chain: passive mode has no radio controls. Select reinstall explicitly.
+  ${If} $PassiveMode = 1
+    StrCpy $R1 1
+  ${Else}
+    ${NSD_GetState} $R2 $R1
+  ${EndIf}
 
   ; If migrating from Wix, always uninstall
   ${If} $WixMode = 1
@@ -376,6 +389,14 @@ Function PageLeaveReinstall
   ; In update mode, always proceeds without uninstalling
   ${If} $UpdateMode = 1
     Goto reinst_done
+  ${EndIf}
+
+  ; Chain: even a same-version reinstall must remove the old program when
+  ; changing directory, rather than leaving a second unregistered copy.
+  ReadRegStr $4 SHCTX "${MANUPRODUCTKEY}" ""
+  ${If} $4 != ""
+  ${AndIf} $4 != $INSTDIR
+    Goto reinst_uninstall
   ${EndIf}
 
   ; $R0 holds whether same(0)/upgrading(1)/downgrading(-1) version
@@ -412,9 +433,8 @@ Function PageLeaveReinstall
     ${Else}
       ReadRegStr $4 SHCTX "${MANUPRODUCTKEY}" ""
       ReadRegStr $R1 SHCTX "${UNINSTKEY}" "UninstallString"
-      ; Passive upgrades cannot subsequently change the directory. Keep their
-      ; rule only when the old and destination paths match; wizard uninstalls
-      ; still perform cleanup because the user may choose a different path.
+      ; Chain: directory selection is already final. Preserve the firewall
+      ; rule on same-path upgrades; relocation cleans up the old path's rule.
       ${If} $PassiveMode = 1
       ${AndIf} $INSTDIR == $4
       ${AndIf} $R0 != 0
@@ -459,10 +479,6 @@ Function PageLeaveReinstall
     ${EndIf}
   reinst_done:
 FunctionEnd
-
-; 5. Choose install directory page
-!define MUI_PAGE_CUSTOMFUNCTION_PRE SkipIfPassive
-!insertmacro MUI_PAGE_DIRECTORY
 
 ; 6. Start menu shortcut page
 Var AppStartMenuFolder
@@ -562,6 +578,8 @@ LangString ChainCloseFirst ${LANG_SIMPCHINESE} "NornV2 学术聊天室仍在运�
 LangString ChainCloseFirst ${LANG_ENGLISH} "NornV2 is still running. Close its window normally and wait for its nodes to stop, then run setup again. Accounts and chain data will be kept."
 LangString ChainCheckFailed ${LANG_SIMPCHINESE} "无法检查应用是否已退出。安装未继续，请稍后重试。"
 LangString ChainCheckFailed ${LANG_ENGLISH} "Could not check whether the application has stopped. Setup did not continue. Please retry later."
+LangString ChainDirectoryText ${LANG_SIMPCHINESE} "选择 NornV2 的程序安装目录，然后继续安装。账户和链数据仍保存在当前用户的独立数据目录，修改程序目录不会搬移或删除它们。"
+LangString ChainDirectoryText ${LANG_ENGLISH} "Choose where to install NornV2, then continue. Accounts and chain data remain in your separate user data directory; changing this program directory does not move or delete them."
 
 Function .onInit
   ${GetOptions} $CMDLINE "/P" $PassiveMode
@@ -579,7 +597,7 @@ Function .onInit
     StrCpy $UpdateMode 1
   ${EndIf}
 
-  ; Chain: no language/directory/finish clicks for an ordinary double click.
+  ; Chain: ordinary double click shows only directory choice and progress.
   ; Explicit /P, /S and /UPDATE retain their upstream non-launching behavior.
   StrCpy $OneClickLaunch 0
   ${If} $PassiveMode != 1
@@ -621,6 +639,13 @@ Function .onInit
 
   ; Chain: check before any old uninstaller or dependency installer can run.
   !insertmacro ChainRequireAllStopped
+  ; /D may target a different path: also check the registered old installation.
+  Push $INSTDIR
+  ReadRegStr $INSTDIR SHCTX "${MANUPRODUCTKEY}" ""
+  ${If} $INSTDIR != ""
+    !insertmacro ChainRequireAllStopped
+  ${EndIf}
+  Pop $INSTDIR
 
 
   !if "${INSTALLMODE}" == "both"
@@ -1048,6 +1073,18 @@ FunctionEnd
 
 Function SkipIfPassive
   ${IfThen} $PassiveMode = 1  ${|} Abort ${|}
+FunctionEnd
+
+Function ChainDirectoryPre
+  ${If} $PassiveMode = 1
+  ${AndIf} $OneClickLaunch != 1
+    Abort
+  ${EndIf}
+FunctionEnd
+
+Function ChainDirectoryLeave
+  ; The user may have selected a target different from the .onInit default.
+  !insertmacro ChainRequireAllStopped
 FunctionEnd
 Function un.SkipIfPassive
   ${IfThen} $PassiveMode = 1  ${|} Abort ${|}

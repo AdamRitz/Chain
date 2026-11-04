@@ -1,0 +1,83 @@
+{
+  "webview2_preinstalled": true,
+  "runs": [
+    {
+      "exe": "NornV2-0.2.0-windows-x64-setup.exe",
+      "arguments": "/P /NS /D=D:\\Project\\Chain\\build\\installer-20261104-qa\\old-and-upgrade",
+      "exit_code": 0,
+      "seconds": 17.527
+    },
+    {
+      "exe": "NornV2-0.2.1-windows-x64-setup.exe",
+      "arguments": "/P /NS /D=D:\\Project\\Chain\\build\\installer-20261104-qa\\old-and-upgrade",
+      "exit_code": 0,
+      "seconds": 1.754
+    },
+    {
+      "exe": "NornV2-0.2.1-windows-x64-setup.exe",
+      "arguments": "/S /NS /D=D:\\Project\\Chain\\build\\installer-20261104-qa\\中文 自选目录",
+      "exit_code": 2,
+      "seconds": 0.259
+    },
+    {
+      "exe": "NornV2-0.2.1-windows-x64-setup.exe",
+      "arguments": "/P /NS /D=D:\\Project\\Chain\\build\\installer-20261104-qa\\中文 自选目录",
+      "exit_code": 0,
+      "seconds": 5.136
+    },
+    {
+      "exe": "uninstall.exe",
+      "arguments": "/P _?=D:\\Project\\Chain\\build\\installer-20261104-qa\\中文 自选目录",
+      "exit_code": 0,
+      "seconds": 3.784
+    },
+    {
+      "exe": "NornV2-0.2.1-windows-x64-setup.exe",
+      "arguments": "/P /NS /D=D:\\Project\\Chain\\build\\installer-20261104-qa\\standard",
+      "exit_code": 0,
+      "seconds": 1.21
+    },
+    {
+      "exe": "uninstall.exe",
+      "arguments": "/P _?=D:\\Project\\Chain\\build\\installer-20261104-qa\\standard",
+      "exit_code": 0,
+      "seconds": 3.739
+    },
+    {
+      "exe": "NornV2-0.2.1-windows-x64-offline-setup.exe",
+      "arguments": "/P /NS /D=D:\\Project\\Chain\\build\\installer-20261104-qa\\offline",
+      "exit_code": 0,
+      "seconds": 2.814
+    },
+    {
+      "exe": "uninstall.exe",
+      "arguments": "/P _?=D:\\Project\\Chain\\build\\installer-20261104-qa\\offline",
+      "exit_code": 0,
+      "seconds": 3.638
+    }
+  ],
+  "passed": true,
+  "manifest_files": 20,
+  "variants_identical": true,
+  "old_process_blocked": true,
+  "relocation_passed": true,
+  "remembered_installation_restored": true,
+  "user_data_unchanged": true,
+  "packages": [
+    {
+      "name": "NornV2-0.2.0-windows-x64-setup.exe",
+      "bytes": 229574403,
+      "sha256": "11d3ed5d64d15b4170a23a60cb4819f1ef719747196420c0874efa001bf74aca"
+    },
+    {
+      "name": "NornV2-0.2.1-windows-x64-setup.exe",
+      "bytes": 13879808,
+      "sha256": "ab37f48860878668d82f3bcf6205ce1838d749ba27ef745f006d17acb23ceae6"
+    },
+    {
+      "name": "NornV2-0.2.1-windows-x64-offline-setup.exe",
+      "bytes": 227095734,
+      "sha256": "6c2b02ef6c43670d2f7fe9948c93e98e1f15aeb8e53093a20fe42ab84eb99813"
+    }
+  ]
+}

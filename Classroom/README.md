@@ -4,11 +4,13 @@
 
 ## 安装
 
-下载 [NornV2 0.2.0 Windows x64 安装包](https://github.com/AdamRitz/Chain/releases/tag/v0.2.0)，选择 `.exe` 附件并双击。关闭正在运行的应用后再安装更新。支持 Windows 10 1903 及以上和 Windows 11 x64，包含 WebView2 离线安装程序及 C++ 运行依赖，不需要额外安装编译器、Node.js 或 Python。
+下载 [NornV2 0.2.1 Windows x64 安装包](https://github.com/AdamRitz/Chain/releases/tag/v0.2.1)。通常选择 `NornV2-0.2.1-windows-x64-setup.exe`，双击后选择程序目录并继续安装。关闭正在运行的应用后再安装更新。支持 Windows 10 1903 及以上和 Windows 11 x64，包含 C++ 运行依赖，不需要额外安装编译器、Node.js 或 Python。
+
+标准包复用电脑上已有的 WebView2；缺少时通过内置的微软引导程序联网下载安装。无网环境选择带 `-offline-setup.exe` 的完整离线包，它包含同一应用和完整 WebView2 安装程序，体积较大。两种包检测到已有 WebView2 时均跳过运行库安装。
 
 安装保留应用标识 `edu.chain.classroom`、既有程序目录 `%LOCALAPPDATA%/Chain Classroom` 和数据目录 `%LOCALAPPDATA%/edu.chain.classroom`，避免重建账户或丢失链数据。显示名称改为“NornV2 学术聊天室”。安装包未做发布者代码签名。
 
-默认双击安装后自动打开，并创建快捷方式。高级参数 `/WIZARD` 打开完整向导，`/NOLAUNCH` 安装后不启动，`/P` 显示进度而不启动，`/S` 静默安装，附加 `/R` 才自动启动。普通卸载默认保留账户和链数据。
+默认双击先显示安装目录，可浏览或输入 D 盘等有写入权限的目录，之后显示进度，成功后自动打开并创建快捷方式。更换程序目录时清理旧程序，账户和链数据仍保留在原来的独立数据目录，不会自动迁移至新盘。高级参数 `/WIZARD` 打开完整向导，`/NOLAUNCH` 安装后不启动，`/P` 显示进度而不启动，`/S` 静默安装，附加 `/R` 才自动启动。无人值守可用最后一个参数 `/D=D:\Apps\NornV2` 指定目录（NSIS 要求不加引号）。普通卸载默认保留账户和链数据。
 
 ## 创建链并邀请成员
 
@@ -80,6 +82,6 @@ powershell -NoProfile -File scripts/Package-Windows.ps1 `
   -BuildDirectory ../../build/classroom -CompilerBin <MinGW运行库目录> -Installer
 ```
 
-安装包和校验文件输出至 `Classroom/release/`。包内包含节点、网关、网络工具、前端以及 v1/v2 两份合约编译结果，并生成运行文件 SHA256 清单。
+安装包和校验文件输出至 `Classroom/release/`。`-Installer` 构建标准包；增加 `-OfflineInstaller` 同时构建完整离线包，也可单独指定它。包内包含节点、网关、网络工具、前端以及 v1/v2 两份合约编译结果，并生成运行文件 SHA256 清单。离线配置通过 `src-tauri/tauri.offline.conf.json` 合并，不改写主配置。
 
 验证记录见 [0.2.0 验证数据](../reports/2026-11-03-peer-chat/validation.json) 和 [实际界面](../reports/2026-11-03-peer-chat/figures/peer-chat.png)。

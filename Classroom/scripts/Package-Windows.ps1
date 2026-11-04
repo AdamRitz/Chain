@@ -1,7 +1,8 @@
 param(
     [string]$BuildDirectory = "../../build/classroom-20261028",
     [string]$CompilerBin = "D:/Software/Code/Language/MinGW64/ucrt64/bin",
-    [switch]$Installer
+    [switch]$Installer,
+    [switch]$OfflineInstaller
 )
 $ErrorActionPreference = 'Stop'
 $appRoot = Split-Path $PSScriptRoot -Parent
@@ -71,17 +72,30 @@ try {
         files = @(Get-ChildItem -LiteralPath $resourcePath -File -Recurse | Sort-Object FullName | ForEach-Object { @{name=$_.FullName.Substring($resourcePath.Length + 1).Replace('\','/');sha256=(Get-FileHash -LiteralPath $_.FullName -Algorithm SHA256).Hash.ToLowerInvariant()} })
     } | ConvertTo-Json -Depth 5
     [System.IO.File]::WriteAllText((Join-Path $resourcePath 'manifest.json'), $manifest, [System.Text.UTF8Encoding]::new($false))
-    if ($Installer) {
-        npm.cmd run tauri -- build
-        if ($LASTEXITCODE -ne 0) { throw 'Tauri installer build failed' }
+    if ($Installer -or $OfflineInstaller) {
         $installerPath = Join-Path $appRoot "src-tauri/target/release/bundle/nsis/$($configuration.productName)_${version}_x64-setup.exe"
         $releasePath = Join-Path $appRoot 'release'
         New-Item -ItemType Directory -Force -Path $releasePath | Out-Null
-        $releaseInstaller = Join-Path $releasePath "NornV2-${version}-windows-x64-setup.exe"
-        Copy-Item -LiteralPath $installerPath -Destination $releaseInstaller -Force
-        $hash = (Get-FileHash -LiteralPath $releaseInstaller -Algorithm SHA256).Hash.ToLowerInvariant()
-        [System.IO.File]::WriteAllText("$releaseInstaller.sha256", "$hash  $([System.IO.Path]::GetFileName($releaseInstaller))`n", [System.Text.UTF8Encoding]::new($false))
-        Write-Output "One-click installer: $releaseInstaller"
-        Write-Output "SHA256: $hash"
+        # Build the standard package first; copy it before the offline build
+        # overwrites Tauri's identically named output. No source config mutation.
+        $variants = @()
+        if ($Installer) { $variants += 'standard' }
+        if ($OfflineInstaller) { $variants += 'offline' }
+        foreach ($variant in $variants) {
+            $arguments = @('run', 'tauri', '--', 'build', '--ci')
+            $suffix = ''
+            if ($variant -eq 'offline') {
+                $arguments += @('--config', 'src-tauri/tauri.offline.conf.json')
+                $suffix = '-offline'
+            }
+            npm.cmd @arguments
+            if ($LASTEXITCODE -ne 0) { throw "Tauri $variant installer build failed" }
+            $releaseInstaller = Join-Path $releasePath "NornV2-${version}-windows-x64${suffix}-setup.exe"
+            Copy-Item -LiteralPath $installerPath -Destination $releaseInstaller -Force
+            $hash = (Get-FileHash -LiteralPath $releaseInstaller -Algorithm SHA256).Hash.ToLowerInvariant()
+            [System.IO.File]::WriteAllText("$releaseInstaller.sha256", "$hash  $([System.IO.Path]::GetFileName($releaseInstaller))`n", [System.Text.UTF8Encoding]::new($false))
+            Write-Output "$variant installer: $releaseInstaller"
+            Write-Output "SHA256: $hash"
+        }
     }
 } finally { Pop-Location }
