@@ -1,7 +1,15 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { CanJoinPreview, ConnectionText, ReceiptText } from '../src/invite.ts';
+import { CanJoinPreview, ConnectionText, ReceiptText, ShareAddress } from '../src/invite.ts';
 import { IPv6Summary, InviteEndpointText } from '../src/network.ts';
+
+test('sharing copies one endpoint and falls back when a refreshed list no longer contains the selection',()=>{
+  const prepared={invite:{seeds:['[240e::1]:8787','192.168.1.2:8787']},token:'NORN1:legacy'};
+  assert.equal(ShareAddress(prepared),'[240e::1]:8787');
+  assert.equal(ShareAddress(prepared,'192.168.1.2:8787'),'192.168.1.2:8787');
+  assert.equal(ShareAddress(prepared,'old:8787'),'[240e::1]:8787');
+  assert.equal(ShareAddress(null),'');
+});
 test('link-local IPv6 and a missing default route are distinct from IPv6 Internet access',()=>{
   assert.match(IPv6Summary({ipv6:{global_addresses:0,link_local_addresses:1,default_route:false,route_checked:true}}),/链路本地/);
   assert.match(IPv6Summary({ipv6:{global_addresses:1,link_local_addresses:1,default_route:false,route_checked:true}}),/没有.*默认路由/);

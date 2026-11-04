@@ -64,6 +64,7 @@ def Main(args):
         legacy=Discover(3,9);assert len(legacy)%6==0
         checks.append('version-2 discovery contains IPv4 and IPv6; legacy discovery keeps six-byte records')
         invalid=Query('::1',b['port'],46,json.dumps({'method':'block','height':0}).encode());assert 'error' in invalid
+        assert 'error' in Query('::1',b['port'],46,b'{"method":"network"}'),'ordinary nodes must not expose arbitrary configuration'
         assert not Query('::1',b['port'])['failed']
         checks.append('invalid teaching query returns an error without stopping the node')
         (work/'result.json').write_text(json.dumps(dict(checks=checks),indent=2));print(json.dumps(dict(checks=checks)))

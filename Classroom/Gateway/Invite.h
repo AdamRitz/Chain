@@ -1,7 +1,53 @@
 #pragma once
 #include "Addresses.h"
+#include <optional>
 
 constexpr size_t MaxInviteBytes = 256 * 1024;
+optional<string> JoinAddress(const Json &input) {
+    if (!input.is_string()) return nullopt;
+    auto text = input.get<string>();
+    auto first = text.find_first_not_of(" \r\n\t");
+    if (first == string::npos) throw invalid_argument("请输入节点 IP 地址和端口");
+    text = text.substr(first, text.find_last_not_of(" \r\n\t") - first + 1);
+    if (text.find("NORN1:") != string::npos || text.front() == '{') return nullopt;
+    try {
+        auto [host, port] = ParseEndpoint(text);
+        boost::system::error_code ec; auto parsed = ip::make_address(host, ec);
+        if (!ec) {
+            auto address = CanonicalAddress(parsed);
+            if (address.is_unspecified() || address.is_multicast()) throw invalid_argument("Unusable address");
+            host = address.to_string();
+        } else if (host.find_first_not_of("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789.-") != string::npos)
+            throw invalid_argument("Invalid hostname");
+        return FormatEndpoint(host, port);
+    } catch (...) { throw invalid_argument("请输入 IPv4:端口 或 [IPv6]:端口，例如 192.168.1.10:8787"); }
+}
+Json FetchNetworkInvite(const string &endpoint) {
+    auto [host, port] = ParseEndpoint(endpoint);
+    auto request = Json({{"method", "network"}}).dump();
+    auto bytes = Rpc(host, port, 46, {request.begin(), request.end()}, true, 3, MaxInviteBytes);
+    auto response = Json::parse(bytes);
+    if (!response.contains("network")) throw invalid_argument("对方节点暂不支持地址加入或聊天室尚未就绪，请让对方更新客户端并保持聊天室运行；旧版可使用完整邀请码。");
+    // Never follow endpoints supplied by an untrusted descriptor: the address
+    // entered by the user remains the bootstrap and synchronization seed.
+    Json invite;
+    for (const auto *key : {"version", "title", "genesis", "genesis_root", "contract", "contract_code_sha256"})
+        invite[key] = response.at("network").at(key);
+    invite["seeds"] = Json::array({endpoint});
+    return invite;
+}
+Json InviteEndpoint(const string &endpoint) {
+    auto [host, port] = ParseEndpoint(endpoint); boost::system::error_code ec;
+    auto address = ip::make_address(host, ec);
+    return {{"endpoint", endpoint}, {"ok", false}, {"family", ec ? "DNS" : address.is_v6() ? "IPv6" : "IPv4"},
+            {"scope", ec ? "hostname" : InviteScope(address)}};
+}
+void InviteNetworkError(Json &result, const boost::system::system_error &e) {
+    auto code = e.code(); result["system_code"] = code.value();
+    result["code"] = code == error::network_unreachable || code == error::host_unreachable ? "no_route" :
+        code == error::connection_refused ? "refused" : code == error::timed_out ? "timeout" :
+        code == error::host_not_found || code == error::host_not_found_try_again ? "dns" : "unreachable";
+}
 Json InviteEnvelope(const Json &invite) {
     auto body = invite.dump(); array<unsigned char, 32> hash;
     crypto_hash_sha256(hash.data(), reinterpret_cast<const unsigned char *>(body.data()), body.size());
@@ -60,10 +106,7 @@ Json ProbeInvite(const Json &invite, const string &runtime) {
         auto delay = index++ * 100;
         tasks.push_back(async(launch::async, [invite, runtime, endpoint, host, port, delay] {
             this_thread::sleep_for(std::chrono::milliseconds(delay));
-            boost::system::error_code parseError; auto address = ip::make_address(host, parseError);
-            Json result = {{"endpoint", endpoint}, {"ok", false},
-                {"family", parseError ? "DNS" : address.is_v6() ? "IPv6" : "IPv4"},
-                {"scope", parseError ? "hostname" : InviteScope(address)}};
+            Json result = InviteEndpoint(endpoint);
             try {
                 auto head = Rpc(host, port, 19, {}, true, 2, 80);
                 if (head.size() != 80 || EvmHex(span<const uint8_t>(head).first(32)) != invite.at("genesis_root").get<string>()) {
@@ -76,10 +119,7 @@ Json ProbeInvite(const Json &invite, const string &runtime) {
                 }
                 result["ok"] = true; result["height"] = ReadU64(head.data() + 64);
             } catch (const boost::system::system_error &e) {
-                auto code = e.code(); result["system_code"] = code.value();
-                result["code"] = code == error::network_unreachable || code == error::host_unreachable ? "no_route" :
-                                 code == error::connection_refused ? "refused" : code == error::timed_out ? "timeout" :
-                                 code == error::host_not_found || code == error::host_not_found_try_again ? "dns" : "unreachable";
+                InviteNetworkError(result, e);
             } catch (...) { result["code"] = "unreachable"; }
             return result;
         }));
@@ -90,6 +130,28 @@ Json ProbeInvite(const Json &invite, const string &runtime) {
         if (result["ok"] == true) { seeds.push_back(result["endpoint"]); height = max(height, result["height"].get<uint64_t>()); }
     }
     return {{"endpoints", results}, {"seeds", seeds}, {"height", height}, {"ok", !seeds.empty()}};
+}
+Json CheckJoinSource(const Json &source, const string &runtime1, const string &runtime2) {
+    Json endpoint;
+    try {
+        if (source.is_string()) endpoint = InviteEndpoint(source.get<string>());
+        auto invite = source.is_string() ? FetchNetworkInvite(source.get<string>()) : source;
+        auto version = invite.at("version").get<int>();
+        if (version != 1 && version != 2) throw invalid_argument("对方的聊天室版本需要更新客户端后才能加入");
+        auto result = ProbeInvite(invite, version == 1 ? runtime1 : runtime2);
+        result["invite"] = invite;
+        return result;
+    } catch (const boost::system::system_error &e) {
+        if (endpoint.is_object()) InviteNetworkError(endpoint, e);
+        return {{"ok", false}, {"endpoints", endpoint.is_object() ? Json::array({endpoint}) : Json::array()}};
+    } catch (const invalid_argument &e) {
+        if (endpoint.is_object()) endpoint["code"] = "configuration";
+        return {{"ok", false}, {"error", e.what()}, {"endpoints", endpoint.is_object() ? Json::array({endpoint}) : Json::array()}};
+    } catch (...) {
+        if (endpoint.is_object()) endpoint["code"] = "configuration";
+        return {{"ok", false}, {"error", "对方返回的链配置无效或不完整，请让对方更新客户端后重新连接。"},
+                {"endpoints", endpoint.is_object() ? Json::array({endpoint}) : Json::array()}};
+    }
 }
 string InviteFailureMessage(const Json &result, const Json &local) {
     bool global6 = false, refused = false, timeout = false, noRoute = false, dns = false;

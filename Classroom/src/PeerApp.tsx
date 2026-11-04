@@ -191,7 +191,7 @@ export function PeerApp() {
   });
   const enter = async (joining: boolean) => {
     try {
-      if (joining && !CanJoinPreview(joinPreview, joinPreview?.id || "")) throw Error("请先完成邀请连接检查。");
+      if (joining && !CanJoinPreview(joinPreview, joinPreview?.id || "")) throw Error("正在连接节点并获取链配置，请稍候。");
       if (!s.unlocked)
         await action(
           s.has_wallet ? "unlock" : "wallet_create",
@@ -372,7 +372,7 @@ export function PeerApp() {
                     <Users />
                   </span>
                   <b>加入聊天室</b>
-                  <p>导入成员分享的邀请，使用自己的账户参与交流。</p>
+                  <p>粘贴成员的 IP 和端口，自动获取链配置并同步。</p>
                   <span>
                     加入聊天室 <ArrowRight size={17} />
                   </span>
@@ -943,7 +943,7 @@ export function PeerApp() {
                 </h2>
                 <p>
                   {modal === "join"
-                    ? "粘贴朋友发来的完整邀请，软件会自动检查并连接。"
+                    ? "粘贴对方节点的 IP 和端口，软件自动获取链配置并同步聊天记录。"
                     : "本机启动一个节点并部署公共聊天室。任何加入的成员都可以发言、创建分组和分享邀请。"}
                 </p>
                 {modal === "join" ? (
@@ -996,10 +996,10 @@ export function PeerApp() {
                   }
                   onClick={() => void enter(modal === "join")}
                 >
-                  {modal === "join" ? "加入聊天室" : "创建聊天室"}
+                  {modal === "join" ? "连接并加入" : "创建聊天室"}
                   <ArrowRight size={16} />
                 </button>
-                {modal === "join" && !invite.trim() && <button className="text-button" onClick={() => setModal("create")}>没有邀请？创建聊天室</button>}
+                {modal === "join" && !invite.trim() && <button className="text-button" onClick={() => setModal("create")}>创建自己的聊天室</button>}
               </>
             )}
             {modal === "wallet" && (

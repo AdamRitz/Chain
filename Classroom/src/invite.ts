@@ -1,5 +1,10 @@
 import type { Row } from "./api";
 
+export function ShareAddress(prepared: Row | null, selected = ""): string {
+  const entries: string[] = prepared?.invite?.seeds || [];
+  return entries.includes(selected) ? selected : entries[0] || "";
+}
+
 export function ConnectionText(status: Row): string {
   const phase = status.connection_state?.phase;
   return phase === "ready" ? "聊天室已就绪" : phase === "syncing" ? "正在同步聊天记录" :

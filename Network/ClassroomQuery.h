@@ -1,7 +1,34 @@
 #pragma once
+#include <fstream>
+#include "../Tool/Arguments.h"
+// Local, gateway-owned public chain descriptor. Never supplied by a remote request.
+string nodeNetworkInfoPath;
 // Optional read-only teaching queries. No state, nonce or receipt is committed here.
 nlohmann::json ClassroomQuery(const nlohmann::json &request) {
     auto method = request.at("method").get<string>();
+    if (method == "network") {
+        if (nodeNetworkInfoPath.empty()) throw invalid_argument("Address joining is unavailable on this node");
+        ifstream input(Utf8Path(nodeNetworkInfoPath), ios::binary);
+        if (!input) throw runtime_error("Public chain configuration is not ready");
+        string bytes(256 * 1024 + 1, '\0'); input.read(bytes.data(), bytes.size());
+        auto size = size_t(input.gcount());
+        if (size > 256 * 1024) throw invalid_argument("Public chain configuration exceeds the size limit");
+        auto stored = nlohmann::json::parse(bytes.begin(), bytes.begin() + size);
+        nlohmann::json info;
+        for (const auto *key : {"version", "title", "genesis", "genesis_root", "contract", "contract_code_sha256"})
+            info[key] = stored.at(key);
+        if (info.at("genesis_root") != U32ToHex(genesisRoot)) throw invalid_argument("Public chain fingerprint mismatch");
+        auto target = EvmBytes(info.at("contract").get<string>());
+        if (target.size() != 20) throw runtime_error("Chat contract is not ready");
+        evmc::address address; memcpy(address.bytes, target.data(), 20);
+        shared_lock lock(dbCommitMutex);
+        auto found = evmState.get_accounts().find(address);
+        if (found == evmState.get_accounts().end() || found->second.code.empty()) throw runtime_error("Chat contract is not synchronized");
+        auto code = EvmHex({found->second.code.data(), found->second.code.size()}); array<uint8_t, 32> hash;
+        crypto_hash_sha256(hash.data(), reinterpret_cast<const uint8_t *>(code.data()), code.size());
+        if (info.at("contract_code_sha256") != EvmHex(hash)) throw invalid_argument("Public chat code fingerprint mismatch");
+        return {{"network", info}, {"head", U32ToHex(DBReadCurrentBlock())}};
+    }
     if (method == "peers") {
         nlohmann::json peers = nlohmann::json::array();
         lock_guard lock(peerMutex);

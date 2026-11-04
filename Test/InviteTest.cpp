@@ -4,6 +4,14 @@ void Require(bool value, const char *message) { if (!value) throw runtime_error(
 int main() {
     try {
         Require(sodium_init() >= 0, "sodium");
+        Require(JoinAddress(" 127.0.0.1:8787\r\n").value()=="127.0.0.1:8787","IPv4 endpoint input");
+        Require(JoinAddress("[::1]:8787").value()=="[::1]:8787","IPv6 endpoint input");
+        Require(JoinAddress("node.example:8787").value()=="node.example:8787","existing hostname endpoints");
+        Require(JoinAddress("[::ffff:127.0.0.1]:8787").value()=="127.0.0.1:8787","mapped endpoint normalization");
+        Require(!JoinAddress("NORN1:old") && !JoinAddress(Json::object()),"legacy invitation dispatch");
+        for (auto text : {"127.0.0.1", "::1:8787", "http://127.0.0.1:8787", "127.0.0.1:0", "[::]:8787"}) {
+            bool invalid=false;try { JoinAddress(text); } catch (...) { invalid=true; } Require(invalid,"invalid address input");
+        }
         for (const auto &text : {"::", "::1", "fe80::1", "fe90::1", "fea0::1", "febf::1", "ff02::1", "2001:db8::1", "127.0.0.1", "169.254.1.1", "192.0.2.1"})
             Require(InviteScope(ip::make_address(text)) == "excluded", text);
         Require(InviteScope(ip::make_address("fd12::1")) == "private", "ULA");

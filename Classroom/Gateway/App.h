@@ -49,7 +49,7 @@ class ClassroomApp {
     vector<unique_ptr<Child>> children;
     mutex guard;
     NetworkSetup networkSetup;
-    Json addressState, invitePreview = Json::object(), previewInvite;
+    Json addressState, invitePreview = Json::object(), previewInvite, previewSource;
     future<Json> previewTask;
     string previewTaskId;
     Json incomingInvitation;
@@ -136,14 +136,25 @@ class ClassroomApp {
         catch (...) { throw invalid_argument("邀请内容不完整或格式不正确，请让朋友重新发送"); }
     }
     void LaunchPreview() {
-        auto invite = previewInvite; auto runtime = Runtime(invite.at("version").get<int>());
+        auto source = previewSource; auto runtime1 = Runtime(1), runtime2 = Runtime(2);
         previewTaskId = invitePreview.at("id").get<string>();
-        previewTask = async(launch::async, [invite, runtime] { return ProbeInvite(invite, runtime); });
+        previewTask = async(launch::async, [source, runtime1, runtime2] { return CheckJoinSource(source, runtime1, runtime2); });
     }
     void PollPreview() {
         if (!previewTask.valid() || previewTask.wait_for(std::chrono::seconds(0)) != future_status::ready) return;
         auto result = previewTask.get();
         if (previewTaskId != invitePreview.at("id").get<string>()) { LaunchPreview(); return; }
+        if (result.value("ok", false)) {
+            try {
+                // Genesis validation uses process globals and stays on the
+                // gateway's serialized API/tick path, never a network worker.
+                previewInvite = ValidateInvite(result.at("invite"));
+                invitePreview["title"] = previewInvite.at("title");
+                invitePreview["same_chain"] = profile.is_object() && profile.value("genesis_root", string{}) == previewInvite.at("genesis_root").get<string>() &&
+                    profile.value("contract", string{}) == previewInvite.at("contract").get<string>();
+            } catch (const exception &e) { result["ok"] = false; result["error"] = e.what(); }
+        }
+        result.erase("invite");
         invitePreview.update(result);
         invitePreview["phase"] = result["ok"] == true ? "ready" : "error";
         invitePreview["checked_ms"] = NowMs();
@@ -151,11 +162,27 @@ class ClassroomApp {
             Json local = Json::object();
             try { addressState = CollectInviteAddresses(profile.is_object() ? Port() : 0); local = addressState.at("ipv6"); } catch (...) {}
             invitePreview["local_ipv6"] = local;
-            invitePreview["error"] = InviteFailureMessage(result, local);
+            if (result.value("error", string{}).empty()) invitePreview["error"] = InviteFailureMessage(result, local);
         }
+    }
+    void SaveNetworkInfo() {
+        if (profile.at("contract").get<string>().empty()) return;
+        Json accounts = Json::array();
+        for (const auto &account : profile.at("genesis").at("accounts"))
+            accounts.push_back({{"public_key", account.at("public_key")}, {"balance", account.at("balance")}});
+        Json genesis = {{"accounts", accounts}, {"base_fee", profile.at("genesis").value("base_fee", Json(0))}};
+        Json info = {{"version", ChatVersion()}, {"title", profile.at("title")},
+            {"genesis", genesis}, {"genesis_root", profile.at("genesis_root")},
+            {"contract", profile.at("contract")}, {"contract_code_sha256", Sha256(Runtime())}};
+        auto path = NetworkDir() / "network-info.json";
+        // Public metadata is immutable for a ready chain. Ordinary profile
+        // saves must not replace a file that peers may be reading on Windows.
+        if (fs::exists(path) && ReadJson(path) == info) return;
+        SaveJson(path, info);
     }
     void Persist() {
         SaveJson(NetworkDir() / "profile.json", profile);
+        SaveNetworkInfo();
         SaveJson(root / "session.json", {{"id", profile["id"]}, {"active", active}, {"nickname", nickname}});
     }
     Json PublicWallets() {
@@ -200,6 +227,7 @@ class ClassroomApp {
         profile["mode"] = "network";
         profile.erase("teacher");
         if (migrate) Persist();
+        SaveNetworkInfo();
         auto ports = profile.at("ports");
         try {
             for (size_t i = 0; i < ports.size(); i++) {
@@ -239,6 +267,7 @@ class ClassroomApp {
                                        "--candidate-ms",
                                        "12"};
                 args.push_back("--seeds-file"); args.push_back(PathUtf8(node / "seeds.json"));
+                args.push_back("--network-info"); args.push_back(PathUtf8(directory / "network-info.json"));
                 if (ipv6) {
                     args.push_back("--bind-v6");
                     args.push_back("::");
@@ -726,10 +755,11 @@ class ClassroomApp {
             return addressState;
         }
         if (action == "invite_preview") {
-            previewInvite = ValidateInvite(request.at("invite"));
-            invitePreview = {{"id", RandomHex(12)}, {"title", previewInvite.at("title")}, {"phase", "checking"},
-                {"same_chain", profile.is_object() && profile.value("genesis_root", string{}) == previewInvite.at("genesis_root").get<string>() &&
-                 profile.value("contract", string{}) == previewInvite.at("contract").get<string>()}, {"checked_ms", NowMs()}};
+            auto address = JoinAddress(request.at("invite"));
+            previewSource = address ? Json(*address) : ValidateInvite(request.at("invite"));
+            previewInvite = nullptr;
+            invitePreview = {{"id", RandomHex(12)}, {"title", address ? Json(*address) : previewSource.at("title")}, {"phase", "checking"},
+                {"same_chain", false}, {"by_address", bool(address)}, {"checked_ms", NowMs()}};
             if (!previewTask.valid()) LaunchPreview();
             return invitePreview;
         }
@@ -792,7 +822,8 @@ class ClassroomApp {
                         if (seen.insert(seed.get<string>()).second) seeds.push_back(seed);
                     values["invite"]["seeds"] = seeds;
                 } else {
-                    values["invite"] = ValidateInvite(request.at("invite"));
+                    auto address = JoinAddress(request.at("invite"));
+                    values["invite"] = ValidateInvite(address ? FetchNetworkInvite(*address) : request.at("invite"));
                     auto checked = ProbeInvite(values["invite"], Runtime(values["invite"].at("version").get<int>()));
                     if (checked["ok"] != true) throw runtime_error("暂时联系不上邀请中的聊天室，请重新获取邀请");
                 }
@@ -881,7 +912,8 @@ class ClassroomApp {
             invite["created_ms"] = NowMs();
             invite["scope"] = request.contains("seeds") ? "custom" : addressState.at("scope");
             auto token = EncodeInvite(invite);
-            return {{"invite", invite}, {"file", InviteEnvelope(invite)}, {"token", token}, {"share_text", token}, {"connectivity", addressState}};
+            auto address = seeds.at(0).get<string>();
+            return {{"invite", invite}, {"file", InviteEnvelope(invite)}, {"token", token}, {"address", address}, {"share_text", address}, {"connectivity", addressState}};
         }
         if (action == "transfer") {
             auto receiver = EvmBytes(request.at("receiver"));
@@ -932,7 +964,7 @@ class ClassroomApp {
         }
         if (action == "diagnostics")
             return {{"schema", 1},
-                    {"application", "NornV2 Peer Chat 0.3.1"},
+                    {"application", "NornV2 Peer Chat 0.4.0"},
                     {"ipv6_available", ipv6},
                     {"status", Status()},
                     {"note", "No wallet seeds, signed outbox bytes or node log bodies included"}};

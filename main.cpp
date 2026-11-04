@@ -64,6 +64,7 @@ int main(int argc,char* argv[]) {
             if (name=="--config") continue;
             if (name=="--data") dataPath=value;
             else if (name=="--genesis") genesisPath=value;
+            else if (name=="--network-info") nodeNetworkInfoPath=value;
             else if (name=="--stop-file") stopFile=value;
             else if (name=="--bind") listenAddress=value;
             else if (name=="--bind-v6") { if (!ip::make_address(value).is_v6()) throw invalid_argument("--bind-v6 requires IPv6");listenAddressV6=value; }

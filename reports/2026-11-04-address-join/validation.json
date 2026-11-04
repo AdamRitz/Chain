@@ -1,0 +1,128 @@
+{
+  "version": "0.4.0",
+  "ctest": {
+    "passed": 17,
+    "total": 17,
+    "seconds": 98.71,
+    "cases": [
+      {
+        "name": "ChainCorrectness",
+        "passed": true
+      },
+      {
+        "name": "AccountCorrectness",
+        "passed": true
+      },
+      {
+        "name": "ForkStateCorrectness",
+        "passed": true
+      },
+      {
+        "name": "ThroughputCorrectness",
+        "passed": true
+      },
+      {
+        "name": "FlowCorrectness",
+        "passed": true
+      },
+      {
+        "name": "ChainNetwork",
+        "passed": true
+      },
+      {
+        "name": "AccountNetwork",
+        "passed": true
+      },
+      {
+        "name": "ForkNetwork",
+        "passed": true
+      },
+      {
+        "name": "EvmNetwork",
+        "passed": true
+      },
+      {
+        "name": "ExperimentNetwork",
+        "passed": true
+      },
+      {
+        "name": "AdmissionNetwork",
+        "passed": true
+      },
+      {
+        "name": "InviteCorrectness",
+        "passed": true
+      },
+      {
+        "name": "ClassroomIndex",
+        "passed": true
+      },
+      {
+        "name": "ClassroomNetwork",
+        "passed": true
+      },
+      {
+        "name": "ClassroomJoin",
+        "passed": true
+      },
+      {
+        "name": "InviteNetwork",
+        "passed": true
+      },
+      {
+        "name": "IPv6Network",
+        "passed": true
+      }
+    ]
+  },
+  "final_metadata_publish_regression": {
+    "checks": [
+      "one share address; bounded public configuration fetch; IPv6 address-only join; legacy token fallback; asynchronous preflight; real ready state",
+      "IPv4 and IPv6 address-only joins establish matching peer families and exchange funded contract messages",
+      "same-chain invitation merges entry without PID change; peer connection and chat survive original creator stopping",
+      "wrong-chain endpoint and invalid preview cannot replace the running chain",
+      "mismatched downloaded genesis is rejected before switching; oversized descriptor is bounded; service recovers after repair",
+      "native-file inbox previews content once and never automatically switches chains"
+    ],
+    "cross_physical_network_tested": false
+  },
+  "frontend": {
+    "passed": 13,
+    "total": 13
+  },
+  "ui": {
+    "same_genesis": true,
+    "ready": true,
+    "message_seen_by_both": true,
+    "address_only": "[::1]:58044",
+    "copied_notice_visible": true,
+    "system_clipboard_readback_verified": false,
+    "preflight_loaded_chain_without_invitation": true,
+    "both_nodes_included_message_at_block": 4,
+    "cleanup": {
+      "stopped": true,
+      "remaining_databases": 0
+    }
+  },
+  "package": {
+    "manifest_files": 20,
+    "all_staged_hashes_verified": true,
+    "node_gateway_match_build": true,
+    "web_matches_dist": true,
+    "assets": {
+      "NornV2-0.4.0-windows-x64-setup.exe": {
+        "bytes": 13971354,
+        "sha256": "d99e2ad4aa4c6521a4a21b35e768aecca4d0bf8594e79bc24065450363de3757"
+      }
+    },
+    "standard_package_only": true,
+    "installed_over_user_app": false
+  },
+  "new_invite_and_ui_database_directories_remaining": 0,
+  "active_isolated_test_processes": [],
+  "cross_physical_network_tested": false,
+  "public_ipv6_tested": false,
+  "user_wallet_or_chain_modified": false,
+  "router_or_firewall_modified": false,
+  "cloud_deployed": false
+}

@@ -10,7 +10,7 @@ export function IPv6Summary(addresses: Row | undefined): string {
 }
 export function InviteEndpointText(entry: Row): string {
   if (entry.ok) return "连接与聊天室检查通过";
-  return ({no_route:"无可用路由",refused:"端口拒绝连接",timeout:"连接超时",dns:"域名无法解析",wrong_chain:"不属于这条链",wrong_contract:"聊天室合约不匹配",unreachable:"入口不可达"} as Record<string,string>)[entry.code] || "连接失败";
+  return ({no_route:"无可用路由",refused:"端口拒绝连接",timeout:"连接超时",dns:"域名无法解析",wrong_chain:"不属于这条链",wrong_contract:"聊天室合约不匹配",configuration:"链配置不可用",unreachable:"入口不可达"} as Record<string,string>)[entry.code] || "连接失败";
 }
 
 export function FirewallSummary(firewall: Row | undefined) {
