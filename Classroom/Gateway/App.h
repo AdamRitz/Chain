@@ -1,6 +1,7 @@
 #pragma once
 #include "Support.h"
 #include "NetworkSetup.h"
+#include "Invite.h"
 
 string Word(uint64_t value) {
     ostringstream s;
@@ -48,6 +49,10 @@ class ClassroomApp {
     vector<unique_ptr<Child>> children;
     mutex guard;
     NetworkSetup networkSetup;
+    Json addressState, invitePreview = Json::object(), previewInvite;
+    future<Json> previewTask;
+    string previewTaskId;
+    Json incomingInvitation;
     string active = "main", nickname = "成员";
     bool ipv6 = HasIPv6();
     string lastError;
@@ -100,6 +105,57 @@ class ClassroomApp {
     string Runtime(int version = 0) const {
         return ChatArtifact(version ? version : ChatVersion()).at("evm").at("deployedBytecode").at("object");
     }
+    Json ValidateInvite(const Json &input) {
+        auto invite = DecodeInvite(input);
+        try {
+            auto version = invite.at("version").get<int>();
+            if ((version != 1 && version != 2) || invite.at("contract_code_sha256") != Sha256(Runtime(version)))
+                throw invalid_argument("这个邀请需要兼容的 NornV2 版本，请让朋友重新发送");
+            auto previous = GetGenesisConfig(); string root;
+            try { SetGenesisUsers(invite.at("genesis")); root = U32ToHex(genesisRoot); }
+            catch (...) { SetGenesisUsers(previous); throw; }
+            SetGenesisUsers(previous);
+            if (root != invite.at("genesis_root").get<string>()) throw invalid_argument("邀请中的聊天室指纹不一致");
+            auto contract = EvmBytes(invite.at("contract"));
+            if (contract.size() != 20) throw invalid_argument("邀请中的聊天室地址无效");
+            auto title = invite.at("title").get<string>();
+            if (title.empty() || title.size() > 160) throw invalid_argument("邀请中的聊天室名称无效");
+            auto seeds = invite.at("seeds");
+            if (!seeds.is_array() || seeds.empty() || seeds.size() > 8) throw invalid_argument("邀请需要 1 至 8 个连接入口");
+            Json normalized = Json::array(); set<string> seen;
+            for (const auto &seed : seeds) {
+                auto [host, port] = ParseEndpoint(seed.get<string>()); boost::system::error_code ec;
+                auto address = ip::make_address(host, ec);
+                if (!ec) host = CanonicalAddress(address).to_string();
+                auto endpoint = FormatEndpoint(host, port);
+                if (seen.insert(endpoint).second) normalized.push_back(endpoint);
+            }
+            invite["seeds"] = normalized;
+            return invite;
+        } catch (const invalid_argument &) { throw; }
+        catch (...) { throw invalid_argument("邀请内容不完整或格式不正确，请让朋友重新发送"); }
+    }
+    void LaunchPreview() {
+        auto invite = previewInvite; auto runtime = Runtime(invite.at("version").get<int>());
+        previewTaskId = invitePreview.at("id").get<string>();
+        previewTask = async(launch::async, [invite, runtime] { return ProbeInvite(invite, runtime); });
+    }
+    void PollPreview() {
+        if (!previewTask.valid() || previewTask.wait_for(std::chrono::seconds(0)) != future_status::ready) return;
+        auto result = previewTask.get();
+        if (previewTaskId != invitePreview.at("id").get<string>()) { LaunchPreview(); return; }
+        invitePreview.update(result);
+        invitePreview["phase"] = result["ok"] == true ? "ready" : "error";
+        invitePreview["checked_ms"] = NowMs();
+        if (result["ok"] != true) {
+            string reason = "暂时联系不上这个聊天室，请让朋友保持软件运行，或发送最新邀请。局域网邀请需要处于可互通的网络。";
+            for (const auto &entry : result["endpoints"]) {
+                if (entry.value("code", string{}) == "wrong_chain" || entry.value("code", string{}) == "wrong_contract")
+                    reason = "入口对应的聊天室与邀请不一致，请重新获取邀请。";
+            }
+            invitePreview["error"] = reason;
+        }
+    }
     void Persist() {
         SaveJson(NetworkDir() / "profile.json", profile);
         SaveJson(root / "session.json", {{"id", profile["id"]}, {"active", active}, {"nickname", nickname}});
@@ -151,6 +207,7 @@ class ClassroomApp {
             for (size_t i = 0; i < ports.size(); i++) {
                 auto node = directory / ("node" + to_string(i + 1));
                 fs::create_directories(node);
+                SaveJson(node / "seeds.json", profile.value("seeds", Json::array()));
                 vector<string> args = {"--data",
                                        PathUtf8((node / "db")),
                                        "--genesis",
@@ -183,6 +240,7 @@ class ClassroomApp {
                                        "50",
                                        "--candidate-ms",
                                        "12"};
+                args.push_back("--seeds-file"); args.push_back(PathUtf8(node / "seeds.json"));
                 if (ipv6) {
                     args.push_back("--bind-v6");
                     args.push_back("::");
@@ -281,17 +339,41 @@ class ClassroomApp {
         } catch (...) { SetGenesisUsers(previousGenesis); throw; }
         if (joining && profile.is_object() && profile.value("genesis_root", string{}) == next.at("genesis_root").get<string>() &&
             profile.value("contract", string{}) == next.at("contract").get<string>() && ChatVersion() == next.at("chat_version").get<int>()) {
+            Json seeds = Json::array(); set<string> seen;
+            auto localAddresses = CollectInviteAddresses(Port());
+            for (const auto &seed : next["seeds"]) {
+                auto [host, port] = ParseEndpoint(seed.get<string>()); boost::system::error_code ec;
+                auto address = ip::make_address(host, ec); bool self = false;
+                if (!ec && port == Port()) {
+                    self = address.is_loopback();
+                    for (const auto &local : localAddresses["addresses"]) self |= local["address"] == address.to_string();
+                }
+                if (!self && seen.insert(seed.get<string>()).second) seeds.push_back(seed);
+            }
+            for (const auto &seed : profile.value("seeds", Json::array()))
+                if (seeds.size() < 8 && seen.insert(seed.get<string>()).second) seeds.push_back(seed);
+            profile["seeds"] = seeds; Persist();
+            SaveJson(NetworkDir() / "node1" / "seeds.json", seeds);
             if (children.empty()) Start();
             Tick();
             return;
         }
+        auto previousProfile = profile; auto previousActive = active; bool wasRunning = !children.empty();
         Stop();
         profile = next;
         active = identity;
         fs::create_directories(NetworkDir());
         index.Open(NetworkDir() / "index.sqlite");
         Persist();
-        Start();
+        try { Start(); }
+        catch (...) {
+            Stop(); profile = previousProfile; active = previousActive;
+            if (profile.is_object()) {
+                index.Open(NetworkDir() / "index.sqlite"); Persist();
+                if (wasRunning) { try { Start(); } catch (...) {} }
+            } else { fs::remove(root / "session.json"); }
+            throw;
+        }
         if (!joining) {
             auto code = EvmBytes(ChatArtifact(ChatVersion()).at("evm").at("bytecode").at("object"));
             auto sent = Submit(active, "deploy", {}, code, 0, 2000000, Json::object());
@@ -565,7 +647,28 @@ class ClassroomApp {
                           to_string(limit) + " OFFSET " + to_string(offset));
     }
     Json Status() {
+        PollPreview();
+        auto inbox = root / "incoming-invites";
+        if (incomingInvitation.is_null() && fs::is_directory(inbox)) {
+            unsigned scanned = 0;
+            for (const auto &entry : fs::directory_iterator(inbox)) {
+                if (++scanned > 16) break;
+                auto name = PathUtf8(entry.path().filename());
+                if (!name.starts_with("invite-") || entry.path().extension() != ".json" ||
+                    entry.is_symlink() || !entry.is_regular_file()) continue;
+                try {
+                    if (entry.file_size() > MaxInviteBytes * 2 + 1024) throw runtime_error("邀请文件过大");
+                    auto packet = ReadJson(entry.path());
+                    incomingInvitation = {{"id", name}, {"text", packet.value("text", string{})}, {"error", packet.value("error", string{})}};
+                } catch (...) { incomingInvitation = {{"id", name}, {"error", "邀请文件无法读取，请重新保存后再试。"}}; }
+                fs::remove(entry.path()); // Only the exact consumed transient packet.
+                break;
+            }
+        }
         auto result = cache;
+        result["incoming_invitation"] = incomingInvitation;
+        result["invite_preview"] = invitePreview;
+        result["network_addresses"] = addressState;
         result["network_tools"] = networkSetup.Status();
         result.update({{"unlocked", vault.Unlocked()},
                        {"has_wallet", fs::exists(vault.path)},
@@ -580,6 +683,16 @@ class ClassroomApp {
             auto publicProfile = profile;
             publicProfile.erase("grants");
             result["network"] = publicProfile;
+            bool connected = false; uint64_t remoteHeight = 0;
+            for (const auto &node : cache.value("nodes", Json::array())) for (const auto &peer : node.value("connections", Json::array())) {
+                auto height = peer.value("height", uint64_t(0)); connected |= height != 0; remoteHeight = max(remoteHeight, height);
+            }
+            bool local = profile.value("seeds", Json::array()).empty();
+            auto indexed = cache.value("indexed_height", uint64_t(0));
+            string phase = !cache.value("running", false) ? "stopped" :
+                           !connected && !local ? "connecting" :
+                           !cache.value("contract_ready", false) || indexed < remoteHeight ? "syncing" : "ready";
+            result["connection_state"] = {{"phase", phase}, {"connected", connected}, {"indexed_height", indexed}, {"remote_height", remoteHeight}};
             result["messages"] = History();
             result["blocks"] = index.Rows("SELECT data FROM blocks ORDER BY height DESC LIMIT 20");
             result["transactions"] = index.Rows("SELECT data FROM transactions ORDER BY height DESC LIMIT 40");
@@ -606,6 +719,22 @@ class ClassroomApp {
     }
     Json Api(const Json &request) {
         auto action = request.at("action").get<string>();
+        if (action == "invite_received") {
+            if (incomingInvitation.is_object() && incomingInvitation.value("id", string{}) == request.value("id", string{})) incomingInvitation = nullptr;
+            return {{"ok", true}};
+        }
+        if (action == "network_addresses") {
+            addressState = CollectInviteAddresses(profile.is_object() ? Port() : 0);
+            return addressState;
+        }
+        if (action == "invite_preview") {
+            previewInvite = ValidateInvite(request.at("invite"));
+            invitePreview = {{"id", RandomHex(12)}, {"title", previewInvite.at("title")}, {"phase", "checking"},
+                {"same_chain", profile.is_object() && profile.value("genesis_root", string{}) == previewInvite.at("genesis_root").get<string>() &&
+                 profile.value("contract", string{}) == previewInvite.at("contract").get<string>()}, {"checked_ms", NowMs()}};
+            if (!previewTask.valid()) LaunchPreview();
+            return invitePreview;
+        }
         if (action == "status")
             return Status();
         if (action == "network_status" || action == "network_configure" || action == "network_remove") {
@@ -650,7 +779,27 @@ class ClassroomApp {
             return Status();
         }
         if (action == "create" || action == "join") {
-            NewNetwork(request, action == "join");
+            auto values = request;
+            if (action == "join") {
+                if (request.contains("preview_id")) {
+                    PollPreview();
+                    if (invitePreview.value("id", string{}) != request.at("preview_id").get<string>() ||
+                        invitePreview.value("phase", string{}) != "ready" || NowMs() - invitePreview.at("checked_ms").get<int64_t>() > 60000)
+                        throw runtime_error("请重新检查这份邀请的连接");
+                    values["invite"] = previewInvite;
+                    // Reachable entries go first; keep fallbacks for future reconnects.
+                    auto seeds = invitePreview.at("seeds"); set<string> seen;
+                    for (const auto &seed : seeds) seen.insert(seed.get<string>());
+                    for (const auto &seed : previewInvite.at("seeds"))
+                        if (seen.insert(seed.get<string>()).second) seeds.push_back(seed);
+                    values["invite"]["seeds"] = seeds;
+                } else {
+                    values["invite"] = ValidateInvite(request.at("invite"));
+                    auto checked = ProbeInvite(values["invite"], Runtime(values["invite"].at("version").get<int>()));
+                    if (checked["ok"] != true) throw runtime_error("暂时联系不上邀请中的聊天室，请重新获取邀请");
+                }
+            }
+            NewNetwork(values, action == "join");
             return Status();
         }
         if (action == "start") {
@@ -695,21 +844,46 @@ class ClassroomApp {
             q["method"] = "call";
             return NodeQuery(q);
         }
-        if (action == "invite") {
+        if (action == "invite" || action == "invite_prepare") {
             if (!profile.is_object() || !ContractPresent())
                 throw runtime_error("请先等待链和聊天室同步完成");
-            auto seeds = request.at("seeds");
+            if (action == "invite_prepare") {
+                try {
+                    addressState = CollectInviteAddresses(Port()); bool listening = false;
+                    if (ipv6) {
+                        try { auto reply = Rpc("::1", Port(), 19, {}, true, 1, 80); listening = reply.size() == 80 && EvmHex(span<const uint8_t>(reply).first(32)) == profile.at("genesis_root").get<string>(); }
+                        catch (...) {}
+                    }
+                    if (!listening) {
+                        auto addresses = addressState["addresses"];
+                        for (auto &entry : addresses) if (entry["family"] == "IPv6") entry["preferred"] = false;
+                        addressState = SelectInviteAddresses(addresses, Port());
+                    }
+                    addressState["ipv6_listening"] = listening;
+                } catch (const exception &e) {
+                    if (!request.contains("seeds")) throw;
+                    addressState = {{"addresses", Json::array()}, {"seeds", Json::array()}, {"scope", "none"}, {"checked_ms", NowMs()}, {"error", e.what()}};
+                }
+            }
+            auto seeds = request.value("seeds", action == "invite_prepare" ? addressState.at("seeds") : Json::array());
             if (!seeds.is_array() || seeds.empty() || seeds.size() > 8)
-                throw invalid_argument("请填写其他成员可访问的节点入口");
+                throw invalid_argument("没有找到可分享的连接入口，请连接网络后重新检查，或在连接详情中添加已有入口");
             for (const auto &seed : seeds)
                 ParseEndpoint(seed.get<string>());
-            return {{"version", ChatVersion()},
+            Json invite = {{"version", ChatVersion()},
                     {"title", profile["title"]},
                     {"genesis", profile["genesis"]},
                     {"genesis_root", profile["genesis_root"]},
                     {"contract", profile["contract"]},
                     {"contract_code_sha256", Sha256(Runtime())},
                     {"seeds", seeds}};
+            if (action == "invite") return invite;
+            invite["created_ms"] = NowMs();
+            invite["scope"] = request.contains("seeds") ? "custom" : addressState.at("scope");
+            auto token = EncodeInvite(invite);
+            auto text = "邀请你加入 NornV2「" + profile.at("title").get<string>() + "」\n\n打开 NornV2，点击“加入聊天室”，将这整段内容粘贴进去即可。\n";
+            if (invite["scope"] == "local") text += "当前邀请适用于同一局域网或可互通的专用网络。\n";
+            return {{"invite", invite}, {"file", InviteEnvelope(invite)}, {"token", token}, {"share_text", text + "\n" + token}, {"connectivity", addressState}};
         }
         if (action == "transfer") {
             auto receiver = EvmBytes(request.at("receiver"));
@@ -760,7 +934,7 @@ class ClassroomApp {
         }
         if (action == "diagnostics")
             return {{"schema", 1},
-                    {"application", "NornV2 Peer Chat 0.2.0"},
+                    {"application", "NornV2 Peer Chat 0.3.0"},
                     {"ipv6_available", ipv6},
                     {"status", Status()},
                     {"note", "No wallet seeds, signed outbox bytes or node log bodies included"}};

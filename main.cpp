@@ -91,6 +91,7 @@ int main(int argc,char* argv[]) {
             else if (name=="--run-seconds") runSeconds=int(ParseNumber(value,1,86400));
             else if (name=="--metrics") metricsPath=value;
             else if (name=="--seed") AddConfiguredPeer(value);
+            else if (name=="--seeds-file") configuredPeerFile=value;
             else if (name=="--max-peers") maxPeers=ParseNumber(value,1,1024);
             else if (name=="--max-connections") maxConnections=ParseNumber(value,2,4096);
             else if (name=="--relay-transactions") relayTransactions=ParseNumber(value,0,1)!=0;

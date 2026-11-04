@@ -81,8 +81,12 @@ try {
         $variants = @()
         if ($Installer) { $variants += 'standard' }
         if ($OfflineInstaller) { $variants += 'offline' }
+        $built = $false
         foreach ($variant in $variants) {
-            $arguments = @('run', 'tauri', '--', 'build', '--ci')
+            # Variants differ only in NSIS's WebView2 payload, not app code.
+            # Reuse the verified executable when bundling the second variant.
+            $command = if ($built) { 'bundle' } else { 'build' }
+            $arguments = @('run', 'tauri', '--', $command, '--ci')
             $suffix = ''
             if ($variant -eq 'offline') {
                 $arguments += @('--config', 'src-tauri/tauri.offline.conf.json')
@@ -90,6 +94,7 @@ try {
             }
             npm.cmd @arguments
             if ($LASTEXITCODE -ne 0) { throw "Tauri $variant installer build failed" }
+            $built = $true
             $releaseInstaller = Join-Path $releasePath "NornV2-${version}-windows-x64${suffix}-setup.exe"
             Copy-Item -LiteralPath $installerPath -Destination $releaseInstaller -Force
             $hash = (Get-FileHash -LiteralPath $releaseInstaller -Algorithm SHA256).Hash.ToLowerInvariant()

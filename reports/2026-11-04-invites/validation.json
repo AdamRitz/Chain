@@ -1,0 +1,69 @@
+{
+  "version": "0.3.0",
+  "full_ctest": {
+    "tests": 17,
+    "failures": 0,
+    "seconds": 96.0,
+    "reported_real_seconds": 96.49
+  },
+  "post_review_ctest": {
+    "tests": 2,
+    "failures": 0,
+    "seconds": 14.0
+  },
+  "frontend_tests": {
+    "passed": 11,
+    "failed": 0
+  },
+  "rust_check": true,
+  "browser": {
+    "copy_invitation": true,
+    "whole_text_parse": true,
+    "preflight_and_join": true,
+    "same_chain_rejoin": true,
+    "funded_message_included": true,
+    "success_hides_long_token": true,
+    "consecutive_inbox_previews": true
+  },
+  "native_file": {
+    "first_launch_preview_observed": true,
+    "single_instance_packet_creation_and_consumption": true,
+    "native_background_accessibility_refresh_verified": false
+  },
+  "public_ipv6_physical_network_verified": false,
+  "cloud_deployed": false,
+  "real_firewall_modified": false,
+  "invite_network": {
+    "checks": [
+      "whole human invitation; unreachable IPv6 fallback; asynchronous preflight; real ready state",
+      "same-chain invitation merges entry without PID change; peer connection and chat survive original creator stopping",
+      "wrong-chain endpoint and invalid preview cannot replace the running chain",
+      "native-file inbox previews content once and never automatically switches chains"
+    ],
+    "cross_physical_network_tested": false
+  },
+  "legacy_restore": {
+    "checks": [
+      "one identity and one node per app; ordinary transfer funds joining member; noncreator creates a group and chats without approval",
+      "creator has no funding, membership approval or room shutdown API",
+      "importing an invitation for the connected chain reuses the current identity, node and ledger",
+      "joined member exports a valid invite, transfers funds and receives peer chat while creator is offline",
+      "invalid invitations are rejected without stopping or replacing the active chain",
+      "real 0.1.5 three-node chain resumes as one peer node with all original keys, endpoint, ledger, contract and messages intact"
+    ],
+    "passed": 6
+  },
+  "installer_final_artifacts_verified": true,
+  "packages": [
+    {
+      "name": "NornV2-0.3.0-windows-x64-setup.exe",
+      "bytes": 13759250,
+      "sha256": "0c8a15d19b7495ae2629f2d8b6ac1758966b4a033b4d0ec0bb4fdf9e4b500338"
+    },
+    {
+      "name": "NornV2-0.3.0-windows-x64-offline-setup.exe",
+      "bytes": 226975941,
+      "sha256": "1b9aa51f600bd0c9250469f0cd9126edfc15b6ce6c315d73b3b19aa3abf4a133"
+    }
+  ]
+}

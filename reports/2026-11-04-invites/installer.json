@@ -1,0 +1,78 @@
+{
+  "passed": true,
+  "runs": [
+    {
+      "exe": "NornV2-0.3.0-windows-x64-setup.exe",
+      "arguments": "/P /NS /D=D:\\Project\\Chain\\build\\invite-installer-20261104-04\\installed",
+      "exit_code": 0,
+      "seconds": 1.266
+    },
+    {
+      "exe": "NornV2-0.3.0-windows-x64-setup.exe",
+      "arguments": "/P /NS /D=D:\\Project\\Chain\\build\\invite-installer-20261104-04\\installed",
+      "exit_code": 0,
+      "seconds": 1.491
+    },
+    {
+      "exe": "uninstall.exe",
+      "arguments": "/P _?=D:\\Project\\Chain\\build\\invite-installer-20261104-04\\installed",
+      "exit_code": 0,
+      "seconds": 3.958
+    },
+    {
+      "exe": "NornV2-0.3.0-windows-x64-setup.exe",
+      "arguments": "/P /NS /D=D:\\Project\\Chain\\build\\invite-installer-20261104-04\\installed",
+      "exit_code": 0,
+      "seconds": 1.16
+    },
+    {
+      "exe": "uninstall.exe",
+      "arguments": "/P _?=D:\\Project\\Chain\\build\\invite-installer-20261104-04\\installed",
+      "exit_code": 0,
+      "seconds": 3.423
+    },
+    {
+      "exe": "NornV2-0.3.0-windows-x64-setup.exe",
+      "arguments": "/P /NS /D=D:\\Project\\Chain\\build\\invite-installer-20261104-04\\installed",
+      "exit_code": 0,
+      "seconds": 1.138
+    },
+    {
+      "exe": "uninstall.exe",
+      "arguments": "/P _?=D:\\Project\\Chain\\build\\invite-installer-20261104-04\\installed",
+      "exit_code": 0,
+      "seconds": 3.676
+    },
+    {
+      "exe": "NornV2-0.3.0-windows-x64-offline-setup.exe",
+      "arguments": "/P /NS /D=D:\\Project\\Chain\\build\\invite-installer-20261104-04\\installed",
+      "exit_code": 0,
+      "seconds": 1.64
+    },
+    {
+      "exe": "uninstall.exe",
+      "arguments": "/P _?=D:\\Project\\Chain\\build\\invite-installer-20261104-04\\installed",
+      "exit_code": 0,
+      "seconds": 3.453
+    }
+  ],
+  "same_version_reinstall_and_clean_uninstall": true,
+  "previous_handler_restored": true,
+  "later_user_handler_preserved": true,
+  "offline_payload_matches": true,
+  "manifest_files": 20,
+  "user_data_unchanged": true,
+  "remembered_installation_restored": true,
+  "packages": [
+    {
+      "name": "NornV2-0.3.0-windows-x64-setup.exe",
+      "bytes": 13759250,
+      "sha256": "0c8a15d19b7495ae2629f2d8b6ac1758966b4a033b4d0ec0bb4fdf9e4b500338"
+    },
+    {
+      "name": "NornV2-0.3.0-windows-x64-offline-setup.exe",
+      "bytes": 226975941,
+      "sha256": "1b9aa51f600bd0c9250469f0cd9126edfc15b6ce6c315d73b3b19aa3abf4a133"
+    }
+  ]
+}

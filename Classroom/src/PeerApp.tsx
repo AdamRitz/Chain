@@ -26,10 +26,12 @@ import {
 import { api, bytes, download, number, short, type Row } from "./api";
 import { CanSend, MergeMessages, SelectedMessage } from "./model";
 import { NetworkPanel } from "./NetworkPanel";
+import { InviteInput, InviteShare } from "./InviteDialogs";
+import { CanJoinPreview, ConnectionText, ReceiptText } from "./invite";
 import { BlockTable, Metric, Outbox, PanelTitle, Topology } from "./components";
 import "./style.css";
 
-type View = "chat" | "wallet" | "blocks" | "network" | "share" | "home";
+type View = "chat" | "wallet" | "blocks" | "network" | "home";
 const views = [
   {
     id: "chat",
@@ -54,12 +56,6 @@ const views = [
     title: "节点与连接",
     icon: Network,
     caption: "本机运行一个节点，与其他成员共同维护链。",
-  },
-  {
-    id: "share",
-    title: "邀请加入",
-    icon: Users,
-    caption: "任何成员都可以分享当前链的邀请。",
   },
   {
     id: "home",
@@ -89,10 +85,8 @@ export function PeerApp() {
   const [title, setTitle] = useState("学术交流");
   const [nickname, setNickname] = useState("");
   const [invite, setInvite] = useState("");
-  const [endpoints, setEndpoints] = useState("");
-  const [exported, setExported] = useState<{ id: string; invite: Row } | null>(
-    null,
-  );
+  const [joinPreview, setJoinPreview] = useState<Row | null>(null);
+  const incomingSeen = useRef("");
   const [room, setRoom] = useState(1);
   const [body, setBody] = useState("");
   const [roomName, setRoomName] = useState("");
@@ -104,9 +98,10 @@ export function PeerApp() {
   const [history, setHistory] = useState<Row[]>([]);
   const [offset, setOffset] = useState(50);
   const polling = useRef(false);
+  const refreshPending = useRef(false);
   const chatEnd = useRef<HTMLDivElement>(null);
   const refresh = async () => {
-    if (polling.current) return;
+    if (polling.current) { refreshPending.current = true; return; }
     polling.current = true;
     try {
       setS(await api("status"));
@@ -115,12 +110,14 @@ export function PeerApp() {
       setS((old) => ({ ...old, running: false, connection_error: true }));
     } finally {
       polling.current = false;
+      if (refreshPending.current) { refreshPending.current = false; void refresh(); }
     }
   };
   useEffect(() => {
     void refresh();
     const timer = setInterval(refresh, 1200);
-    return () => clearInterval(timer);
+    window.addEventListener("norn-invite-ready", refresh);
+    return () => { clearInterval(timer); window.removeEventListener("norn-invite-ready", refresh); };
   }, []);
   useEffect(() => {
     if (!notice) return;
@@ -130,8 +127,6 @@ export function PeerApp() {
   useEffect(() => {
     setHistory([]);
     setOffset(50);
-    setExported(null);
-    setEndpoints("");
     setRoom(1);
     setSelected(null);
     setBlock(null);
@@ -188,7 +183,7 @@ export function PeerApp() {
   const inspected = SelectedMessage(selected, messages);
   const canSend = CanSend(body, {
     unlocked: !!s.unlocked,
-    running: !!s.running,
+    running: !!s.running && (!s.connection_state || s.connection_state.phase === "ready"),
     contractReady: !!s.contract_ready,
     roomOpen: !!currentRoom?.open,
     busy: !!busy,
@@ -196,7 +191,7 @@ export function PeerApp() {
   });
   const enter = async (joining: boolean) => {
     try {
-      const parsed = joining ? JSON.parse(invite) : undefined;
+      if (joining && !CanJoinPreview(joinPreview, joinPreview?.id || "")) throw Error("请先完成邀请连接检查。");
       if (!s.unlocked)
         await action(
           s.has_wallet ? "unlock" : "wallet_create",
@@ -207,7 +202,7 @@ export function PeerApp() {
         await action("nickname", { nickname: nickname.trim() });
       await action(
         joining ? "join" : "create",
-        joining ? { invite: parsed } : { title },
+        joining ? { preview_id: joinPreview!.id } : { title },
         joining ? "正在连接链与聊天室" : "正在创建链并部署聊天室",
       );
       setModal("");
@@ -216,11 +211,11 @@ export function PeerApp() {
       setView("chat");
       setNotice(
         joining
-          ? "已连接，正在同步聊天室。"
+          ? "正在连接聊天室，请查看同步进度。"
           : "链和聊天室已就绪，可以分享邀请。",
       );
     } catch (failure) {
-      if (failure instanceof SyntaxError) setError("邀请文件不是有效的 JSON。");
+      setError((failure as Error).message);
     }
   };
   const send = async (text = body, target = room) => {
@@ -246,18 +241,13 @@ export function PeerApp() {
     chatEnd.current?.scrollIntoView({ block: "nearest" });
   }, [view, messages.at(-1)?.id, pending.length]);
   useEffect(() => {
-    if (
-      view === "share" &&
-      network &&
-      !s.network_tools?.checked &&
-      !s.network_tools?.busy
-    )
-      run("network_status");
-  }, [view, network?.id]);
-  const addresses: Row[] = (s.network_tools?.firewall?.addresses || []).filter(
-    (item: Row) =>
-      !item.address.startsWith("fe80:") && !item.address.startsWith("169.254."),
-  );
+    const value = s.incoming_invitation;
+    if (!value?.id || value.id === incomingSeen.current || busy || (modal && modal !== "join")) return;
+    incomingSeen.current = value.id;
+    setInvite(value.text || ""); setJoinPreview(null); setModal("join");
+    if (value.error) setError(value.error);
+    void api("invite_received", { id: value.id }).catch(() => {});
+  }, [s.incoming_invitation?.id, busy, modal]);
   const currentView = views.find((item) => item.id === view)!;
   return (
     <div className="shell">
@@ -297,12 +287,14 @@ export function PeerApp() {
             <span>{currentView.title}</span>
           </div>
           <div className="header-right">
+            <button className="button secondary compact" onClick={() => setModal("join")}><Plus size={15} />加入聊天室</button>
+            {network && <button className="button primary compact" onClick={() => setModal("share")}><Users size={15} />邀请朋友</button>}
             <span className={"connection " + (s.running ? "connected" : "")}>
               <i />
               {s.connection_error
                 ? "本机服务连接中断"
                 : s.running
-                  ? "本机节点运行中"
+                  ? ConnectionText(s)
                   : "节点未运行"}
             </span>
             <button
@@ -333,10 +325,10 @@ export function PeerApp() {
                 <button
                   className="button secondary"
                   disabled={!!busy}
-                  onClick={() => setModal("connect")}
+                  onClick={() => setModal("join")}
                 >
                   <Globe2 size={16} />
-                  连接其他链
+                  加入聊天室
                 </button>
               </div>
             )}
@@ -360,7 +352,7 @@ export function PeerApp() {
                 </div>
               </div>
               <span className="pill teal">NornV2</span>
-              <h2>建立一条链，开始讨论。</h2>
+              <h2>创建聊天室，开始讨论。</h2>
               <p>
                 创建链并分享邀请，或加入其他成员的链和聊天室。每台电脑运行一个节点。
               </p>
@@ -369,20 +361,20 @@ export function PeerApp() {
                   <span className="option-icon">
                     <Globe2 />
                   </span>
-                  <b>创建链与聊天室</b>
+                  <b>创建聊天室</b>
                   <p>初始化链和公共讨论，随后邀请其他成员加入。</p>
                   <span>
-                    创建链 <ArrowRight size={17} />
+                    创建聊天室 <ArrowRight size={17} />
                   </span>
                 </button>
                 <button onClick={() => setModal("join")}>
                   <span className="option-icon blue">
                     <Users />
                   </span>
-                  <b>加入链与聊天室</b>
+                  <b>加入聊天室</b>
                   <p>导入成员分享的邀请，使用自己的账户参与交流。</p>
                   <span>
-                    加入链 <ArrowRight size={17} />
+                    加入聊天室 <ArrowRight size={17} />
                   </span>
                 </button>
               </div>
@@ -451,15 +443,15 @@ export function PeerApp() {
                     </h3>
                     <span>
                       {network.title} ·{" "}
-                      {s.contract_ready ? "聊天室已同步" : "正在同步聊天室"}
+                      {ConnectionText(s)}
                     </span>
                   </div>
                   <button
                     className="text-button"
-                    onClick={() => setView("share")}
+                    onClick={() => setModal("share")}
                   >
                     <Users size={16} />
-                    邀请加入
+                    邀请朋友
                   </button>
                 </div>
                 <div className="chat-scroll">
@@ -570,10 +562,10 @@ export function PeerApp() {
                       </span>
                       <button
                         className="text-button"
-                        onClick={() => copy(wallet.public_key)}
+                        onClick={() => copy(ReceiptText(s, wallet.public_key))}
                       >
                         <Copy size={14} />
-                        复制收款地址
+                        复制收款信息
                       </button>
                     </div>
                   ) : null}
@@ -898,98 +890,10 @@ export function PeerApp() {
               </button>
             </>
           )}
-          {network && view === "share" && (
-            <section className="panel padded">
-              <PanelTitle icon={Users} title="分享当前链" />
-              <p>
-                加入者导入邀请后，将使用自己的账户连接这条链和聊天室。
-                {network.chat_version === 2 &&
-                  "所有成员都可以发言、创建分组和分享邀请。"}
-              </p>
-              <p className="small muted">
-                选择其他成员能够访问的本机地址。节点端口为 {network.ports[0]}
-                ；IPv6 入口使用 [地址]:端口。
-              </p>
-              {addresses.length > 0 && (
-                <label className="field">
-                  本机候选地址
-                  <select
-                    aria-label="本机候选地址"
-                    defaultValue=""
-                    onChange={(event) => setEndpoints(event.target.value)}
-                  >
-                    <option value="" disabled>
-                      选择可达的网卡地址
-                    </option>
-                    {addresses.map((item, index) => {
-                      const endpoint = `${item.address.includes(":") ? `[${item.address}]` : item.address}:${network.ports[0]}`;
-                      return (
-                        <option key={index} value={endpoint}>
-                          {item.interface} · {endpoint}
-                        </option>
-                      );
-                    })}
-                  </select>
-                </label>
-              )}
-              <label className="field">
-                节点入口
-                <textarea
-                  aria-label="邀请节点入口"
-                  value={endpoints}
-                  onChange={(event) => setEndpoints(event.target.value)}
-                  placeholder={`192.168.1.10:${network.ports[0]}\n[IPv6地址]:${network.ports[0]}`}
-                />
-              </label>
-              <button
-                className="button primary"
-                disabled={!s.contract_ready || !endpoints.trim() || !!busy}
-                onClick={async () => {
-                  const id = network.id;
-                  try {
-                    const invite = await action("invite", {
-                      seeds: endpoints.split(/\s+/).filter(Boolean),
-                    });
-                    setExported({ id, invite });
-                  } catch {}
-                }}
-              >
-                生成链邀请 <ArrowRight size={16} />
-              </button>
-              {exported && exported.id === network.id && (
-                <div className="export-actions">
-                  <button
-                    className="button secondary"
-                    onClick={() =>
-                      download("nornv2-chain-invite.json", exported.invite)
-                    }
-                  >
-                    <Download size={15} />
-                    下载邀请
-                  </button>
-                  <button
-                    className="button secondary"
-                    onClick={() =>
-                      copy(JSON.stringify(exported.invite, null, 2))
-                    }
-                  >
-                    <Copy size={15} />
-                    复制邀请
-                  </button>
-                </div>
-              )}
-              <p className="small muted">
-                先在“节点与连接”允许本机节点接收入站，再将邀请发给其他成员。网卡地址是否可达，需要对方电脑检测。
-              </p>
-            </section>
-          )}
         </div>
         <footer>
           <span>NornV2 学术聊天室</span>
           <span>消息公开写入当前链</span>
-          <button onClick={() => setView("share")}>
-            邀请加入 <ArrowUpRight size={12} />
-          </button>
         </footer>
       </main>
       {notice && (
@@ -1028,66 +932,25 @@ export function PeerApp() {
                 {error}
               </div>
             )}
-            {modal === "connect" && (
-              <>
-                <h2>连接链与聊天室</h2>
-                <div className="choose-buttons">
-                  <button
-                    className="button secondary"
-                    onClick={() => setModal("create")}
-                  >
-                    <Globe2 size={18} />
-                    创建链与聊天室
-                  </button>
-                  <button
-                    className="button secondary"
-                    onClick={() => setModal("join")}
-                  >
-                    <Users size={18} />
-                    加入链与聊天室
-                  </button>
-                </div>
-              </>
-            )}
+            {modal === "share" && network && <InviteShare key={network.id} status={s} action={action} />}
             {(modal === "create" || modal === "join") && (
               <>
                 <span className="modal-icon">
                   <Globe2 size={26} />
                 </span>
                 <h2>
-                  {modal === "join" ? "加入链与聊天室" : "创建链与聊天室"}
+                  {modal === "join" ? "加入聊天室" : "创建聊天室"}
                 </h2>
                 <p>
                   {modal === "join"
-                    ? "导入任意成员提供的链邀请。本机启动一个节点，同步链和聊天记录。"
+                    ? "粘贴朋友发来的完整邀请，软件会自动检查并连接。"
                     : "本机启动一个节点并部署公共聊天室。任何加入的成员都可以发言、创建分组和分享邀请。"}
                 </p>
                 {modal === "join" ? (
-                  <>
-                    <label className="field">
-                      链邀请
-                      <textarea
-                        aria-label="链邀请"
-                        value={invite}
-                        onChange={(event) => setInvite(event.target.value)}
-                        placeholder="粘贴邀请 JSON，或从文件导入"
-                      />
-                    </label>
-                    <label className="file-link">
-                      从文件导入
-                      <input
-                        type="file"
-                        accept=".json"
-                        onChange={async (event) => {
-                          const file = event.target.files?.[0];
-                          if (file) setInvite(await file.text());
-                        }}
-                      />
-                    </label>
-                  </>
+                  <InviteInput text={invite} setText={value => { setInvite(value); setJoinPreview(null); }} status={s} onPreview={setJoinPreview} />
                 ) : (
                   <label className="field">
-                    链名称
+                    聊天室名称
                     <input
                       aria-label="链名称"
                       value={title}
@@ -1126,16 +989,17 @@ export function PeerApp() {
                   className="button primary full"
                   disabled={
                     !!busy ||
-                    (modal === "join" ? !invite.trim() : !title.trim()) ||
+                    (modal === "join" ? !CanJoinPreview(joinPreview, joinPreview?.id || "") : !title.trim()) ||
                     bytes(nickname) > 48 ||
                     (!s.unlocked &&
                       (!password || (!s.has_wallet && bytes(password) < 8)))
                   }
                   onClick={() => void enter(modal === "join")}
                 >
-                  {modal === "join" ? "加入并同步" : "创建并开始聊天"}
+                  {modal === "join" ? "加入聊天室" : "创建聊天室"}
                   <ArrowRight size={16} />
                 </button>
+                {modal === "join" && !invite.trim() && <button className="text-button" onClick={() => setModal("create")}>没有邀请？创建聊天室</button>}
               </>
             )}
             {modal === "wallet" && (

@@ -1,7 +1,43 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
-use std::{fs,io::{BufRead,BufReader},path::PathBuf,process::{Child,Command,Stdio},sync::Mutex,time::{Duration,Instant}};
+use std::{fs,io::{BufRead,BufReader,Read},path::PathBuf,process::{Child,Command,Stdio},sync::Mutex,time::{Duration,Instant}};
 use tauri::Manager;
-struct Runtime { child: Mutex<Option<Child>>, stop: PathBuf }
+struct Runtime { child: Mutex<Option<Child>>, stop: PathBuf, data: PathBuf }
+#[derive(Default)]
+struct Incoming { files: Mutex<Vec<String>> }
+fn receive_invitations(app: &tauri::AppHandle, arguments: Vec<String>) {
+    let pending = app.state::<Incoming>();
+    {
+        let mut files = pending.files.lock().unwrap();
+        for argument in arguments.into_iter().skip(1) {
+            if argument.to_lowercase().ends_with(".norninvite") && files.len() < 8 { files.push(argument); }
+        }
+    }
+    let Some(runtime) = app.try_state::<Runtime>() else { return; };
+    let files = std::mem::take(&mut *pending.files.lock().unwrap());
+    for (index, file) in files.into_iter().enumerate() {
+        let value = (|| -> Result<String, String> {
+            let info = fs::symlink_metadata(&file).map_err(|_| "无法打开邀请文件，请重新保存后再试。")?;
+            if !info.is_file() || info.file_type().is_symlink() || info.len() > 524288 { return Err("邀请文件无效或过大，请让朋友重新发送。".into()); }
+            let mut text = String::new();
+            fs::File::open(&file).map_err(|_| "邀请文件无法读取。")?.take(524289).read_to_string(&mut text).map_err(|_| "邀请文件无法读取，请让朋友重新发送。")?;
+            if text.len() > 524288 { return Err("邀请文件过大，请让朋友重新发送。".into()); }
+            Ok(text)
+        })();
+        let packet = match value { Ok(text) => serde_json::json!({"text":text}), Err(error) => serde_json::json!({"error":error}) };
+        let directory = runtime.data.join("incoming-invites");
+        if fs::create_dir_all(&directory).is_err() { continue; }
+        let stamp = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap_or_default().as_nanos();
+        let target = directory.join(format!("invite-{}-{stamp}-{index}.json", std::process::id()));
+        let temporary = target.with_extension("tmp");
+        if fs::write(&temporary, packet.to_string()).is_ok() && fs::rename(&temporary, target).is_ok() {
+            // A background WebView may throttle timers. Wake the existing
+            // window immediately; invite bytes remain in the bounded inbox.
+            if let Some(window) = app.get_webview_window("main") {
+                let _ = window.eval("window.dispatchEvent(new Event('norn-invite-ready'));");
+            }
+        }
+    }
+}
 impl Runtime {
     fn stop(&self) {
         let mut guard=self.child.lock().unwrap();
@@ -25,7 +61,8 @@ fn startup_error(message: &str) {
     }
 }
 fn main() {
-    let application=tauri::Builder::default().plugin(tauri_plugin_single_instance::init(|app,_,_|{
+    let application=tauri::Builder::default().manage(Incoming::default()).plugin(tauri_plugin_single_instance::init(|app,args,_|{
+        receive_invitations(app, args);
         if let Some(window)=app.get_webview_window("main"){let _=window.unminimize();let _=window.set_focus();}
     })).setup(|app| {
         // Tauri canonicalizes Windows paths to \\?\ form. MinGW's filesystem stat
@@ -51,7 +88,8 @@ fn main() {
         let info:serde_json::Value=match serde_json::from_str(&line){Ok(value)=>value,Err(error)=>{let _=child.kill();let _=child.wait();return Err(error.into());}};
         let url=info["url"].as_str().ok_or("Missing local URL")?.parse::<tauri::Url>()?;
         if url.host_str()!=Some("127.0.0.1")||url.scheme()!="http"{let _=child.kill();return Err("Invalid gateway URL".into());}
-        let origin=url.origin();app.manage(Runtime{child:Mutex::new(Some(child)),stop});
+        let origin=url.origin();app.manage(Runtime{child:Mutex::new(Some(child)),stop,data:data.clone()});
+        receive_invitations(app.handle(), std::env::args().collect());
         tauri::WebviewWindowBuilder::new(app,"main",tauri::WebviewUrl::External(url))
             .title("NornV2 学术聊天室").inner_size(1380.0,900.0).min_inner_size(900.0,680.0)
             .on_navigation(move|next| next.origin()==origin).build()?;

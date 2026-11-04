@@ -6,6 +6,12 @@
 #include <filesystem>
 #include <future>
 #include <sqlite3.h>
+#ifdef _WIN32
+#include <iphlpapi.h>
+#ifdef interface
+#undef interface
+#endif
+#endif
 #include "../../Transaction/Transaction.h"
 #include "../../Message/Message.h"
 #include "../../EVM/BuildTransaction.h"
@@ -61,7 +67,7 @@ void SaveJson(const fs::path &path, const Json &data) {
 #endif
 }
 vector<uint8_t> Rpc(const string &host, uint16_t port, uint8_t kind, const vector<uint8_t> &data = {},
-                    bool reply = true, int seconds = 4) {
+                    bool reply = true, int seconds = 4, size_t replyLimit = maxBlockBytes) {
     io_context io;
     tcp::socket socket(io);
     tcp::resolver resolver(io);
@@ -88,7 +94,7 @@ vector<uint8_t> Rpc(const string &host, uint16_t port, uint8_t kind, const vecto
             array<uint8_t, 5> header;
             co_await async_read(socket, buffer(header), use_awaitable);
             auto size = ReadU32(header.data() + 1);
-            if (header[0] != kind + 1 || size > maxBlockBytes)
+            if (header[0] != kind + 1 || size > replyLimit)
                 throw runtime_error("Invalid node response");
             vector<uint8_t> body(size);
             co_await async_read(socket, buffer(body), use_awaitable);

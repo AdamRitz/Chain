@@ -26,6 +26,7 @@ export function NetworkPanel({
     }
   };
   useEffect(() => {
+    void action("network_addresses").catch(() => {});
     if (!tools.checked && !tools.busy) void invoke("network_status");
   }, []);
   const probe =
@@ -134,7 +135,7 @@ export function NetworkPanel({
             {r.remote.join(", ")}
           </p>
         ))}
-        {(firewall?.addresses || []).map((a: Row, i: number) => (
+        {(status.network_addresses?.addresses || firewall?.addresses || []).map((a: Row, i: number) => (
           <p className="small mono" key={i}>
             {a.interface} · {a.address}/{a.prefix} · {a.family}
           </p>

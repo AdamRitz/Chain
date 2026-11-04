@@ -1935,6 +1935,18 @@ footer button {
 .network-setup {
   margin-bottom: 20px;
 }
+.invite-summary { display: grid; gap: 10px; padding: 18px; margin: 18px 0; background: #f1f7f7; border: 1px solid #dfeaea; border-radius: 12px; overflow-wrap: anywhere; }
+.invite-summary strong { font-size: 17px; color: #214f51; }
+.invite-summary span { display: flex; gap: 8px; align-items: center; font-size: 13px; }
+.invite-summary small, .invite-permission small { color: #65787a; font-size: 12px; }
+.invite-secondary { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px; margin: 16px 0; }
+.invite-permission { margin: 18px 0; padding-top: 12px; border-top: 1px solid #e3e9e9; }
+.invite-permission small { display: block; margin-top: 8px; }
+.invite-details { margin-top: 18px; overflow-wrap: anywhere; }
+.invite-details summary { color: #456568; font-size: 13px; cursor: pointer; }
+.invite-details textarea { min-height: 88px; }
+.modal { max-height: calc(100vh - 48px); overflow-y: auto; }
+.button.compact { padding: 8px 12px; font-size: 12px; }
 .network-setup .diagnostic {
   gap: 16px;
   flex-wrap: wrap;

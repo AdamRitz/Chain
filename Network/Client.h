@@ -2,6 +2,7 @@
 #define CHAIN_CLIENT_H
 #include <utility>
 #include <set>
+#include <fstream>
 #include <boost/asio.hpp>
 #include <deque>
 #include <thread>
@@ -35,6 +36,10 @@ size_t maxPendingVerify=32768;
 size_t maxConnections=128;
 size_t maxPeers=64;
 vector<pair<string,uint16_t>> configuredPeers;
+string configuredPeerFile;
+mutex seedAttemptMutex;
+set<pair<string,uint16_t>> seedAttempts;
+set<pair<string,uint16_t>> addressAttempts; // protected by peerMutex, like peerPool
 bool relayTransactions=false;
 atomic<uint64_t> networkSentBytes{0},localProposals{0};
 size_t maxSendBytes=8*1024*1024;
@@ -175,7 +180,7 @@ void QueryBlock(const shared_ptr<Peer>& peer,uint64_t height) {
 }
 
 // ------------------------------------------------连接、发现和同步------------------------------------------------
-awaitable<void> Connect(ip::address address,uint16_t port) {
+awaitable<void> Connect(ip::address address,uint16_t port,unsigned delayMs=0) {
     address=CanonicalAddress(address);
     auto executor=co_await this_coro::executor;
     if (!port||connectionCount>=maxConnections) co_return;
@@ -184,7 +189,10 @@ awaitable<void> Connect(ip::address address,uint16_t port) {
         for (const auto& [key,peer]:peerPool) {
             if (peer->port==port&&peer->address==address) co_return;
         }
+        if (addressAttempts.size()>=32||!addressAttempts.emplace(address.to_string(),port).second) co_return;
     }
+    struct ReleaseAddress { string address; uint16_t port; ~ReleaseAddress() { lock_guard lock(peerMutex);addressAttempts.erase({address,port}); } } release{address.to_string(),port};
+    if (delayMs) { steady_timer stagger(executor);stagger.expires_after(milliseconds(delayMs));co_await stagger.async_wait(use_awaitable); }
     auto peer=make_shared<Peer>(tcp::socket(executor));
     boost::system::error_code ec;
     peer->deadline.expires_after(seconds(5));
@@ -211,10 +219,36 @@ awaitable<void> Connect(ip::address address,uint16_t port) {
 }
 awaitable<void> ConnectSeed(const string& host="127.0.0.1",uint16_t port=8089) {
     auto executor=co_await this_coro::executor;
-    tcp::resolver resolver(executor);boost::system::error_code ec;
-    auto entries=co_await resolver.async_resolve(host,to_string(port),redirect_error(use_awaitable,ec));
+    auto resolver=make_shared<tcp::resolver>(executor);steady_timer deadline(executor);boost::system::error_code ec;
+    deadline.expires_after(seconds(3));deadline.async_wait([resolver](boost::system::error_code error){if (!error) resolver->cancel();});
+    auto entries=co_await resolver->async_resolve(host,to_string(port),redirect_error(use_awaitable,ec));
+    deadline.cancel();
     if (ec) co_return;
-    for (const auto& entry:entries) co_await Connect(entry.endpoint().address(),port);
+    vector<ip::address> v4,v6;
+    for (const auto& entry:entries) {
+        auto address=CanonicalAddress(entry.endpoint().address()); auto& list=address.is_v6()?v6:v4;
+        if (list.size()<4&&find(list.begin(),list.end(),address)==list.end()) list.push_back(address);
+    }
+    unsigned delay=0;
+    for (size_t i=0;i<max(v4.size(),v6.size());i++) {
+        if (i<v6.size()) { co_spawn(executor,Connect(v6[i],port,delay),[](exception_ptr){});delay+=150; }
+        if (i<v4.size()) { co_spawn(executor,Connect(v4[i],port,delay),[](exception_ptr){});delay+=150; }
+    }
+}
+// Local gateway-owned file only. No remote query may change seed configuration.
+void ReloadConfiguredPeers() {
+    if (configuredPeerFile.empty()) return;
+    try {
+        if (std::filesystem::file_size(configuredPeerFile)>8192) return;
+        ifstream input(configuredPeerFile); auto values=nlohmann::json::parse(input);
+        if (!values.is_array()||values.size()>8) return;
+        vector<pair<string,uint16_t>> peers;
+        for (const auto& value:values) {
+            auto endpoint=ParseEndpoint(value.get<string>());
+            if (find(peers.begin(),peers.end(),endpoint)==peers.end()) peers.push_back(endpoint);
+        }
+        configuredPeers=std::move(peers);
+    } catch (...) { /* An incomplete/invalid update keeps the prior entries. */ }
 }
 vector<uint8_t> GenerateDiscoverMessage(bool extended=false) {
     vector<uint8_t> data;
@@ -303,7 +337,20 @@ awaitable<void> OpenDiscoveryMode() {
             for (const auto& [key,peer]:peerPool) peers.push_back(peer);
         }
         for (const auto& peer:peers) QueryHeight(peer);
-        for (const auto& [host,port]:configuredPeers) co_await ConnectSeed(host,port);
+        // Bound concurrent seed attempts so an unreachable first address does
+        // not hold back a reachable IPv4/IPv6 fallback or the discovery loop.
+        ReloadConfiguredPeers(); unsigned delay=0;
+        for (const auto& endpoint:configuredPeers) {
+            { lock_guard lock(seedAttemptMutex);
+              if (seedAttempts.size()>=8||!seedAttempts.insert(endpoint).second) continue; }
+            co_spawn(timer.get_executor(),[endpoint,wait=delay]() -> awaitable<void> {
+                struct Release { pair<string,uint16_t> endpoint; ~Release() { lock_guard lock(seedAttemptMutex);seedAttempts.erase(endpoint); } } release{endpoint};
+                steady_timer stagger(co_await this_coro::executor); stagger.expires_after(milliseconds(wait));
+                co_await stagger.async_wait(use_awaitable);
+                co_await ConnectSeed(endpoint.first,endpoint.second);
+            },[](exception_ptr){});
+            delay+=150;
+        }
         timer.expires_after(seconds(1));
         co_await timer.async_wait(use_awaitable);
     }

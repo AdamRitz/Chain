@@ -805,7 +805,18 @@ Section Install
   ; Create file associations
   {{#each file_associations as |association| ~}}
     {{#each association.ext as |ext| ~}}
+       ; Chain: reinstall must preserve the original handler, not back up itself.
+       !if "{{ext}}" == "norninvite"
+         ReadRegStr $R8 SHCTX "Software\Classes\.norninvite" ""
+         ReadRegStr $R9 SHCTX "Software\Classes\.norninvite" "NornV2Invite_backup"
+       !endif
        !insertmacro APP_ASSOCIATE "{{ext}}" "{{or association.name ext}}" "{{association-description association.description ext}}" "$\"$INSTDIR\${MAINBINARYNAME}.exe$\",0" "Open with ${PRODUCTNAME}" "$\"$INSTDIR\${MAINBINARYNAME}.exe$\" $\"%1$\""
+       !if "{{ext}}" == "norninvite"
+         ${If} $R8 == "NornV2Invite"
+           ${IfThen} $R9 == "NornV2Invite" ${|} StrCpy $R9 "" ${|}
+           WriteRegStr SHCTX "Software\Classes\.norninvite" "NornV2Invite_backup" "$R9"
+         ${EndIf}
+       !endif
     {{/each}}
   {{/each}}
 
@@ -965,7 +976,25 @@ Section Uninstall
   ; Delete app associations
   {{#each file_associations as |association| ~}}
     {{#each association.ext as |ext| ~}}
-      !insertmacro APP_UNASSOCIATE "{{ext}}" "{{or association.name ext}}"
+      !if "{{ext}}" == "norninvite"
+        ; Chain: clean only this installation's association and preserve a
+        ; handler the user selected after installing NornV2.
+        ReadRegStr $R8 SHCTX "Software\Classes\NornV2Invite\shell\open\command" ""
+        ${If} $R8 == "$\"$INSTDIR\${MAINBINARYNAME}.exe$\" $\"%1$\""
+          ReadRegStr $R8 SHCTX "Software\Classes\.norninvite" ""
+          ${If} $R8 == "NornV2Invite"
+            !insertmacro APP_UNASSOCIATE "{{ext}}" "{{or association.name ext}}"
+          ${Else}
+            DeleteRegKey SHCTX "Software\Classes\NornV2Invite"
+          ${EndIf}
+          DeleteRegValue SHCTX "Software\Classes\.norninvite" "NornV2Invite_backup"
+          ReadRegStr $R8 SHCTX "Software\Classes\.norninvite" ""
+          ${IfThen} $R8 == "" ${|} DeleteRegValue SHCTX "Software\Classes\.norninvite" "" ${|}
+          DeleteRegKey /ifempty SHCTX "Software\Classes\.norninvite"
+        ${EndIf}
+      !else
+        !insertmacro APP_UNASSOCIATE "{{ext}}" "{{or association.name ext}}"
+      !endif
     {{/each}}
   {{/each}}
 
