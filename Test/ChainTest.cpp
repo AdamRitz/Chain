@@ -120,9 +120,15 @@ int main(int argc,char* argv[]) {
         Require(DBCheckBlockUsers(data3),"cache before write failure");
         auto usersBefore=users;
         db.reset();
+#if ROCKSDB_MAJOR >= 11
+        unique_ptr<rocksdb::DB> readOnly;
+        CheckDBStatus(rocksdb::DB::OpenForReadOnly(options,path,&readOnly));
+        db=std::move(readOnly);
+#else
         rocksdb::DB* readOnly=nullptr;
         CheckDBStatus(rocksdb::DB::OpenForReadOnly(options,path,&readOnly));
         db.reset(readOnly);
+#endif
         RequireThrow([&]{CommitBlock(block3,data3);},"write failure reported");
         Require(users==usersBefore,"failed cached execution preserves memory state");
         Require(DBReadBlockHeight()==2&&txpool.size()==1&&epoch==3,"failed commit preserves metadata and pool");

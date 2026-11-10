@@ -9,6 +9,7 @@
 #include <deque>
 #include <unordered_set>
 #include <rocksdb/db.h>
+#include <rocksdb/version.h>
 #include <rocksdb/options.h>
 #include <rocksdb/write_batch.h>
 #include <rocksdb/statistics.h>
@@ -114,9 +115,15 @@ void InitDB(const string& path="test",bool sync=true) {
     rocksdb::BlockBasedTableOptions tableOptions;
     tableOptions.filter_policy.reset(rocksdb::NewBloomFilterPolicy(10,false));
     options.table_factory.reset(rocksdb::NewBlockBasedTableFactory(tableOptions));
+#if ROCKSDB_MAJOR >= 11
+    unique_ptr<rocksdb::DB> openedDB;
+    CheckDBStatus(rocksdb::DB::Open(options,path,&openedDB));
+    db=std::move(openedDB);
+#else
     rocksdb::DB* openedDB=nullptr;
     CheckDBStatus(rocksdb::DB::Open(options,path,&openedDB));
     db.reset(openedDB);
+#endif
     string version;
     if (DBGet("SchemaVersion",version)) {
         if (version!="7") throw runtime_error("Height transaction indexes require schema 7. Use a NEW --data directory with --genesis.");

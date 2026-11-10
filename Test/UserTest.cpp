@@ -103,9 +103,15 @@ int main(int argc,char* argv[]) {
         before=users;
         auto burned=userBurned;
         db.reset();
+#if ROCKSDB_MAJOR >= 11
+        unique_ptr<rocksdb::DB> readOnly;
+        CheckDBStatus(rocksdb::DB::OpenForReadOnly(options,path,&readOnly));
+        db=std::move(readOnly);
+#else
         rocksdb::DB* readOnly=nullptr;
         CheckDBStatus(rocksdb::DB::OpenForReadOnly(options,path,&readOnly));
         db.reset(readOnly);
+#endif
         RequireThrow([&]{CommitBlock(UnSerializeBlock(fifthBlock),fifthBlock);},"read-only database rejects write");
         Require(users==before&&userBurned==burned,"failed write preserves account cache and fees");
         Require(poolUsers==before,"failed write preserves published admission accounts");

@@ -59,9 +59,15 @@ int main(int argc,char** argv) {
         Require(AdoptFork(invalid,detached)==-1,"invalid fork rejected");
         Require(DBReadCurrentBlock()==first.first.hash&&users==beforeUsers&&userBurned==beforeBurned&&SerializeEvmAccount(evmState.get(address))==before,"invalid fork is atomic");
         db.reset();
+#if ROCKSDB_MAJOR >= 11
+        unique_ptr<rocksdb::DB> readOnly;
+        CheckDBStatus(rocksdb::DB::OpenForReadOnly(options,root.string(),&readOnly));
+        db=std::move(readOnly);
+#else
         rocksdb::DB* readOnly=nullptr;
         CheckDBStatus(rocksdb::DB::OpenForReadOnly(options,root.string(),&readOnly));
         db.reset(readOnly);
+#endif
         bool failed=false; try { AdoptFork(better,detached); } catch (const exception&) { failed=true; }
         Require(failed,"write failure surfaced");
         Require(poolUsers==beforeUsers,"failed branch write preserves published admission accounts");
