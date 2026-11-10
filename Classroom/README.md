@@ -4,7 +4,7 @@
 
 ## 安装
 
-下载 [NornV2 0.4.0 Windows x64 安装包](https://github.com/AdamRitz/Chain/releases/tag/v0.4.0)。通常选择 `NornV2-0.4.0-windows-x64-setup.exe`，双击后选择程序目录并继续安装。关闭正在运行的应用后再安装更新。支持 Windows 10 1903 及以上和 Windows 11 x64，包含 C++ 运行依赖，不需要额外安装编译器、Node.js 或 Python。
+下载 [NornV2 0.4.1 Windows x64 安装包](https://github.com/AdamRitz/Chain/releases/tag/v0.4.1)。通常选择 `NornV2-0.4.1-windows-x64-setup.exe`，双击后选择程序目录并继续安装。关闭正在运行的应用后再安装更新。支持 Windows 10 1903 及以上和 Windows 11 x64。完整桌面包包含界面、本地网关、区块链节点、网络助手及 C++ 运行依赖，并纳入本次 RocksDB 11 接口兼容修复，不需要额外安装编译器、Node.js 或 Python。
 
 默认提供一个标准安装包，复用电脑上已有的 WebView2；缺少时通过内置的微软引导程序联网下载安装。项目仍保留完整离线打包脚本，需要时可单独构建，不再把两种安装包并列为默认选择。
 

@@ -964,7 +964,7 @@ class ClassroomApp {
         }
         if (action == "diagnostics")
             return {{"schema", 1},
-                    {"application", "NornV2 Peer Chat 0.4.0"},
+                    {"application", "NornV2 Peer Chat 0.4.1"},
                     {"ipv6_available", ipv6},
                     {"status", Status()},
                     {"note", "No wallet seeds, signed outbox bytes or node log bodies included"}};
