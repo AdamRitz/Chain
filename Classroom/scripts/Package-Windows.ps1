@@ -7,7 +7,11 @@ param(
 $ErrorActionPreference = 'Stop'
 $appRoot = Split-Path $PSScriptRoot -Parent
 $repoRoot = Split-Path $appRoot -Parent
-$buildPath = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot $BuildDirectory))
+$buildPath = if ([System.IO.Path]::IsPathRooted($BuildDirectory)) {
+    [System.IO.Path]::GetFullPath($BuildDirectory)
+} else {
+    [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot $BuildDirectory))
+}
 $resourcePath = Join-Path $appRoot 'src-tauri/resources'
 $configuration = Get-Content -LiteralPath (Join-Path $appRoot 'src-tauri/tauri.conf.json') -Raw -Encoding UTF8 | ConvertFrom-Json
 $version = $configuration.version
@@ -17,11 +21,6 @@ try {
     if ($LASTEXITCODE -ne 0) { throw 'npm ci failed' }
     npm.cmd run build
     if ($LASTEXITCODE -ne 0) { throw 'Frontend build failed' }
-    Push-Location (Join-Path $appRoot 'src-tauri')
-    try {
-        cargo build --locked --release --bin norn-network
-        if ($LASTEXITCODE -ne 0) { throw 'Network helper build failed' }
-    } finally { Pop-Location }
     # resources/ is generated staging only. Verify the exact absolute path before
     # removing stale hashed web assets and DLLs from previous builds.
     $expectedResources = [System.IO.Path]::GetFullPath((Join-Path $repoRoot 'Classroom/src-tauri/resources'))
@@ -36,7 +35,6 @@ try {
     foreach ($name in @('boost.exe','chain_classroom.exe')) {
         Copy-Item -LiteralPath (Join-Path $buildPath $name) -Destination $resourcePath -Force
     }
-    Copy-Item -LiteralPath (Join-Path $appRoot 'src-tauri/target/release/norn-network.exe') -Destination $resourcePath -Force
     Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'Configure-Network.ps1') -Destination $resourcePath -Force
     Copy-Item -LiteralPath (Join-Path $repoRoot 'Contracts/ClassroomChat.compiled.json') -Destination $resourcePath -Force
     Copy-Item -LiteralPath (Join-Path $repoRoot 'Contracts/ClassroomChat.legacy-v1.compiled.json') -Destination $resourcePath -Force
@@ -67,6 +65,14 @@ try {
             }
         }
     }
+    # The helper shares this package's tauri-build script, which validates the
+    # configured resources directory even when only norn-network is built.
+    Push-Location (Join-Path $appRoot 'src-tauri')
+    try {
+        cargo build --locked --release --bin norn-network
+        if ($LASTEXITCODE -ne 0) { throw 'Network helper build failed' }
+    } finally { Pop-Location }
+    Copy-Item -LiteralPath (Join-Path $appRoot 'src-tauri/target/release/norn-network.exe') -Destination $resourcePath -Force
     $manifest = @{
         product = $configuration.productName; version = $version
         files = @(Get-ChildItem -LiteralPath $resourcePath -File -Recurse | Sort-Object FullName | ForEach-Object { @{name=$_.FullName.Substring($resourcePath.Length + 1).Replace('\','/');sha256=(Get-FileHash -LiteralPath $_.FullName -Algorithm SHA256).Hash.ToLowerInvariant()} })
