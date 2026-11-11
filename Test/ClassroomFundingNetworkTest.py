@@ -158,7 +158,8 @@ def Main(args):
         member.process.stdout.close()
         member.Launch()
         member.Api('unlock', password=PASSWORD)
-        Ready(member)
+        Wait(member, lambda state: state.get('contract_ready') and
+             state.get('funding_state', {}).get('phase') == 'ready')
         resumed = RepeatClaim(member)
         assert member.process.pid != old_pid
         for key in ('public_key', 'balance', 'nonce', 'genesis_root', 'contract', 'head', 'outbox_hashes', 'reserve'):
