@@ -55,6 +55,9 @@ class ClassroomApp {
     string previewTaskId;
     Json incomingInvitation;
     string active = "main", nickname = "成员";
+    string selectedWalletId = "legacy";
+    uint64_t walletSession = 1;
+    vector<Json> walletCatalog;
     bool ipv6 = HasIPv6();
     string lastError;
     uint64_t reorgs = 0;
@@ -71,7 +74,10 @@ class ClassroomApp {
     ClassroomApp(fs::path directory, fs::path executable, fs::path contract)
         : root(std::move(directory)), binary(std::move(executable)), artifactPath(std::move(contract)) {
         fs::create_directories(root / "networks");
-        vault.path = root / "wallet.vault.json";
+        if (fs::exists(root / "wallet-selection.json")) {
+            if (fs::is_symlink(root / "wallet-selection.json")) throw runtime_error("钱包选择路径无效");
+            selectedWalletId = ReadJson(root / "wallet-selection.json").at("id").get<string>();
+        }
         artifact = ReadJson(artifactPath).at("contracts").at("ClassroomChat");
         legacyArtifact = ReadJson(artifactPath.parent_path() / "ClassroomChat.legacy-v1.compiled.json").at("contracts").at("ClassroomChat");
         legacy2Artifact = ReadJson(artifactPath.parent_path() / "ClassroomChat.legacy-v2.compiled.json").at("contracts").at("ClassroomChat");
@@ -79,11 +85,14 @@ class ClassroomApp {
             auto saved = ReadJson(root / "session.json");
             auto id = saved.at("id").get<string>();
             profile = ReadProfile(id);
-            active = saved.value("active", string("alice"));
+            selectedWalletId = profile.value("wallet_id", string("legacy"));
+            active = WalletAccount(selectedWalletId, saved.value("active", string("alice")));
             nickname = saved.value("nickname", string("成员"));
             resumeOnLaunch = saved.value("running", true); // Old desktops always resumed their selected chain.
             index.Open(NetworkDir() / "index.sqlite");
         }
+        vault.path = WalletFile(selectedWalletId);
+        RefreshWalletProfiles();
         LoadConnection();
         RefreshNetworks();
     }
@@ -92,6 +101,143 @@ class ClassroomApp {
     }
     fs::path NetworkDir() const {
         return root / "networks" / profile.at("id").get<string>();
+    }
+    static bool WalletId(const string &id) {
+        return id == "legacy" || (id.size() == 24 && id.find_first_not_of("0123456789abcdef") == string::npos);
+    }
+    void CheckWalletPath(const fs::path &path) {
+        if (fs::is_symlink(path) || fs::is_symlink(fs::path(path).concat(".tmp")))
+            throw invalid_argument("钱包路径无效");
+    }
+    fs::path WalletFile(const string &id) {
+        if (!WalletId(id)) throw invalid_argument("钱包 ID 无效");
+        if (id == "legacy") {
+            auto path = root / "wallet.vault.json";
+            CheckWalletPath(path);
+            return path;
+        }
+        auto directory = root / "wallets" / id;
+        CheckWalletPath(root / "wallets"); CheckWalletPath(directory);
+        CheckWalletPath(directory / "profile.json"); CheckWalletPath(directory / "wallet.vault.json");
+        auto saved = ReadJson(directory / "profile.json");
+        if (saved.at("id") != id || !saved.at("title").is_string()) throw invalid_argument("保存的钱包信息无效");
+        auto title = saved.at("title").get<string>();
+        if (title.empty() || title.size() > 160) throw invalid_argument("保存的钱包名称无效");
+        if (!fs::is_regular_file(directory / "wallet.vault.json")) throw invalid_argument("保存的钱包文件不存在");
+        return directory / "wallet.vault.json";
+    }
+    void RefreshWalletProfiles() {
+        vector<Json> rows;
+        auto legacy = root / "wallet.vault.json";
+        CheckWalletPath(legacy);
+        rows.push_back({{"id", "legacy"}, {"title", "原有本机钱包"}, {"has_wallet", fs::is_regular_file(legacy)}});
+        auto directory = root / "wallets";
+        CheckWalletPath(directory);
+        if (fs::is_directory(directory)) for (const auto &entry : fs::directory_iterator(directory)) {
+            if (entry.is_symlink() || !entry.is_directory()) continue;
+            try {
+                auto id = PathUtf8(entry.path().filename());
+                if (id == "legacy") continue;
+                auto path = WalletFile(id);
+                auto saved = ReadJson(entry.path() / "profile.json");
+                rows.push_back({{"id", id}, {"title", saved.at("title")}, {"has_wallet", fs::is_regular_file(path)}});
+            } catch (...) {}
+        }
+        sort(rows.begin() + 1, rows.end(), [](const Json &a, const Json &b) { return a.at("id") < b.at("id"); });
+        walletCatalog = std::move(rows);
+    }
+    Json WalletProfiles() const {
+        Json rows = Json::array();
+        for (auto row : walletCatalog) { row["selected"] = row.at("id") == selectedWalletId; rows.push_back(row); }
+        return rows;
+    }
+    void InvalidateWalletSession() {
+        ++walletSession;
+        cache.erase("wallets");
+        fundingTaskNetwork.clear(); fundingState = Json::object(); nextFundingMs = 0; fundingEndpoint = 0;
+    }
+    void LockWallet() {
+        vault.Lock();
+        InvalidateWalletSession();
+        fundingState = {{"phase", "waiting"}, {"error", "请登录钱包以继续自动领取"}};
+    }
+    void SaveWalletSelection() {
+        auto path = root / "wallet-selection.json";
+        CheckWalletPath(path);
+        SaveJson(path, {{"id", selectedWalletId}});
+        if (profile.is_object()) Persist();
+    }
+    void SelectWallet(const string &id) {
+        auto path = WalletFile(id); // Validate before altering the current login.
+        if (!fs::is_regular_file(path)) throw invalid_argument("请先创建或导入这个钱包");
+        Vault locked;
+        AdoptWallet(locked, id, path);
+    }
+    string WalletAccount(const string &id, const string &fallback = "main") const {
+        if (profile.is_object()) {
+            auto accounts = profile.value("wallet_accounts", Json::object());
+            if (accounts.is_object() && accounts.contains(id) && accounts.at(id).is_string()) {
+                auto name = accounts.at(id).get<string>();
+                if (name == "main" || name == "alice" || name == "bob" || name == "teacher") return name;
+            }
+            if (profile.value("wallet_id", string("legacy")) == id)
+                return profile.value("active_wallet", fallback);
+        }
+        return fallback;
+    }
+    void AdoptWallet(Vault &candidate, const string &id, const fs::path &path) {
+        auto nextId = id, previousId = selectedWalletId, previousActive = active;
+        auto previousPath = vault.path;
+        auto previousProfile = profile;
+        auto previousWallets = cache.value("wallets", Json::array());
+        Vault previous;
+        previous.secrets = std::move(vault.secrets);
+        previous.encryptionKey = vault.encryptionKey;
+        try {
+            LockWallet();
+            selectedWalletId = nextId; vault.path = path;
+            vault.secrets = std::move(candidate.secrets);
+            vault.encryptionKey = candidate.encryptionKey;
+            sodium_memzero(candidate.encryptionKey.data(), candidate.encryptionKey.size());
+            active = WalletAccount(nextId);
+            if (vault.Unlocked() && !vault.secrets.contains(active)) active = vault.secrets.begin().key();
+            fundingState = Json::object();
+            RefreshWalletProfiles(); SaveWalletSelection(); UpdateFundingProvider();
+        } catch (...) {
+            LockWallet();
+            selectedWalletId = previousId; active = previousActive; vault.path = previousPath; profile = previousProfile;
+            vault.secrets = std::move(previous.secrets); vault.encryptionKey = previous.encryptionKey;
+            if (vault.Unlocked()) cache["wallets"] = previousWallets;
+            try { RefreshWalletProfiles(); SaveWalletSelection(); } catch (...) {}
+            throw;
+        }
+    }
+    void AddWallet(const Json &request, bool importing) {
+        auto title = request.at("title").get<string>();
+        if (title.empty() || title.size() > 160) throw invalid_argument("钱包名称需要 1 至 160 个 UTF-8 字节");
+        Vault candidate;
+        Json encrypted;
+        auto password = request.at("password").get<string>();
+        struct WipePassword { string &value; ~WipePassword() { sodium_memzero(value.data(), value.size()); } } wipe{password};
+        if (importing) {
+            encrypted = request.at("backup");
+            candidate.secrets = candidate.Decrypt(password, encrypted);
+        } else {
+            candidate.secrets = {{"main", RandomHex(32)}};
+            encrypted = candidate.Encrypt(password, candidate.secrets);
+        }
+        auto parent = root / "wallets";
+        CheckWalletPath(parent);
+        fs::create_directories(parent);
+        auto id = RandomHex(12);
+        auto directory = parent / id;
+        if (!fs::create_directory(directory)) throw runtime_error("无法创建独立钱包目录");
+        auto path = directory / "wallet.vault.json";
+        CheckWalletPath(directory); CheckWalletPath(path); CheckWalletPath(directory / "profile.json");
+        SaveJson(path, encrypted);
+        // Public metadata is the final catalog entry; incomplete writes never become a selected wallet.
+        SaveJson(directory / "profile.json", {{"id", id}, {"title", title}});
+        AdoptWallet(candidate, id, path);
     }
     Json ReadProfile(const string &id) {
         if (id.size() != 24 || id.find_first_not_of("0123456789abcdef") != string::npos)
@@ -166,14 +312,24 @@ class ClassroomApp {
         LoadConnection();
     }
     void SelectProfile(const Json &next) {
+        auto nextWalletId = next.value("wallet_id", string("legacy"));
+        auto nextWalletPath = WalletFile(nextWalletId);
         auto previous = profile;
         auto previousActive = active, previousNickname = nickname;
+        auto previousWalletId = selectedWalletId;
+        auto previousWalletPath = vault.path;
+        Vault previousVault;
         bool wasRunning = !children.empty(), previousResume = resumeOnLaunch;
         if (profile.is_object()) Persist();
         Stop();
         try {
             profile = next;
-            active = profile.value("active_wallet", previousActive);
+            if (selectedWalletId != nextWalletId) {
+                previousVault.secrets = std::move(vault.secrets);
+                previousVault.encryptionKey = vault.encryptionKey;
+                LockWallet(); selectedWalletId = nextWalletId; vault.path = nextWalletPath;
+            } else InvalidateWalletSession();
+            active = WalletAccount(nextWalletId, profile.value("active_wallet", previousActive));
             nickname = profile.value("nickname", previousNickname);
             if (vault.Unlocked() && !vault.secrets.contains(active)) active = vault.secrets.begin().key();
             ClearChainState();
@@ -184,6 +340,11 @@ class ClassroomApp {
         } catch (const exception &e) {
             auto error = string(e.what());
             Stop(); profile = previous; active = previousActive; nickname = previousNickname;
+            if (selectedWalletId != previousWalletId) {
+                LockWallet(); selectedWalletId = previousWalletId; vault.path = previousWalletPath;
+                vault.secrets = std::move(previousVault.secrets);
+                vault.encryptionKey = previousVault.encryptionKey;
+            }
             resumeOnLaunch = previousResume;
             ClearChainState();
             if (profile.is_object()) {
@@ -309,12 +470,18 @@ class ClassroomApp {
         SaveJson(path, info);
     }
     void Persist() {
+        if (!profile.contains("wallet_accounts") || !profile.at("wallet_accounts").is_object()) profile["wallet_accounts"] = Json::object();
+        auto previousWallet = profile.value("wallet_id", string("legacy"));
+        if (!profile["wallet_accounts"].contains(previousWallet))
+            profile["wallet_accounts"][previousWallet] = profile.value("active_wallet", active);
+        profile["wallet_accounts"][selectedWalletId] = active;
+        profile["wallet_id"] = selectedWalletId;
         profile["active_wallet"] = active;
         profile["nickname"] = nickname;
         SaveJson(NetworkDir() / "profile.json", profile);
         RefreshNetworks();
         SaveNetworkInfo();
-        SaveJson(root / "session.json", {{"id", profile["id"]}, {"active", active}, {"nickname", nickname}, {"running", resumeOnLaunch}});
+        SaveJson(root / "session.json", {{"id", profile["id"]}, {"active", active}, {"wallet_id", selectedWalletId}, {"nickname", nickname}, {"running", resumeOnLaunch}});
     }
     Json PublicWallets() {
         Json wallets = Json::array();
@@ -565,6 +732,7 @@ class ClassroomApp {
             }
         }
         next["active_wallet"] = identity;
+        next["wallet_id"] = selectedWalletId;
         next["nickname"] = nickname;
         SelectProfile(next);
         if (!joining) {
@@ -888,7 +1056,7 @@ class ClassroomApp {
         auto genesis = profile.at("genesis_root").get<string>();
         auto contract = profile.at("contract").get<string>();
         auto codeHash = Sha256(Runtime());
-        fundingTaskNetwork = profile.at("id").get<string>() + "/" + key;
+        fundingTaskNetwork = profile.at("id").get<string>() + "/" + key + "/" + to_string(walletSession);
         fundingTask = async(launch::async, [endpoint, genesis, contract, codeHash] {
             try {
                 auto [host, port] = ParseEndpoint(endpoint);
@@ -907,7 +1075,7 @@ class ClassroomApp {
     void PollFundingRequest(const string &key) {
         if (!fundingTask.valid() || fundingTask.wait_for(std::chrono::seconds(0)) != future_status::ready) return;
         auto result = fundingTask.get();
-        if (fundingTaskNetwork != profile.at("id").get<string>() + "/" + key) return;
+        if (fundingTaskNetwork != profile.at("id").get<string>() + "/" + key + "/" + to_string(walletSession)) return;
         if (!result.value("ok", false)) {
             fundingState = {{"phase", "waiting"}, {"claimed", false}, {"error", result.value("error", string("等待自动资助"))}};
             nextFundingMs = NowMs() + 1000;
@@ -1111,6 +1279,9 @@ class ClassroomApp {
         result["network_tools"] = networkSetup.Status();
         result.update({{"unlocked", vault.Unlocked()},
                        {"has_wallet", fs::exists(vault.path)},
+                       {"selected_wallet_id", selectedWalletId},
+                       {"wallet_session", walletSession},
+                       {"wallet_profiles", WalletProfiles()},
                        {"active_wallet", active},
                        {"nickname", nickname},
                        {"last_connection", lastConnection},
@@ -1120,6 +1291,7 @@ class ClassroomApp {
                        {"reorg_count", reorgs}});
         if (vault.Unlocked() && !result.contains("wallets"))
             result["wallets"] = PublicWallets();
+        if (!vault.Unlocked()) result["wallets"] = Json::array();
         if (profile.is_object()) {
             auto publicProfile = profile;
             publicProfile.erase("grants");
@@ -1160,7 +1332,10 @@ class ClassroomApp {
     }
     Json Api(const Json &request) {
         auto action = request.at("action").get<string>();
-        if (action != "status" && action != "networks_refresh" && request.contains("network_id") &&
+        if (action != "status" && action != "networks_refresh" && action != "wallet_profiles" && request.contains("wallet_session") &&
+            ReadUserNumber(request.at("wallet_session")) != walletSession)
+            throw runtime_error("钱包登录状态已变化，请刷新后重试");
+        if (action != "status" && action != "networks_refresh" && action != "wallet_profiles" && request.contains("network_id") &&
             (!request.at("network_id").is_string() || request.at("network_id").get<string>() !=
                 (profile.is_object() ? profile.at("id").get<string>() : string{})))
             throw runtime_error("当前链已切换，请刷新后重试");
@@ -1169,6 +1344,12 @@ class ClassroomApp {
             return Status();
         }
         if (action == "networks_refresh") { RefreshNetworks(); return Status(); }
+        if (action == "wallet_profiles") { RefreshWalletProfiles(); return Status(); }
+        if (action == "wallet_add" || action == "wallet_import") {
+            AddWallet(request, action == "wallet_import");
+            return Status();
+        }
+        if (action == "wallet_select") { SelectWallet(request.at("id").get<string>()); return Status(); }
         if (action == "invite_received") {
             if (incomingInvitation.is_object() && incomingInvitation.value("id", string{}) == request.value("id", string{})) incomingInvitation = nullptr;
             return {{"ok", true}};
@@ -1201,24 +1382,25 @@ class ClassroomApp {
             return Status();
         }
         if (action == "wallet_create") {
-            vault.Create(request.at("password"));
-            cache.erase("wallets");
-            fundingState = Json::object(); nextFundingMs = 0;
-            UpdateFundingProvider();
+            auto path = WalletFile(selectedWalletId);
+            if (fs::exists(path)) throw runtime_error("Wallet already exists");
+            Vault candidate;
+            candidate.path = path;
+            candidate.Create(request.at("password"));
+            AdoptWallet(candidate, selectedWalletId, path);
             return Status();
         }
         if (action == "unlock") {
+            LockWallet();
+            vault.path = WalletFile(selectedWalletId);
             vault.Unlock(request.at("password"));
             if (!vault.secrets.contains(active)) active = vault.secrets.begin().key();
-            cache.erase("wallets");
             fundingState = Json::object(); nextFundingMs = 0;
-            UpdateFundingProvider();
+            SaveWalletSelection(); UpdateFundingProvider();
             return Status();
         }
-        if (action == "lock") {
-            vault.Lock();
-            cache.erase("wallets");
-            fundingState = {{"phase", "waiting"}, {"error", "请解锁账户以继续自动领取"}};
+        if (action == "lock" || action == "logout" || action == "wallet_lock") {
+            LockWallet();
             return Status();
         }
         if (action == "backup") {
@@ -1227,14 +1409,13 @@ class ClassroomApp {
             return vault.Encrypt(request.at("password"), vault.secrets);
         }
         if (action == "restore") {
-            if (fs::exists(vault.path))
+            auto path = WalletFile(selectedWalletId);
+            if (fs::exists(path))
                 throw runtime_error("已有钱包，请在新的应用目录恢复备份");
-            auto value = vault.Decrypt(request.at("password"), request.at("backup"));
-            SaveJson(vault.path, request.at("backup"));
-            vault.secrets = value;
-            if (!vault.secrets.contains(active)) active = vault.secrets.begin().key();
-            fundingState = Json::object(); nextFundingMs = 0;
-            UpdateFundingProvider();
+            Vault candidate;
+            candidate.secrets = candidate.Decrypt(request.at("password"), request.at("backup"));
+            SaveJson(path, request.at("backup"));
+            AdoptWallet(candidate, selectedWalletId, path);
             return Status();
         }
         if (action == "create" || action == "join") {
@@ -1275,7 +1456,7 @@ class ClassroomApp {
             auto key = vault.Key(name);
             sodium_memzero(key.private_key.data(), 64);
             active = name;
-            fundingState = Json::object(); nextFundingMs = 0;
+            InvalidateWalletSession();
             if (profile.is_object()) {
                 UpdateFundingProvider();
                 Persist();
@@ -1358,11 +1539,13 @@ class ClassroomApp {
                           {{"receiver", request["receiver"]}, {"amount", text}});
         }
         if (action == "retry") {
+            if (!vault.Unlocked()) throw runtime_error("请先登录钱包");
             auto hash = request.at("hash").get<string>();
             HexToU32(hash);
             auto rows = index.Rows("SELECT data FROM outbox WHERE hash='" + hash + "'");
             if (rows.empty())
                 throw runtime_error("找不到原交易");
+            if (rows[0].value("sender", string{}) != FundingPublicKey()) throw runtime_error("请切换到原交易的钱包后重试");
             if (rows[0].value("state", string{}) == "included")
                 throw runtime_error("交易已入块；执行失败时请重新发送一笔消息");
             auto bytes = EvmBytes(rows[0].at("raw"));
@@ -1398,7 +1581,7 @@ class ClassroomApp {
         }
         if (action == "diagnostics")
             return {{"schema", 1},
-                    {"application", "NornV2 Peer Chat 0.4.2"},
+                    {"application", "NornV2 Peer Chat 0.4.4"},
                     {"ipv6_available", ipv6},
                     {"status", Status()},
                     {"note", "No wallet seeds, signed outbox bytes or node log bodies included"}};

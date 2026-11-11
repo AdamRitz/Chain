@@ -84,10 +84,12 @@ export function Outbox({
   rows,
   onSelect,
   onRetry,
+  canRetry = () => true,
 }: {
   rows: Row[];
   onSelect: (tx: Row) => void;
   onRetry: (hash: string) => void;
+  canRetry?: (tx: Row) => boolean;
 }) {
   return rows.length ? (
     <div>
@@ -121,7 +123,7 @@ export function Outbox({
             {tx.execution_status ? "执行失败" : stateText[tx.state] || tx.state}
           </span>
           {tx.state !== "included" && (
-            <button className="text-button" onClick={() => onRetry(tx.hash)}>
+            <button className="text-button" disabled={!canRetry(tx)} title={!canRetry(tx) ? "请登录发送此交易的钱包，并启动节点" : "重发同一笔已签名交易"} onClick={() => onRetry(tx.hash)}>
               重试原交易
             </button>
           )}

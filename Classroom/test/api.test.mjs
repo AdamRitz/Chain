@@ -54,3 +54,14 @@ test('obsolete network failures are suppressed while current action errors remai
   globalThis.fetch=async()=>Response.json({error:'代币不足'},{status:400});
   await assert.rejects(api('message',{body:'current message'}),/代币不足/);
 });
+
+test('wallet mutations bind the current session and reject an old response after logout and relogin on the same chain', async()=>{
+  let release, submitted;
+  globalThis.fetch=(_url,options)=>{submitted=JSON.parse(options.body);return new Promise(resolve=>{release=resolve;});};
+  apiView.Select('wallet-chain',41);
+  const pending=api('transfer',{receiver:'public-test-key',wallet_session:0});
+  assert.equal(submitted.wallet_session,41);
+  apiView.Select('wallet-chain',42); apiView.Select('wallet-chain',43);
+  release(Response.json({hash:'old-wallet-transfer'}));
+  await assert.rejects(pending,StaleViewError);
+});

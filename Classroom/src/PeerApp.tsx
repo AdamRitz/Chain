@@ -13,6 +13,7 @@ import {
   Hash,
   Layers3,
   LoaderCircle,
+  LogOut,
   MessageCircle,
   Network,
   Play,
@@ -24,7 +25,9 @@ import {
   X,
 } from "lucide-react";
 import { api, apiView, bytes, download, number, short, type Row } from "./api";
-import { CanSend, ChainDrafts, ChainLabel, FundingText, MergeMessages, SelectedMessage, StaleViewError, type ChainDraft } from "./model";
+import { BlockTransaction, CanSend, ChainDrafts, ChainLabel, FundingPending, FundingText, MergeMessages, SelectedMessage, StaleViewError, type ChainDraft } from "./model";
+import { WalletActions, WalletIdentityChanged } from "./wallet";
+import { WalletPanel } from "./WalletPanel";
 import { NetworkPanel } from "./NetworkPanel";
 import { InviteInput, InviteShare } from "./InviteDialogs";
 import { CanJoinPreview, ConnectionText, JoinText } from "./invite";
@@ -91,12 +94,18 @@ export function PeerApp() {
   const [revision, setRevision] = useState(0);
   const [transition, setTransition] = useState("");
   const [error, setError] = useState("");
+  const [modal, setModal] = useState("");
   const [drafts] = useState(() => new ChainDrafts());
   const polling = useRef(false);
   const moving = useRef(false);
+  const walletView = useRef<Row>({});
   const accept = (value: Row, remount = false) => {
-    apiView.Select(value.network?.id || "");
-    if (remount) { apiView.Invalidate(); setRevision(old => old + 1); }
+    const previous = apiView.Capture();
+    const walletChanged = value.wallet_session !== undefined && previous.walletSession !== value.wallet_session;
+    apiView.Select(value.network?.id || "", value.wallet_session);
+    if (WalletIdentityChanged(walletView.current, value)) drafts.ClearWallet();
+    walletView.current = value;
+    if (remount || walletChanged) { apiView.Invalidate(); setRevision(old => old + 1); }
     setState(value);
   };
   const refresh = async () => {
@@ -114,9 +123,11 @@ export function PeerApp() {
     } finally { polling.current = false; }
   };
   const request: Request = async (name, values = {}, label = "正在处理") => {
-    if (moving.current) throw Error("正在切换链，请稍候。");
+    if (moving.current) throw Error("正在切换链或钱包，请稍候。");
     const changesChain = ["create", "join", "network_switch"].includes(name);
-    if (changesChain) {
+    const changesWallet = WalletActions.has(name);
+    const changesView = changesChain || changesWallet;
+    if (changesView) {
       moving.current = true;
       apiView.Invalidate();
       setTransition(label);
@@ -131,12 +142,17 @@ export function PeerApp() {
         drafts.Write(scope.networkId, { invite: "" });
       if (["create", "join"].includes(name) && result.network?.id)
         drafts.Write(result.network.id, { view: "chat" });
-      if (result.has_wallet !== undefined) accept(result, changesChain);
+      if (changesChain) setModal("");
+      if (changesWallet) {
+        if (["lock", "logout", "wallet_select"].includes(name)) setModal("wallets");
+        else if (result.unlocked) setModal(value => ["wallet", "wallets"].includes(value) ? "" : value);
+      }
+      if (result.has_wallet !== undefined) accept(result, changesView);
       else await refresh();
-      if (!changesChain && !apiView.Current(scope)) throw new StaleViewError();
+      if (!changesView && !apiView.Current(scope)) throw new StaleViewError();
       return result;
     } catch (failure) {
-      if (changesChain) {
+      if (changesView) {
         // A timed-out request may already have switched the backend. Read its
         // authoritative selection before enabling any further chain action.
         apiView.Invalidate();
@@ -145,11 +161,11 @@ export function PeerApp() {
           setState(old => ({ ...old, running: false, contract_ready: false, connection_error: true }));
           setRevision(old => old + 1);
         }
-        if (!(failure instanceof StaleViewError)) setError((failure as Error).message);
       }
+      if (!(failure instanceof StaleViewError)) setError((failure as Error).message);
       throw failure;
     } finally {
-      if (changesChain) { moving.current = false; setTransition(""); void refresh(); }
+      if (changesView) { moving.current = false; setTransition(""); void refresh(); }
     }
   };
   useEffect(() => {
@@ -166,12 +182,13 @@ export function PeerApp() {
       .catch(failure => { if (!(failure instanceof StaleViewError)) setError(failure.message); });
   };
   return <ChainView key={`${state.network?.id || ""}:${revision}`} s={state} request={request} drafts={drafts}
-    transition={transition} externalError={error} clearExternalError={() => setError("")} switchNetwork={switchNetwork} />;
+    transition={transition} externalError={error} clearExternalError={() => setError("")} switchNetwork={switchNetwork} modal={modal} setModal={setModal} />;
 }
 
-function ChainView({ s, request, drafts, transition, externalError, clearExternalError, switchNetwork }: {
+function ChainView({ s, request, drafts, transition, externalError, clearExternalError, switchNetwork, modal, setModal }: {
   s: Row; request: Request; drafts: ChainDrafts; transition: string; externalError: string;
   clearExternalError: () => void; switchNetwork: (id: string) => void;
+  modal: string; setModal: React.Dispatch<React.SetStateAction<string>>;
 }) {
   const chainId = s.network?.id || "";
   const viewScope = useRef(apiView.Capture());
@@ -180,7 +197,6 @@ function ChainView({ s, request, drafts, transition, externalError, clearExterna
   const busy = transition || localBusy;
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
-  const [modal, setModal] = useState("");
   const [password, setPassword] = useState("");
   const [title, setTitle] = useChainField(drafts, chainId, "title");
   const [nickname, setNickname] = useChainField(drafts, chainId, "nickname");
@@ -207,6 +223,9 @@ function ChainView({ s, request, drafts, transition, externalError, clearExterna
   useEffect(() => {
     setHistory([]);
     setOffset(50);
+    setBlock(null);
+    setSelected(null);
+    setModal(value => ["message", "transaction"].includes(value) ? "" : value);
   }, [s.reorg_count]);
   const action = async (name: string, values: Row = {}, label = "正在处理") => {
     if (!apiView.Current(viewScope.current)) throw new StaleViewError();
@@ -216,7 +235,7 @@ function ChainView({ s, request, drafts, transition, externalError, clearExterna
     clearExternalError();
     try {
       const result = await request(name, values, label);
-      if (!["create", "join", "network_switch"].includes(name) && !apiView.Current(viewScope.current))
+      if (!["create", "join", "network_switch"].includes(name) && !WalletActions.has(name) && !apiView.Current(viewScope.current))
         throw new StaleViewError();
       return result;
     } catch (failure) {
@@ -256,14 +275,17 @@ function ChainView({ s, request, drafts, transition, externalError, clearExterna
       !messages.some((message) => message.tx_hash === item.hash),
   );
   const inspected = SelectedMessage(selected, messages);
+  const transaction = (s.outbox || []).find((item: Row) => item.hash === selected?.hash) || selected;
   const fundingText = FundingText(s);
+  const fundingPending = FundingPending(s);
+  const fundingFailed = ["error", "unavailable"].includes(s.funding_state?.phase);
   const canSend = CanSend(body, {
     unlocked: !!s.unlocked,
     running: !!s.running && (!s.connection_state || s.connection_state.phase === "ready"),
     contractReady: !!s.contract_ready,
     roomOpen: !!currentRoom?.open,
     busy: !!busy,
-    fundingReady: !fundingText,
+    fundingReady: !fundingPending,
   });
   const openJoin = () => {
     setInvite(current => JoinText(current, s));
@@ -273,19 +295,22 @@ function ChainView({ s, request, drafts, transition, externalError, clearExterna
   };
   const enter = async (joining: boolean) => {
     const submittedInvite = invite;
+    let scope = apiView.Capture();
     try {
       if (joining && !CanJoinPreview(joinPreview, joinPreview?.id || "")) throw Error("正在连接节点并获取链配置，请稍候。");
       if (!s.unlocked)
-        await action(
+        await request(
           s.has_wallet ? "unlock" : "wallet_create",
           { password },
           "正在打开本机账户",
         );
+      scope = apiView.Capture();
       if (nickname.trim())
-        await action("nickname", { nickname: nickname.trim() });
+        await request("nickname", { nickname: nickname.trim() });
+      if (!apiView.Current(scope)) throw new StaleViewError();
       if (joining && drafts.Read(chainId).invite !== submittedInvite)
         throw Error("加入地址已更改，请重新检查后连接。");
-      await action(
+      await request(
         joining ? "join" : "create",
         joining ? { preview_id: joinPreview!.id } : { title },
         network ? joining ? "正在停止当前链并加入目标链" : "正在停止当前链并创建新链" : joining ? "正在连接链与聊天室" : "正在创建链并部署聊天室",
@@ -313,7 +338,8 @@ function ChainView({ s, request, drafts, transition, externalError, clearExterna
       setBlock(
         await action(
           "block",
-          { height: at, offset: start, limit: 10 },
+          { height: at, offset: start, limit: 10,
+            ...(start > 0 && block?.height === at ? { expected_hash: block.hash } : {}) },
           "正在读取区块",
         ),
       );
@@ -383,8 +409,9 @@ function ChainView({ s, request, drafts, transition, externalError, clearExterna
             </span>
             <button
               className="avatar"
-              title="账户与昵称"
-              onClick={() => setModal(s.unlocked ? "account" : "wallet")}
+              title="钱包与登录"
+              aria-label="钱包与登录"
+              onClick={() => setModal("wallets")}
             >
               <Wallet size={18} />
             </button>
@@ -511,7 +538,7 @@ function ChainView({ s, request, drafts, transition, externalError, clearExterna
                       disabled={
                         !s.unlocked ||
                         !s.running ||
-                        !!fundingText ||
+                        fundingPending ||
                         !!busy ||
                         !roomName.trim() ||
                         bytes(roomName) > 96
@@ -654,7 +681,11 @@ function ChainView({ s, request, drafts, transition, externalError, clearExterna
                       登录本机账户后发送消息
                     </button>
                   ) : null}
-                  {!!s.unlocked && fundingText && <p className="composer-funding" role="status"><LoaderCircle size={14} className="spin" />{fundingText}</p>}
+                  {!!s.unlocked && fundingText && <div className="composer-funding" role={fundingFailed ? "alert" : "status"}>
+                    {fundingPending && <LoaderCircle size={14} className="spin" />}{fundingText}
+                    {fundingFailed && <button className="text-button" disabled={!!busy || !s.running || !s.contract_ready}
+                      onClick={() => run("funding_claim", {}, "正在重新领取入群代币")}>重试领取</button>}
+                  </div>}
                   <textarea
                     aria-label="聊天消息"
                     value={body}
@@ -745,6 +776,10 @@ function ChainView({ s, request, drafts, transition, externalError, clearExterna
                     <span>已确认序号 {wallet?.nonce || "0"}</span>
                     <span>当前链的账户余额</span>
                   </div>
+                  <div className="wallet-manager-actions">
+                    <button className="button secondary compact" aria-label="管理钱包" disabled={!!busy} onClick={() => setModal("wallets")}><Wallet size={15} />{s.unlocked ? "管理与切换钱包" : "登录或切换钱包"}</button>
+                    {s.unlocked && <button className="button compact wallet-logout" aria-label="退出登录" disabled={!!busy} onClick={() => run("logout", {}, "正在退出钱包")}><LogOut size={15} />退出登录</button>}
+                  </div>
                 </section>
                 <section className="panel padded">
                   <PanelTitle icon={Send} title="普通转账" />
@@ -799,6 +834,7 @@ function ChainView({ s, request, drafts, transition, externalError, clearExterna
                     setModal("transaction");
                   }}
                   onRetry={(hash) => run("retry", { hash })}
+                  canRetry={tx => !!s.unlocked && !!s.running && !busy && tx.sender === wallet?.public_key}
                 />
               </section>
             </>
@@ -833,7 +869,7 @@ function ChainView({ s, request, drafts, transition, externalError, clearExterna
                       className="transaction-row"
                       key={item.hash}
                       onClick={() => {
-                        setSelected(item);
+                        setSelected(BlockTransaction(item, block));
                         setModal("transaction");
                       }}
                     >
@@ -1005,7 +1041,7 @@ function ChainView({ s, request, drafts, transition, externalError, clearExterna
             className="modal"
             role="dialog"
             aria-modal="true"
-            aria-label={modal === "create" ? "创建链" : modal === "join" ? "加入链" : "操作对话框"}
+            aria-label={modal === "create" ? "创建链" : modal === "join" ? "加入链" : ["wallet", "wallets"].includes(modal) ? "钱包与登录" : "操作对话框"}
             onClick={(event) => event.stopPropagation()}
           >
             <button
@@ -1022,6 +1058,7 @@ function ChainView({ s, request, drafts, transition, externalError, clearExterna
               </div>
             )}
             {modal === "share" && network && <InviteShare key={network.id} status={s} action={action} />}
+            {["wallet", "wallets"].includes(modal) && <WalletPanel status={s} busy={!!busy} action={action} onNickname={() => setModal("account")} />}
             {(modal === "create" || modal === "join") && (
               <>
                 <span className="modal-icon">
@@ -1091,48 +1128,6 @@ function ChainView({ s, request, drafts, transition, externalError, clearExterna
                 {modal === "join" && !invite.trim() && <button className="text-button" onClick={() => setModal("create")}>创建自己的聊天室</button>}
               </>
             )}
-            {modal === "wallet" && (
-              <>
-                <h2>{s.has_wallet ? "登录本机账户" : "创建本机账户"}</h2>
-                <p>账户身份和私钥保存在本机。</p>
-                <form
-                  onSubmit={async (event) => {
-                    event.preventDefault();
-                    try {
-                      await action(s.has_wallet ? "unlock" : "wallet_create", {
-                        password,
-                      });
-                      setPassword("");
-                      setModal("");
-                    } catch {}
-                  }}
-                >
-                  <label className="field">
-                    账户密码
-                    <input
-                      autoFocus
-                      aria-label="账户密码"
-                      type="password"
-                      value={password}
-                      onChange={(event) => setPassword(event.target.value)}
-                      autoComplete={
-                        s.has_wallet ? "current-password" : "new-password"
-                      }
-                    />
-                  </label>
-                  <button
-                    className="button primary full"
-                    disabled={
-                      !!busy ||
-                      !password ||
-                      (!s.has_wallet && bytes(password) < 8)
-                    }
-                  >
-                    {s.has_wallet ? "登录账户" : "创建账户"}
-                  </button>
-                </form>
-              </>
-            )}
             {modal === "account" && (
               <>
                 <h2>显示昵称</h2>
@@ -1188,23 +1183,23 @@ function ChainView({ s, request, drafts, transition, externalError, clearExterna
                 </button>
               </>
             )}
-            {modal === "transaction" && selected && (
+            {modal === "transaction" && transaction && (
               <>
                 <h2>交易记录</h2>
                 <dl className="details">
                   <dt>交易哈希</dt>
-                  <dd className="mono">{selected.hash}</dd>
+                  <dd className="mono">{transaction.hash}</dd>
                   <dt>状态</dt>
-                  <dd>{TxText(selected)}</dd>
+                  <dd>{TxText(transaction)}</dd>
                   <dt>区块高度</dt>
-                  <dd>{selected.height || "等待入块"}</dd>
+                  <dd>{transaction.height || "等待入块"}</dd>
                   <dt>账户序号</dt>
-                  <dd>{selected.nonce || "—"}</dd>
+                  <dd>{transaction.nonce || "—"}</dd>
                 </dl>
                 <details>
                   <summary>查看原始记录</summary>
                   <pre className="source-code">
-                    {JSON.stringify(selected, null, 2)}
+                    {JSON.stringify(transaction, null, 2)}
                   </pre>
                 </details>
               </>

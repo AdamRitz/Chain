@@ -1,5 +1,5 @@
 import type { Row } from "./api";
-export type ViewScope = { networkId: string; generation: number };
+export type ViewScope = { networkId: string; generation: number; walletSession?: number };
 export class NetworkView {
   private scope: ViewScope = { networkId: "", generation: 0 };
   Capture(): ViewScope { return { ...this.scope }; }
@@ -7,9 +7,9 @@ export class NetworkView {
     return scope.networkId === this.scope.networkId && scope.generation === this.scope.generation;
   }
   Invalidate(): void { this.scope.generation++; }
-  Select(networkId: string): void {
-    if (networkId !== this.scope.networkId) {
-      this.scope = { networkId, generation: this.scope.generation + 1 };
+  Select(networkId: string, walletSession = this.scope.walletSession): void {
+    if (networkId !== this.scope.networkId || walletSession !== this.scope.walletSession) {
+      this.scope = { networkId, walletSession, generation: this.scope.generation + 1 };
     }
   }
 }
@@ -17,7 +17,8 @@ export class StaleViewError extends Error {
   constructor() { super(""); this.name = "StaleViewError"; }
 }
 export function NetworkRequest(action: string, values: Row, scope: ViewScope): Row {
-  return { action, ...values, network_id: scope.networkId };
+  return { action, ...values, network_id: scope.networkId,
+    ...(scope.walletSession === undefined ? {} : { wallet_session: scope.walletSession }) };
 }
 export function ChainLabel(network: Row): string {
   const fingerprint = String(network.genesis_root || network.id || "");
@@ -42,9 +43,29 @@ export class ChainDrafts {
     if (current === body) this.Write(networkId, { body: "" });
     return this.Read(networkId).body;
   }
+  ClearWallet(): void {
+    for (const [id, draft] of this.entries)
+      this.entries.set(id, { ...draft, body: "", receiver: "", amount: "10000000", roomName: "" });
+  }
 }
 export function FundingText(status: Row): string {
-  return ["waiting", "claiming"].includes(status.funding_state?.phase) ? "正在领取入群代币" : "";
+  if (FundingPending(status)) return status.funding_state?.error ? `正在领取入群代币：${status.funding_state.error}` : "正在领取入群代币";
+  const funding = status.funding_state;
+  if (funding?.phase === "error" || funding?.phase === "unavailable")
+    return funding.error || (funding.phase === "unavailable" ? "聊天室补贴储备不足" : "领取入群代币失败");
+  return "";
+}
+export function FundingPending(status: Row): boolean {
+  return ["waiting", "claiming"].includes(status.funding_state?.phase);
+}
+export function BlockTransaction(transaction: Row, block: Row): Row {
+  return {
+    ...transaction,
+    state: "included",
+    height: block.height,
+    block_hash: block.hash,
+    ...(transaction.receipt?.status !== undefined ? { execution_status: transaction.receipt.status } : {}),
+  };
 }
 export function MergeMessages(history: Row[], canonical: Row[]): Row[] {
   const records = new Map<string, Row>();

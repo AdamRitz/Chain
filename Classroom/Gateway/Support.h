@@ -214,14 +214,17 @@ struct Vault {
     ~Vault() {
         Lock();
     }
-    void Lock() {
-        if (secrets.is_object())
-            for (auto &[name, value] : secrets.items())
-                if (value.is_string()) {
-                    auto &text = value.get_ref<string &>();
+    static void ClearSecrets(Json &value) {
+        if (value.is_object())
+            for (auto &[name, item] : value.items())
+                if (item.is_string()) {
+                    auto &text = item.get_ref<string &>();
                     sodium_memzero(text.data(), text.size());
                 }
-        secrets = Json{};
+        value = Json{};
+    }
+    void Lock() {
+        ClearSecrets(secrets);
         sodium_memzero(encryptionKey.data(), encryptionKey.size());
     }
     bool Unlocked() const {
@@ -262,17 +265,21 @@ struct Vault {
                           crypto_pwhash_ALG_ARGON2ID13))
             throw runtime_error("Cannot derive wallet key");
         vector<uint8_t> plain(cipher.size() - crypto_secretbox_MACBYTES);
+        struct WipePlain { vector<uint8_t> &bytes; ~WipePlain() { sodium_memzero(bytes.data(), bytes.size()); } } wipe{plain};
         if (crypto_secretbox_open_easy(plain.data(), cipher.data(), cipher.size(), nonce.data(),
                                        encryptionKey.data())) {
             sodium_memzero(encryptionKey.data(), 32);
             throw invalid_argument("钱包密码不正确或备份已损坏");
         }
-        auto result = Json::parse(plain.begin(), plain.end());
-        sodium_memzero(plain.data(), plain.size());
-        if (!result.is_object() || (result.contains("main") ? result.size() != 1 : result.size() != 3))
-            throw invalid_argument("Invalid account keys");
-        if (result.contains("main")) HexToU32(result.at("main"));
-        else for (auto name : {"alice", "bob", "teacher"}) HexToU32(result.at(name));
+        Json result;
+        try { result = Json::parse(plain.begin(), plain.end()); }
+        catch (...) { throw invalid_argument("Invalid encrypted wallet contents"); }
+        try {
+            if (!result.is_object() || (result.contains("main") ? result.size() != 1 : result.size() != 3))
+                throw invalid_argument("Invalid account keys");
+            if (result.contains("main")) HexToU32(result.at("main"));
+            else for (auto name : {"alice", "bob", "teacher"}) HexToU32(result.at(name));
+        } catch (...) { ClearSecrets(result); throw invalid_argument("Invalid encrypted wallet contents"); }
         return result;
     }
     void Create(const string &password) {

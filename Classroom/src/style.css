@@ -2005,3 +2005,11 @@ footer button {
   gap: 8px;
   align-items: center;
 }
+.wallet-manager-actions { display: flex; flex-wrap: wrap; gap: 10px; margin: 16px 0; }
+.wallet-session { display: grid; gap: 6px; padding: 14px 16px; border: 1px solid #dfeaea; border-radius: 12px; background: #f1f7f7; }
+.wallet-session span { font-size: 13px; color: #537270; }
+.wallet-session code { overflow-wrap: anywhere; font-size: 12px; }
+.wallet-logout { background: #fff4ef; color: #95452b; border: 1px solid #edcdbc; }
+.wallet-manager .full { margin-top: 12px; }
+.wallet-manager h3 { margin-top: 24px; }
+.composer-funding .text-button { margin: 0 0 0 12px; }

@@ -4,6 +4,8 @@ import {
   MergeMessages,
   CanSend,
   FundingText,
+  FundingPending,
+  BlockTransaction,
   SelectedMessage,
   RestartMatches,
   NetworkView,
@@ -115,11 +117,14 @@ test("a balance snapshot does not prevent an actual send attempt", () => {
 });
 
 test("automatic funding has a lightweight pending state and leaves legacy chats ready", () => {
-  for (const phase of ["waiting", "claiming"])
+  for (const phase of ["waiting", "claiming"]) {
     assert.equal(FundingText({funding_state:{phase}}), "正在领取入群代币");
-  for (const phase of ["ready", "legacy", "error"])
+    assert(FundingPending({funding_state:{phase}}));
+  }
+  for (const phase of ["ready", "legacy"])
     assert.equal(FundingText({funding_state:{phase}}), "");
   assert.equal(FundingText({}), "");
+  assert(!FundingPending({}));
 });
 test("message inspector ignores transfer selections and follows current canonical metadata", () => {
   const canonical = { body: "hello", tx_hash: "chat", height: 12 };
@@ -147,4 +152,28 @@ test("restart lesson requires a resumed contract and the same network and canoni
   assert(!RestartMatches(checkpoint, { ...state, contract_ready: false }));
   assert(!RestartMatches(checkpoint, { ...state, network: { id: "class-b" } }));
   assert(!RestartMatches(checkpoint, { ...state, stats: { head: "head-b" } }));
+});
+
+test("funding failures expose their reason without keeping the pending send gate", () => {
+  assert.match(FundingText({funding_state:{phase:"waiting",error:"等待可用的自动资助入口"}}), /等待可用的自动资助入口/);
+  for (const phase of ["error", "unavailable"]) {
+    const status = {funding_state:{phase,error:"领取交易未执行成功，请查看交易回执后重试"}};
+    assert.equal(FundingText(status), status.funding_state.error);
+    assert(!FundingPending(status));
+  }
+  assert.equal(FundingText({funding_state:{phase:"error"}}), "领取入群代币失败");
+  assert.equal(FundingText({funding_state:{phase:"unavailable"}}), "聊天室补贴储备不足");
+});
+
+test("a block transaction carries its canonical inclusion even when execution failed", () => {
+  const transaction = {hash:"tx",nonce:"1",receipt:{status:2,gas_used:21000}};
+  const item = BlockTransaction(transaction, {height:12,hash:"block"});
+  assert.equal(item.state, "included");
+  assert.equal(item.height, 12);
+  assert.equal(item.block_hash, "block");
+  assert.equal(item.execution_status, 2);
+  assert.equal(item.receipt, transaction.receipt);
+  assert.equal(transaction.state, undefined);
+  assert.equal(BlockTransaction({hash:"success",receipt:{status:0}}, {height:13,hash:"next"}).execution_status, 0);
+  assert.equal(BlockTransaction({hash:"native",kind:"transfer"}, {height:14,hash:"native-block"}).state, "included");
 });
