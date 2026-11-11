@@ -22,6 +22,7 @@ def Main(args):
             return json.loads(ReadAll(c,size))
     try:
         a=New('creator');first=a.Api('create',title='邀请与连接测试')
+        assert first['network']['chat_version']==3
         with socket.socket(socket.AF_INET6) as free:free.bind(('::1',0));closed=free.getsockname()[1]
         good=f"[::1]:{first['network']['ports'][0]}"
         prepared=a.Api('invite_prepare',seeds=[f'[::1]:{closed}',good])
@@ -33,32 +34,32 @@ def Main(args):
         preview=Preview(b,good);assert preview['by_address'] and preview['title']==first['network']['title']
         assert preview['seeds']==[good] and len(preview['endpoints'])==1
         public=Descriptor(first['network']['ports'][0])['network']
-        assert set(public)=={'version','title','genesis','genesis_root','contract','contract_code_sha256'}
+        assert set(public)=={'version','title','genesis','genesis_root','contract','contract_code_sha256','funding_provider'}
+        assert public['version']==3 and public['funding_provider']==first['wallets'][0]['public_key']
         assert public['genesis_root']==first['network']['genesis_root']
         b.Api('join',preview_id=preview['id'])
-        member=b.Wait(lambda s:s.get('connection_state',{}).get('phase')=='ready')
-        Included(a,a.Api('transfer',receiver=member['wallets'][0]['public_key'],amount='5000000'))
-        b.Wait(lambda s:int(s['wallets'][0].get('balance','0'))>=5000000)
+        member=b.Wait(lambda s:s.get('connection_state',{}).get('phase')=='ready' and s.get('funding_state',{}).get('phase')=='ready')
+        assert int(member['wallets'][0]['balance'])>=10**12 and member['last_connection']==good
         # Windows may exhaust our bounded deadline before reporting a refused
         # localhost connect; both accurately identify the failed first entry.
         assert legacy['endpoints'][0]['code'] in ('refused','timeout'),legacy['endpoints']
         checks.append('one share address; bounded public configuration fetch; IPv6 address-only join; legacy token fallback; asynchronous preflight; real ready state')
 
         peer=New('peer');ipv4=f"127.0.0.1:{first['network']['ports'][0]}"
-        peer.Api('join',invite=ipv4);peer.Wait(lambda s:s.get('contract_ready'))
+        peer.Api('join',invite=ipv4);peer.Wait(lambda s:s.get('contract_ready') and s.get('funding_state',{}).get('phase')=='ready')
         for app,family in [(b,True),(peer,False)]:
             app.Wait(lambda s:any(p['port']==first['network']['ports'][0] and p['ipv6']==family for n in s.get('nodes',[]) for p in n.get('connections',[])))
         peer_state=peer.Api('status')
-        Included(a,a.Api('transfer',receiver=peer_state['wallets'][0]['public_key'],amount='3000000'))
-        peer.Wait(lambda s:int(s['wallets'][0].get('balance','0'))>=3000000)
+        assert int(peer_state['wallets'][0]['balance'])>=10**12 and peer_state['last_connection']==ipv4
         Included(peer,peer.Api('message',room=1,body='IPv4 节点与 IPv6 节点互通'))
         b.Wait(lambda s:any(m['body']=='IPv4 节点与 IPv6 节点互通' for m in s['messages']))
-        checks.append('IPv4 and IPv6 address-only joins establish matching peer families and exchange funded contract messages')
+        checks.append('IPv4 and IPv6 address-only joins automatically fund members, remember the connected address and exchange contract messages')
         newseed=f"[::1]:{peer.Api('status')['network']['ports'][0]}"
         newinvite=peer.Api('invite',seeds=[newseed]);before=b.Api('status');pid=b.NodeProcesses()[0].pid
         updated=Preview(b,newseed);assert updated['same_chain']
         b.Api('join',preview_id=updated['id'])
-        assert b.NodeProcesses()[0].pid==pid and newseed in b.Api('status')['network']['seeds']
+        updated_status=b.Wait(lambda s:s.get('last_connection')==newseed)
+        assert b.NodeProcesses()[0].pid==pid and newseed in updated_status['network']['seeds'] and updated_status['last_connection']==newseed
         a.Api('stop')
         b.Wait(lambda s:any(p['port']==peer.Api('status')['network']['ports'][0] for n in s.get('nodes',[]) for p in n.get('connections',[])))
         Included(b,b.Api('message',room=1,body='更新入口后无需重启节点'))

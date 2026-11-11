@@ -38,6 +38,7 @@ try {
     Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'Configure-Network.ps1') -Destination $resourcePath -Force
     Copy-Item -LiteralPath (Join-Path $repoRoot 'Contracts/ClassroomChat.compiled.json') -Destination $resourcePath -Force
     Copy-Item -LiteralPath (Join-Path $repoRoot 'Contracts/ClassroomChat.legacy-v1.compiled.json') -Destination $resourcePath -Force
+    Copy-Item -LiteralPath (Join-Path $repoRoot 'Contracts/ClassroomChat.legacy-v2.compiled.json') -Destination $resourcePath -Force
     $webPath = Join-Path $resourcePath 'web'
     New-Item -ItemType Directory -Force -Path $webPath | Out-Null
     Get-ChildItem -LiteralPath (Join-Path $appRoot 'dist') | ForEach-Object {

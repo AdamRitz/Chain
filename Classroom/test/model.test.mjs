@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import {
   MergeMessages,
   CanSend,
+  FundingText,
   SelectedMessage,
   RestartMatches,
 } from "../src/model.ts";
@@ -46,8 +47,30 @@ test("keyboard and button share permissions and a UTF-8 byte limit", () => {
   for (const key of ["unlocked", "running", "contractReady", "roomOpen"])
     assert(!CanSend("hello", { ...state, [key]: false }));
   assert(!CanSend("hello", { ...state, busy: true }));
-  assert(!CanSend("hello", { ...state, funded: false }));
   assert(!CanSend("   ", state));
+});
+
+test("a balance snapshot does not prevent an actual send attempt", () => {
+  const state = {
+    unlocked: true,
+    running: true,
+    contractReady: true,
+    roomOpen: true,
+    busy: false,
+    funded: false,
+  };
+  assert(CanSend("hello", state));
+  assert(!CanSend("hello", { ...state, running: false }));
+  assert(!CanSend("hello", { ...state, busy: true }));
+  assert(!CanSend("hello", { ...state, fundingReady: false }));
+});
+
+test("automatic funding has a lightweight pending state and leaves legacy chats ready", () => {
+  for (const phase of ["waiting", "claiming"])
+    assert.equal(FundingText({funding_state:{phase}}), "正在领取入群代币");
+  for (const phase of ["ready", "legacy", "error"])
+    assert.equal(FundingText({funding_state:{phase}}), "");
+  assert.equal(FundingText({}), "");
 });
 test("message inspector ignores transfer selections and follows current canonical metadata", () => {
   const canonical = { body: "hello", tx_hash: "chat", height: 12 };

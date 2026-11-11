@@ -2,6 +2,7 @@
 #include "Support.h"
 #include "NetworkSetup.h"
 #include "Invite.h"
+#include "../../Tool/ChatFunding.h"
 
 string Word(uint64_t value) {
     ostringstream s;
@@ -43,7 +44,7 @@ string Sha256(const string &text) {
 class ClassroomApp {
   public:
     fs::path root, binary, artifactPath;
-    Json artifact, legacyArtifact, profile, cache = Json::object();
+    Json artifact, legacyArtifact, legacy2Artifact, profile, cache = Json::object();
     Vault vault;
     Database index;
     vector<unique_ptr<Child>> children;
@@ -59,12 +60,19 @@ class ClassroomApp {
     uint64_t reorgs = 0;
     int64_t lastSampleMs = 0;
     uint64_t lastHeight = 0, lastTxs = 0;
+    string lastConnection;
+    Json fundingState = Json::object();
+    future<Json> fundingTask;
+    string fundingTaskNetwork;
+    int64_t nextFundingMs = 0;
+    size_t fundingEndpoint = 0;
     ClassroomApp(fs::path directory, fs::path executable, fs::path contract)
         : root(std::move(directory)), binary(std::move(executable)), artifactPath(std::move(contract)) {
         fs::create_directories(root / "networks");
         vault.path = root / "wallet.vault.json";
         artifact = ReadJson(artifactPath).at("contracts").at("ClassroomChat");
         legacyArtifact = ReadJson(artifactPath.parent_path() / "ClassroomChat.legacy-v1.compiled.json").at("contracts").at("ClassroomChat");
+        legacy2Artifact = ReadJson(artifactPath.parent_path() / "ClassroomChat.legacy-v2.compiled.json").at("contracts").at("ClassroomChat");
         if (fs::exists(root / "session.json")) {
             auto saved = ReadJson(root / "session.json");
             auto id = saved.at("id").get<string>();
@@ -77,6 +85,12 @@ class ClassroomApp {
             nickname = saved.value("nickname", string("成员"));
             index.Open(NetworkDir() / "index.sqlite");
         }
+        try {
+            if (fs::exists(root / "last-connection.json"))
+                lastConnection = JoinAddress(ReadJson(root / "last-connection.json").at("endpoint")).value_or("");
+            else if (profile.is_object() && !profile.value("seeds", Json::array()).empty())
+                lastConnection = JoinAddress(profile["seeds"][0]).value_or("");
+        } catch (...) { lastConnection.clear(); }
     }
     ~ClassroomApp() {
         Stop();
@@ -93,10 +107,11 @@ class ClassroomApp {
     Json NodeQuery(const Json &request) {
         return ClassroomRpc(Host(), Port(), request);
     }
-    int ChatVersion() const { return profile.is_object() ? profile.value("chat_version", 1) : 2; }
+    int ChatVersion() const { return profile.is_object() ? profile.value("chat_version", 1) : 3; }
     const Json &ChatArtifact(int version) const {
         if (version == 1) return legacyArtifact;
-        if (version == 2) return artifact;
+        if (version == 2) return legacy2Artifact;
+        if (version == 3) return artifact;
         throw invalid_argument("不支持的聊天室合约版本");
     }
     string Method(const string &signature) {
@@ -109,7 +124,7 @@ class ClassroomApp {
         auto invite = DecodeInvite(input);
         try {
             auto version = invite.at("version").get<int>();
-            if ((version != 1 && version != 2) || invite.at("contract_code_sha256") != Sha256(Runtime(version)))
+            if ((version < 1 || version > 3) || invite.at("contract_code_sha256") != Sha256(Runtime(version)))
                 throw invalid_argument("这个邀请需要兼容的 NornV2 版本，请让朋友重新发送");
             auto previous = GetGenesisConfig(); string root;
             try { SetGenesisUsers(invite.at("genesis")); root = U32ToHex(genesisRoot); }
@@ -136,9 +151,9 @@ class ClassroomApp {
         catch (...) { throw invalid_argument("邀请内容不完整或格式不正确，请让朋友重新发送"); }
     }
     void LaunchPreview() {
-        auto source = previewSource; auto runtime1 = Runtime(1), runtime2 = Runtime(2);
+        auto source = previewSource; auto runtime1 = Runtime(1), runtime2 = Runtime(2), runtime3 = Runtime(3);
         previewTaskId = invitePreview.at("id").get<string>();
-        previewTask = async(launch::async, [source, runtime1, runtime2] { return CheckJoinSource(source, runtime1, runtime2); });
+        previewTask = async(launch::async, [source, runtime1, runtime2, runtime3] { return CheckJoinSource(source, runtime1, runtime2, runtime3); });
     }
     void PollPreview() {
         if (!previewTask.valid() || previewTask.wait_for(std::chrono::seconds(0)) != future_status::ready) return;
@@ -174,6 +189,7 @@ class ClassroomApp {
         Json info = {{"version", ChatVersion()}, {"title", profile.at("title")},
             {"genesis", genesis}, {"genesis_root", profile.at("genesis_root")},
             {"contract", profile.at("contract")}, {"contract_code_sha256", Sha256(Runtime())}};
+        if (ChatVersion() == 3 && profile.contains("funding_provider")) info["funding_provider"] = profile["funding_provider"];
         auto path = NetworkDir() / "network-info.json";
         // Public metadata is immutable for a ready chain. Ordinary profile
         // saves must not replace a file that peers may be reading on Windows.
@@ -200,6 +216,8 @@ class ClassroomApp {
     }
     void Stop() {
         children.clear();
+        fundingState = {{"phase", "stopped"}};
+        nextFundingMs = 0;
         cache["running"] = false;
         cache["contract_ready"] = false;
         cache["recent_tps"] = 0;
@@ -319,7 +337,9 @@ class ClassroomApp {
     }
     void NewNetwork(const Json &request, bool joining) {
         if (!vault.Unlocked()) throw runtime_error("请先登录本机账户");
-        Json next = {{"id", RandomHex(12)}, {"mode", "network"}, {"chat_version", 2},
+        auto requestedVersion = request.value("chat_version", 3);
+        if (!joining && (requestedVersion < 1 || requestedVersion > 3)) throw invalid_argument("不支持的聊天室版本");
+        Json next = {{"id", RandomHex(12)}, {"mode", "network"}, {"chat_version", requestedVersion},
                      {"title", request.value("title", string("学术交流"))}, {"contract", ""},
                      {"seeds", Json::array()}};
         auto identity = vault.secrets.contains("main") ? string("main") : active;
@@ -331,7 +351,7 @@ class ClassroomApp {
                 auto invite = request.at("invite");
                 if (invite.is_string()) invite = Json::parse(invite.get<string>());
                 auto version = invite.at("version").get<int>();
-                if ((version != 1 && version != 2) || invite.at("contract_code_sha256") != Sha256(Runtime(version)))
+                if ((version < 1 || version > 3) || invite.at("contract_code_sha256") != Sha256(Runtime(version)))
                     throw invalid_argument("链邀请与支持的聊天室合约版本不匹配");
                 next["chat_version"] = version;
                 next["title"] = invite.at("title");
@@ -351,12 +371,17 @@ class ClassroomApp {
             } else {
                 auto key = vault.Key(identity), anchor = GenerateWallet();
                 next["genesis"] = {{"base_fee", 1}, {"accounts", Json::array({
-                    {{"public_key", U32ToHex(key.public_key)}, {"balance", 1000000000000ULL}},
+                    {{"public_key", U32ToHex(key.public_key)}, {"balance", requestedVersion == 3 ? ChatGenesisSupply : 1000000000000ULL}},
                     {{"public_key", U32ToHex(anchor.public_key)}, {"balance", 0}}})}};
                 sodium_memzero(key.private_key.data(), key.private_key.size());
                 sodium_memzero(anchor.private_key.data(), anchor.private_key.size());
                 SetGenesisUsers(next["genesis"]);
                 next["genesis_root"] = U32ToHex(genesisRoot);
+            }
+            if (next.at("chat_version") == 3) {
+                auto key = vault.Key(identity);
+                next["funding_provider"] = U32ToHex(key.public_key);
+                sodium_memzero(key.private_key.data(), key.private_key.size());
             }
             auto title = next["title"].get<string>();
             if (title.empty() || title.size() > 160) throw invalid_argument("链名称需要 1 至 160 个 UTF-8 字节");
@@ -379,7 +404,7 @@ class ClassroomApp {
             }
             for (const auto &seed : profile.value("seeds", Json::array()))
                 if (seeds.size() < 8 && seen.insert(seed.get<string>()).second) seeds.push_back(seed);
-            profile["seeds"] = seeds; Persist();
+            profile["seeds"] = seeds; UpdateFundingProvider(); Persist();
             SaveJson(NetworkDir() / "node1" / "seeds.json", seeds);
             if (children.empty()) Start();
             Tick();
@@ -389,6 +414,7 @@ class ClassroomApp {
         Stop();
         profile = next;
         active = identity;
+        fundingState = Json::object(); nextFundingMs = 0; fundingEndpoint = 0;
         fs::create_directories(NetworkDir());
         index.Open(NetworkDir() / "index.sqlite");
         Persist();
@@ -403,7 +429,7 @@ class ClassroomApp {
         }
         if (!joining) {
             auto code = EvmBytes(ChatArtifact(ChatVersion()).at("evm").at("bytecode").at("object"));
-            auto sent = Submit(active, "deploy", {}, code, 0, 2000000, Json::object());
+            auto sent = Submit(active, "deploy", {}, code, ChatVersion() == 3 ? ChatTreasuryAmount : 0, 2000000, Json::object());
             profile["deploy_tx"] = sent.at("hash");
             Persist();
             auto deadline = Clock::now() + std::chrono::seconds(20);
@@ -437,7 +463,7 @@ class ClassroomApp {
         auto account = Account(Host(), Port(), publicKey);
         auto nonce = stoull(account["nonce"].get<string>()), balance = stoull(account["balance"].get<string>());
         if (nonce == UINT64_MAX || amount > balance || baseFee > balance - amount || gas > balance - amount - baseFee)
-            throw runtime_error("余额不足以支付本次交易费用，请通过普通转账接收链上余额");
+            throw runtime_error("代币不足");
         auto head = Rpc(Host(), Port(), 19);
         if (head.size() != 80 || memcmp(head.data(), genesisRoot.data(), 32))
             throw runtime_error("节点创世指纹发生变化");
@@ -610,6 +636,246 @@ class ClassroomApp {
             index.Put("outbox", hash, saved);
         }
     }
+    string FundingPublicKey() {
+        auto key = vault.Key(active);
+        auto text = U32ToHex(key.public_key);
+        sodium_memzero(key.private_key.data(), key.private_key.size());
+        return text;
+    }
+    void UpdateFundingProvider() {
+        if (!profile.is_object() || ChatVersion() != 3 || !vault.Unlocked()) return;
+        auto key = FundingPublicKey();
+        if (profile.value("funding_provider", string{}) != key) {
+            profile["funding_provider"] = key;
+            Persist();
+        }
+    }
+    uint64_t FundingView(const string &signature, const string &argument = "") {
+        auto result = NodeQuery({{"method", "call"}, {"to", profile.at("contract")},
+                                 {"input", Method(signature) + argument}, {"gas", 100000}});
+        if (result.at("status") != 0) throw runtime_error("暂时无法读取聊天室补贴状态");
+        auto bytes = EvmBytes(result.at("output"));
+        if (bytes.size() != 32) throw runtime_error("聊天室补贴状态格式无效");
+        return AbiNumber(bytes, 0);
+    }
+    bool FundingClaimed(const string &publicKey) {
+        auto address = GetEvmAddress(HexToU32(publicKey));
+        return FundingView("claimed(address)", string(24, '0') + EvmHex(address.bytes)) != 0;
+    }
+    void RetryFundingTransaction(Json saved) {
+        auto account = Account(Host(), Port(), saved.at("sender"));
+        if (stoull(saved.at("nonce").get<string>()) <= stoull(account.at("nonce").get<string>())) return;
+        if (NowMs() - saved.value("last_sent_ms", int64_t(0)) < 3000) return;
+        auto bytes = EvmBytes(saved.at("raw"));
+        Rpc(Host(), Port(), saved.at("type").get<uint8_t>(), bytes, false);
+        saved["last_sent_ms"] = NowMs();
+        index.Put("outbox", saved.at("hash"), saved);
+    }
+    Json ClaimFunding(bool manual = false) {
+        if (!profile.is_object() || ChatVersion() != 3) throw runtime_error("此聊天室沿用原有资助规则");
+        if (!vault.Unlocked()) throw runtime_error("请先解锁钱包");
+        if (children.empty() || !cache.value("contract_ready", false)) throw runtime_error("请等待聊天室同步就绪");
+        auto key = FundingPublicKey();
+        if (FundingClaimed(key)) {
+            fundingState = {{"phase", "ready"}, {"claimed", true}};
+            return {{"claimed", true}, {"already_claimed", true}};
+        }
+        auto account = Account(Host(), Port(), key);
+        auto nonce = stoull(account.at("nonce").get<string>());
+        for (const auto &saved : index.Rows("SELECT data FROM outbox ORDER BY rowid DESC")) {
+            if (saved.value("sender", string{}) != key || saved.value("funding", string{}) != "claim") continue;
+            if (stoull(saved.at("nonce").get<string>()) > nonce) {
+                RetryFundingTransaction(saved);
+                fundingState = {{"phase", "claiming"}, {"claimed", false}, {"hash", saved.at("hash")}};
+                return {{"claimed", false}, {"pending", true}, {"hash", saved.at("hash")}};
+            }
+            if (!manual && saved.value("state", string{}) == "included" && saved.value("execution_status", 0) != 0)
+                throw runtime_error("领取交易未执行成功，请查看交易回执后重试");
+            break;
+        }
+        auto balance = stoull(account.at("balance").get<string>());
+        auto fee = ReadUserNumber(profile.at("genesis").value("base_fee", Json(0)));
+        if (balance < fee || balance - fee < ChatClaimGas) {
+            if (balance != 0 || nonce != 0) throw runtime_error("代币不足");
+            fundingState = {{"phase", "waiting"}, {"claimed", false}}; nextFundingMs = 0;
+            return {{"claimed", false}, {"pending", true}};
+        }
+        if (FundingView("Reserve()") < ChatGrantAmount) throw runtime_error("聊天室补贴储备不足");
+        auto sent = Submit(active, "call", EvmBytes(profile.at("contract")), EvmBytes(Method("Claim()")),
+                           0, ChatClaimGas, {{"funding", "claim"}});
+        fundingState = {{"phase", "claiming"}, {"claimed", false}, {"hash", sent.at("hash")}};
+        return {{"claimed", false}, {"pending", true}, {"hash", sent.at("hash")}};
+    }
+    void SponsorFundingRequests(const string &sponsor) {
+        auto directory = NetworkDir() / "funding-requests";
+        if (!fs::exists(directory)) return;
+        if (fs::is_symlink(directory) || !fs::is_directory(directory)) throw runtime_error("补贴请求目录无效");
+        if (FundingView("Reserve()") < ChatGrantAmount) return;
+        unsigned scanned = 0;
+        for (const auto &entry : fs::directory_iterator(directory)) {
+            if (++scanned > 64) break;
+            auto filename = PathUtf8(entry.path().filename());
+            if (entry.is_symlink() || !entry.is_regular_file() || filename.size() != 69 ||
+                !filename.ends_with(".json") || filename.substr(0, 64).find_first_not_of("0123456789abcdef") != string::npos) continue;
+            Json request;
+            try {
+                if (entry.file_size() > ChatFundingMaxRequestBytes) throw invalid_argument("Oversized request");
+                request = ReadJson(entry.path());
+                if (!ValidateFundingRequest(request, profile.at("genesis_root"), profile.at("contract"), sponsor, uint64_t(NowMs())) ||
+                    request.at("public_key") != filename.substr(0, 64)) throw invalid_argument("Invalid funding proof");
+            } catch (...) { fs::remove(entry.path()); continue; }
+            auto recipient = request.at("public_key").get<string>();
+            auto target = Account(Host(), Port(), recipient);
+            if (stoull(target.at("balance").get<string>()) != 0 || stoull(target.at("nonce").get<string>()) != 0 || FundingClaimed(recipient)) {
+                fs::remove(entry.path()); continue;
+            }
+            bool prior = false;
+            for (const auto &saved : index.Rows("SELECT data FROM outbox ORDER BY rowid DESC")) {
+                if (saved.value("funding", string{}) == "bootstrap" && saved.value("receiver", string{}) == recipient) {
+                    prior = true;
+                    RetryFundingTransaction(saved);
+                    break;
+                }
+            }
+            if (!prior) {
+                Submit(active, "transfer", EvmBytes(recipient), {}, ChatBootstrapAmount, 0,
+                       {{"receiver", recipient}, {"amount", to_string(ChatBootstrapAmount)}, {"funding", "bootstrap"}});
+            }
+            return; // At most one signed sponsorship/retry per tick; outbox is durable before I/O.
+        }
+    }
+    void LaunchFundingDiscovery(const string &key, const string &endpoint) {
+        auto genesis = profile.at("genesis_root").get<string>();
+        auto contract = profile.at("contract").get<string>();
+        auto codeHash = Sha256(Runtime());
+        fundingTaskNetwork = profile.at("id").get<string>() + "/" + key;
+        fundingTask = async(launch::async, [endpoint, genesis, contract, codeHash] {
+            try {
+                auto [host, port] = ParseEndpoint(endpoint);
+                auto text = Json({{"method", "network"}}).dump();
+                auto bytes = Rpc(host, port, 46, {text.begin(), text.end()}, true, 2, MaxInviteBytes);
+                auto info = Json::parse(bytes).at("network");
+                if (info.at("version") != 3 || info.at("genesis_root") != genesis || info.at("contract") != contract ||
+                    info.at("contract_code_sha256") != codeHash) throw runtime_error("补贴入口与当前聊天室不一致");
+                auto sponsor = ChatFundingDetail::Hex(info.at("funding_provider"), 32);
+                return Json({{"ok", true}, {"stage", "discover"}, {"endpoint", endpoint}, {"sponsor", sponsor}});
+            } catch (const exception &) {
+                return Json({{"ok", false}, {"stage", "discover"}, {"error", "等待可用的自动资助入口"}});
+            }
+        });
+    }
+    void PollFundingRequest(const string &key) {
+        if (!fundingTask.valid() || fundingTask.wait_for(std::chrono::seconds(0)) != future_status::ready) return;
+        auto result = fundingTask.get();
+        if (fundingTaskNetwork != profile.at("id").get<string>() + "/" + key) return;
+        if (!result.value("ok", false)) {
+            fundingState = {{"phase", "waiting"}, {"claimed", false}, {"error", result.value("error", string("等待自动资助"))}};
+            nextFundingMs = NowMs() + 1000;
+            return;
+        }
+        if (result.at("stage") == "request") { nextFundingMs = NowMs() + 5000; return; }
+        auto account = Account(Host(), Port(), key);
+        if (account.at("balance") != "0" || account.at("nonce") != "0" || FundingClaimed(key)) return;
+        auto sponsor = result.at("sponsor").get<string>();
+        if (sponsor == key) { nextFundingMs = NowMs() + 1000; return; }
+        Json request = {{"method", "funding_request"}, {"genesis_root", profile.at("genesis_root")},
+                        {"contract", profile.at("contract")}, {"public_key", key}, {"sponsor", sponsor},
+                        {"nonce", RandomHex(16)}, {"timestamp_ms", uint64_t(NowMs())}};
+        auto message = FundingRequestMessage(request);
+        auto wallet = vault.Key(active);
+        array<unsigned char, crypto_sign_BYTES> signature{};
+        crypto_sign_detached(signature.data(), nullptr, reinterpret_cast<const unsigned char *>(message.data()), message.size(), wallet.private_key.data());
+        sodium_memzero(wallet.private_key.data(), wallet.private_key.size());
+        request["signature"] = EvmHex(signature);
+        auto endpoint = result.at("endpoint").get<string>();
+        // The worker owns only a public signed intent and endpoint, never a key,
+        // vault, profile reference or process-global genesis metadata.
+        fundingTask = async(launch::async, [endpoint, request] {
+            try {
+                auto [host, port] = ParseEndpoint(endpoint); auto text = request.dump();
+                auto bytes = Rpc(host, port, 46, {text.begin(), text.end()}, true, 2, 4096);
+                auto answer = Json::parse(bytes);
+                if (!answer.value("queued", false) || answer.value("amount", string{}) != to_string(ChatBootstrapAmount))
+                    throw runtime_error("等待自动资助");
+                return Json({{"ok", true}, {"stage", "request"}});
+            } catch (const exception &) { return Json({{"ok", false}, {"stage", "request"}, {"error", "等待自动资助入口处理"}}); }
+        });
+    }
+    void TickFunding() {
+        if (!profile.is_object() || ChatVersion() != 3) { fundingState = {{"phase", "legacy"}}; return; }
+        if (!vault.Unlocked()) { fundingState = {{"phase", "waiting"}, {"error", "请解锁账户以继续自动领取"}}; return; }
+        if (!cache.value("contract_ready", false)) { fundingState = {{"phase", "waiting"}}; return; }
+        UpdateFundingProvider();
+        auto key = FundingPublicKey();
+        PollFundingRequest(key);
+        if (FundingClaimed(key)) {
+            fundingState = {{"phase", "ready"}, {"claimed", true}};
+            try { SponsorFundingRequests(key); }
+            catch (const exception &e) { fundingState["sponsor_error"] = e.what(); }
+            return;
+        }
+        auto account = Account(Host(), Port(), key);
+        auto balance = stoull(account.at("balance").get<string>()), nonce = stoull(account.at("nonce").get<string>());
+        auto fee = ReadUserNumber(profile.at("genesis").value("base_fee", Json(0)));
+        if (balance >= fee && balance - fee >= ChatClaimGas) { ClaimFunding(); return; }
+        if (balance != 0 || nonce != 0) { fundingState = {{"phase", "error"}, {"claimed", false}, {"error", "代币不足"}}; return; }
+        if (FundingView("Reserve()") < ChatGrantAmount) {
+            fundingState = {{"phase", "unavailable"}, {"claimed", false}, {"error", "聊天室补贴储备不足"}};
+            return;
+        }
+        if (fundingState.value("phase", string{}) != "waiting") fundingState = {{"phase", "waiting"}, {"claimed", false}};
+        if (fundingTask.valid() || NowMs() < nextFundingMs) return;
+        vector<string> endpoints; set<string> seen, localHosts;
+        try {
+            auto local = CollectInviteAddresses(Port());
+            for (const auto &address : local.at("addresses")) localHosts.insert(address.at("address").get<string>());
+        } catch (...) {}
+        auto add = [&](const string &text) {
+            try {
+                auto [host, port] = ParseEndpoint(text); boost::system::error_code ec;
+                auto address = ip::make_address(host, ec);
+                if (!ec) {
+                    address = CanonicalAddress(address); host = address.to_string();
+                    if (port == Port() && (address.is_loopback() || address.is_unspecified() || localHosts.count(host))) return;
+                }
+                auto endpoint = FormatEndpoint(host, port);
+                if (seen.insert(endpoint).second) endpoints.push_back(endpoint);
+            } catch (...) {}
+        };
+        // Configured seeds retain priority; connected members remain usable
+        // sponsors after the original creator/seed has gone offline.
+        for (const auto &seed : profile.value("seeds", Json::array())) add(seed.get<string>());
+        for (const auto &node : cache.value("nodes", Json::array())) for (const auto &peer : node.value("connections", Json::array())) {
+            auto port = peer.value("port", uint16_t(0));
+            if (port) add(FormatEndpoint(peer.at("host").get<string>(), port));
+        }
+        if (endpoints.empty()) { fundingState["error"] = "等待可用的自动资助入口"; return; }
+        auto endpoint = endpoints.at(fundingEndpoint++ % endpoints.size());
+        LaunchFundingDiscovery(key, endpoint);
+    }
+    void RememberConnection() {
+        vector<pair<string, uint16_t>> connected;
+        for (const auto &node : cache.value("nodes", Json::array())) for (const auto &peer : node.value("connections", Json::array())) {
+            auto port = peer.value("port", uint16_t(0));
+            if (!port || peer.value("height", uint64_t(0)) == 0) continue;
+            connected.emplace_back(peer.at("host").get<string>(), port);
+        }
+        if (connected.empty()) return;
+        string endpoint;
+        // Newly joined entries lead the seeds list. Prefer the first entry
+        // that is actually connected over an older peer's iteration order.
+        for (const auto &seed : profile.value("seeds", Json::array())) {
+            auto [seedHost, seedPort] = ParseEndpoint(seed.get<string>());
+            for (const auto &[host, port] : connected)
+                if (seedHost == host && seedPort == port) { endpoint = seed.get<string>(); break; }
+            if (!endpoint.empty()) break;
+        }
+        if (endpoint.empty()) endpoint = FormatEndpoint(connected.front().first, connected.front().second);
+        endpoint = JoinAddress(endpoint).value_or("");
+        if (endpoint.empty() || endpoint == lastConnection) return;
+        SaveJson(root / "last-connection.json", {{"endpoint", endpoint}, {"genesis_root", profile.at("genesis_root")}, {"connected_ms", NowMs()}});
+        lastConnection = endpoint;
+    }
     void Tick() {
         if (children.empty())
             return;
@@ -663,6 +929,11 @@ class ClassroomApp {
             cache["contract_ready"] = false;
             if (cache.contains("nodes")) for (auto &node : cache["nodes"]) node["online"] = false;
         }
+        if (cache.value("running", false)) {
+            try { RememberConnection(); } catch (...) {}
+            try { TickFunding(); }
+            catch (const exception &e) { fundingState = {{"phase", "error"}, {"error", e.what()}}; }
+        }
     }
     Json History(uint64_t offset = 0, uint64_t limit = 50) {
         if (offset > 1000000 || !limit || limit > 100)
@@ -701,6 +972,8 @@ class ClassroomApp {
                        {"has_wallet", fs::exists(vault.path)},
                        {"active_wallet", active},
                        {"nickname", nickname},
+                       {"last_connection", lastConnection},
+                       {"funding_state", fundingState},
                        {"ipv6_available", ipv6},
                        {"last_error", lastError},
                        {"reorg_count", reorgs}});
@@ -765,6 +1038,7 @@ class ClassroomApp {
         }
         if (action == "status")
             return Status();
+        if (action == "funding_claim") return ClaimFunding(true);
         if (action == "network_status" || action == "network_configure" || action == "network_remove") {
             if (action == "network_configure" && !profile.is_object())
                 throw runtime_error("请先创建或加入链");
@@ -779,17 +1053,22 @@ class ClassroomApp {
         if (action == "wallet_create") {
             vault.Create(request.at("password"));
             cache.erase("wallets");
+            fundingState = Json::object(); nextFundingMs = 0;
+            UpdateFundingProvider();
             return Status();
         }
         if (action == "unlock") {
             vault.Unlock(request.at("password"));
             if (!vault.secrets.contains(active)) active = vault.secrets.begin().key();
             cache.erase("wallets");
+            fundingState = Json::object(); nextFundingMs = 0;
+            UpdateFundingProvider();
             return Status();
         }
         if (action == "lock") {
             vault.Lock();
             cache.erase("wallets");
+            fundingState = {{"phase", "waiting"}, {"error", "请解锁账户以继续自动领取"}};
             return Status();
         }
         if (action == "backup") {
@@ -804,6 +1083,8 @@ class ClassroomApp {
             SaveJson(vault.path, request.at("backup"));
             vault.secrets = value;
             if (!vault.secrets.contains(active)) active = vault.secrets.begin().key();
+            fundingState = Json::object(); nextFundingMs = 0;
+            UpdateFundingProvider();
             return Status();
         }
         if (action == "create" || action == "join") {
@@ -844,8 +1125,11 @@ class ClassroomApp {
             auto key = vault.Key(name);
             sodium_memzero(key.private_key.data(), 64);
             active = name;
-            if (profile.is_object())
+            fundingState = Json::object(); nextFundingMs = 0;
+            if (profile.is_object()) {
+                UpdateFundingProvider();
                 Persist();
+            }
             return Status();
         }
         if (action == "nickname") {
@@ -964,7 +1248,7 @@ class ClassroomApp {
         }
         if (action == "diagnostics")
             return {{"schema", 1},
-                    {"application", "NornV2 Peer Chat 0.4.1"},
+                    {"application", "NornV2 Peer Chat 0.4.2"},
                     {"ipv6_available", ipv6},
                     {"status", Status()},
                     {"note", "No wallet seeds, signed outbox bytes or node log bodies included"}};

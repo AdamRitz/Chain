@@ -1,4 +1,7 @@
 import type { Row } from "./api";
+export function FundingText(status: Row): string {
+  return ["waiting", "claiming"].includes(status.funding_state?.phase) ? "正在领取入群代币" : "";
+}
 export function MergeMessages(history: Row[], canonical: Row[]): Row[] {
   const records = new Map<string, Row>();
   for (const row of [...history, ...canonical]) records.set(row.id, row);
@@ -34,6 +37,7 @@ export function CanSend(
     roomOpen: boolean;
     busy: boolean;
     funded?: boolean;
+    fundingReady?: boolean;
   },
 ): boolean {
   return (
@@ -42,7 +46,7 @@ export function CanSend(
     state.contractReady &&
     state.roomOpen &&
     !state.busy &&
-    state.funded !== false &&
+    state.fundingReady !== false &&
     body.trim().length > 0 &&
     new TextEncoder().encode(body).length <= 512
   );

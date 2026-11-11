@@ -59,7 +59,7 @@ def Main(args):
         return app.Wait(lambda s:any(t['hash']==tx['hash'] and t['state']=='included' for t in s.get('outbox',[])))
     try:
         creator=App(args.bin.resolve(),source,root/'creator');apps.append(creator)
-        first=creator.Api('create',title='研究交流链')
+        first=creator.Api('create',title='研究交流链',chat_version=2)
         assert first['network']['chat_version']==2 and 'teacher' not in first['network']
         assert len(first['wallets'])==len(first['nodes'])==len(creator.NodeProcesses())==1
         assert first['wallets'][0]['id']=='main' and first['contract_ready']

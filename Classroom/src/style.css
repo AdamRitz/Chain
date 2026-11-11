@@ -33,17 +33,7 @@
   padding: 12px 16px;
   margin-top: auto;
 }
-.peer-fee-notice {
-  padding: 10px 12px;
-  background: #fff7e7;
-  border-radius: 7px;
-  font-size: 12px;
-  margin-bottom: 10px;
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 8px;
-}
+.composer-funding { display: flex; align-items: center; gap: 7px; margin: 0 0 10px; color: #657f8b; font-size: 12px; }
 * {
   box-sizing: border-box;
 }
@@ -1940,6 +1930,9 @@ footer button {
 .invite-summary span { display: flex; gap: 8px; align-items: center; font-size: 13px; }
 .invite-summary small, .invite-permission small { color: #65787a; font-size: 12px; }
 .invite-secondary { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px; margin: 16px 0; }
+.invite-last-connection { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 8px 14px; margin-bottom: 20px; }
+.invite-last-connection .field { flex: 1 1 240px; min-width: 0; margin: 0; }
+.invite-last-connection .text-button { margin-bottom: 12px; white-space: nowrap; }
 .invite-permission { margin: 18px 0; padding-top: 12px; border-top: 1px solid #e3e9e9; }
 .invite-permission small { display: block; margin-top: 8px; }
 .invite-details { margin-top: 18px; overflow-wrap: anywhere; }

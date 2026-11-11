@@ -24,10 +24,10 @@ import {
   X,
 } from "lucide-react";
 import { api, bytes, download, number, short, type Row } from "./api";
-import { CanSend, MergeMessages, SelectedMessage } from "./model";
+import { CanSend, FundingText, MergeMessages, SelectedMessage } from "./model";
 import { NetworkPanel } from "./NetworkPanel";
 import { InviteInput, InviteShare } from "./InviteDialogs";
-import { CanJoinPreview, ConnectionText, ReceiptText } from "./invite";
+import { CanJoinPreview, ConnectionText, JoinText } from "./invite";
 import { BlockTable, Metric, Outbox, PanelTitle, Topology } from "./components";
 import "./style.css";
 
@@ -162,8 +162,6 @@ export function PeerApp() {
     (item: Row) => item.id === s.active_wallet,
   );
   const balance = wallet?.balance || "0";
-  const funded =
-    BigInt(balance) >= 500000n + BigInt(network?.genesis?.base_fee || 0);
   const nodes: Row[] = s.nodes || [];
   const peers = nodes.reduce(
     (total, node) => total + (node.connections || []).length,
@@ -181,14 +179,21 @@ export function PeerApp() {
       !messages.some((message) => message.tx_hash === item.hash),
   );
   const inspected = SelectedMessage(selected, messages);
+  const fundingText = FundingText(s);
   const canSend = CanSend(body, {
     unlocked: !!s.unlocked,
     running: !!s.running && (!s.connection_state || s.connection_state.phase === "ready"),
     contractReady: !!s.contract_ready,
     roomOpen: !!currentRoom?.open,
     busy: !!busy,
-    funded,
+    fundingReady: !fundingText,
   });
+  const openJoin = () => {
+    setInvite(current => JoinText(current, s));
+    setJoinPreview(null);
+    setError("");
+    setModal("join");
+  };
   const enter = async (joining: boolean) => {
     try {
       if (joining && !CanJoinPreview(joinPreview, joinPreview?.id || "")) throw Error("正在连接节点并获取链配置，请稍候。");
@@ -205,6 +210,7 @@ export function PeerApp() {
         joining ? { preview_id: joinPreview!.id } : { title },
         joining ? "正在连接链与聊天室" : "正在创建链并部署聊天室",
       );
+      if (joining) { setInvite(""); setJoinPreview(null); }
       setModal("");
       setPassword("");
       setBody("");
@@ -287,7 +293,7 @@ export function PeerApp() {
             <span>{currentView.title}</span>
           </div>
           <div className="header-right">
-            <button className="button secondary compact" onClick={() => setModal("join")}><Plus size={15} />加入聊天室</button>
+            <button className="button secondary compact" onClick={openJoin}><Plus size={15} />加入聊天室</button>
             {network && <button className="button primary compact" onClick={() => setModal("share")}><Users size={15} />邀请朋友</button>}
             <span className={"connection " + (s.running ? "connected" : "")}>
               <i />
@@ -325,7 +331,7 @@ export function PeerApp() {
                 <button
                   className="button secondary"
                   disabled={!!busy}
-                  onClick={() => setModal("join")}
+                  onClick={openJoin}
                 >
                   <Globe2 size={16} />
                   加入聊天室
@@ -367,7 +373,7 @@ export function PeerApp() {
                     创建聊天室 <ArrowRight size={17} />
                   </span>
                 </button>
-                <button onClick={() => setModal("join")}>
+                <button onClick={openJoin}>
                   <span className="option-icon blue">
                     <Users />
                   </span>
@@ -400,7 +406,7 @@ export function PeerApp() {
                     <span>{item.name}</span>
                   </button>
                 ))}
-                {network.chat_version === 2 && (
+                {network.chat_version >= 2 && (
                   <div className="peer-room-create">
                     <input
                       aria-label="讨论分组名称"
@@ -413,7 +419,7 @@ export function PeerApp() {
                       disabled={
                         !s.unlocked ||
                         !s.running ||
-                        !funded ||
+                        !!fundingText ||
                         !!busy ||
                         !roomName.trim() ||
                         bytes(roomName) > 96
@@ -555,20 +561,8 @@ export function PeerApp() {
                     >
                       登录本机账户后发送消息
                     </button>
-                  ) : s.contract_ready && !funded ? (
-                    <div className="peer-fee-notice" role="status">
-                      <span>
-                        账户需要链上余额支付消息手续费，可由任意有余额的成员普通转账补充。
-                      </span>
-                      <button
-                        className="text-button"
-                        onClick={() => copy(ReceiptText(s, wallet.public_key))}
-                      >
-                        <Copy size={14} />
-                        复制收款信息
-                      </button>
-                    </div>
                   ) : null}
+                  {!!s.unlocked && fundingText && <p className="composer-funding" role="status"><LoaderCircle size={14} className="spin" />{fundingText}</p>}
                   <textarea
                     aria-label="聊天消息"
                     value={body}

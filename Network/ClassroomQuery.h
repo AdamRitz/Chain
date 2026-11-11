@@ -1,12 +1,78 @@
 #pragma once
+#include <chrono>
+#include <filesystem>
 #include <fstream>
+#include <mutex>
 #include "../Tool/Arguments.h"
+#include "../Tool/ChatFunding.h"
 // Local, gateway-owned public chain descriptor. Never supplied by a remote request.
 string nodeNetworkInfoPath;
-// Optional read-only teaching queries. No state, nonce or receipt is committed here.
+inline mutex chatFundingQueueMutex;
+
+inline std::filesystem::file_status ChatFundingFileStatus(const std::filesystem::path &path) {
+    std::error_code error;
+    auto status = std::filesystem::symlink_status(path, error);
+    if (error && error != std::errc::no_such_file_or_directory)
+        throw std::filesystem::filesystem_error("Cannot inspect funding queue", path, error);
+    return status;
+}
+
+// The queue contains signed public intents only. No wallet keys or chain state
+// are written by this endpoint; the local gateway decides whether to sponsor.
+inline void QueueChatFundingRequest(const nlohmann::json &request) {
+    namespace fs = std::filesystem;
+    lock_guard queueLock(chatFundingQueueMutex);
+    auto directory = Utf8Path(nodeNetworkInfoPath).parent_path() / "funding-requests";
+    auto status = ChatFundingFileStatus(directory);
+    if (fs::is_symlink(status) || (fs::exists(status) && !fs::is_directory(status)))
+        throw runtime_error("Funding queue must be a local directory");
+    fs::create_directories(directory);
+    auto publicKey = ChatFundingDetail::Hex(request.at("public_key"), 32);
+    auto destination = directory / (publicKey + ".json");
+    status = ChatFundingFileStatus(destination);
+    if (fs::exists(status)) {
+        if (!fs::is_regular_file(status) || fs::is_symlink(status)) throw runtime_error("Invalid funding queue entry");
+        return; // A single pending request per public key; duplicates do not add files.
+    }
+    size_t count = 0;
+    for (const auto &entry : fs::directory_iterator(directory)) {
+        (void)entry;
+        if (++count >= 64) throw runtime_error("Funding request queue is full");
+    }
+    nlohmann::json saved = {
+        {"genesis_root", ChatFundingDetail::Hex(request.at("genesis_root"), 32)},
+        {"contract", ChatFundingDetail::Hex(request.at("contract"), 20)}, {"public_key", publicKey},
+        {"sponsor", ChatFundingDetail::Hex(request.at("sponsor"), 32)},
+        {"nonce", ChatFundingDetail::Hex(request.at("nonce"), 16)},
+        {"timestamp_ms", ChatFundingDetail::Timestamp(request.at("timestamp_ms"))},
+        {"signature", ChatFundingDetail::Hex(request.at("signature"), crypto_sign_BYTES)}};
+    auto bytes = saved.dump();
+    if (bytes.size() > ChatFundingMaxRequestBytes) throw invalid_argument("Funding request exceeds the size limit");
+    array<unsigned char, 16> random{}; randombytes_buf(random.data(), random.size());
+    array<char, 33> suffix{}; sodium_bin2hex(suffix.data(), suffix.size(), random.data(), random.size());
+    auto temporary = directory / ("." + publicKey + "." + suffix.data() + ".tmp");
+    try {
+        ofstream output(temporary, ios::binary | ios::trunc);
+        if (!output) throw runtime_error("Cannot create funding request");
+        output.write(bytes.data(), std::streamsize(bytes.size())); output.flush();
+        if (!output) throw runtime_error("Cannot write funding request");
+        output.close();
+        if (!output) throw runtime_error("Cannot close funding request");
+        fs::rename(temporary, destination); // Only a completely written request becomes visible.
+    } catch (...) {
+        std::error_code ignored; fs::remove(temporary, ignored);
+        throw;
+    }
+}
+
+// Existing queries remain read-only. funding_request only queues a verified
+// off-chain intent; no balance, nonce, receipt or consensus rule is changed.
 nlohmann::json ClassroomQuery(const nlohmann::json &request) {
     auto method = request.at("method").get<string>();
-    if (method == "network") {
+    if (method == "network" || method == "funding_request") {
+        bool funding = method == "funding_request";
+        if (funding && request.dump().size() > ChatFundingMaxRequestBytes)
+            throw invalid_argument("Funding request exceeds the size limit");
         if (nodeNetworkInfoPath.empty()) throw invalid_argument("Address joining is unavailable on this node");
         ifstream input(Utf8Path(nodeNetworkInfoPath), ios::binary);
         if (!input) throw runtime_error("Public chain configuration is not ready");
@@ -17,6 +83,8 @@ nlohmann::json ClassroomQuery(const nlohmann::json &request) {
         nlohmann::json info;
         for (const auto *key : {"version", "title", "genesis", "genesis_root", "contract", "contract_code_sha256"})
             info[key] = stored.at(key);
+        if (info.at("version") == 3 && stored.contains("funding_provider"))
+            info["funding_provider"] = ChatFundingDetail::Hex(stored.at("funding_provider"), 32);
         if (info.at("genesis_root") != U32ToHex(genesisRoot)) throw invalid_argument("Public chain fingerprint mismatch");
         auto target = EvmBytes(info.at("contract").get<string>());
         if (target.size() != 20) throw runtime_error("Chat contract is not ready");
@@ -27,7 +95,19 @@ nlohmann::json ClassroomQuery(const nlohmann::json &request) {
         auto code = EvmHex({found->second.code.data(), found->second.code.size()}); array<uint8_t, 32> hash;
         crypto_hash_sha256(hash.data(), reinterpret_cast<const uint8_t *>(code.data()), code.size());
         if (info.at("contract_code_sha256") != EvmHex(hash)) throw invalid_argument("Public chat code fingerprint mismatch");
-        return {{"network", info}, {"head", U32ToHex(DBReadCurrentBlock())}};
+        if (!funding) return {{"network", info}, {"head", U32ToHex(DBReadCurrentBlock())}};
+        if (info.at("version") != 3 || !info.contains("funding_provider"))
+            throw invalid_argument("Automatic funding is unavailable on this chat version");
+        auto now = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+        if (now < 0 || !ValidateFundingRequest(request, info.at("genesis_root").get<string>(),
+                info.at("contract").get<string>(), info.at("funding_provider").get<string>(), uint64_t(now)))
+            throw invalid_argument("Invalid or expired funding ownership proof");
+        auto key = HexToU32(ChatFundingDetail::Hex(request.at("public_key"), 32));
+        auto user = GetUser(users, key);
+        if (user.balance != 0 || user.nonce != 0) throw invalid_argument("Funding requires a new zero-balance account");
+        lock.unlock();
+        QueueChatFundingRequest(request);
+        return {{"queued", true}, {"amount", std::to_string(ChatBootstrapAmount)}};
     }
     if (method == "peers") {
         nlohmann::json peers = nlohmann::json::array();

@@ -6,6 +6,8 @@ C++20 区块链原型，使用 Boost.Asio、libsodium、默克尔树、RocksDB �
 
 新增 [Windows 学术聊天室](Classroom/README.md)：创建链、加入链、分享邀请、普通账户转账和 Solidity 链上聊天。每台电脑运行一个节点，所有成员可聊天、创建讨论分组和邀请加入，无教师或审批角色，支持 IPv4/IPv6。桌面应用采用独立网关与桌面壳，节点继续沿用无学习模型基线。
 
+下载 [NornV2 0.4.2 Windows x64 完整桌面包](https://github.com/AdamRitz/Chain/releases/tag/v0.4.2)。新建 v3 聊天室将大额储备存入普通合约，新成员通过持钥证明自动申请启动金，再由本人签名一次领取，无需人工分币。已有 v1/v2 链保留原合约、余额及原有资助规则；0.4.1 发布继续保留。
+
 修改前阅读 [MODULE_GUIDE.md](MODULE_GUIDE.md)。合约操作与分叉规则见 [EVM_GUIDE.md](EVM_GUIDE.md)，最新性能测试见 [十节点吞吐量复测](reports/2026-10-14-ten-node/REPORT.md)，前次优化见 [传播、同步与执行优化](reports/2026-10-13-throughput/REPORT.md)，合约接入测试见 [分叉与 EVM 报告](reports/2026-09-16-fork-evm/REPORT.md)。
 
 同父块候选按交易数、哈希排序。分支按累计有效交易数、高度和链头哈希比较，在 256 块窗口内通过原子回滚与重放收敛。每秒交易数（Transactions Per Second，TPS）统计完成执行与同步落盘的交易。

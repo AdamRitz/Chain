@@ -33,7 +33,7 @@ def Main(args):
         try:Api('unlock',password='incorrect');raise AssertionError('Wrong password accepted')
         except urllib.error.HTTPError as e:assert e.code==400
         Api('unlock',password='classroom-test-password');checks.append('encrypted wallet create lock unlock and backup; wrong password rejected')
-        status=Api('create',title='真实链上聊天室测试')
+        status=Api('create',title='真实链上聊天室测试',chat_version=1)
         status=Wait(lambda s:s.get('contract_ready') and len(s.get('nodes',[]))==1 and all(n.get('online') for n in s['nodes']))
         for child in psutil.Process(process.pid).children(recursive=True):
             if Path(child.exe()).resolve()!=binary/('boost.exe' if os.name=='nt' else 'boost'):continue
@@ -41,7 +41,7 @@ def Main(args):
         assert len(records)==1
         wallets={w['id']:w for w in status['wallets']};port=status['network']['ports'][0]
         invite=Api('invite',seeds=[f'127.0.0.1:{port}',f'[::1]:{port}'])
-        assert invite['version']==2 and 'teacher' not in invite
+        assert status['network']['chat_version']==invite['version']==1 and 'teacher' not in invite
         sent=Api('transfer',receiver='a7'*32,amount='100')
         status=Wait(lambda s:any(t['hash']==sent['hash'] and t['state']=='included' for t in s.get('outbox',[])))
         checks.append('one real node, idempotent deployment and a signed native transfer')
@@ -50,10 +50,9 @@ def Main(args):
         status=Wait(lambda s:any(m['body']==body for m in s.get('messages',[])))
         message=next(m for m in status['messages'] if m['body']==body);assert message['sender']==wallets['main']['evm_address']
         Wait(lambda s:len({n.get('head') for n in s['nodes']})==1)
-        contract=invite['contract'];compiled=json.loads((source/'Contracts/ClassroomChat.compiled.json').read_text())['contracts']['ClassroomChat']
+        contract=invite['contract'];compiled=json.loads((source/'Contracts/ClassroomChat.legacy-v1.compiled.json').read_text())['contracts']['ClassroomChat']
         result=Api('call',to=contract,input=compiled['evm']['methodIdentifiers']['messageCount()'])
         assert result['status']==0 and int(result['output'],16)==1 and result['read_only']
-        count_before=Api('status')['stats']['chain_transactions']
         try:Api('message',room=1,body='x'*513);raise AssertionError('Oversize message accepted')
         except urllib.error.HTTPError as e:assert e.code==400
         Api('message',room=1,body=body,client_id=client_id)

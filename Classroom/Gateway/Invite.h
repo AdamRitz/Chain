@@ -131,14 +131,14 @@ Json ProbeInvite(const Json &invite, const string &runtime) {
     }
     return {{"endpoints", results}, {"seeds", seeds}, {"height", height}, {"ok", !seeds.empty()}};
 }
-Json CheckJoinSource(const Json &source, const string &runtime1, const string &runtime2) {
+Json CheckJoinSource(const Json &source, const string &runtime1, const string &runtime2, const string &runtime3 = {}) {
     Json endpoint;
     try {
         if (source.is_string()) endpoint = InviteEndpoint(source.get<string>());
         auto invite = source.is_string() ? FetchNetworkInvite(source.get<string>()) : source;
         auto version = invite.at("version").get<int>();
-        if (version != 1 && version != 2) throw invalid_argument("对方的聊天室版本需要更新客户端后才能加入");
-        auto result = ProbeInvite(invite, version == 1 ? runtime1 : runtime2);
+        if (version < 1 || version > 3 || (version == 3 && runtime3.empty())) throw invalid_argument("对方的聊天室版本需要更新客户端后才能加入");
+        auto result = ProbeInvite(invite, version == 1 ? runtime1 : version == 2 ? runtime2 : runtime3);
         result["invite"] = invite;
         return result;
     } catch (const boost::system::system_error &e) {

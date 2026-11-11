@@ -8,13 +8,27 @@ contract ClassroomChat {
     struct RoomInfo { string name; bool open; }
     mapping(uint256 => RoomInfo) public rooms;
     mapping(address => mapping(bytes32 => bool)) public usedIds;
+    mapping(address => bool) public claimed;
+    uint256 public constant MEMBER_GRANT = 1_000_000_000_000;
     event RoomCreated(uint256 indexed roomId, string name);
     event MessageSent(uint256 indexed roomId, address indexed sender, bytes32 indexed clientId,
         uint256 messageId, string body, string nickname);
-    constructor() {
+    event GrantClaimed(address indexed member, uint256 amount);
+    constructor() payable {
+        claimed[msg.sender] = true; // The creator already has its genesis allocation.
         roomCount = 1;
         rooms[1] = RoomInfo(unicode"公共讨论", true);
         emit RoomCreated(1, unicode"公共讨论");
+    }
+    receive() external payable {}
+    function Reserve() external view returns (uint256) { return address(this).balance; }
+    function Claim() external {
+        require(!claimed[msg.sender], "already claimed");
+        require(address(this).balance >= MEMBER_GRANT, "reserve empty");
+        claimed[msg.sender] = true;
+        (bool sent,) = payable(msg.sender).call{value: MEMBER_GRANT}("");
+        require(sent, "grant failed");
+        emit GrantClaimed(msg.sender, MEMBER_GRANT);
     }
     function CreateRoom(string calldata name) external returns (uint256 id) {
         require(bytes(name).length > 0 && bytes(name).length <= 96, "name: 1..96 bytes");
