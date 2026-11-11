@@ -237,7 +237,7 @@ int main(int argc, char **argv) {
 #endif
         signal(SIGINT, [](int) { gatewayRunning = false; });
         signal(SIGTERM, [](int) { gatewayRunning = false; });
-        bool resumeSavedProfile = app.profile.is_object();
+        bool resumeSavedProfile = app.profile.is_object() && app.resumeOnLaunch;
         thread ticker([&, resumeSavedProfile] {
             bool first = true;
             while (gatewayRunning) {

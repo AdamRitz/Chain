@@ -61,6 +61,8 @@ class ClassroomApp {
     int64_t lastSampleMs = 0;
     uint64_t lastHeight = 0, lastTxs = 0;
     string lastConnection;
+    bool resumeOnLaunch = false;
+    vector<Json> networkCatalog;
     Json fundingState = Json::object();
     future<Json> fundingTask;
     string fundingTaskNetwork;
@@ -76,27 +78,136 @@ class ClassroomApp {
         if (fs::exists(root / "session.json")) {
             auto saved = ReadJson(root / "session.json");
             auto id = saved.at("id").get<string>();
-            if (id.size() != 24 || id.find_first_not_of("0123456789abcdef") != string::npos)
-                throw runtime_error("Invalid saved network ID");
-            profile = ReadJson(root / "networks" / id / "profile.json");
-            if (profile.at("id").get<string>() != id)
-                throw runtime_error("Saved network path mismatch");
+            profile = ReadProfile(id);
             active = saved.value("active", string("alice"));
             nickname = saved.value("nickname", string("成员"));
+            resumeOnLaunch = saved.value("running", true); // Old desktops always resumed their selected chain.
             index.Open(NetworkDir() / "index.sqlite");
         }
-        try {
-            if (fs::exists(root / "last-connection.json"))
-                lastConnection = JoinAddress(ReadJson(root / "last-connection.json").at("endpoint")).value_or("");
-            else if (profile.is_object() && !profile.value("seeds", Json::array()).empty())
-                lastConnection = JoinAddress(profile["seeds"][0]).value_or("");
-        } catch (...) { lastConnection.clear(); }
+        LoadConnection();
+        RefreshNetworks();
     }
     ~ClassroomApp() {
         Stop();
     }
     fs::path NetworkDir() const {
         return root / "networks" / profile.at("id").get<string>();
+    }
+    Json ReadProfile(const string &id) {
+        if (id.size() != 24 || id.find_first_not_of("0123456789abcdef") != string::npos)
+            throw invalid_argument("保存的链 ID 无效");
+        auto directory = root / "networks" / id;
+        if (fs::is_symlink(directory) || fs::is_symlink(directory / "profile.json"))
+            throw invalid_argument("保存的链路径无效");
+        auto saved = ReadJson(directory / "profile.json");
+        if (saved.at("id") != id) throw invalid_argument("保存的链路径与 ID 不一致");
+        auto fingerprint = saved.at("genesis_root").get<string>();
+        HexToU32(fingerprint);
+        auto contract = saved.at("contract").get<string>();
+        if (!contract.empty() && EvmBytes(contract).size() != 20) throw invalid_argument("保存的聊天室地址无效");
+        auto version = saved.value("chat_version", 1);
+        if (version < 1 || version > 3) throw invalid_argument("保存的聊天室版本无效");
+        auto ports = saved.at("ports");
+        if (!ports.is_array() || ports.empty()) throw invalid_argument("保存的节点端口无效");
+        for (const auto &port : ports)
+            if (!port.is_number_integer() || port.get<int64_t>() < 1 || port.get<int64_t>() > 65535)
+                throw invalid_argument("保存的节点端口无效");
+        auto previous = GetGenesisConfig();
+        try {
+            SetGenesisUsers(saved.at("genesis"));
+            if (U32ToHex(genesisRoot) != fingerprint) throw invalid_argument("保存的链创世指纹不一致");
+        } catch (...) { SetGenesisUsers(previous); throw; }
+        SetGenesisUsers(previous);
+        return saved;
+    }
+    vector<Json> SavedProfiles() {
+        vector<Json> saved;
+        for (const auto &entry : fs::directory_iterator(root / "networks")) {
+            if (entry.is_symlink() || !entry.is_directory()) continue;
+            try { saved.push_back(ReadProfile(PathUtf8(entry.path().filename()))); }
+            catch (...) {} // A damaged unrelated profile must not disable the active chain.
+        }
+        sort(saved.begin(), saved.end(), [](const Json &a, const Json &b) { return a.at("id") < b.at("id"); });
+        return saved;
+    }
+    Json Networks() {
+        Json rows = Json::array();
+        for (const auto &saved : networkCatalog) {
+            bool selected = profile.is_object() && saved.at("id") == profile.at("id");
+            rows.push_back({{"id", saved.at("id")}, {"title", saved.value("title", string{})},
+                            {"genesis_root", saved.at("genesis_root")}, {"contract", saved.at("contract")},
+                            {"chat_version", saved.value("chat_version", 1)}, {"selected", selected},
+                            {"running", selected && !children.empty() && cache.value("running", false)}});
+        }
+        return rows;
+    }
+    void RefreshNetworks() { networkCatalog = SavedProfiles(); }
+    void LoadConnection() {
+        lastConnection.clear();
+        if (!profile.is_object()) return;
+        try {
+            auto path = NetworkDir() / "last-connection.json";
+            if (!fs::exists(path)) path = root / "last-connection.json"; // Import only a matching old selected chain.
+            if (fs::exists(path)) {
+                auto saved = ReadJson(path);
+                if (saved.value("genesis_root", string{}) == profile.at("genesis_root").get<string>())
+                    lastConnection = JoinAddress(saved.at("endpoint")).value_or("");
+            }
+        } catch (...) {}
+        if (lastConnection.empty() && !profile.value("seeds", Json::array()).empty()) {
+            try { lastConnection = JoinAddress(profile["seeds"][0]).value_or(""); } catch (...) {}
+        }
+    }
+    void ClearChainState() {
+        cache = Json::object(); addressState = Json::object();
+        invitePreview = Json::object(); previewInvite = nullptr; previewSource = nullptr; previewTaskId.clear();
+        fundingState = Json::object(); fundingTaskNetwork.clear(); nextFundingMs = 0; fundingEndpoint = 0;
+        lastError.clear(); reorgs = 0; lastSampleMs = 0; lastHeight = 0; lastTxs = 0;
+        LoadConnection();
+    }
+    void SelectProfile(const Json &next) {
+        auto previous = profile;
+        auto previousActive = active, previousNickname = nickname;
+        bool wasRunning = !children.empty(), previousResume = resumeOnLaunch;
+        if (profile.is_object()) Persist();
+        Stop();
+        try {
+            profile = next;
+            active = profile.value("active_wallet", previousActive);
+            nickname = profile.value("nickname", previousNickname);
+            if (vault.Unlocked() && !vault.secrets.contains(active)) active = vault.secrets.begin().key();
+            ClearChainState();
+            fs::create_directories(NetworkDir());
+            index.Open(NetworkDir() / "index.sqlite");
+            UpdateFundingProvider();
+            Start();
+        } catch (const exception &e) {
+            auto error = string(e.what());
+            Stop(); profile = previous; active = previousActive; nickname = previousNickname;
+            resumeOnLaunch = previousResume;
+            ClearChainState();
+            if (profile.is_object()) {
+                index.Open(NetworkDir() / "index.sqlite");
+                if (wasRunning) {
+                    try { Start(); }
+                    catch (const exception &restore) { error += string("；原链恢复失败：") + restore.what(); }
+                }
+                Persist();
+            } else {
+                index.Close();
+                if (fs::exists(root / "session.json")) fs::remove(root / "session.json");
+            }
+            lastError = error;
+            throw runtime_error(error);
+        }
+    }
+    void SwitchNetwork(const string &id) {
+        auto next = ReadProfile(id); // Validate before stopping the current node.
+        if (profile.is_object() && profile.at("id") == id) {
+            if (children.empty()) Start();
+            return;
+        }
+        SelectProfile(next);
     }
     string Host() const {
         return "127.0.0.1";
@@ -158,6 +269,7 @@ class ClassroomApp {
     void PollPreview() {
         if (!previewTask.valid() || previewTask.wait_for(std::chrono::seconds(0)) != future_status::ready) return;
         auto result = previewTask.get();
+        if (!invitePreview.contains("id") || previewSource.is_null()) return;
         if (previewTaskId != invitePreview.at("id").get<string>()) { LaunchPreview(); return; }
         if (result.value("ok", false)) {
             try {
@@ -197,9 +309,12 @@ class ClassroomApp {
         SaveJson(path, info);
     }
     void Persist() {
+        profile["active_wallet"] = active;
+        profile["nickname"] = nickname;
         SaveJson(NetworkDir() / "profile.json", profile);
+        RefreshNetworks();
         SaveNetworkInfo();
-        SaveJson(root / "session.json", {{"id", profile["id"]}, {"active", active}, {"nickname", nickname}});
+        SaveJson(root / "session.json", {{"id", profile["id"]}, {"active", active}, {"nickname", nickname}, {"running", resumeOnLaunch}});
     }
     Json PublicWallets() {
         Json wallets = Json::array();
@@ -214,7 +329,7 @@ class ClassroomApp {
         }
         return wallets;
     }
-    void Stop() {
+    void Stop(bool remember = false) {
         children.clear();
         fundingState = {{"phase", "stopped"}};
         nextFundingMs = 0;
@@ -228,12 +343,15 @@ class ClassroomApp {
                 node["peers"] = 0;
                 node["connections"] = Json::array();
             }
+        if (remember && profile.is_object()) { resumeOnLaunch = false; Persist(); }
     }
     void Start() {
         if (!profile.is_object())
             throw runtime_error("请先创建或加入链");
         Stop();
         SetGenesisUsers(profile.at("genesis"));
+        if (U32ToHex(genesisRoot) != profile.at("genesis_root").get<string>())
+            throw runtime_error("保存的链创世指纹不一致");
         auto directory = NetworkDir();
         SaveJson(directory / "genesis.json", profile["genesis"]);
         bool migrate = profile.value("mode", string{}) != "network" || profile.contains("teacher");
@@ -249,6 +367,10 @@ class ClassroomApp {
         auto ports = profile.at("ports");
         try {
             for (size_t i = 0; i < ports.size(); i++) {
+                // A ready foreign listener must never masquerade as this child.
+                io_context probeIo;
+                tcp::acceptor probe(probeIo, tcp::endpoint(ip::address_v4::any(), ports[i].get<uint16_t>()));
+                probe.close();
                 auto node = directory / ("node" + to_string(i + 1));
                 fs::create_directories(node);
                 SaveJson(node / "seeds.json", profile.value("seeds", Json::array()));
@@ -301,12 +423,18 @@ class ClassroomApp {
                 children.push_back(make_unique<Child>(binary, args, node, node / "stop.request"));
             }
             auto deadline = Clock::now() + std::chrono::seconds(15);
-            for (const auto &port : ports) {
+            for (size_t i = 0; i < ports.size(); i++) {
                 while (true) {
+                    if (!children[i]->Running()) throw runtime_error("节点进程已退出，请检查端口、数据库和节点日志");
                     try {
-                        auto stats = Query(Host(), port.get<uint16_t>(), 13);
+                        auto port = ports[i].get<uint16_t>();
+                        auto stats = Query(Host(), port, 13);
                         if (stats.value("failed", false))
                             throw runtime_error("Node failed");
+                        auto head = Rpc(Host(), port, 19);
+                        if (head.size() != 80 || memcmp(head.data(), genesisRoot.data(), 32))
+                            throw runtime_error("节点数据库创世指纹与所选链不一致");
+                        if (!children[i]->Running()) throw runtime_error("Node exited");
                         break;
                     } catch (...) {
                         if (Clock::now() > deadline)
@@ -320,6 +448,9 @@ class ClassroomApp {
             lastError.clear();
             lastSampleMs = 0;
             Tick();
+            if (!cache.value("running", false)) throw runtime_error(lastError.empty() ? "节点启动状态无效" : lastError);
+            resumeOnLaunch = true;
+            Persist();
         } catch (...) {
             Stop();
             throw;
@@ -410,23 +541,32 @@ class ClassroomApp {
             Tick();
             return;
         }
-        auto previousProfile = profile; auto previousActive = active; bool wasRunning = !children.empty();
-        Stop();
-        profile = next;
-        active = identity;
-        fundingState = Json::object(); nextFundingMs = 0; fundingEndpoint = 0;
-        fs::create_directories(NetworkDir());
-        index.Open(NetworkDir() / "index.sqlite");
-        Persist();
-        try { Start(); }
-        catch (...) {
-            Stop(); profile = previousProfile; active = previousActive;
-            if (profile.is_object()) {
-                index.Open(NetworkDir() / "index.sqlite"); Persist();
-                if (wasRunning) { try { Start(); } catch (...) {} }
-            } else { fs::remove(root / "session.json"); }
-            throw;
+        if (joining) {
+            for (auto saved : SavedProfiles()) {
+                if (saved.at("genesis_root") != next.at("genesis_root") || saved.at("contract") != next.at("contract")) continue;
+                if (saved.value("chat_version", 1) != next.at("chat_version").get<int>())
+                    throw invalid_argument("保存的聊天室版本与邀请不一致");
+                Json seeds = Json::array(); set<string> seen;
+                auto localAddresses = CollectInviteAddresses(saved.at("ports").at(0).get<uint16_t>());
+                for (const auto &seed : next.at("seeds")) {
+                    auto [host, port] = ParseEndpoint(seed.get<string>()); boost::system::error_code ec;
+                    auto address = ip::make_address(host, ec); bool self = false;
+                    if (!ec && port == saved.at("ports").at(0).get<uint16_t>()) {
+                        self = address.is_loopback();
+                        for (const auto &local : localAddresses["addresses"]) self |= local["address"] == address.to_string();
+                    }
+                    if (!self && seen.insert(seed.get<string>()).second) seeds.push_back(seed);
+                }
+                for (const auto &seed : saved.value("seeds", Json::array()))
+                    if (seeds.size() < 8 && seen.insert(seed.get<string>()).second) seeds.push_back(seed);
+                saved["seeds"] = seeds;
+                SelectProfile(saved);
+                return;
+            }
         }
+        next["active_wallet"] = identity;
+        next["nickname"] = nickname;
+        SelectProfile(next);
         if (!joining) {
             auto code = EvmBytes(ChatArtifact(ChatVersion()).at("evm").at("bytecode").at("object"));
             auto sent = Submit(active, "deploy", {}, code, ChatVersion() == 3 ? ChatTreasuryAmount : 0, 2000000, Json::object());
@@ -873,7 +1013,7 @@ class ClassroomApp {
         if (endpoint.empty()) endpoint = FormatEndpoint(connected.front().first, connected.front().second);
         endpoint = JoinAddress(endpoint).value_or("");
         if (endpoint.empty() || endpoint == lastConnection) return;
-        SaveJson(root / "last-connection.json", {{"endpoint", endpoint}, {"genesis_root", profile.at("genesis_root")}, {"connected_ms", NowMs()}});
+        SaveJson(NetworkDir() / "last-connection.json", {{"endpoint", endpoint}, {"genesis_root", profile.at("genesis_root")}, {"connected_ms", NowMs()}});
         lastConnection = endpoint;
     }
     void Tick() {
@@ -964,6 +1104,7 @@ class ClassroomApp {
             }
         }
         auto result = cache;
+        result["networks"] = Networks();
         result["incoming_invitation"] = incomingInvitation;
         result["invite_preview"] = invitePreview;
         result["network_addresses"] = addressState;
@@ -1019,6 +1160,15 @@ class ClassroomApp {
     }
     Json Api(const Json &request) {
         auto action = request.at("action").get<string>();
+        if (action != "status" && action != "networks_refresh" && request.contains("network_id") &&
+            (!request.at("network_id").is_string() || request.at("network_id").get<string>() !=
+                (profile.is_object() ? profile.at("id").get<string>() : string{})))
+            throw runtime_error("当前链已切换，请刷新后重试");
+        if (action == "network_switch") {
+            SwitchNetwork(request.at("id").get<string>());
+            return Status();
+        }
+        if (action == "networks_refresh") { RefreshNetworks(); return Status(); }
         if (action == "invite_received") {
             if (incomingInvitation.is_object() && incomingInvitation.value("id", string{}) == request.value("id", string{})) incomingInvitation = nullptr;
             return {{"ok", true}};
@@ -1117,7 +1267,7 @@ class ClassroomApp {
             return Status();
         }
         if (action == "stop") {
-            Stop();
+            Stop(true);
             return Status();
         }
         if (action == "select_wallet") {

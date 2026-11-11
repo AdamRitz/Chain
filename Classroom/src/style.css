@@ -269,14 +269,15 @@ main {
   flex-direction: column;
 }
 header {
-  height: 75px;
-  padding: 0 38px;
+  min-height: 75px;
+  padding: 14px 38px;
   background: #fff;
   border-bottom: 1px solid var(--border);
   display: flex;
   justify-content: space-between;
   align-items: center;
   gap: 20px;
+  flex-wrap: wrap;
 }
 .breadcrumb {
   font-size: 12px;
@@ -291,8 +292,11 @@ header {
 .header-right {
   display: flex;
   align-items: center;
-  gap: 21px;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
 }
+.header-right .button { white-space: nowrap; }
 .connection {
   font-size: 11px;
   display: flex;
@@ -338,6 +342,12 @@ header {
   margin: auto;
   flex: 1;
 }
+.chain-switcher { display: grid; grid-template-columns: minmax(210px, 1fr) minmax(260px, 1.3fr); gap: 12px 20px; padding: 17px 20px; margin-bottom: 26px; background: #fff; border: 1px solid var(--border); border-radius: 12px; }
+.chain-switcher .field { margin: 0; min-width: 0; }
+.chain-switcher select { width: 100%; min-width: 0; }
+.chain-switcher > p { grid-column: 1 / -1; margin: 0; }
+.chain-fingerprint > span { display: flex; gap: 5px; align-items: center; }
+.chain-fingerprint code { min-width: 0; flex: 1; overflow-wrap: anywhere; font-size: 12px; padding: 11px 0; }
 .page-title {
   display: flex;
   align-items: center;
@@ -1777,7 +1787,7 @@ footer button {
     width: calc(100% - 194px);
   }
   header {
-    padding: 0 25px;
+    padding: 14px 25px;
   }
   .content {
     padding: 28px 25px;

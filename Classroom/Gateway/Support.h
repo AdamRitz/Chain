@@ -149,13 +149,14 @@ bool HasIPv6() {
 struct Database {
     sqlite3 *handle = nullptr;
     ~Database() {
-        if (handle)
-            sqlite3_close(handle);
+        Close();
+    }
+    void Close() {
+        if (handle) sqlite3_close(handle);
+        handle = nullptr;
     }
     void Open(const fs::path &path) {
-        if (handle)
-            sqlite3_close(handle);
-        handle = nullptr;
+        Close();
         if (sqlite3_open(PathUtf8(path).c_str(), &handle) != SQLITE_OK)
             throw runtime_error("Cannot open classroom index");
         Exec(
@@ -392,6 +393,17 @@ struct Child {
     }
     ~Child() {
         Stop();
+    }
+    bool Running() {
+#ifdef _WIN32
+        return process && WaitForSingleObject(process, 0) == WAIT_TIMEOUT;
+#else
+        if (pid <= 0) return false;
+        auto result = waitpid(pid, nullptr, WNOHANG);
+        if (!result) return true;
+        if (result == pid) pid = -1;
+        return false;
+#endif
     }
     void Stop() {
         {

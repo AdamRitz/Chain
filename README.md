@@ -4,9 +4,9 @@ C++20 区块链原型，使用 Boost.Asio、libsodium、默克尔树、RocksDB �
 
 当前 Chain 运行实现已恢复到 `933905448951c600156a8ad2a0b3c3a895916fb5` 的无学习模型基线，沿用四时间戳/中位数时钟同步及固定轮次候选收集。通过新的提交保留完整 Git 历史；FISCO 3.7.3 的 [原生转账驱动](Test/Fisco/Aligned/README.md)、[容量测试方法](Test/Fisco/Capacity/README.md) 和 [60 秒三次复测](reports/2026-10-27-fisco-long/REPORT.md)继续保留。切换范围和验证见 [基线恢复记录](reports/2026-10-28-no-model/REPORT.md)。
 
-新增 [Windows 学术聊天室](Classroom/README.md)：创建链、加入链、分享邀请、普通账户转账和 Solidity 链上聊天。每台电脑运行一个节点，所有成员可聊天、创建讨论分组和邀请加入，无教师或审批角色，支持 IPv4/IPv6。桌面应用采用独立网关与桌面壳，节点继续沿用无学习模型基线。
+新增 [Windows 学术聊天室](Classroom/README.md)：创建链、加入链、分享邀请、普通账户转账和 Solidity 链上聊天。可保存多条命名链，使用创世指纹区分同名链，任一时刻只运行选中链的一个节点；切换时保留各链账本和聊天记录。所有成员可聊天、创建讨论分组和邀请加入，支持 IPv4/IPv6。桌面应用采用独立网关与桌面壳，节点继续沿用无学习模型基线。
 
-下载 [NornV2 0.4.2 Windows x64 完整桌面包](https://github.com/AdamRitz/Chain/releases/tag/v0.4.2)。新建 v3 聊天室将大额储备存入普通合约，新成员通过持钥证明自动申请启动金，再由本人签名一次领取，无需人工分币。已有 v1/v2 链保留原合约、余额及原有资助规则；0.4.1 发布继续保留。
+下载 [NornV2 0.4.3 Windows x64 完整桌面包](https://github.com/AdamRitz/Chain/releases/tag/v0.4.3)。支持已保存链的选择与恢复；新建 v3 聊天室将大额储备存入普通合约，新成员通过持钥证明自动申请启动金，再由本人签名一次领取，无需人工分币。已有链保留原合约、余额及资助规则；旧版发布继续保留。
 
 修改前阅读 [MODULE_GUIDE.md](MODULE_GUIDE.md)。合约操作与分叉规则见 [EVM_GUIDE.md](EVM_GUIDE.md)，最新性能测试见 [十节点吞吐量复测](reports/2026-10-14-ten-node/REPORT.md)，前次优化见 [传播、同步与执行优化](reports/2026-10-13-throughput/REPORT.md)，合约接入测试见 [分叉与 EVM 报告](reports/2026-09-16-fork-evm/REPORT.md)。
 

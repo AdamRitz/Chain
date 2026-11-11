@@ -6,7 +6,56 @@ import {
   FundingText,
   SelectedMessage,
   RestartMatches,
+  NetworkView,
+  NetworkRequest,
+  ChainDrafts,
+  ChainLabel,
 } from "../src/model.ts";
+
+test("request scope binds its source chain and rejects an earlier A view after A-B-A", () => {
+  const view = new NetworkView();
+  view.Select("A");
+  const first = view.Capture();
+  assert.equal(NetworkRequest("network_switch", {id:"B",network_id:"wrong"}, first).network_id, "A");
+  view.Invalidate();
+  assert.equal(view.Current(first), false);
+  view.Select("B");
+  assert.equal(NetworkRequest("message", {}, view.Capture()).network_id, "B");
+  view.Select("A");
+  assert.equal(view.Current(first), false);
+  assert.equal(view.Current(view.Capture()), true);
+});
+
+test("chain drafts and connection input survive switching without sharing fields", () => {
+  const drafts = new ChainDrafts();
+  drafts.Write("A", {body:"draft A",invite:"[::1]:8787",view:"wallet",room:2});
+  drafts.Write("B", {body:"draft B",invite:"192.168.1.2:8787"});
+  assert.equal(drafts.Read("A").body, "draft A");
+  assert.equal(drafts.Read("A").invite, "[::1]:8787");
+  assert.equal(drafts.Read("A").view, "wallet");
+  assert.equal(drafts.Read("B").body, "draft B");
+  assert.equal(drafts.Read("B").room, 1);
+  const copy = drafts.Read("A"); copy.body="changed copy";
+  assert.equal(drafts.Read("A").body, "draft A");
+});
+
+test("send completion consumes only its unchanged source draft", () => {
+  const drafts = new ChainDrafts();
+  drafts.Write("A", {body:"sent text"});
+  drafts.Write("B", {body:"B keeps this"});
+  drafts.Write("A", {body:"new text typed while sending"});
+  assert.equal(drafts.Sent("A", "sent text"), "new text typed while sending");
+  assert.equal(drafts.Read("B").body, "B keeps this");
+  assert.equal(drafts.Sent("A", "new text typed while sending"), "");
+});
+
+test("same-name chains are distinguished by their genesis fingerprints", () => {
+  const first = ChainLabel({title:"同名链",genesis_root:"a".repeat(64)});
+  const second = ChainLabel({title:"同名链",genesis_root:"b".repeat(64)});
+  assert.notEqual(first, second);
+  assert.match(first, /同名链.*aaaaaaaa/);
+  assert.ok(first.length < 64);
+});
 
 test("fresh canonical metadata replaces an older cached location of a replayed transaction", () => {
   const old = {

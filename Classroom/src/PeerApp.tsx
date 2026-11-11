@@ -23,15 +23,14 @@ import {
   Wallet,
   X,
 } from "lucide-react";
-import { api, bytes, download, number, short, type Row } from "./api";
-import { CanSend, FundingText, MergeMessages, SelectedMessage } from "./model";
+import { api, apiView, bytes, download, number, short, type Row } from "./api";
+import { CanSend, ChainDrafts, ChainLabel, FundingText, MergeMessages, SelectedMessage, StaleViewError, type ChainDraft } from "./model";
 import { NetworkPanel } from "./NetworkPanel";
 import { InviteInput, InviteShare } from "./InviteDialogs";
 import { CanJoinPreview, ConnectionText, JoinText } from "./invite";
 import { BlockTable, Metric, Outbox, PanelTitle, Topology } from "./components";
 import "./style.css";
 
-type View = "chat" | "wallet" | "blocks" | "network" | "home";
 const views = [
   {
     id: "chat",
@@ -74,51 +73,132 @@ function TxText(tx: Row) {
       : "等待入块";
 }
 
+type Request = (name: string, values?: Row, label?: string) => Promise<any>;
+
+function useChainField<Key extends keyof ChainDraft>(drafts: ChainDrafts, id: string, key: Key) {
+  const [value, setValue] = useState<ChainDraft[Key]>(() => drafts.Read(id)[key]);
+  const update = (next: React.SetStateAction<ChainDraft[Key]>) => {
+    const current = drafts.Read(id)[key];
+    const resolved = typeof next === "function" ? next(current) : next;
+    drafts.Write(id, { [key]: resolved } as Partial<ChainDraft>);
+    setValue(resolved);
+  };
+  return [value, update] as const;
+}
+
 export function PeerApp() {
-  const [s, setS] = useState<Row>({});
-  const [view, setView] = useState<View>("chat");
-  const [busy, setBusy] = useState("");
+  const [state, setState] = useState<Row>({});
+  const [revision, setRevision] = useState(0);
+  const [transition, setTransition] = useState("");
   const [error, setError] = useState("");
-  const [notice, setNotice] = useState("");
-  const [modal, setModal] = useState("");
-  const [password, setPassword] = useState("");
-  const [title, setTitle] = useState("学术交流");
-  const [nickname, setNickname] = useState("");
-  const [invite, setInvite] = useState("");
-  const [joinPreview, setJoinPreview] = useState<Row | null>(null);
-  const incomingSeen = useRef("");
-  const [room, setRoom] = useState(1);
-  const [body, setBody] = useState("");
-  const [roomName, setRoomName] = useState("");
-  const [receiver, setReceiver] = useState("");
-  const [amount, setAmount] = useState("10000000");
-  const [selected, setSelected] = useState<Row | null>(null);
-  const [block, setBlock] = useState<Row | null>(null);
-  const [height, setHeight] = useState("");
-  const [history, setHistory] = useState<Row[]>([]);
-  const [offset, setOffset] = useState(50);
+  const [drafts] = useState(() => new ChainDrafts());
   const polling = useRef(false);
-  const refreshPending = useRef(false);
-  const chatEnd = useRef<HTMLDivElement>(null);
+  const moving = useRef(false);
+  const accept = (value: Row, remount = false) => {
+    apiView.Select(value.network?.id || "");
+    if (remount) { apiView.Invalidate(); setRevision(old => old + 1); }
+    setState(value);
+  };
   const refresh = async () => {
-    if (polling.current) { refreshPending.current = true; return; }
+    if (polling.current || moving.current) return;
     polling.current = true;
+    const scope = apiView.Capture();
     try {
-      setS(await api("status"));
+      const value = await api("status");
+      if (apiView.Current(scope)) accept(value);
     } catch (failure) {
-      setError((failure as Error).message);
-      setS((old) => ({ ...old, running: false, connection_error: true }));
+      if (apiView.Current(scope) && !(failure instanceof StaleViewError)) {
+        setError((failure as Error).message);
+        setState(old => ({ ...old, running: false, contract_ready: false, connection_error: true }));
+      }
+    } finally { polling.current = false; }
+  };
+  const request: Request = async (name, values = {}, label = "正在处理") => {
+    if (moving.current) throw Error("正在切换链，请稍候。");
+    const changesChain = ["create", "join", "network_switch"].includes(name);
+    if (changesChain) {
+      moving.current = true;
+      apiView.Invalidate();
+      setTransition(label);
+      setError("");
+    }
+    const scope = apiView.Capture();
+    const submittedInvite = drafts.Read(scope.networkId).invite;
+    try {
+      const result = await api(name, values);
+      if (!apiView.Current(scope)) throw new StaleViewError();
+      if (name === "join" && drafts.Read(scope.networkId).invite === submittedInvite)
+        drafts.Write(scope.networkId, { invite: "" });
+      if (["create", "join"].includes(name) && result.network?.id)
+        drafts.Write(result.network.id, { view: "chat" });
+      if (result.has_wallet !== undefined) accept(result, changesChain);
+      else await refresh();
+      if (!changesChain && !apiView.Current(scope)) throw new StaleViewError();
+      return result;
+    } catch (failure) {
+      if (changesChain) {
+        // A timed-out request may already have switched the backend. Read its
+        // authoritative selection before enabling any further chain action.
+        apiView.Invalidate();
+        try { accept(await api("status"), true); }
+        catch {
+          setState(old => ({ ...old, running: false, contract_ready: false, connection_error: true }));
+          setRevision(old => old + 1);
+        }
+        if (!(failure instanceof StaleViewError)) setError((failure as Error).message);
+      }
+      throw failure;
     } finally {
-      polling.current = false;
-      if (refreshPending.current) { refreshPending.current = false; void refresh(); }
+      if (changesChain) { moving.current = false; setTransition(""); void refresh(); }
     }
   };
   useEffect(() => {
     void refresh();
     const timer = setInterval(refresh, 1200);
     window.addEventListener("norn-invite-ready", refresh);
-    return () => { clearInterval(timer); window.removeEventListener("norn-invite-ready", refresh); };
+    return () => { clearInterval(timer); window.removeEventListener("norn-invite-ready", refresh); apiView.Invalidate(); };
   }, []);
+  const switchNetwork = (id: string) => {
+    if (!id || id === state.network?.id || moving.current) return;
+    const target = (state.networks || []).find((entry: Row) => entry.id === id);
+    if (!target) return;
+    void request("network_switch", { id }, `正在停止当前链并启动「${target.title}」`)
+      .catch(failure => { if (!(failure instanceof StaleViewError)) setError(failure.message); });
+  };
+  return <ChainView key={`${state.network?.id || ""}:${revision}`} s={state} request={request} drafts={drafts}
+    transition={transition} externalError={error} clearExternalError={() => setError("")} switchNetwork={switchNetwork} />;
+}
+
+function ChainView({ s, request, drafts, transition, externalError, clearExternalError, switchNetwork }: {
+  s: Row; request: Request; drafts: ChainDrafts; transition: string; externalError: string;
+  clearExternalError: () => void; switchNetwork: (id: string) => void;
+}) {
+  const chainId = s.network?.id || "";
+  const viewScope = useRef(apiView.Capture());
+  const [view, setView] = useChainField(drafts, chainId, "view");
+  const [localBusy, setBusy] = useState("");
+  const busy = transition || localBusy;
+  const [error, setError] = useState("");
+  const [notice, setNotice] = useState("");
+  const [modal, setModal] = useState("");
+  const [password, setPassword] = useState("");
+  const [title, setTitle] = useChainField(drafts, chainId, "title");
+  const [nickname, setNickname] = useChainField(drafts, chainId, "nickname");
+  const [invite, setInvite] = useChainField(drafts, chainId, "invite");
+  const [joinPreview, setJoinPreview] = useState<Row | null>(null);
+  const incomingSeen = useRef("");
+  const [room, setRoom] = useChainField(drafts, chainId, "room");
+  const [body, setBody] = useChainField(drafts, chainId, "body");
+  const [roomName, setRoomName] = useChainField(drafts, chainId, "roomName");
+  const [receiver, setReceiver] = useChainField(drafts, chainId, "receiver");
+  const [amount, setAmount] = useChainField(drafts, chainId, "amount");
+  const [selected, setSelected] = useState<Row | null>(null);
+  const [block, setBlock] = useState<Row | null>(null);
+  const [height, setHeight] = useChainField(drafts, chainId, "height");
+  const [history, setHistory] = useState<Row[]>([]);
+  const [offset, setOffset] = useState(50);
+  const actionTicket = useRef(0);
+  const chatEnd = useRef<HTMLDivElement>(null);
   useEffect(() => {
     if (!notice) return;
     const timer = setTimeout(() => setNotice(""), 4500);
@@ -127,27 +207,23 @@ export function PeerApp() {
   useEffect(() => {
     setHistory([]);
     setOffset(50);
-    setRoom(1);
-    setSelected(null);
-    setBlock(null);
-  }, [s.network?.id]);
-  useEffect(() => {
-    setHistory([]);
-    setOffset(50);
   }, [s.reorg_count]);
   const action = async (name: string, values: Row = {}, label = "正在处理") => {
+    if (!apiView.Current(viewScope.current)) throw new StaleViewError();
+    const ticket = ++actionTicket.current;
     setBusy(label);
     setError("");
+    clearExternalError();
     try {
-      const result = await api(name, values);
-      if (result.has_wallet !== undefined) setS(result);
-      else await refresh();
+      const result = await request(name, values, label);
+      if (!["create", "join", "network_switch"].includes(name) && !apiView.Current(viewScope.current))
+        throw new StaleViewError();
       return result;
     } catch (failure) {
-      setError((failure as Error).message);
+      if (ticket === actionTicket.current && !(failure instanceof StaleViewError)) setError((failure as Error).message);
       throw failure;
     } finally {
-      setBusy("");
+      if (ticket === actionTicket.current) setBusy("");
     }
   };
   const run = (name: string, values: Row = {}, label?: string) =>
@@ -158,6 +234,7 @@ export function PeerApp() {
       .then(() => setNotice("已复制"))
       .catch(() => setError("复制失败，请手动选择文字复制。"));
   const network = s.network;
+  const networks: Row[] = s.networks?.length ? s.networks : network ? [network] : [];
   const wallet = (s.wallets || []).find(
     (item: Row) => item.id === s.active_wallet,
   );
@@ -195,6 +272,7 @@ export function PeerApp() {
     setModal("join");
   };
   const enter = async (joining: boolean) => {
+    const submittedInvite = invite;
     try {
       if (joining && !CanJoinPreview(joinPreview, joinPreview?.id || "")) throw Error("正在连接节点并获取链配置，请稍候。");
       if (!s.unlocked)
@@ -205,29 +283,28 @@ export function PeerApp() {
         );
       if (nickname.trim())
         await action("nickname", { nickname: nickname.trim() });
+      if (joining && drafts.Read(chainId).invite !== submittedInvite)
+        throw Error("加入地址已更改，请重新检查后连接。");
       await action(
         joining ? "join" : "create",
         joining ? { preview_id: joinPreview!.id } : { title },
-        joining ? "正在连接链与聊天室" : "正在创建链并部署聊天室",
+        network ? joining ? "正在停止当前链并加入目标链" : "正在停止当前链并创建新链" : joining ? "正在连接链与聊天室" : "正在创建链并部署聊天室",
       );
-      if (joining) { setInvite(""); setJoinPreview(null); }
       setModal("");
       setPassword("");
-      setBody("");
-      setView("chat");
       setNotice(
         joining
           ? "正在连接聊天室，请查看同步进度。"
           : "链和聊天室已就绪，可以分享邀请。",
       );
     } catch (failure) {
-      setError((failure as Error).message);
+      if (!(failure instanceof StaleViewError)) setError((failure as Error).message);
     }
   };
   const send = async (text = body, target = room) => {
     try {
       await action("message", { room: target, body: text }, "正在签名发送");
-      setBody("");
+      setBody(drafts.Sent(chainId, text));
       setNotice("消息已提交，正在等待入块。");
     } catch {}
   };
@@ -293,9 +370,10 @@ export function PeerApp() {
             <span>{currentView.title}</span>
           </div>
           <div className="header-right">
-            <button className="button secondary compact" onClick={openJoin}><Plus size={15} />加入聊天室</button>
-            {network && <button className="button primary compact" onClick={() => setModal("share")}><Users size={15} />邀请朋友</button>}
-            <span className={"connection " + (s.running ? "connected" : "")}>
+            <button className="button secondary compact" aria-label="创建链" disabled={!!busy || s.has_wallet === undefined} onClick={() => { setError(""); setModal("create"); }}><Plus size={15} />创建链</button>
+            <button className="button secondary compact" aria-label="加入链" disabled={!!busy || s.has_wallet === undefined} onClick={openJoin}><Globe2 size={15} />加入链</button>
+            {network && <button className="button primary compact" disabled={!!busy} onClick={() => setModal("share")}><Users size={15} />邀请朋友</button>}
+            <span className={"connection " + (s.running ? "connected" : "")} aria-label="链同步状态" role="status">
               <i />
               {s.connection_error
                 ? "本机服务连接中断"
@@ -313,6 +391,20 @@ export function PeerApp() {
           </div>
         </header>
         <div className="content">
+          {!!networks.length && <section className="chain-switcher" aria-label="链选择与指纹">
+            <label className="field">当前链
+              <select aria-label="选择链" value={network?.id || ""} disabled={!!busy} onChange={event => switchNetwork(event.target.value)}>
+                {!network && <option value="">选择已保存的链</option>}
+                {networks.map(entry => <option key={entry.id} value={entry.id}>{ChainLabel(entry)} · {entry.running ? "运行中" : "已停止"}</option>)}
+              </select>
+            </label>
+            {network && <label className="field chain-fingerprint">链指纹
+              <span><code className="mono" aria-label="当前链指纹" title={network.genesis_root || ""}>{short(network.genesis_root || "", 10)}</code>
+                <button className="icon-button" aria-label="复制链指纹" title="复制完整链指纹" disabled={!network.genesis_root} onClick={() => copy(network.genesis_root)}><Copy size={16} /></button>
+              </span>
+            </label>}
+            <p className="small muted">切换时停止当前链节点，再启动所选链。已保存链的账本和余额分别保留。</p>
+          </section>}
           <div className="page-title">
             <div>
               <h1>{currentView.title}</h1>
@@ -339,10 +431,10 @@ export function PeerApp() {
               </div>
             )}
           </div>
-          {error && !modal && (
+          {(error || externalError) && !modal && (
             <div className="alert error" role="alert">
-              <span>{error}</span>
-              <button aria-label="关闭错误" onClick={() => setError("")}>
+              <span>{error || externalError}</span>
+              <button aria-label="关闭错误" onClick={() => { setError(""); clearExternalError(); }}>
                 <X size={16} />
               </button>
             </div>
@@ -897,7 +989,7 @@ export function PeerApp() {
         </div>
       )}
       {busy && (
-        <div className="busy-indicator" role="status">
+        <div className="busy-indicator" role="status" aria-label={transition ? "链切换进度" : "当前操作进度"}>
           <LoaderCircle size={18} className="spin" />
           {busy}…
         </div>
@@ -911,6 +1003,9 @@ export function PeerApp() {
         >
           <section
             className="modal"
+            role="dialog"
+            aria-modal="true"
+            aria-label={modal === "create" ? "创建链" : modal === "join" ? "加入链" : "操作对话框"}
             onClick={(event) => event.stopPropagation()}
           >
             <button
@@ -921,9 +1016,9 @@ export function PeerApp() {
             >
               <X size={19} />
             </button>
-            {error && (
+            {(error || externalError) && (
               <div className="alert error" role="alert">
-                {error}
+                {error || externalError}
               </div>
             )}
             {modal === "share" && network && <InviteShare key={network.id} status={s} action={action} />}
@@ -933,18 +1028,18 @@ export function PeerApp() {
                   <Globe2 size={26} />
                 </span>
                 <h2>
-                  {modal === "join" ? "加入聊天室" : "创建聊天室"}
+                  {modal === "join" ? "加入链" : "创建链"}
                 </h2>
                 <p>
                   {modal === "join"
-                    ? "粘贴对方节点的 IP 和端口，软件自动获取链配置并同步聊天记录。"
-                    : "本机启动一个节点并部署公共聊天室。任何加入的成员都可以发言、创建分组和分享邀请。"}
+                    ? "粘贴对方节点的 IP 和端口，软件自动获取链配置并同步聊天记录。已有链会保留，当前节点将停止。"
+                    : "创建一条独立的新链并部署公共聊天室。已有链会保留，当前节点将停止。"}
                 </p>
                 {modal === "join" ? (
                   <InviteInput text={invite} setText={value => { setInvite(value); setJoinPreview(null); }} status={s} onPreview={setJoinPreview} />
                 ) : (
                   <label className="field">
-                    聊天室名称
+                    链名称
                     <input
                       aria-label="链名称"
                       value={title}
@@ -990,7 +1085,7 @@ export function PeerApp() {
                   }
                   onClick={() => void enter(modal === "join")}
                 >
-                  {modal === "join" ? "连接并加入" : "创建聊天室"}
+                  {modal === "join" ? "连接并加入" : "创建链"}
                   <ArrowRight size={16} />
                 </button>
                 {modal === "join" && !invite.trim() && <button className="text-button" onClick={() => setModal("create")}>创建自己的聊天室</button>}
