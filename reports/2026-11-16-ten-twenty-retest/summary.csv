@@ -1,0 +1,15 @@
+﻿stage,nodes,offered_tps,official_tps,actual_send_tps_fixed_2_to_12_seconds,measurement_seconds,endpoint_spans_seconds,load_success,status,measurement_passed,drained,head_drain_observed_equal_accepted_count,drained_after_offline_audit,local_account_audits_passed,account_state_hash_variants,head_variants,state_audit_verified,reasons,error
+r1,10,20000,20000.7327753572,19993.6,9.996433742984664,"[0.009703134011942893, 0.0024665779783390462]",True,complete,True,True,,,10,1,1,True,,
+r1,10,30000,27684.89521397475,30003.2,10.079142356989905,"[0.003247849002946168, 0.1613453350146301]",True,complete,True,True,,,10,1,1,True,,
+r1,10,40000,,40000.0,,null,True,complete,False,True,,,10,1,1,True,persisted canonical proof failed; missing exact measurement endpoint,
+r1,10,50000,,49996.8,,"[0.6233318520244211, 0.5651330820401199]",True,complete,False,True,,,10,1,1,True,acquisition span exceeds 0.5s; endpoint 2s acquired outside its target-to-target+0.5s window; endpoint 12s acquired outside its target-to-target+0.5s window,
+r1,10,60000,43463.033847838466,49881.6,10.017156223475467,"[0.3453825389733538, 0.37970783200580627]",True,complete,True,True,,,10,1,1,True,,
+r1,20,20000,,19993.6,,null,True,complete,False,True,,,20,1,1,True,persisted canonical proof failed; missing exact measurement endpoint,
+r1,20,30000,,30003.2,,null,True,failed,,False,,,0,,,False,缺少通过审计的audited_measurement.tps,RuntimeError('ecs-c381-0001: [Errno 111] Connection refused; ecs-c381-0003: [Errno 111] Connection refused; ecs-c381-0005: [Errno 111] Connection refused; ecs-c381-0007: [Errno 111] Connection refused')
+r1,20,40000,,40000.0,,null,True,failed,,False,,,0,,,False,缺少通过审计的audited_measurement.tps,RuntimeError('ecs-c381-0001: [Errno 111] Connection refused; ecs-c381-0003: [Errno 111] Connection refused; ecs-c381-0004: [Errno 111] Connection refused; ecs-c381-0006: [Errno 111] Connection refused; ecs-3bc5-0002: [Errno 111] Connection refused')
+r1,20,50000,,40307.2,,null,True,complete,False,False,,,20,1,1,True,persisted canonical proof failed; missing exact measurement endpoint,
+r1,20,60000,,40320.0,,null,True,complete,False,False,,,20,1,1,True,persisted canonical proof failed; missing exact measurement endpoint,
+r2,10,20000,19993.20503716219,19993.6,10.000197548535652,"[0.0010117219644598663, 0.001312609005253762]",True,complete,True,False,True,True,10,1,1,True,,
+r2,10,30000,28196.569736792437,30003.2,10.000649108464131,"[0.001027780002914369, 0.002260266977827996]",True,complete,True,False,True,True,10,1,1,True,,
+r2,20,20000,13075.86860830914,19993.6,10.082695379504003,"[0.006025748036336154, 0.17134106502635404]",True,complete,True,False,True,True,20,1,1,True,,
+r2,20,30000,,30003.2,,null,True,complete,False,False,False,False,20,1,2,False,persisted canonical proof failed; final state audit missing or failed; missing exact measurement endpoint; endpoint 12s: RPC failed or acquisition interval reversed,

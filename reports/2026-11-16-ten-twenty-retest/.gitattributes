@@ -1,0 +1,2 @@
+# Keep the captured method files byte-identical to their recorded hashes.
+methods/** -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol

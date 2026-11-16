@@ -1,0 +1,1195 @@
+{
+  "source_commit": "9d34b55f1d5bf8ebab1f3fe44a86df31e18b1899",
+  "stages": [
+    {
+      "stage": "r1",
+      "source_commit": "9d34b55f1d5bf8ebab1f3fe44a86df31e18b1899",
+      "run": {
+        "started_utc": "2026-11-16T10:13:57.754228+00:00",
+        "finished_utc": "2026-11-16T10:29:56.395389+00:00",
+        "completed": false,
+        "errors": [
+          "20 nodes case failed: RuntimeError('ecs-c381-0001: [Errno 111] Connection refused; ecs-c381-0003: [Errno 111] Connection refused; ecs-c381-0005: [Errno 111] Connection refused; ecs-c381-0007: [Errno 111] Connection refused')",
+          "20 nodes case failed: RuntimeError('ecs-c381-0001: [Errno 111] Connection refused; ecs-c381-0003: [Errno 111] Connection refused; ecs-c381-0004: [Errno 111] Connection refused; ecs-c381-0006: [Errno 111] Connection refused; ecs-3bc5-0002: [Errno 111] Connection refused')"
+        ],
+        "restored": true,
+        "restore_errors": {},
+        "cleanup_errors": {}
+      },
+      "rates": [
+        20000,
+        30000,
+        40000,
+        50000,
+        60000
+      ],
+      "qualified_windows": 3,
+      "cases": [
+        {
+          "nodes": 10,
+          "offered_tps": 20000,
+          "status": "complete",
+          "case_success": true,
+          "official_tps": 20000.7327753572,
+          "measurement_passed": true,
+          "reasons": [],
+          "measurement_seconds": 9.996433742984664,
+          "endpoint_midpoint_interval_seconds": 9.996433742984664,
+          "endpoint_spans_seconds": [
+            0.009703134011942893,
+            0.0024665779783390462
+          ],
+          "endpoint_intervals_seconds": [
+            [
+              2.000201096991077,
+              2.00990423100302
+            ],
+            [
+              12.000253117992543,
+              12.002719695970882
+            ]
+          ],
+          "tps_bounds": [
+            19988.565681886583,
+            20012.914690134352
+          ],
+          "transaction_delta": 199936,
+          "height_delta": 200,
+          "mean_common_block_interval_ms": 49.98216871492332,
+          "actual_send_tps_fixed_2_to_12_seconds": 19993.6,
+          "load_success": true,
+          "load_error": null,
+          "drained": true,
+          "drained_after_offline_audit": null,
+          "head_drain_observed_equal_accepted_count": null,
+          "measurement_method": null,
+          "state_audit": {
+            "verified": true,
+            "reported_passed": true,
+            "node_count": 10,
+            "heads_equal": true,
+            "states_equal": true,
+            "accounts_checked_per_node": 1024,
+            "head_variants": 1,
+            "local_account_audits_passed": 10,
+            "account_state_hash_variants": 1,
+            "confirmed_counts": [
+              240000
+            ],
+            "measurement_or_drain_extended": false
+          },
+          "cleanup_errors": [],
+          "error": null,
+          "diagnostic_only": {
+            "common_commit_tps": 19993.448395671938,
+            "proven_common_tps": 20000.7327753572,
+            "common_observation_tps": 20000.7327753572,
+            "diagnostic_prefix_observed_tps": 19993.448395671938,
+            "measurement_seconds": 10.000075827003457,
+            "measurement_samples": 11,
+            "skipped_stats_targets": [],
+            "sent_unique_completed_all_ingress": 239872,
+            "sent_unique_attempted_upper_bound": 240000,
+            "generator_finished_seconds": 12.001737275975756,
+            "cutoff_seconds": 12.00021090399241,
+            "audited_diagnostic_tps": null
+          }
+        },
+        {
+          "nodes": 10,
+          "offered_tps": 30000,
+          "status": "complete",
+          "case_success": true,
+          "official_tps": 27684.89521397475,
+          "measurement_passed": true,
+          "reasons": [],
+          "measurement_seconds": 10.079142356989905,
+          "endpoint_midpoint_interval_seconds": 10.079142356989905,
+          "endpoint_spans_seconds": [
+            0.003247849002946168,
+            0.1613453350146301
+          ],
+          "endpoint_intervals_seconds": [
+            [
+              2.0002183580072597,
+              2.003466207010206
+            ],
+            [
+              12.000311971991323,
+              12.161657307005953
+            ]
+          ],
+          "tps_bounds": [
+            27460.6777052473,
+            27912.804354497017
+          ],
+          "transaction_delta": 279040,
+          "height_delta": 182,
+          "mean_common_block_interval_ms": 55.379903060384095,
+          "actual_send_tps_fixed_2_to_12_seconds": 30003.2,
+          "load_success": true,
+          "load_error": null,
+          "drained": true,
+          "drained_after_offline_audit": null,
+          "head_drain_observed_equal_accepted_count": null,
+          "measurement_method": null,
+          "state_audit": {
+            "verified": true,
+            "reported_passed": true,
+            "node_count": 10,
+            "heads_equal": true,
+            "states_equal": true,
+            "accounts_checked_per_node": 1024,
+            "head_variants": 1,
+            "local_account_audits_passed": 10,
+            "account_state_hash_variants": 1,
+            "confirmed_counts": [
+              359936
+            ],
+            "measurement_or_drain_extended": false
+          },
+          "cleanup_errors": [],
+          "error": null,
+          "diagnostic_only": {
+            "common_commit_tps": null,
+            "proven_common_tps": 27684.89521397475,
+            "common_observation_tps": 27684.89521397475,
+            "diagnostic_prefix_observed_tps": null,
+            "measurement_seconds": 10.001583934528753,
+            "measurement_samples": 11,
+            "skipped_stats_targets": [],
+            "sent_unique_completed_all_ingress": 359936,
+            "sent_unique_attempted_upper_bound": 360000,
+            "generator_finished_seconds": 12.002438519033603,
+            "cutoff_seconds": 12.000240282039158,
+            "audited_diagnostic_tps": null
+          }
+        },
+        {
+          "nodes": 10,
+          "offered_tps": 40000,
+          "status": "complete",
+          "case_success": false,
+          "official_tps": null,
+          "measurement_passed": false,
+          "reasons": [
+            "persisted canonical proof failed",
+            "missing exact measurement endpoint"
+          ],
+          "measurement_seconds": null,
+          "endpoint_midpoint_interval_seconds": null,
+          "endpoint_spans_seconds": null,
+          "endpoint_intervals_seconds": null,
+          "tps_bounds": null,
+          "transaction_delta": null,
+          "height_delta": null,
+          "mean_common_block_interval_ms": null,
+          "actual_send_tps_fixed_2_to_12_seconds": 40000.0,
+          "load_success": true,
+          "load_error": null,
+          "drained": true,
+          "drained_after_offline_audit": null,
+          "head_drain_observed_equal_accepted_count": null,
+          "measurement_method": null,
+          "state_audit": {
+            "verified": true,
+            "reported_passed": true,
+            "node_count": 10,
+            "heads_equal": true,
+            "states_equal": true,
+            "accounts_checked_per_node": 1024,
+            "head_variants": 1,
+            "local_account_audits_passed": 10,
+            "account_state_hash_variants": 1,
+            "confirmed_counts": [
+              480000
+            ],
+            "measurement_or_drain_extended": false
+          },
+          "cleanup_errors": [],
+          "error": null,
+          "diagnostic_only": {
+            "common_commit_tps": null,
+            "proven_common_tps": null,
+            "common_observation_tps": null,
+            "diagnostic_prefix_observed_tps": null,
+            "measurement_seconds": 8.9850232899189,
+            "measurement_samples": 10,
+            "skipped_stats_targets": [
+              14
+            ],
+            "sent_unique_completed_all_ingress": 479872,
+            "sent_unique_attempted_upper_bound": 480000,
+            "generator_finished_seconds": 12.002326057991013,
+            "cutoff_seconds": 12.000302220985759,
+            "audited_diagnostic_tps": null
+          }
+        },
+        {
+          "nodes": 10,
+          "offered_tps": 50000,
+          "status": "complete",
+          "case_success": false,
+          "official_tps": null,
+          "measurement_passed": false,
+          "reasons": [
+            "acquisition span exceeds 0.5s",
+            "endpoint 2s acquired outside its target-to-target+0.5s window",
+            "endpoint 12s acquired outside its target-to-target+0.5s window"
+          ],
+          "measurement_seconds": null,
+          "endpoint_midpoint_interval_seconds": 9.971003968996229,
+          "endpoint_spans_seconds": [
+            0.6233318520244211,
+            0.5651330820401199
+          ],
+          "endpoint_intervals_seconds": [
+            [
+              2.0001891150022857,
+              2.623520967026707
+            ],
+            [
+              12.000292468990665,
+              12.565425551030785
+            ]
+          ],
+          "tps_bounds": null,
+          "transaction_delta": 417136,
+          "height_delta": 85,
+          "mean_common_block_interval_ms": null,
+          "actual_send_tps_fixed_2_to_12_seconds": 49996.8,
+          "load_success": true,
+          "load_error": null,
+          "drained": true,
+          "drained_after_offline_audit": null,
+          "head_drain_observed_equal_accepted_count": null,
+          "measurement_method": null,
+          "state_audit": {
+            "verified": true,
+            "reported_passed": true,
+            "node_count": 10,
+            "heads_equal": true,
+            "states_equal": true,
+            "accounts_checked_per_node": 1024,
+            "head_variants": 1,
+            "local_account_audits_passed": 10,
+            "account_state_hash_variants": 1,
+            "confirmed_counts": [
+              599936
+            ],
+            "measurement_or_drain_extended": false
+          },
+          "cleanup_errors": [],
+          "error": null,
+          "diagnostic_only": {
+            "common_commit_tps": null,
+            "proven_common_tps": 41834.90461913763,
+            "common_observation_tps": 41834.90461913763,
+            "diagnostic_prefix_observed_tps": null,
+            "measurement_seconds": 10.004258719040081,
+            "measurement_samples": 11,
+            "skipped_stats_targets": [],
+            "sent_unique_completed_all_ingress": 599936,
+            "sent_unique_attempted_upper_bound": 599936,
+            "generator_finished_seconds": 12.002909803995863,
+            "cutoff_seconds": 12.000080651021563,
+            "audited_diagnostic_tps": null
+          }
+        },
+        {
+          "nodes": 10,
+          "offered_tps": 60000,
+          "status": "complete",
+          "case_success": true,
+          "official_tps": 43463.033847838466,
+          "measurement_passed": true,
+          "reasons": [],
+          "measurement_seconds": 10.017156223475467,
+          "endpoint_midpoint_interval_seconds": 10.017156223475467,
+          "endpoint_spans_seconds": [
+            0.3453825389733538,
+            0.37970783200580627
+          ],
+          "endpoint_intervals_seconds": [
+            [
+              2.000194281048607,
+              2.345576820021961
+            ],
+            [
+              12.000187858007848,
+              12.379895690013655
+            ]
+          ],
+          "tps_bounds": [
+            41944.944545703554,
+            45095.13622941631
+          ],
+          "transaction_delta": 435376,
+          "height_delta": 77,
+          "mean_common_block_interval_ms": 130.09293796721386,
+          "actual_send_tps_fixed_2_to_12_seconds": 49881.6,
+          "load_success": true,
+          "load_error": null,
+          "drained": true,
+          "drained_after_offline_audit": null,
+          "head_drain_observed_equal_accepted_count": null,
+          "measurement_method": null,
+          "state_audit": {
+            "verified": true,
+            "reported_passed": true,
+            "node_count": 10,
+            "heads_equal": true,
+            "states_equal": true,
+            "accounts_checked_per_node": 1024,
+            "head_variants": 1,
+            "local_account_audits_passed": 10,
+            "account_state_hash_variants": 1,
+            "confirmed_counts": [
+              618880
+            ],
+            "measurement_or_drain_extended": false
+          },
+          "cleanup_errors": [],
+          "error": null,
+          "diagnostic_only": {
+            "common_commit_tps": null,
+            "proven_common_tps": 43463.033847838466,
+            "common_observation_tps": 43463.033847838466,
+            "diagnostic_prefix_observed_tps": null,
+            "measurement_seconds": 10.001291393477004,
+            "measurement_samples": 11,
+            "skipped_stats_targets": [],
+            "sent_unique_completed_all_ingress": 618752,
+            "sent_unique_attempted_upper_bound": 618880,
+            "generator_finished_seconds": 12.002972041023895,
+            "cutoff_seconds": 12.00016899802722,
+            "audited_diagnostic_tps": null
+          }
+        },
+        {
+          "nodes": 20,
+          "offered_tps": 20000,
+          "status": "complete",
+          "case_success": false,
+          "official_tps": null,
+          "measurement_passed": false,
+          "reasons": [
+            "persisted canonical proof failed",
+            "missing exact measurement endpoint"
+          ],
+          "measurement_seconds": null,
+          "endpoint_midpoint_interval_seconds": null,
+          "endpoint_spans_seconds": null,
+          "endpoint_intervals_seconds": null,
+          "tps_bounds": null,
+          "transaction_delta": null,
+          "height_delta": null,
+          "mean_common_block_interval_ms": null,
+          "actual_send_tps_fixed_2_to_12_seconds": 19993.6,
+          "load_success": true,
+          "load_error": null,
+          "drained": true,
+          "drained_after_offline_audit": null,
+          "head_drain_observed_equal_accepted_count": null,
+          "measurement_method": null,
+          "state_audit": {
+            "verified": true,
+            "reported_passed": true,
+            "node_count": 20,
+            "heads_equal": true,
+            "states_equal": true,
+            "accounts_checked_per_node": 1024,
+            "head_variants": 1,
+            "local_account_audits_passed": 20,
+            "account_state_hash_variants": 1,
+            "confirmed_counts": [
+              240000
+            ],
+            "measurement_or_drain_extended": false
+          },
+          "cleanup_errors": [],
+          "error": null,
+          "diagnostic_only": {
+            "common_commit_tps": null,
+            "proven_common_tps": null,
+            "common_observation_tps": null,
+            "diagnostic_prefix_observed_tps": null,
+            "measurement_seconds": 8.999197143944912,
+            "measurement_samples": 10,
+            "skipped_stats_targets": [],
+            "sent_unique_completed_all_ingress": 239872,
+            "sent_unique_attempted_upper_bound": 240000,
+            "generator_finished_seconds": 12.003549189015757,
+            "cutoff_seconds": 12.000089481996838,
+            "audited_diagnostic_tps": null
+          }
+        },
+        {
+          "nodes": 20,
+          "offered_tps": 30000,
+          "status": "failed",
+          "case_success": false,
+          "official_tps": null,
+          "measurement_passed": null,
+          "reasons": [
+            "缺少通过审计的audited_measurement.tps"
+          ],
+          "measurement_seconds": null,
+          "endpoint_midpoint_interval_seconds": null,
+          "endpoint_spans_seconds": null,
+          "endpoint_intervals_seconds": null,
+          "tps_bounds": null,
+          "transaction_delta": null,
+          "height_delta": null,
+          "mean_common_block_interval_ms": null,
+          "actual_send_tps_fixed_2_to_12_seconds": 30003.2,
+          "load_success": true,
+          "load_error": null,
+          "drained": false,
+          "drained_after_offline_audit": null,
+          "head_drain_observed_equal_accepted_count": null,
+          "measurement_method": null,
+          "state_audit": {
+            "verified": false,
+            "reported_passed": null,
+            "node_count": null,
+            "heads_equal": null,
+            "states_equal": null,
+            "accounts_checked_per_node": null,
+            "head_variants": null,
+            "local_account_audits_passed": 0,
+            "account_state_hash_variants": null,
+            "confirmed_counts": [],
+            "measurement_or_drain_extended": null
+          },
+          "cleanup_errors": [],
+          "error": "RuntimeError('ecs-c381-0001: [Errno 111] Connection refused; ecs-c381-0003: [Errno 111] Connection refused; ecs-c381-0005: [Errno 111] Connection refused; ecs-c381-0007: [Errno 111] Connection refused')",
+          "diagnostic_only": {
+            "common_commit_tps": null,
+            "proven_common_tps": null,
+            "common_observation_tps": null,
+            "diagnostic_prefix_observed_tps": null,
+            "measurement_seconds": 10.003845172002912,
+            "measurement_samples": 9,
+            "skipped_stats_targets": [
+              13
+            ],
+            "sent_unique_completed_all_ingress": 359936,
+            "sent_unique_attempted_upper_bound": 359936,
+            "generator_finished_seconds": 12.001669243967626,
+            "cutoff_seconds": 12.000051270006225,
+            "audited_diagnostic_tps": null
+          }
+        },
+        {
+          "nodes": 20,
+          "offered_tps": 40000,
+          "status": "failed",
+          "case_success": false,
+          "official_tps": null,
+          "measurement_passed": null,
+          "reasons": [
+            "缺少通过审计的audited_measurement.tps"
+          ],
+          "measurement_seconds": null,
+          "endpoint_midpoint_interval_seconds": null,
+          "endpoint_spans_seconds": null,
+          "endpoint_intervals_seconds": null,
+          "tps_bounds": null,
+          "transaction_delta": null,
+          "height_delta": null,
+          "mean_common_block_interval_ms": null,
+          "actual_send_tps_fixed_2_to_12_seconds": 40000.0,
+          "load_success": true,
+          "load_error": null,
+          "drained": false,
+          "drained_after_offline_audit": null,
+          "head_drain_observed_equal_accepted_count": null,
+          "measurement_method": null,
+          "state_audit": {
+            "verified": false,
+            "reported_passed": null,
+            "node_count": null,
+            "heads_equal": null,
+            "states_equal": null,
+            "accounts_checked_per_node": null,
+            "head_variants": null,
+            "local_account_audits_passed": 0,
+            "account_state_hash_variants": null,
+            "confirmed_counts": [],
+            "measurement_or_drain_extended": null
+          },
+          "cleanup_errors": [],
+          "error": "RuntimeError('ecs-c381-0001: [Errno 111] Connection refused; ecs-c381-0003: [Errno 111] Connection refused; ecs-c381-0004: [Errno 111] Connection refused; ecs-c381-0006: [Errno 111] Connection refused; ecs-3bc5-0002: [Errno 111] Connection refused')",
+          "diagnostic_only": {
+            "common_commit_tps": null,
+            "proven_common_tps": null,
+            "common_observation_tps": null,
+            "diagnostic_prefix_observed_tps": null,
+            "measurement_seconds": 10.195481531554833,
+            "measurement_samples": 10,
+            "skipped_stats_targets": [
+              13,
+              15
+            ],
+            "sent_unique_completed_all_ingress": 479872,
+            "sent_unique_attempted_upper_bound": 480000,
+            "generator_finished_seconds": 12.00321300001815,
+            "cutoff_seconds": 12.00010026700329,
+            "audited_diagnostic_tps": null
+          }
+        },
+        {
+          "nodes": 20,
+          "offered_tps": 50000,
+          "status": "complete",
+          "case_success": false,
+          "official_tps": null,
+          "measurement_passed": false,
+          "reasons": [
+            "persisted canonical proof failed",
+            "missing exact measurement endpoint"
+          ],
+          "measurement_seconds": null,
+          "endpoint_midpoint_interval_seconds": null,
+          "endpoint_spans_seconds": null,
+          "endpoint_intervals_seconds": null,
+          "tps_bounds": null,
+          "transaction_delta": null,
+          "height_delta": null,
+          "mean_common_block_interval_ms": null,
+          "actual_send_tps_fixed_2_to_12_seconds": 40307.2,
+          "load_success": true,
+          "load_error": null,
+          "drained": false,
+          "drained_after_offline_audit": null,
+          "head_drain_observed_equal_accepted_count": null,
+          "measurement_method": null,
+          "state_audit": {
+            "verified": true,
+            "reported_passed": true,
+            "node_count": 20,
+            "heads_equal": true,
+            "states_equal": true,
+            "accounts_checked_per_node": 1024,
+            "head_variants": 1,
+            "local_account_audits_passed": 20,
+            "account_state_hash_variants": 1,
+            "confirmed_counts": [
+              503168
+            ],
+            "measurement_or_drain_extended": false
+          },
+          "cleanup_errors": [],
+          "error": null,
+          "diagnostic_only": {
+            "common_commit_tps": null,
+            "proven_common_tps": null,
+            "common_observation_tps": null,
+            "diagnostic_prefix_observed_tps": null,
+            "measurement_seconds": 10.000320888066199,
+            "measurement_samples": 11,
+            "skipped_stats_targets": [],
+            "sent_unique_completed_all_ingress": 503040,
+            "sent_unique_attempted_upper_bound": 503168,
+            "generator_finished_seconds": 12.004633674048819,
+            "cutoff_seconds": 12.000111480010673,
+            "audited_diagnostic_tps": null
+          }
+        },
+        {
+          "nodes": 20,
+          "offered_tps": 60000,
+          "status": "complete",
+          "case_success": false,
+          "official_tps": null,
+          "measurement_passed": false,
+          "reasons": [
+            "persisted canonical proof failed",
+            "missing exact measurement endpoint"
+          ],
+          "measurement_seconds": null,
+          "endpoint_midpoint_interval_seconds": null,
+          "endpoint_spans_seconds": null,
+          "endpoint_intervals_seconds": null,
+          "tps_bounds": null,
+          "transaction_delta": null,
+          "height_delta": null,
+          "mean_common_block_interval_ms": null,
+          "actual_send_tps_fixed_2_to_12_seconds": 40320.0,
+          "load_success": true,
+          "load_error": null,
+          "drained": false,
+          "drained_after_offline_audit": null,
+          "head_drain_observed_equal_accepted_count": null,
+          "measurement_method": null,
+          "state_audit": {
+            "verified": true,
+            "reported_passed": true,
+            "node_count": 20,
+            "heads_equal": true,
+            "states_equal": true,
+            "accounts_checked_per_node": 1024,
+            "head_variants": 1,
+            "local_account_audits_passed": 20,
+            "account_state_hash_variants": 1,
+            "confirmed_counts": [
+              523264
+            ],
+            "measurement_or_drain_extended": false
+          },
+          "cleanup_errors": [],
+          "error": null,
+          "diagnostic_only": {
+            "common_commit_tps": null,
+            "proven_common_tps": null,
+            "common_observation_tps": null,
+            "diagnostic_prefix_observed_tps": null,
+            "measurement_seconds": 8.92621705494821,
+            "measurement_samples": 10,
+            "skipped_stats_targets": [],
+            "sent_unique_completed_all_ingress": 523136,
+            "sent_unique_attempted_upper_bound": 523264,
+            "generator_finished_seconds": 12.002400141034741,
+            "cutoff_seconds": 12.000207421020605,
+            "audited_diagnostic_tps": null
+          }
+        }
+      ],
+      "comparisons": [
+        {
+          "offered_tps": 20000,
+          "window_tps_difference_percent_20_vs_10": null,
+          "both_actual_send_at_least_95_percent_target": true
+        },
+        {
+          "offered_tps": 30000,
+          "window_tps_difference_percent_20_vs_10": null,
+          "both_actual_send_at_least_95_percent_target": true
+        },
+        {
+          "offered_tps": 40000,
+          "window_tps_difference_percent_20_vs_10": null,
+          "both_actual_send_at_least_95_percent_target": true
+        },
+        {
+          "offered_tps": 50000,
+          "window_tps_difference_percent_20_vs_10": null,
+          "both_actual_send_at_least_95_percent_target": false
+        },
+        {
+          "offered_tps": 60000,
+          "window_tps_difference_percent_20_vs_10": null,
+          "both_actual_send_at_least_95_percent_target": false
+        }
+      ],
+      "cleanup": {
+        "expected": 150,
+        "verified_removed": 150,
+        "verified": true,
+        "emergency_cleanup_clear": true
+      },
+      "canary": {
+        "verified": null,
+        "header_count": null
+      },
+      "recovery": {
+        "chain_services_restored": true,
+        "fisco_restored": true,
+        "permanent_chain_unchanged": true,
+        "final_fleet_audit_verified": true,
+        "final_fleet_audit_checked_roots": [
+          "/var/tmp/chain-retest1-20261116",
+          "/var/tmp/chain-retest2-20261116",
+          "/var/tmp/chain-retest2-canary-20261116"
+        ]
+      },
+      "permanent_common": {
+        "failed": false,
+        "height": 3,
+        "head": "878c194c5082eab0c9fc6b95f621fb3c955b031fc27ffc4f75a334bf8c0f5ff7",
+        "chain_transactions": 1000,
+        "state": {
+          "burned": 0,
+          "head": "878c194c5082eab0c9fc6b95f621fb3c955b031fc27ffc4f75a334bf8c0f5ff7",
+          "state_hash": "fce36337771492581e3eda0dace42e33ea242ea287903915e0a704667d30782e",
+          "supply": 34000000000,
+          "transactions": 1000
+        }
+      },
+      "libgcc_variants": [
+        {
+          "sha256": "5b9c3994bd66cd5c2fa29f6fec5168bb3fbf3478c4f6e5e387c9ab7b88a659e9",
+          "nodes": 10
+        },
+        {
+          "sha256": "509246219a4232e4554ac00feebb5bfbcdb5fc09fe900ced12ef6a301a5ce010",
+          "nodes": 10
+        }
+      ],
+      "methods": [
+        {
+          "name": "FinalRetestAudit.py",
+          "sha256": "457b2c27f0eab65429e9c5522d4e3c36515b99722977e2f30797a446d878d6ad",
+          "bytes": 3323
+        },
+        {
+          "name": "RetestCases.py",
+          "sha256": "d12548130414b1c32be11d7670172e32fe0eb86e306e8a2a57fd045b636c948e",
+          "bytes": 15852
+        },
+        {
+          "name": "RetestFleet.py",
+          "sha256": "137b2b8e3bca8c054d66ccbe80c4e9da6467e68b799904accb9a232b13b5c8f4",
+          "bytes": 12673
+        },
+        {
+          "name": "RetestObserve.py",
+          "sha256": "93f651d929404b9f8e3c99cf4d0876aaf1990130421a124e2073088b0966452c",
+          "bytes": 31920
+        },
+        {
+          "name": "TestRetestMeasurement.py",
+          "sha256": "d4f6cf99ff417642fbb18067064639cfd40eef7cfeb01a052b522033c8594eb3",
+          "bytes": 2340
+        },
+        {
+          "name": "tps_runner.py",
+          "sha256": "8cfa8cfad1d7eafb038d8e836c90b324ffadd4cd2494a193958399313d0ff37a",
+          "bytes": 25918
+        }
+      ],
+      "scope": {
+        "sustainable_capacity": "not_evaluated",
+        "repeats_per_case": 1,
+        "official_tps": "audited_measurement.passed is true and finite audited_measurement.tps only; no metrics fallback",
+        "actual_send": "fixed planned 2..12s send window, divided by 10s",
+        "commit_window": "actual common-prefix acquisition midpoint interval near 10s",
+        "comparison": "single observed windows; unequal actual send is not equal-load scaling evidence"
+      }
+    },
+    {
+      "stage": "r2",
+      "source_commit": "9d34b55f1d5bf8ebab1f3fe44a86df31e18b1899",
+      "run": {
+        "started_utc": "2026-11-16T10:44:48.808103+00:00",
+        "finished_utc": "2026-11-16T10:51:34.583704+00:00",
+        "completed": true,
+        "errors": [],
+        "restored": true,
+        "restore_errors": {},
+        "cleanup_errors": {}
+      },
+      "rates": [
+        20000,
+        30000
+      ],
+      "qualified_windows": 3,
+      "cases": [
+        {
+          "nodes": 10,
+          "offered_tps": 20000,
+          "status": "complete",
+          "case_success": true,
+          "official_tps": 19993.20503716219,
+          "measurement_passed": true,
+          "reasons": [],
+          "measurement_seconds": 10.000197548535652,
+          "endpoint_midpoint_interval_seconds": 10.000197548535652,
+          "endpoint_spans_seconds": [
+            0.0010117219644598663,
+            0.001312609005253762
+          ],
+          "endpoint_intervals_seconds": [
+            [
+              2.000264153990429,
+              2.0012758759548888
+            ],
+            [
+              12.000311259005684,
+              12.001623868010938
+            ]
+          ],
+          "tps_bounds": [
+            19990.88181177182,
+            19995.52880259913
+          ],
+          "transaction_delta": 199936,
+          "height_delta": 200,
+          "mean_common_block_interval_ms": 50.00098774267826,
+          "actual_send_tps_fixed_2_to_12_seconds": 19993.6,
+          "load_success": true,
+          "load_error": null,
+          "drained": false,
+          "drained_after_offline_audit": true,
+          "head_drain_observed_equal_accepted_count": true,
+          "measurement_method": "highest common ancestor of each RPC19 head set, proved offline and on every final canonical chain",
+          "state_audit": {
+            "verified": true,
+            "reported_passed": true,
+            "node_count": 10,
+            "heads_equal": true,
+            "states_equal": true,
+            "accounts_checked_per_node": 1024,
+            "head_variants": 1,
+            "local_account_audits_passed": 10,
+            "account_state_hash_variants": 1,
+            "confirmed_counts": [
+              240000
+            ],
+            "measurement_or_drain_extended": false
+          },
+          "cleanup_errors": [],
+          "error": null,
+          "diagnostic_only": {
+            "common_commit_tps": null,
+            "proven_common_tps": null,
+            "common_observation_tps": null,
+            "diagnostic_prefix_observed_tps": null,
+            "measurement_seconds": null,
+            "measurement_samples": null,
+            "skipped_stats_targets": null,
+            "sent_unique_completed_all_ingress": 239872,
+            "sent_unique_attempted_upper_bound": 240000,
+            "generator_finished_seconds": 12.00150156597374,
+            "cutoff_seconds": null,
+            "audited_diagnostic_tps": null
+          }
+        },
+        {
+          "nodes": 10,
+          "offered_tps": 30000,
+          "status": "complete",
+          "case_success": true,
+          "official_tps": 28196.569736792437,
+          "measurement_passed": true,
+          "reasons": [],
+          "measurement_seconds": 10.000649108464131,
+          "endpoint_midpoint_interval_seconds": 10.000649108464131,
+          "endpoint_spans_seconds": [
+            0.001027780002914369,
+            0.002260266977827996
+          ],
+          "endpoint_intervals_seconds": [
+            [
+              2.0002903830027208,
+              2.001318163005635
+            ],
+            [
+              12.000323247979395,
+              12.002583514957223
+            ]
+          ],
+          "tps_bounds": [
+            28191.935217249407,
+            28201.205780338896
+          ],
+          "transaction_delta": 281984,
+          "height_delta": 187,
+          "mean_common_block_interval_ms": 53.47940699713439,
+          "actual_send_tps_fixed_2_to_12_seconds": 30003.2,
+          "load_success": true,
+          "load_error": null,
+          "drained": false,
+          "drained_after_offline_audit": true,
+          "head_drain_observed_equal_accepted_count": true,
+          "measurement_method": "highest common ancestor of each RPC19 head set, proved offline and on every final canonical chain",
+          "state_audit": {
+            "verified": true,
+            "reported_passed": true,
+            "node_count": 10,
+            "heads_equal": true,
+            "states_equal": true,
+            "accounts_checked_per_node": 1024,
+            "head_variants": 1,
+            "local_account_audits_passed": 10,
+            "account_state_hash_variants": 1,
+            "confirmed_counts": [
+              359936
+            ],
+            "measurement_or_drain_extended": false
+          },
+          "cleanup_errors": [],
+          "error": null,
+          "diagnostic_only": {
+            "common_commit_tps": null,
+            "proven_common_tps": null,
+            "common_observation_tps": null,
+            "diagnostic_prefix_observed_tps": null,
+            "measurement_seconds": null,
+            "measurement_samples": null,
+            "skipped_stats_targets": null,
+            "sent_unique_completed_all_ingress": 359936,
+            "sent_unique_attempted_upper_bound": 360000,
+            "generator_finished_seconds": 12.002204319986049,
+            "cutoff_seconds": null,
+            "audited_diagnostic_tps": null
+          }
+        },
+        {
+          "nodes": 20,
+          "offered_tps": 20000,
+          "status": "complete",
+          "case_success": true,
+          "official_tps": 13075.86860830914,
+          "measurement_passed": true,
+          "reasons": [],
+          "measurement_seconds": 10.082695379504003,
+          "endpoint_midpoint_interval_seconds": 10.082695379504003,
+          "endpoint_spans_seconds": [
+            0.006025748036336154,
+            0.17134106502635404
+          ],
+          "endpoint_intervals_seconds": [
+            [
+              2.000296884973068,
+              2.006322633009404
+            ],
+            [
+              12.000334605982061,
+              12.171675671008416
+            ]
+          ],
+          "tps_bounds": [
+            12961.861196341237,
+            13191.899344981974
+          ],
+          "transaction_delta": 131840,
+          "height_delta": 96,
+          "mean_common_block_interval_ms": 105.02807686983336,
+          "actual_send_tps_fixed_2_to_12_seconds": 19993.6,
+          "load_success": true,
+          "load_error": null,
+          "drained": false,
+          "drained_after_offline_audit": true,
+          "head_drain_observed_equal_accepted_count": true,
+          "measurement_method": "highest common ancestor of each RPC19 head set, proved offline and on every final canonical chain",
+          "state_audit": {
+            "verified": true,
+            "reported_passed": true,
+            "node_count": 20,
+            "heads_equal": true,
+            "states_equal": true,
+            "accounts_checked_per_node": 1024,
+            "head_variants": 1,
+            "local_account_audits_passed": 20,
+            "account_state_hash_variants": 1,
+            "confirmed_counts": [
+              240000
+            ],
+            "measurement_or_drain_extended": false
+          },
+          "cleanup_errors": [],
+          "error": null,
+          "diagnostic_only": {
+            "common_commit_tps": null,
+            "proven_common_tps": null,
+            "common_observation_tps": null,
+            "diagnostic_prefix_observed_tps": null,
+            "measurement_seconds": null,
+            "measurement_samples": null,
+            "skipped_stats_targets": null,
+            "sent_unique_completed_all_ingress": 239872,
+            "sent_unique_attempted_upper_bound": 240000,
+            "generator_finished_seconds": 12.002791957987938,
+            "cutoff_seconds": null,
+            "audited_diagnostic_tps": null
+          }
+        },
+        {
+          "nodes": 20,
+          "offered_tps": 30000,
+          "status": "complete",
+          "case_success": false,
+          "official_tps": null,
+          "measurement_passed": false,
+          "reasons": [
+            "persisted canonical proof failed",
+            "final state audit missing or failed",
+            "missing exact measurement endpoint",
+            "endpoint 12s: RPC failed or acquisition interval reversed"
+          ],
+          "measurement_seconds": null,
+          "endpoint_midpoint_interval_seconds": null,
+          "endpoint_spans_seconds": null,
+          "endpoint_intervals_seconds": null,
+          "tps_bounds": null,
+          "transaction_delta": null,
+          "height_delta": null,
+          "mean_common_block_interval_ms": null,
+          "actual_send_tps_fixed_2_to_12_seconds": 30003.2,
+          "load_success": true,
+          "load_error": null,
+          "drained": false,
+          "drained_after_offline_audit": false,
+          "head_drain_observed_equal_accepted_count": false,
+          "measurement_method": "highest common ancestor of each RPC19 head set, proved offline and on every final canonical chain",
+          "state_audit": {
+            "verified": false,
+            "reported_passed": false,
+            "node_count": 20,
+            "heads_equal": false,
+            "states_equal": false,
+            "accounts_checked_per_node": 1024,
+            "head_variants": 2,
+            "local_account_audits_passed": 20,
+            "account_state_hash_variants": 1,
+            "confirmed_counts": [
+              359936
+            ],
+            "measurement_or_drain_extended": false
+          },
+          "cleanup_errors": [],
+          "error": null,
+          "diagnostic_only": {
+            "common_commit_tps": null,
+            "proven_common_tps": null,
+            "common_observation_tps": null,
+            "diagnostic_prefix_observed_tps": null,
+            "measurement_seconds": null,
+            "measurement_samples": null,
+            "skipped_stats_targets": null,
+            "sent_unique_completed_all_ingress": 359936,
+            "sent_unique_attempted_upper_bound": 360000,
+            "generator_finished_seconds": 12.002691913978197,
+            "cutoff_seconds": null,
+            "audited_diagnostic_tps": null
+          },
+          "failure_detail": {
+            "local_account_audits_passed": 20,
+            "accounts_checked_per_node": 1024,
+            "confirmed_counts": [
+              359936
+            ],
+            "account_state_hashes": [
+              "ebd79a0f64e2ce25dfdca2784de6ee05abe7a01aec1b2ec3d0e547c72e412cd3"
+            ],
+            "canonical_head_count": 2,
+            "head_height_counts": {
+              "189": 1,
+              "205": 19
+            },
+            "rpc_errors": [
+              {
+                "target_seconds": 12,
+                "error": "timed out"
+              },
+              {
+                "target_seconds": 12,
+                "error": "timed out"
+              }
+            ]
+          }
+        }
+      ],
+      "comparisons": [
+        {
+          "offered_tps": 20000,
+          "window_tps_difference_percent_20_vs_10": -34.598436898913974,
+          "both_actual_send_at_least_95_percent_target": true
+        },
+        {
+          "offered_tps": 30000,
+          "window_tps_difference_percent_20_vs_10": null,
+          "both_actual_send_at_least_95_percent_target": true
+        }
+      ],
+      "cleanup": {
+        "expected": 60,
+        "verified_removed": 60,
+        "verified": true,
+        "emergency_cleanup_clear": true
+      },
+      "canary": {
+        "verified": true,
+        "header_count": 1
+      },
+      "recovery": {
+        "chain_services_restored": true,
+        "fisco_restored": true,
+        "permanent_chain_unchanged": true,
+        "final_fleet_audit_verified": true,
+        "final_fleet_audit_checked_roots": [
+          "/var/tmp/chain-retest1-20261116",
+          "/var/tmp/chain-retest2-20261116",
+          "/var/tmp/chain-retest2-canary-20261116"
+        ]
+      },
+      "permanent_common": {
+        "failed": false,
+        "height": 3,
+        "head": "878c194c5082eab0c9fc6b95f621fb3c955b031fc27ffc4f75a334bf8c0f5ff7",
+        "chain_transactions": 1000,
+        "state": {
+          "burned": 0,
+          "head": "878c194c5082eab0c9fc6b95f621fb3c955b031fc27ffc4f75a334bf8c0f5ff7",
+          "state_hash": "fce36337771492581e3eda0dace42e33ea242ea287903915e0a704667d30782e",
+          "supply": 34000000000,
+          "transactions": 1000
+        }
+      },
+      "libgcc_variants": [
+        {
+          "sha256": "5b9c3994bd66cd5c2fa29f6fec5168bb3fbf3478c4f6e5e387c9ab7b88a659e9",
+          "nodes": 10
+        },
+        {
+          "sha256": "509246219a4232e4554ac00feebb5bfbcdb5fc09fe900ced12ef6a301a5ce010",
+          "nodes": 10
+        }
+      ],
+      "methods": [
+        {
+          "name": "FinalRetestAudit.py",
+          "sha256": "6984a0644fc04473344a283e2829abae7efd3c24b97ddc74c32ba1f55eb3e62e",
+          "bytes": 3552
+        },
+        {
+          "name": "HeaderReader.py",
+          "sha256": "7b2616d9ef443cf1b55b59a2135a1086636e043fd1f69fb2559bd6e178bbfd6b",
+          "bytes": 9611
+        },
+        {
+          "name": "LightObserve.py",
+          "sha256": "f432ad9c26faf1f8f832bf25341806e5cb6666031499f107d699b388c1780a6d",
+          "bytes": 7540
+        },
+        {
+          "name": "ReaderCanary.py",
+          "sha256": "7dcc4f23bc3210de026e00912401456826311ff32ed1fc6ce90f9fe51e31ac32",
+          "bytes": 1812
+        },
+        {
+          "name": "RetestCases.py",
+          "sha256": "3e27f51e72021d80b7d5793b4a371b089c7ab218d3c48734ba941cf6ce5f6135",
+          "bytes": 22782
+        },
+        {
+          "name": "RetestFleet.py",
+          "sha256": "70f70ade5c8d03a278840b53a6516a7294f9c90354d8fd833fd4b354710a13fd",
+          "bytes": 13323
+        },
+        {
+          "name": "RetestObserve.py",
+          "sha256": "93f651d929404b9f8e3c99cf4d0876aaf1990130421a124e2073088b0966452c",
+          "bytes": 31920
+        },
+        {
+          "name": "tps_runner.py",
+          "sha256": "8cfa8cfad1d7eafb038d8e836c90b324ffadd4cd2494a193958399313d0ff37a",
+          "bytes": 25918
+        }
+      ],
+      "scope": {
+        "sustainable_capacity": "not_evaluated",
+        "repeats_per_case": 1,
+        "official_tps": "audited_measurement.passed is true and finite audited_measurement.tps only; no metrics fallback",
+        "actual_send": "fixed planned 2..12s send window, divided by 10s",
+        "commit_window": "actual common-prefix acquisition midpoint interval near 10s",
+        "comparison": "single observed windows; unequal actual send is not equal-load scaling evidence"
+      }
+    }
+  ],
+  "sustainable_capacity": "not_evaluated",
+  "repeats_per_case": 1
+}
