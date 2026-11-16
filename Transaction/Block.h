@@ -290,7 +290,18 @@ bool ProcessBlock(vector<uint8_t> data) {
         if (canonical==data) return false;
         return QueueForkBlock(std::move(block),std::move(data),true);
     }
-    if (!DBCheckBlockUsers(data)) { invalidUserBlocks++; return false; }
+    vector<uint8_t> rankedWinner;
+    {
+        lock_guard lock(blockBufferLock);
+        if (height>=epoch&&height-epoch<3) {
+            const auto& slot=BlockBuffer[height-epoch];
+            if (!slot.second.empty()&&slot.first.height==height&&slot.first.previousHash==block.previousHash&&
+                (block.txNum<slot.first.txNum||(block.txNum==slot.first.txNum&&block.hash>=slot.first.hash))) rankedWinner=slot.second;
+        }
+    }
+    auto checked=DBPrepareBlockUsers(data,rankedWinner.empty()?nullptr:&rankedWinner);
+    if (checked==CandidateCheckResult::Invalid) { invalidUserBlocks++; return false; }
+    if (checked==CandidateCheckResult::Superseded) return false;
     {
         lock_guard lock(blockBufferLock);
         if (height<epoch||height-epoch>=3) return false;

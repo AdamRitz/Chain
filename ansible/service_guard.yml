@@ -1,0 +1,45 @@
+---
+- name: Preserve background services around isolated benchmarks
+  hosts: chain
+  gather_facts: false
+  become: true
+  tasks:
+    - name: Check service guard arguments
+      ansible.builtin.assert:
+        that:
+          - chain_service_guard_action in ['pause', 'restore', 'status']
+          - chain_run_group is match('^[A-Za-z0-9_-]{1,60}$')
+          - chain_service_guard_results_dir is defined
+    - name: Create tools directory
+      ansible.builtin.file:
+        path: "{{ chain_tools_root }}"
+        state: directory
+        mode: '0700'
+    - name: Install service guard
+      ansible.builtin.copy:
+        src: scripts/service_guard.py
+        dest: "{{ chain_tools_root }}/service_guard.py"
+        mode: '0700'
+    - name: Run guarded service operation
+      ansible.builtin.command:
+        argv:
+          - /usr/bin/python3
+          - "{{ chain_tools_root }}/service_guard.py"
+          - "{{ chain_service_guard_action }}"
+          - --run
+          - "{{ chain_run_group }}"
+      register: chain_service_guard_result
+      changed_when: chain_service_guard_action != 'status'
+      failed_when: false
+    - name: Store service restoration evidence on controller
+      ansible.builtin.copy:
+        content: "{{ chain_service_guard_result.stdout }}"
+        dest: "{{ chain_service_guard_results_dir }}/{{ chain_node_id }}.json"
+        mode: '0600'
+      delegate_to: localhost
+      become: false
+    - name: Require a successful guarded operation
+      ansible.builtin.assert:
+        that:
+          - chain_service_guard_result.rc == 0
+          - (chain_service_guard_result.stdout | from_json).ok | bool

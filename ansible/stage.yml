@@ -1,0 +1,25 @@
+- ansible.builtin.import_playbook: preflight.yml
+
+- name: Verify and stage all immutable releases
+  hosts: chain
+  gather_facts: false
+  become: true
+  tasks:
+    - name: Normalize the single-release compatibility interface
+      ansible.builtin.set_fact:
+        chain_stage_releases: "{{ [{'id': chain_release_id, 'package': chain_package, 'sha256': chain_package_sha256}] }}"
+      when: chain_releases is not defined
+    - name: Use the declared baseline and candidate releases
+      ansible.builtin.set_fact:
+        chain_stage_releases: "{{ chain_releases }}"
+      when: chain_releases is defined
+    - name: Require a nonempty release set
+      ansible.builtin.assert:
+        that:
+          - chain_stage_releases | length > 0
+          - chain_stage_releases | map(attribute='id') | unique | length == chain_stage_releases | length
+    - name: Verify each release on the controller and target
+      ansible.builtin.include_tasks: tasks/stage_one.yml
+      loop: "{{ chain_stage_releases }}"
+      loop_control:
+        loop_var: chain_stage_release

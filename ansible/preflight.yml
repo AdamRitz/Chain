@@ -1,0 +1,44 @@
+- name: Verify the controller inputs and Linux node prerequisites
+  hosts: chain
+  gather_facts: true
+  become: true
+  tasks:
+    - name: Validate managed identifiers and paths
+      ansible.builtin.assert:
+        that:
+          - ansible_system == 'Linux'
+          - ansible_architecture == 'x86_64'
+          - chain_node_id is match('^[A-Za-z0-9_-]{1,100}$')
+          - chain_release_root is match('^/.+')
+          - chain_tools_root is match('^/.+')
+          - chain_test_root is match('^/.+')
+          - chain_test_port | int >= 1024
+          - chain_test_port | int <= 65535
+          - chain_test_port | int != 8089
+          - groups['chain'] | map('extract', hostvars, 'chain_node_id') | list | unique | length == groups['chain'] | length
+        fail_msg: Use unique node IDs, absolute managed roots and an isolated test port.
+    - name: Verify the existing lifecycle dependency without changing the host
+      ansible.builtin.command:
+        argv: ["{{ chain_python }}", -c, "import sys,psutil; assert sys.version_info >= (3,9); print(psutil.__version__)"]
+      changed_when: false
+    - name: Create only managed tool and package directories
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: directory
+        mode: '0755'
+      loop:
+        - "{{ chain_tools_root }}"
+        - "{{ chain_release_root }}"
+        - "{{ chain_test_root }}"
+        - "{{ chain_tools_root }}/packages"
+    - name: Install lifecycle and package validation tools
+      ansible.builtin.copy:
+        src: "scripts/{{ item }}"
+        dest: "{{ chain_tools_root }}/{{ item }}"
+        mode: '0755'
+      loop: [stage_release.py, managed_worker.py, activate_release.py]
+    - name: Install the preserved read-only canonical header exporter
+      ansible.builtin.copy:
+        src: ../reports/2026-11-16-ten-twenty-retest/methods/r2/HeaderReader.py
+        dest: "{{ chain_tools_root }}/HeaderReader.py"
+        mode: '0644'

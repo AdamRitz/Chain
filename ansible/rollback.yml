@@ -1,0 +1,24 @@
+- name: Restore the captured executable and original service override
+  hosts: chain
+  gather_facts: false
+  become: true
+  serial: "{{ chain_serial | default(1) }}"
+  any_errors_fatal: true
+  tasks:
+    - name: Roll back only the explicitly identified deployment
+      ansible.builtin.command:
+        argv:
+          - "{{ chain_python }}"
+          - "{{ chain_tools_root }}/activate_release.py"
+          - rollback
+          - --service
+          - "{{ chain_service_name }}"
+          - --state-root
+          - "{{ chain_tools_root }}/deployments"
+          - --deployment-id
+          - "{{ chain_deployment_id }}"
+          - --node
+          - "{{ chain_node_id }}"
+      register: chain_rollback
+      changed_when: (chain_rollback.stdout | from_json).changed | default(false)
+      failed_when: chain_rollback.rc != 0 or not (chain_rollback.stdout | from_json).ok

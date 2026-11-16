@@ -1,0 +1,91 @@
+- ansible.builtin.import_playbook: stage.yml
+
+- name: Run the controller benchmark and always recover isolated processes and DBs
+  hosts: chain
+  gather_facts: false
+  become: true
+  vars:
+    chain_run_group: "{{ chain_run_id }}"
+  tasks:
+    - name: Validate benchmark inputs
+      ansible.builtin.assert:
+        that:
+          - chain_run_id is match('^[A-Za-z0-9_-]{1,100}$')
+          - chain_result_dir is match('^/.+')
+          - chain_dataset is match('^/.+')
+          - chain_genesis_file is match('^/.+')
+          - chain_dataset_sha256 is match('^[0-9a-f]{64}$')
+          - chain_genesis_sha256 is match('^[0-9a-f]{64}$')
+      run_once: true
+    - name: Create the controller output directory
+      ansible.builtin.file:
+        path: "{{ chain_result_dir }}"
+        state: directory
+        mode: '0755'
+      delegate_to: localhost
+      become: false
+      run_once: true
+    - name: Run and recover the complete benchmark group
+      block:
+        - name: Generate a fresh ownership token when the caller did not provide one
+          ansible.builtin.command:
+            argv: ["{{ chain_controller_python }}", -c, "import uuid; print(uuid.uuid4().hex)"]
+          delegate_to: localhost
+          become: false
+          run_once: true
+          changed_when: false
+          register: chain_owner_generated
+          when: chain_run_owner is not defined
+        - name: Apply the shared ownership token to all hosts
+          ansible.builtin.set_fact:
+            chain_run_owner: "{{ chain_owner_generated.stdout }}"
+          when: chain_run_owner is not defined
+        - name: Require a well-formed ownership token
+          ansible.builtin.assert:
+            that: chain_run_owner is match('^[0-9a-f]{32}$')
+        - name: Hash the fixed dataset and genesis on the controller
+          ansible.builtin.stat:
+            path: "{{ item }}"
+            checksum_algorithm: sha256
+          loop: ["{{ chain_dataset }}", "{{ chain_genesis_file }}"]
+          delegate_to: localhost
+          become: false
+          run_once: true
+          register: chain_benchmark_inputs
+        - name: Require the declared data and genesis hashes
+          ansible.builtin.assert:
+            that:
+              - chain_benchmark_inputs.results[0].stat.checksum == chain_dataset_sha256
+              - chain_benchmark_inputs.results[1].stat.checksum == chain_genesis_sha256
+          run_once: true
+        - name: Write the exact driver context
+          ansible.builtin.template:
+            src: templates/context.json.j2
+            dest: "{{ chain_result_dir }}/context.json"
+            mode: '0644'
+          delegate_to: localhost
+          become: false
+          run_once: true
+        - name: Invoke the controller driver through its published interface
+          ansible.builtin.command:
+            argv:
+              - "{{ chain_controller_python }}"
+              - "{{ chain_benchmark_driver | default(playbook_dir + '/../Test/AnsibleBenchmark.py') }}"
+              - --ansible-context
+              - "{{ chain_result_dir }}/context.json"
+            chdir: "{{ playbook_dir }}"
+          delegate_to: localhost
+          become: false
+          run_once: true
+          register: chain_benchmark_result
+          changed_when: true
+      rescue:
+        - name: Preserve the benchmark failure for the final result
+          ansible.builtin.set_fact:
+            chain_benchmark_failed: true
+      always:
+        - ansible.builtin.include_tasks: tasks/cleanup_group.yml
+    - name: Keep failed benchmark status visible after recovery
+      ansible.builtin.assert:
+        that: not (chain_benchmark_failed | default(false))
+        fail_msg: Benchmark failed; isolated recovery evidence was collected. Inspect controller output and per-node records.

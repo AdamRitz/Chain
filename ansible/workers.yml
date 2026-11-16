@@ -1,0 +1,43 @@
+- name: Run the existing ClusterWorker through the owned lifecycle adapter
+  hosts: chain
+  gather_facts: false
+  become: true
+  tasks:
+    - name: Validate lifecycle inputs
+      ansible.builtin.assert:
+        that:
+          - chain_worker_action in ['start', 'stop', 'collect', 'delete-db', 'export-headers']
+          - chain_run_id is match('^[A-Za-z0-9_-]{1,100}$')
+          - chain_run_group is match('^[A-Za-z0-9_-]{1,100}$')
+          - chain_run_owner is match('^[0-9a-f]{32}$')
+          - chain_worker_release_id is match('^[A-Za-z0-9][A-Za-z0-9_.-]{0,79}$')
+    - name: Invoke the existing worker with per-node arguments
+      ansible.builtin.command:
+        argv: ["{{ chain_python }}", "{{ chain_tools_root }}/managed_worker.py"]
+        stdin: "{{ {'action': chain_worker_action, 'root': chain_test_root, 'run': chain_run_id, 'run_group': chain_run_group, 'owner': chain_run_owner, 'node': chain_node_id, 'release_root': chain_release_root, 'release_dir': chain_release_root + '/' + chain_worker_release_id, 'arguments': (chain_worker_arguments_by_node | default({})).get(chain_node_id, chain_worker_arguments | default([])), 'genesis': chain_worker_genesis | default({}), 'test_port': chain_test_port, 'guard_seconds': chain_guard_seconds | default(300), 'restart': chain_worker_restart | default(false)} | to_json }}"
+      environment:
+        LD_LIBRARY_PATH: "{{ chain_release_root }}/{{ chain_worker_release_id }}/lib"
+      register: chain_worker_result
+      changed_when: chain_worker_action not in ['collect', 'export-headers']
+      failed_when: false
+    - name: Create the controller evidence directory
+      ansible.builtin.file:
+        path: "{{ chain_worker_results_dir }}"
+        state: directory
+        mode: '0755'
+      delegate_to: localhost
+      become: false
+      when: chain_worker_results_dir is defined
+    - name: Save worker evidence on the controller
+      ansible.builtin.copy:
+        content: "{{ (chain_worker_result.stdout if chain_worker_result.stdout | trim is match('^\\{') else {'ok': false, 'error': chain_worker_result.stderr | default(chain_worker_result.stdout, true), 'rc': chain_worker_result.rc} | to_json) }}\n"
+        dest: "{{ chain_worker_results_dir }}/{{ chain_node_id }}.json"
+        mode: '0644'
+      delegate_to: localhost
+      become: false
+      when: chain_worker_results_dir is defined
+    - name: Report worker failure after retaining its evidence
+      ansible.builtin.assert:
+        that:
+          - chain_worker_result.rc == 0
+          - (chain_worker_result.stdout | from_json).ok

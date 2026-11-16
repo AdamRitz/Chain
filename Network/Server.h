@@ -310,6 +310,10 @@ vector<uint8_t> ReadQueryResponse(uint8_t type,const vector<uint8_t>& data) {
     throw invalid_argument("Unknown query type");
 }
 awaitable<void> ProcessQuery(shared_ptr<Peer> peer,uint8_t type,vector<uint8_t> data) {
+    // This response copies only the published, durable head under its short
+    // snapshot lock. Historical reads/account digests must not delay peer
+    // progress discovery by occupying the query worker pool.
+    if (type==19) { SendData(peer,ReadQueryResponse(type,data)); co_return; }
     steady_timer timer(co_await this_coro::executor); auto queued=GetSteadyTime();
     auto pending=pendingQueries.load();
     while (true) {

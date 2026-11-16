@@ -186,10 +186,14 @@ void ReceiveCompactBlock(const shared_ptr<Peer>& peer,const vector<uint8_t>& dat
 awaitable<void> SendBounded(const shared_ptr<Peer>& peer,vector<uint8_t> data) {
     if (data.size()>maxSendBytes) co_return;
     steady_timer timer(peer->strand);
-    while (!peer->closed&&peer->queuedBytes>maxSendBytes-data.size()) {
+    shared_ptr<SendReservation> reservation;
+    while (!peer->closed&&nodeRunning) {
+        reservation=sendQueueBudget.TryReserve(peer->sendBudget,data.size(),maxSendBytes,false);
+        if (reservation) break;
         timer.expires_after(milliseconds(1)); co_await timer.async_wait(use_awaitable);
     }
-    if (!peer->closed) QueueData(peer,make_shared<const vector<uint8_t>>(std::move(data)));
+    if (!peer->closed&&reservation) QueueData(peer,PendingSend{
+        make_shared<const vector<uint8_t>>(std::move(data)),std::move(reservation)});
 }
 vector<vector<uint8_t>> ReadMissingTransactions(const vector<uint8_t>& request) {
     vector<vector<uint8_t>> replies;

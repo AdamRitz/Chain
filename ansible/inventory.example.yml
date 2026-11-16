@@ -1,0 +1,22 @@
+all:
+  children:
+    chain:
+      hosts:
+        node001:
+          ansible_host: 203.0.113.10
+          chain_p2p_address: 192.0.2.10
+          chain_node_id: node001
+        node002:
+          ansible_host: 203.0.113.11
+          chain_p2p_address: 192.0.2.11
+          chain_node_id: node002
+      vars:
+        ansible_user: root
+        # For private hosts use an SSH key and a reachable gateway, for example:
+        # ansible_ssh_common_args: '-o ProxyJump=gateway'
+        chain_release_root: /opt/chain/releases
+        chain_tools_root: /opt/chain/ansible-tools
+        chain_test_root: /var/tmp/chain-ansible-tests
+        chain_test_port: 18089
+        chain_service_name: chain-node.service
+        chain_live_port: 8089

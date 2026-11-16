@@ -79,6 +79,7 @@ deque<unique_ptr<CachedExecution>> executionCache;
 size_t executionBytes=0;
 constexpr size_t maxExecutionBytes=32*1024*1024;
 atomic<uint64_t> executionCacheHits{0},executionCacheMisses{0},candidateExecuteNs{0},commitExecuteNs{0};
+atomic<uint64_t> candidateRankSkips{0},candidateExecutionCacheHits{0},candidateExecutions{0};
 atomic<uint64_t> evmAccountWrites{0},evmSlotWrites{0},evmPersistNs{0};
 atomic<uint64_t> commitLockWaitNs{0},candidateLockWaitNs{0};
 void InvalidateExecutionCache() {
@@ -456,21 +457,47 @@ void PublishChainHead() {
 void DBWriteCurrentBlock(const array<uint8_t,32>& hash) {
     CheckDBStatus(db->Put(rocksdb::WriteOptions(),"CurrentBlock",rocksdb::Slice(reinterpret_cast<const char*>(hash.data()),32)));
 }
-bool DBCheckBlockUsers(const vector<uint8_t>& data) {
-    if (data.size()<112) return false;
+enum class CandidateCheckResult { Invalid,Valid,Superseded };
+// The caller has already checked the complete block's encoding, signatures and Merkle root.
+// A ranked winner can avoid execution only while its complete successful execution
+// is still cached for this exact parent state. Cache eviction only loses the shortcut.
+CandidateCheckResult DBPrepareBlockUsers(const vector<uint8_t>& data,const vector<uint8_t>* rankedWinner=nullptr) {
+    if (data.size()<112) return CandidateCheckResult::Invalid;
     auto waitStart=GetSteadyTime();
     shared_lock lock(dbCommitMutex);
     candidateLockWaitNs+=GetSteadyTime()-waitStart;
     auto current=DBReadBlockHeight();
     auto height=ReadU64(data.data()+64);
     // 未来高度先缓存内容；轮到提交时，使用它实际父块的状态完整执行。
-    if (current<UINT64_MAX&&height>current+1) return true;
+    if (current<UINT64_MAX&&height>current+1) return CandidateCheckResult::Valid;
     auto previous=DBReadCurrentBlock();
-    if (current==UINT64_MAX||height!=current+1||memcmp(data.data(),previous.data(),32)!=0) return false;
+    if (current==UINT64_MAX||height!=current+1||memcmp(data.data(),previous.data(),32)!=0) return CandidateCheckResult::Invalid;
+    {
+        lock_guard cacheLock(executionMutex);
+        for (const auto& cached:executionCache) {
+            if (cached->version!=dbStateVersion||cached->parent!=previous||cached->height!=height) continue;
+            if (cached->data==data) {
+                candidateExecutionCacheHits++;
+                return CandidateCheckResult::Valid;
+            }
+        }
+        if (rankedWinner&&rankedWinner->size()>=112&&ReadU64(rankedWinner->data()+64)==height&&
+            memcmp(rankedWinner->data(),previous.data(),32)==0) {
+            auto winnerCount=ReadU64(rankedWinner->data()+72),count=ReadU64(data.data()+72);
+            bool loses=count<winnerCount||(count==winnerCount&&memcmp(data.data()+80,rankedWinner->data()+80,32)>=0);
+            if (loses) for (const auto& cached:executionCache) {
+                if (cached->version==dbStateVersion&&cached->parent==previous&&cached->height==height&&cached->data==*rankedWinner) {
+                    candidateRankSkips++;
+                    return CandidateCheckResult::Superseded;
+                }
+            }
+        }
+    }
     auto result=make_unique<CachedExecution>(); result->data=data; result->parent=previous;
     result->version=dbStateVersion; result->height=height;
     auto start=GetSteadyTime();
-    if (!DBApplyBlockUsers(data,result->users,&result->evm)) return false;
+    candidateExecutions++;
+    if (!DBApplyBlockUsers(data,result->users,&result->evm)) return CandidateCheckResult::Invalid;
     candidateExecuteNs+=GetSteadyTime()-start;
     result->bytes=data.size()+result->users.size()*96;
     for (const auto& [address,account]:result->evm.state.get_accounts()) result->bytes+=256+account.code.size()+account.storage.size()*128;
@@ -485,7 +512,10 @@ bool DBCheckBlockUsers(const vector<uint8_t>& data) {
         }
         executionBytes+=result->bytes; executionCache.push_back(std::move(result));
     }
-    return true;
+    return CandidateCheckResult::Valid;
+}
+bool DBCheckBlockUsers(const vector<uint8_t>& data) {
+    return DBPrepareBlockUsers(data)==CandidateCheckResult::Valid;
 }
 // 一块的块体、交易、索引、当前高度和链头在同一个 batch 中提交。
 bool DBCommitBlockLocked(const array<uint8_t,32>& hash,const vector<uint8_t>& data) {

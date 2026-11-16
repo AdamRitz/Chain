@@ -139,6 +139,47 @@ int main(int argc,char** argv) {
         concurrent=headTask.wait_for(std::chrono::seconds(2))==future_status::ready;
         stateLock.unlock(); auto headReply=headTask.get();
         Require(concurrent&&ReadU64(headReply.data()+5+64)==snapshot.height&&memcmp(headReply.data()+5+32,snapshot.hash.data(),32)==0,"chain head query stays readable while commit is locked");
+        {
+            // No query worker exists here: peer progress queries must still be
+            // served from the published head, with the existing 19/20 format.
+            boost::asio::io_context io; auto peer=make_shared<Peer>(tcp::socket(io));
+            Require(!queryThreads,"head query regression starts without historical query workers");
+            exception_ptr error; bool completed=false;
+            co_spawn(peer->strand,ProcessQuery(peer,19,{}),[&](exception_ptr failure) { error=failure; completed=true; });
+            io.run(); if (error) rethrow_exception(error);
+            Require(completed&&pendingQueries==0,"head query bypasses the historical query executor");
+        }
+        auto sendBaseline=sendQueueBudget.Snapshot();
+        {
+            boost::asio::io_context io; auto peer=make_shared<Peer>(tcp::socket(io));
+            auto request=make_shared<const vector<uint8_t>>(GenerateMessage(19,{}));
+            SendData(peer,request); SendData(peer,request);
+            auto pending=sendQueueBudget.Snapshot();
+            Require(pending.tasks==sendBaseline.tasks+2&&pending.bytes==sendBaseline.bytes+request->size()*2,
+                "send accounting starts before strand handlers execute");
+            post(peer->strand,[peer] { ClosePeer(peer); }); io.run();
+            pending=sendQueueBudget.Snapshot();
+            Require(pending.tasks==sendBaseline.tasks&&pending.bytes==sendBaseline.bytes,
+                "close and cancelled active writes release all send reservations");
+        }
+        {
+            boost::asio::io_context io; auto peer=make_shared<Peer>(tcp::socket(io));
+            SendData(peer,GenerateMessage(19,{}));
+            Require(sendQueueBudget.Snapshot().tasks==sendBaseline.tasks+1,"unrun handler holds its send reservation");
+            // io_context destruction releases handlers that never ran.
+        }
+        Require(sendQueueBudget.Snapshot().tasks==sendBaseline.tasks&&sendQueueBudget.Snapshot().bytes==sendBaseline.bytes,
+            "destroying pending executor work releases its send reservation");
+        {
+            boost::asio::io_context io; auto peer=make_shared<Peer>(tcp::socket(io));
+            auto maximum=make_shared<const vector<uint8_t>>(maxSendBytes,0);
+            SendData(peer,maximum); SendData(peer,GenerateMessage(19,{})); SendData(peer,maximum);
+            Require(peer->closePosted&&sendQueueBudget.Snapshot().tasks==sendBaseline.tasks+1,
+                "peer overload is bounded before post and schedules one close");
+            io.run();
+        }
+        Require(sendQueueBudget.Snapshot().tasks==sendBaseline.tasks&&sendQueueBudget.Snapshot().bytes==sendBaseline.bytes,
+            "overloaded peer cleanup releases pre-post work");
         vector<uint8_t> request(10); WriteU64(request.data(),2); request[8]=2;
         auto replies=ReadBlockReplies(42,request); vector<vector<uint8_t>> parsed;
         Require(replies.size()==1&&replies[0][0]==43&&ReadBlockBatch(vector<uint8_t>(replies[0].begin()+5,replies[0].end()),parsed)&&

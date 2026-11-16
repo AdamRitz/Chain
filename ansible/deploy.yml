@@ -1,0 +1,43 @@
+- ansible.builtin.import_playbook: stage.yml
+
+- name: Roll out a verified binary without changing the persistent DB or node arguments
+  hosts: chain
+  gather_facts: false
+  become: true
+  serial: "{{ chain_serial | default(1) }}"
+  any_errors_fatal: true
+  tasks:
+    - name: Validate the selected deployment identifiers
+      ansible.builtin.assert:
+        that:
+          - chain_deployment_id is match('^[A-Za-z0-9_-]{1,100}$')
+          - chain_release_id is match('^[A-Za-z0-9][A-Za-z0-9_.-]{0,79}$')
+          - chain_stage_releases | selectattr('id', 'equalto', chain_release_id) | list | length == 1
+    - name: Activate and autonomously restore the previous executable on a failed check
+      ansible.builtin.command:
+        argv:
+          - "{{ chain_python }}"
+          - "{{ chain_tools_root }}/activate_release.py"
+          - activate
+          - --service
+          - "{{ chain_service_name }}"
+          - --state-root
+          - "{{ chain_tools_root }}/deployments"
+          - --deployment-id
+          - "{{ chain_deployment_id }}"
+          - --node
+          - "{{ chain_node_id }}"
+          - --release-root
+          - "{{ chain_release_root }}"
+          - --release-dir
+          - "{{ chain_release_root }}/{{ chain_release_id }}"
+          - --sha256
+          - "{{ (chain_stage_releases | selectattr('id', 'equalto', chain_release_id) | first).sha256 }}"
+          - --port
+          - "{{ chain_live_port | string }}"
+      register: chain_activation
+      changed_when: (chain_activation.stdout | from_json).changed | default(false)
+      failed_when: chain_activation.rc != 0 or not (chain_activation.stdout | from_json).ok
+    - name: Show the active release and retained rollback record
+      ansible.builtin.debug:
+        msg: "{{ chain_activation.stdout | from_json }}"

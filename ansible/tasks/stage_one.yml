@@ -1,0 +1,49 @@
+- name: Validate release metadata
+  ansible.builtin.assert:
+    that:
+      - chain_stage_release.id is match('^[A-Za-z0-9][A-Za-z0-9_.-]{0,79}$')
+      - chain_stage_release.sha256 is match('^[0-9a-f]{64}$')
+      - chain_stage_release.package is match('^/.+')
+- name: Hash the exact controller package
+  ansible.builtin.stat:
+    path: "{{ chain_stage_release.package }}"
+    checksum_algorithm: sha256
+  delegate_to: localhost
+  become: false
+  register: chain_local_package
+- name: Require the declared controller package hash
+  ansible.builtin.assert:
+    that:
+      - chain_local_package.stat.isreg | default(false)
+      - chain_local_package.stat.checksum == chain_stage_release.sha256
+- name: Copy the verified compressed package
+  ansible.builtin.copy:
+    src: "{{ chain_stage_release.package }}"
+    dest: "{{ chain_tools_root }}/packages/{{ chain_stage_release.id }}.tar.gz"
+    mode: '0644'
+- name: Validate members and manifest before atomic release publication
+  ansible.builtin.command:
+    argv:
+      - "{{ chain_python }}"
+      - "{{ chain_tools_root }}/stage_release.py"
+      - --archive
+      - "{{ chain_tools_root }}/packages/{{ chain_stage_release.id }}.tar.gz"
+      - --release-root
+      - "{{ chain_release_root }}"
+      - --release-id
+      - "{{ chain_stage_release.id }}"
+      - --sha256
+      - "{{ chain_stage_release.sha256 }}"
+  register: chain_stage_result
+  changed_when: (chain_stage_result.stdout | from_json).changed
+- name: Retain independently checked binary and package identities
+  ansible.builtin.set_fact:
+    chain_staged_metadata: "{{ chain_staged_metadata | default({}) | combine({chain_stage_release.id: chain_stage_result.stdout | from_json}) }}"
+- name: Check runtime library resolution for the staged node
+  ansible.builtin.command:
+    argv: [ldd, "{{ chain_release_root }}/{{ chain_stage_release.id }}/bin/boost"]
+  environment:
+    LD_LIBRARY_PATH: "{{ chain_release_root }}/{{ chain_stage_release.id }}/lib"
+  register: chain_release_ldd
+  changed_when: false
+  failed_when: chain_release_ldd.rc != 0 or 'not found' in chain_release_ldd.stdout

@@ -11,6 +11,7 @@
 #include "../Message/Message.h"
 #include "../Tool/Resource.h"
 #include "Address.h"
+#include "SendBudget.h"
 using namespace std;
 using namespace std::chrono;
 using namespace boost::asio;
@@ -43,6 +44,7 @@ set<pair<string,uint16_t>> addressAttempts; // protected by peerMutex, like peer
 bool relayTransactions=false;
 atomic<uint64_t> networkSentBytes{0},localProposals{0};
 size_t maxSendBytes=8*1024*1024;
+SendQueueBudget sendQueueBudget(128*1024*1024,8192,1024);
 unsigned short listenPort=8089;
 string listenAddress="127.0.0.1",listenAddressV6;
 bool peerProtocolV2=false;
@@ -50,11 +52,17 @@ int blockInterval=50;
 bool produceBlocks=true;
 
 // ------------------------------------------------节点和发送队列------------------------------------------------
+struct PendingSend {
+    shared_ptr<const vector<uint8_t>> data;
+    shared_ptr<SendReservation> reservation;
+};
 struct Peer:enable_shared_from_this<Peer> {
     tcp::socket socket;
     boost::asio::strand<any_io_executor> strand;
     steady_timer deadline;
-    deque<shared_ptr<const vector<uint8_t>>> messageQueue;
+    deque<PendingSend> messageQueue;
+    shared_ptr<SendPeerBudget> sendBudget=make_shared<SendPeerBudget>();
+    atomic<bool> closePosted{false}; // safe to read before posting to the strand
     size_t queuedBytes=0;
     uint64_t key=0;
     atomic<uint64_t> remoteHeight{0};
@@ -63,7 +71,7 @@ struct Peer:enable_shared_from_this<Peer> {
     bool discoveryV2=false;
     array<uint8_t,32> requestedHead{};
     uint64_t admissionRead=0,admissionWrite=0;
-    map<uint64_t,vector<uint8_t>> admissionReplies;
+    map<uint64_t,PendingSend> admissionReplies;
     bool writing=false,closed=false,syncing=false,compact=false;
     uint64_t clockToken=0,clockSentSteady=0;
     int64_t clockSentLogical=0;
@@ -96,6 +104,7 @@ void RemovePeer(uint64_t key) {
     peerPool.erase(key);
 }
 void ClosePeer(const shared_ptr<Peer>& peer) {
+    peer->closePosted=true;
     if (peer->closed) return;
     peer->closed=true;
     boost::system::error_code ignored;
@@ -115,7 +124,9 @@ void PeerError(const shared_ptr<Peer>& peer,exception_ptr error) {
 }
 awaitable<void> WriteLoop(shared_ptr<Peer> peer) {
     while (!peer->closed&&!peer->messageQueue.empty()) {
-        auto data=peer->messageQueue.front();
+        // Keep the reservation alive until async_write has completed, even if
+        // ClosePeer clears the queue while the write is being cancelled.
+        auto message=peer->messageQueue.front(); auto data=message.data;
         boost::system::error_code ec;
         co_await async_write(peer->socket,buffer(*data),redirect_error(use_awaitable,ec));
         if (ec||peer->closed) { ClosePeer(peer); co_return; }
@@ -125,32 +136,51 @@ awaitable<void> WriteLoop(shared_ptr<Peer> peer) {
     }
     peer->writing=false;
 }
-void QueueData(const shared_ptr<Peer>& peer,shared_ptr<const vector<uint8_t>> data) {
+void QueueData(const shared_ptr<Peer>& peer,PendingSend message) {
         if (peer->closed) return;
-        if (data->size()>maxSendBytes||peer->queuedBytes>maxSendBytes-data->size()) { ClosePeer(peer); return; }
-        peer->queuedBytes+=data->size();
-        peer->messageQueue.push_back(data);
+        auto size=message.data->size();
+        peer->messageQueue.push_back(std::move(message));
+        peer->queuedBytes+=size;
         if (!peer->writing) {
             peer->writing=true;
             co_spawn(peer->strand,WriteLoop(peer),[peer](exception_ptr error){if (error) PeerError(peer,error);});
         }
 }
+void RejectSend(const shared_ptr<Peer>& peer) {
+    // Many worker threads may hit one slow peer at once. Only one close handler
+    // may be outstanding; rejected frames never enter the executor queue.
+    if (!peer->closePosted.exchange(true)) post(peer->strand,[peer] { ClosePeer(peer); });
+}
+void QueueData(const shared_ptr<Peer>& peer,shared_ptr<const vector<uint8_t>> data) {
+    if (peer->closed||!data||data->empty()) return;
+    auto reservation=sendQueueBudget.TryReserve(peer->sendBudget,data->size(),maxSendBytes);
+    if (!reservation) { ClosePeer(peer); return; }
+    QueueData(peer,PendingSend{std::move(data),std::move(reservation)});
+}
 void SendData(const shared_ptr<Peer>& peer,shared_ptr<const vector<uint8_t>> data) {
-    if (!peer||!data||data->empty()) return;
-    post(peer->strand,[peer,data=std::move(data)] { QueueData(peer,data); });
+    if (!peer||!data||data->empty()||peer->closePosted) return;
+    auto reservation=sendQueueBudget.TryReserve(peer->sendBudget,data->size(),maxSendBytes);
+    if (!reservation) { RejectSend(peer); return; }
+    post(peer->strand,[peer,message=PendingSend{std::move(data),std::move(reservation)}]() mutable {
+        QueueData(peer,std::move(message));
+    });
 }
 void SendData(const shared_ptr<Peer>& peer,vector<uint8_t> data) {
     SendData(peer,make_shared<const vector<uint8_t>>(std::move(data)));
 }
 void SendAdmission(const shared_ptr<Peer>& peer,uint64_t order,vector<uint8_t> results) {
-    post(peer->strand,[peer,order,results=std::move(results)]() mutable {
+    if (peer->closePosted) return;
+    auto data=make_shared<const vector<uint8_t>>(GenerateMessage(45,results));
+    auto reservation=sendQueueBudget.TryReserve(peer->sendBudget,data->size(),maxSendBytes);
+    if (!reservation) { RejectSend(peer); return; }
+    post(peer->strand,[peer,order,message=PendingSend{std::move(data),std::move(reservation)}]() mutable {
         if (peer->closed) return;
         if (peer->admissionReplies.size()>=128) { ClosePeer(peer); return; }
-        peer->admissionReplies.emplace(order,std::move(results));
+        peer->admissionReplies.emplace(order,std::move(message));
         while (true) {
             auto found=peer->admissionReplies.find(peer->admissionWrite);
             if (found==peer->admissionReplies.end()) break;
-            QueueData(peer,make_shared<const vector<uint8_t>>(GenerateMessage(45,found->second)));
+            QueueData(peer,std::move(found->second));
             if (peer->closed) return;
             peer->admissionReplies.erase(found); peer->admissionWrite++;
         }
@@ -477,6 +507,7 @@ nlohmann::json GetNodeStats() {
     auto snapshot=ReadChainHead();
     auto height=snapshot.height,chainTx=snapshot.transactions,burned=snapshot.burned;
     auto userCount=snapshot.users,evmCount=snapshot.contracts; auto head=snapshot.hash;
+    auto sends=sendQueueBudget.Snapshot();
     nlohmann::json stats={{"received",receivedTx.load()},{"valid",validTx.load()},{"invalid",invalidTx.load()},
         {"duplicate",duplicateTx.load()},{"rejected",rejectedTx.load()},{"committed",committedTx.load()},
         {"pool",poolSize},{"ready_pool",readySize},{"pending",pendingVerify.load()},{"peak_pending",peakPendingVerify.load()},
@@ -502,11 +533,18 @@ nlohmann::json GetNodeStats() {
         {"chain_transactions",chainTx},{"reorganizations",reorgCount.load()},{"max_reorg_depth",maxReorgDepth.load()},
         {"evm_accounts",evmCount}, {"peers",peers},{"failed",nodeFailed.load()},
         {"network_sent_bytes",networkSentBytes.load()},{"local_proposals",localProposals.load()},
+        {"send_queued_bytes",sends.bytes},{"send_queued_tasks",sends.tasks},
+        {"send_peak_bytes",sends.peakBytes},{"send_peak_tasks",sends.peakTasks},
+        {"send_byte_limit",sends.byteLimit},{"send_task_limit",sends.taskLimit},
+        {"send_peer_task_limit",sends.peerTaskLimit},{"send_rejected",sends.rejected},
         {"compact_announcements",compactAnnouncements.load()},{"compact_reconstructed",compactReconstructed.load()},
         {"missing_transactions",missingTransactions.load()},{"relay_suppressed",relaySuppressed.load()},
         {"sync_requests",syncRequests.load()},{"sync_retries",syncRetries.load()},{"sync_blocks",syncBlocks.load()},
         {"recent_transaction_hits",recentTransactionHits.load()},
         {"execution_cache_hits",executionCacheHits.load()},{"execution_cache_misses",executionCacheMisses.load()},
+        {"candidate_rank_skips",candidateRankSkips.load()},
+        {"candidate_execution_cache_hits",candidateExecutionCacheHits.load()},
+        {"candidate_executions",candidateExecutions.load()},
         {"candidate_execute_ms",candidateExecuteNs.load()/1e6},{"commit_execute_ms",commitExecuteNs.load()/1e6},
         {"evm_account_writes",evmAccountWrites.load()},{"evm_slot_writes",evmSlotWrites.load()},{"evm_persist_ms",evmPersistNs.load()/1e6},
         {"cold_signature_ms",coldSignatureNs.load()/1e6},{"parallel_signature_blocks",parallelSignatureBlocks.load()},

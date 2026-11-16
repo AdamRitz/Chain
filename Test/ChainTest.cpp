@@ -89,14 +89,51 @@ int main(int argc,char* argv[]) {
         Require(!VerifyBlock(changed),"trailing bytes");
         auto block=UnSerializeBlock(data);
         auto hitsBefore=executionCacheHits.load();
+        auto skippedNonce=GenerateTx(wallet.public_key,receiver.public_key,1,4,wallet);
+        auto invalidWinner=MakeBlock({tx,tx2,skippedNonce});
+        Require(VerifyBlock(invalidWinner)&&!ProcessBlock(invalidWinner),"higher-ranked state-invalid candidate cannot become a winner");
+        Require(BlockBuffer[0].second.empty(),"failed account execution does not reserve the candidate slot");
         Require(ProcessBlock(data),"candidate accepted");
         Require(!ProcessBlock(data),"duplicate candidate rejected");
+        auto preparedBefore=candidateExecutions.load(),reusedBefore=candidateExecutionCacheHits.load();
+        Require(DBCheckBlockUsers(data)&&candidateExecutions==preparedBefore&&candidateExecutionCacheHits==reusedBefore+1,
+                "candidate execution reuse binds complete bytes and current parent state");
+        auto lower=MakeBlock({tx});
+        auto skippedBefore=candidateRankSkips.load();
+        Require(!ProcessBlock(lower)&&candidateRankSkips==skippedBefore+1&&candidateExecutions==preparedBefore,
+                "fully validated same-parent winner skips lower-ranked account execution");
+        auto alteredLower=lower; alteredLower[112+112]^=1;
+        skippedBefore=candidateRankSkips.load();
+        Require(!ProcessBlock(alteredLower)&&candidateRankSkips==skippedBefore&&candidateExecutions==preparedBefore,
+                "lower-ranked blocks still validate the entire signature before ranking");
+        Require(!ProcessBlock(invalidWinner)&&BlockBuffer[0].second==data,
+                "later higher-ranked invalid candidate preserves the successful winner");
+        // Populate real bounded execution entries until the selected winner is evicted.
+        for (uint64_t amount=1;amount<=9;amount++) {
+            auto alternative=MakeBlock({GenerateTx(wallet.public_key,receiver.public_key,amount,1,wallet),tx2});
+            Require(DBCheckBlockUsers(alternative),"valid alternative fills the bounded execution cache");
+        }
+        preparedBefore=candidateExecutions.load(); skippedBefore=candidateRankSkips.load();
+        Require(!ProcessBlock(lower)&&candidateExecutions==preparedBefore+1&&candidateRankSkips==skippedBefore,
+                "evicted winner proof falls back to complete account execution");
+        InvalidateExecutionCache();
+        preparedBefore=candidateExecutions.load(); skippedBefore=candidateRankSkips.load();
+        Require(DBPrepareBlockUsers(lower,&invalidWinner)==CandidateCheckResult::Valid&&candidateExecutions==preparedBefore+1&&
+                candidateRankSkips==skippedBefore,"uncached invalid ranked bytes cannot suppress a valid block");
+        InvalidateExecutionCache();
+        preparedBefore=candidateExecutions.load();
+        Require(!ProcessBlock(lower)&&candidateExecutions==preparedBefore+1&&candidateRankSkips==skippedBefore,
+                "same head with a new state version invalidates winner proof");
+        Require(DBCheckBlockUsers(data),"restore the exact winner execution for commit");
         auto wrong=block;
         wrong.previousHash[0]^=1;
         auto wrongData=SerializeBlockALL(wrong);
         Require(!CommitBlock(wrong,wrongData)&&txpool.size()==2&&DBReadBlockHeight()==1,"wrong parent preserves pool");
         Require(CommitBlock(block,data),"atomic block commit");
         Require(executionCacheHits==hitsBefore+1,"commit reuses execution for identical parent state and full bytes");
+        skippedBefore=candidateRankSkips.load();
+        Require(DBPrepareBlockUsers(lower,&data)==CandidateCheckResult::Invalid&&candidateRankSkips==skippedBefore,
+                "old-parent winner cannot suppress validation against the committed parent");
         Require(txpool.empty()&&DBReadBlockHeight()==2,"commit removes pool transactions");
         checksBefore=signatureChecks.load();
         Require(VerifyBlock(data)&&signatureChecks==checksBefore,"signature result survives pool removal");

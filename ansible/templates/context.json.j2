@@ -1,0 +1,31 @@
+{
+  "schema": 1,
+  "inventory_file": {{ ansible_inventory_sources[0] | realpath | to_json }},
+  "inventory_files": {{ ansible_inventory_sources | to_json }},
+  "ansible_dir": {{ playbook_dir | to_json }},
+  "extra_vars_file": {{ chain_extra_vars_file | default('') | to_json }},
+  "ansible_extra_vars": {{ {'chain_release_root': chain_release_root, 'chain_tools_root': chain_tools_root, 'chain_test_root': chain_test_root, 'chain_test_port': chain_test_port, 'chain_python': chain_python, 'chain_guard_seconds': chain_guard_seconds, 'chain_run_owner': chain_run_owner} | to_json }},
+  "controller_python": {{ chain_controller_python | to_json }},
+  "run_id": {{ chain_run_id | to_json }},
+  "run_group": {{ chain_run_id | to_json }},
+  "run_owner": {{ chain_run_owner | to_json }},
+  "result_dir": {{ (chain_result_dir + '/benchmark') | to_json }},
+  "output_root": {{ chain_result_dir | to_json }},
+  "test_root": {{ chain_test_root | to_json }},
+  "test_port": {{ chain_test_port | int }},
+  "release_root": {{ chain_release_root | to_json }},
+  "dataset": {{ chain_dataset | to_json }},
+  "dataset_sha256": {{ chain_dataset_sha256 | to_json }},
+  "genesis_file": {{ chain_genesis_file | to_json }},
+  "genesis_sha256": {{ chain_genesis_sha256 | to_json }},
+  "releases": [
+{% for release in chain_stage_releases %}
+    {"id": {{ release.id | to_json }}, "directory": {{ (chain_release_root + '/' + release.id) | to_json }}, "sha256": {{ chain_staged_metadata[release.id].binary_sha256 | to_json }}, "binary_sha256": {{ chain_staged_metadata[release.id].binary_sha256 | to_json }}, "package_sha256": {{ release.sha256 | to_json }}, "source_commit": {{ chain_staged_metadata[release.id].source_commit | to_json }}}{% if not loop.last %},{% endif %}
+{% endfor %}
+  ],
+  "nodes": [
+{% for host in groups['chain'] %}
+    {"node_id": {{ hostvars[host].chain_node_id | to_json }}, "inventory_host": {{ host | to_json }}, "ansible_host": {{ hostvars[host].ansible_host | default(host) | to_json }}, "host": {{ hostvars[host].chain_p2p_address | default(hostvars[host].ansible_host | default(host)) | to_json }}, "p2p_address": {{ hostvars[host].chain_p2p_address | default(hostvars[host].ansible_host | default(host)) | to_json }}, "port": {{ chain_test_port | int }}}{% if not loop.last %},{% endif %}
+{% endfor %}
+  ]
+}

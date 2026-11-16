@@ -1,0 +1,14 @@
+# Packages are on the Ansible controller. All file hashes are lowercase SHA256.
+chain_release_id: optimized-example
+chain_releases:
+  - id: baseline-example
+    package: /srv/chain/packages/baseline.tar.gz
+    sha256: REPLACE_WITH_64_LOWERCASE_HEX_DIGITS
+  - id: optimized-example
+    package: /srv/chain/packages/optimized.tar.gz
+    sha256: REPLACE_WITH_64_LOWERCASE_HEX_DIGITS
+chain_run_id: comparison_20261116
+chain_result_dir: /srv/chain/results/comparison_20261116
+chain_benchmark_driver: ../Test/AnsibleBenchmark.py
+chain_guard_seconds: 300
+# Passwords, if needed, belong in Ansible Vault or --ask-pass, never this file.

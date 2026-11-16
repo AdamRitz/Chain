@@ -1,0 +1,9 @@
+chain_release_root: /opt/chain/releases
+chain_tools_root: /opt/chain/ansible-tools
+chain_test_root: /var/tmp/chain-ansible-tests
+chain_test_port: 18089
+chain_live_port: 8089
+chain_service_name: chain-node.service
+chain_python: /usr/bin/python3
+chain_controller_python: "{{ ansible_playbook_python }}"
+chain_guard_seconds: 300
