@@ -1,0 +1,922 @@
+{
+  "source_commit": "9d34b55f1d5bf8ebab1f3fe44a86df31e18b1899",
+  "scope": "Each load process full startup-to-stop cumulative counters; not the audited 10-second TPS window. Task waiting sums overlap across tasks and threads; no CPU percent derived. Each case has one run.",
+  "cases": [
+    {
+      "nodes": 10,
+      "offered_tps": 20000,
+      "source_pattern": "r2-n10-20261116/0001-throughput-r1/*-load-stop.json:final.json",
+      "statistics": {
+        "reorganizations": {
+          "median": 1.0,
+          "min": 0,
+          "max": 8,
+          "sum": 13
+        },
+        "max_reorg_depth": {
+          "median": 1.0,
+          "min": 0,
+          "max": 1,
+          "sum": 6
+        },
+        "fork_reexecute_transactions": {
+          "median": 2944.0,
+          "min": 0,
+          "max": 24064,
+          "sum": 38784
+        },
+        "branch_append_transactions": {
+          "median": 19072.0,
+          "min": 18944,
+          "max": 19712,
+          "sum": 190848
+        },
+        "replayed_transactions": {
+          "median": 22016.0,
+          "min": 18944,
+          "max": 43776,
+          "sum": 229632
+        },
+        "committed": {
+          "median": 240000.0,
+          "min": 240000,
+          "max": 240000,
+          "sum": 2400000
+        },
+        "local_proposals": {
+          "median": 240.0,
+          "min": 231,
+          "max": 241,
+          "sum": 2393
+        },
+        "block_tasks": {
+          "median": 106.0,
+          "min": 85,
+          "max": 156,
+          "sum": 1096
+        },
+        "block_queue_wait_ms": {
+          "median": 27.437275999999997,
+          "min": 21.549219,
+          "max": 42.905639,
+          "sum": 279.012125
+        },
+        "metadata_tasks": {
+          "median": 2289.0,
+          "min": 2267,
+          "max": 2299,
+          "sum": 22861
+        },
+        "metadata_queue_wait_ms": {
+          "median": 54.072171,
+          "min": 37.507769,
+          "max": 178.387462,
+          "sum": 655.389328
+        },
+        "missing_transactions": {
+          "median": 256.0,
+          "min": 0,
+          "max": 1408,
+          "sum": 3584
+        },
+        "network_bytes": {
+          "median": 118545954.0,
+          "min": 118016558,
+          "max": 125731566,
+          "sum": 1193953675
+        },
+        "network_sent_bytes": {
+          "median": 75856572.5,
+          "min": 75176485,
+          "max": 86888817,
+          "sum": 771681943
+        },
+        "db_write_ms": {
+          "median": 2427.792892,
+          "min": 1879.423076,
+          "max": 2637.719111,
+          "sum": 23913.264629999998
+        },
+        "db_writes": {
+          "median": 241.0,
+          "min": 233,
+          "max": 242,
+          "sum": 2406
+        },
+        "db_batch_bytes": {
+          "median": 91115797.0,
+          "min": 90328616,
+          "max": 96472452,
+          "sum": 913365901
+        },
+        "process_write_bytes": {
+          "median": 135208960.0,
+          "min": 134426624,
+          "max": 140533760,
+          "sum": 1354297344
+        },
+        "process_cpu_seconds": {
+          "median": 19.0878885,
+          "min": 18.626157,
+          "max": 20.482953,
+          "sum": 192.472285
+        },
+        "elapsed_seconds": {
+          "median": 12.0454208215,
+          "min": 12.042488692,
+          "max": 12.047502033,
+          "sum": 120.45174921
+        },
+        "signature_checks": {
+          "median": 240000.0,
+          "min": 240000,
+          "max": 240000,
+          "sum": 2400000
+        },
+        "signature_cache_hits": {
+          "median": 10624.0,
+          "min": 10240,
+          "max": 11392,
+          "sum": 107648
+        },
+        "execution_cache_hits": {
+          "median": 239.0,
+          "min": 224,
+          "max": 241,
+          "sum": 2383
+        },
+        "execution_cache_misses": {
+          "median": 3.0,
+          "min": 0,
+          "max": 25,
+          "sum": 40
+        },
+        "compact_reconstructed": {
+          "median": 99.5,
+          "min": 82,
+          "max": 129,
+          "sum": 1035
+        },
+        "peak_working_set_bytes": {
+          "median": 165425152.0,
+          "min": 160354304,
+          "max": 172761088,
+          "sum": 1652891648
+        },
+        "cold_signature_ms": {
+          "median": 8.714006999999999,
+          "min": 3.893924,
+          "max": 12.013009,
+          "sum": 78.504492
+        },
+        "block_verify_ms": {
+          "median": 130.4181345,
+          "min": 121.733022,
+          "max": 171.582554,
+          "sum": 1344.403542
+        },
+        "verify_worker_ms": {
+          "median": 16175.2318725,
+          "min": 15931.283099,
+          "max": 17126.230118,
+          "sum": 162887.910084
+        },
+        "candidate_execute_ms": {
+          "median": 53.6153335,
+          "min": 49.183501,
+          "max": 63.161667,
+          "sum": 542.533535
+        },
+        "commit_execute_ms": {
+          "median": 0.4668295,
+          "min": 0.0,
+          "max": 4.637494,
+          "sum": 7.045775
+        },
+        "peak_pending": {
+          "median": 3712.0,
+          "min": 3072,
+          "max": 4097,
+          "sum": 36225
+        },
+        "db_ms_per_write": {
+          "median": 10.052994119243166,
+          "min": 7.7662110578512396,
+          "max": 11.320682879828325,
+          "sum": 99.44367549626809
+        },
+        "block_wait_ms_per_task": {
+          "median": 0.25419778567774937,
+          "min": 0.2379909292929293,
+          "max": 0.27503614743589744,
+          "sum": 2.5342383804920194
+        },
+        "metadata_wait_ms_per_task": {
+          "median": 0.023613974108307963,
+          "min": 0.016407597987751533,
+          "max": 0.07776262510897995,
+          "sum": 0.286363282794916
+        },
+        "fork_reexecute_per_committed": {
+          "median": 0.012266666666666667,
+          "min": 0.0,
+          "max": 0.10026666666666667,
+          "sum": 0.1616
+        },
+        "execution_cache_hit_fraction": {
+          "median": 0.987603305785124,
+          "min": 0.8995983935742972,
+          "max": 1.0,
+          "sum": 9.837614922499917
+        }
+      }
+    },
+    {
+      "nodes": 10,
+      "offered_tps": 30000,
+      "source_pattern": "r2-n10-20261116/0002-throughput-r1/*-load-stop.json:final.json",
+      "statistics": {
+        "reorganizations": {
+          "median": 34.5,
+          "min": 2,
+          "max": 52,
+          "sum": 294
+        },
+        "max_reorg_depth": {
+          "median": 3.5,
+          "min": 1,
+          "max": 9,
+          "sum": 44
+        },
+        "fork_reexecute_transactions": {
+          "median": 215040.0,
+          "min": 14976,
+          "max": 354816,
+          "sum": 1964032
+        },
+        "branch_append_transactions": {
+          "median": 83264.0,
+          "min": 43392,
+          "max": 144000,
+          "sum": 881424
+        },
+        "replayed_transactions": {
+          "median": 296688.0,
+          "min": 158976,
+          "max": 405728,
+          "sum": 2845456
+        },
+        "committed": {
+          "median": 359936.0,
+          "min": 359936,
+          "max": 359936,
+          "sum": 3599360
+        },
+        "local_proposals": {
+          "median": 179.5,
+          "min": 147,
+          "max": 231,
+          "sum": 1858
+        },
+        "block_tasks": {
+          "median": 451.5,
+          "min": 330,
+          "max": 542,
+          "sum": 4364
+        },
+        "block_queue_wait_ms": {
+          "median": 2695.391509,
+          "min": 205.360321,
+          "max": 8364.361734,
+          "sum": 32142.424697
+        },
+        "metadata_tasks": {
+          "median": 2072.5,
+          "min": 1937,
+          "max": 2132,
+          "sum": 20647
+        },
+        "metadata_queue_wait_ms": {
+          "median": 23175.714498,
+          "min": 1755.141946,
+          "max": 48381.188546,
+          "sum": 227610.402084
+        },
+        "missing_transactions": {
+          "median": 12312.5,
+          "min": 128,
+          "max": 20563,
+          "sum": 116440
+        },
+        "network_bytes": {
+          "median": 230937379.5,
+          "min": 195875800,
+          "max": 259014333,
+          "sum": 2292651032
+        },
+        "network_sent_bytes": {
+          "median": 158515309.5,
+          "min": 138889684,
+          "max": 222380979,
+          "sum": 1659087206
+        },
+        "db_write_ms": {
+          "median": 3938.763744,
+          "min": 2827.911316,
+          "max": 4680.653056,
+          "sum": 38730.547798
+        },
+        "db_writes": {
+          "median": 203.5,
+          "min": 180,
+          "max": 236,
+          "sum": 2045
+        },
+        "db_batch_bytes": {
+          "median": 170131494.0,
+          "min": 126125788,
+          "max": 205473373,
+          "sum": 1664389434
+        },
+        "process_write_bytes": {
+          "median": 274368512.0,
+          "min": 221519872,
+          "max": 318504960,
+          "sum": 2712797184
+        },
+        "process_cpu_seconds": {
+          "median": 30.5110465,
+          "min": 28.792904,
+          "max": 32.201069,
+          "sum": 304.94133899999997
+        },
+        "elapsed_seconds": {
+          "median": 12.0841474535,
+          "min": 12.036667634,
+          "max": 12.208298223,
+          "sum": 121.00800704400001
+        },
+        "signature_checks": {
+          "median": 359936.0,
+          "min": 359936,
+          "max": 359936,
+          "sum": 3599360
+        },
+        "signature_cache_hits": {
+          "median": 278691.5,
+          "min": 190363,
+          "max": 354420,
+          "sum": 2719578
+        },
+        "execution_cache_hits": {
+          "median": 164.0,
+          "min": 130,
+          "max": 232,
+          "sum": 1734
+        },
+        "execution_cache_misses": {
+          "median": 131.0,
+          "min": 12,
+          "max": 206,
+          "sum": 1174
+        },
+        "compact_reconstructed": {
+          "median": 356.0,
+          "min": 286,
+          "max": 405,
+          "sum": 3448
+        },
+        "peak_working_set_bytes": {
+          "median": 432242688.0,
+          "min": 406495232,
+          "max": 466780160,
+          "sum": 4330364928
+        },
+        "cold_signature_ms": {
+          "median": 177.44320299999998,
+          "min": 139.584734,
+          "max": 192.804003,
+          "sum": 1707.271897
+        },
+        "block_verify_ms": {
+          "median": 840.8335165000001,
+          "min": 584.05552,
+          "max": 1102.322127,
+          "sum": 8169.643436
+        },
+        "verify_worker_ms": {
+          "median": 24750.404295,
+          "min": 24385.044843,
+          "max": 26167.782247,
+          "sum": 251047.164593
+        },
+        "candidate_execute_ms": {
+          "median": 73.60567449999999,
+          "min": 66.620578,
+          "max": 79.571723,
+          "sum": 730.246158
+        },
+        "commit_execute_ms": {
+          "median": 29.536055,
+          "min": 2.68798,
+          "max": 50.180137,
+          "sum": 279.902243
+        },
+        "peak_pending": {
+          "median": 39483.0,
+          "min": 18512,
+          "max": 39947,
+          "sum": 359581
+        },
+        "db_ms_per_write": {
+          "median": 19.44305276666183,
+          "min": 12.386703949152542,
+          "max": 26.003628088888888,
+          "sum": 193.791511129434
+        },
+        "block_wait_ms_per_task": {
+          "median": 6.092941154297229,
+          "min": 0.622304003030303,
+          "max": 16.863632528225807,
+          "sum": 69.22232249796076
+        },
+        "metadata_wait_ms_per_task": {
+          "median": 11.303338148753976,
+          "min": 0.9061135498193081,
+          "max": 22.88608729706717,
+          "sum": 109.09065496909767
+        },
+        "fork_reexecute_per_committed": {
+          "median": 0.5974395448079659,
+          "min": 0.041607396870554765,
+          "max": 0.9857752489331437,
+          "sum": 5.456614509246088
+        },
+        "execution_cache_hit_fraction": {
+          "median": 0.5597440854275982,
+          "min": 0.3869047619047619,
+          "max": 0.9508196721311475,
+          "sum": 6.220463307770636
+        }
+      }
+    },
+    {
+      "nodes": 20,
+      "offered_tps": 20000,
+      "source_pattern": "r2-n20-20261116/0001-throughput-r1/*-load-stop.json:final.json",
+      "statistics": {
+        "reorganizations": {
+          "median": 61.5,
+          "min": 41,
+          "max": 74,
+          "sum": 1215
+        },
+        "max_reorg_depth": {
+          "median": 17.0,
+          "min": 15,
+          "max": 19,
+          "sum": 340
+        },
+        "fork_reexecute_transactions": {
+          "median": 656560.0,
+          "min": 434048,
+          "max": 737456,
+          "sum": 12898784
+        },
+        "branch_append_transactions": {
+          "median": 104288.0,
+          "min": 88368,
+          "max": 163040,
+          "sum": 2225664
+        },
+        "replayed_transactions": {
+          "median": 764664.0,
+          "min": 597088,
+          "max": 835600,
+          "sum": 15124448
+        },
+        "committed": {
+          "median": 240000.0,
+          "min": 240000,
+          "max": 240000,
+          "sum": 4800000
+        },
+        "local_proposals": {
+          "median": 46.5,
+          "min": 36,
+          "max": 137,
+          "sum": 1177
+        },
+        "block_tasks": {
+          "median": 1242.0,
+          "min": 1149,
+          "max": 1277,
+          "sum": 24699
+        },
+        "block_queue_wait_ms": {
+          "median": 170367.593756,
+          "min": 57729.173465,
+          "max": 417637.578999,
+          "sum": 3476824.708282
+        },
+        "metadata_tasks": {
+          "median": 2429.5,
+          "min": 2111,
+          "max": 2481,
+          "sum": 47813
+        },
+        "metadata_queue_wait_ms": {
+          "median": 294982.6599115,
+          "min": 116614.005915,
+          "max": 462211.097078,
+          "sum": 5753736.907191
+        },
+        "missing_transactions": {
+          "median": 150817.0,
+          "min": 36604,
+          "max": 256902,
+          "sum": 2938108
+        },
+        "network_bytes": {
+          "median": 481377452.5,
+          "min": 377025084,
+          "max": 590681396,
+          "sum": 9632022028
+        },
+        "network_sent_bytes": {
+          "median": 428855454.5,
+          "min": 355246415,
+          "max": 645383724,
+          "sum": 8787548551
+        },
+        "db_write_ms": {
+          "median": 6664.262508,
+          "min": 4345.815451,
+          "max": 7799.982317,
+          "sum": 131328.460858
+        },
+        "db_writes": {
+          "median": 98.0,
+          "min": 84,
+          "max": 169,
+          "sum": 2092
+        },
+        "db_batch_bytes": {
+          "median": 288715367.5,
+          "min": 228087821,
+          "max": 313662194,
+          "sum": 5715973006
+        },
+        "process_write_bytes": {
+          "median": 547549184.0,
+          "min": 329428992,
+          "max": 596312064,
+          "sum": 10688286720
+        },
+        "process_cpu_seconds": {
+          "median": 32.13130099999999,
+          "min": 29.52451,
+          "max": 36.004434,
+          "sum": 643.699215
+        },
+        "elapsed_seconds": {
+          "median": 12.820936285,
+          "min": 12.472607375,
+          "max": 14.359808998,
+          "sum": 260.462871782
+        },
+        "signature_checks": {
+          "median": 240000.0,
+          "min": 240000,
+          "max": 240000,
+          "sum": 4800000
+        },
+        "signature_cache_hits": {
+          "median": 1876065.0,
+          "min": 1732490,
+          "max": 2196761,
+          "sum": 37731272
+        },
+        "execution_cache_hits": {
+          "median": 32.5,
+          "min": 20,
+          "max": 112,
+          "sum": 812
+        },
+        "execution_cache_misses": {
+          "median": 456.5,
+          "min": 290,
+          "max": 483,
+          "sum": 8756
+        },
+        "compact_reconstructed": {
+          "median": 976.0,
+          "min": 886,
+          "max": 1001,
+          "sum": 19412
+        },
+        "peak_working_set_bytes": {
+          "median": 721590272.0,
+          "min": 682864640,
+          "max": 834867200,
+          "sum": 14479335424
+        },
+        "cold_signature_ms": {
+          "median": 1871.682098,
+          "min": 1548.289865,
+          "max": 2381.133146,
+          "sum": 37976.696702
+        },
+        "block_verify_ms": {
+          "median": 3903.6780085,
+          "min": 3246.656458,
+          "max": 4838.069921,
+          "sum": 77301.304263
+        },
+        "verify_worker_ms": {
+          "median": 17688.687888499997,
+          "min": 16675.502638,
+          "max": 20839.351,
+          "sum": 355794.503727
+        },
+        "candidate_execute_ms": {
+          "median": 37.6497595,
+          "min": 27.787662,
+          "max": 62.066041,
+          "sum": 812.937316
+        },
+        "commit_execute_ms": {
+          "median": 92.5756645,
+          "min": 61.765132,
+          "max": 105.531742,
+          "sum": 1816.079722
+        },
+        "peak_pending": {
+          "median": 40608.5,
+          "min": 40419,
+          "max": 40921,
+          "sum": 812750
+        },
+        "db_ms_per_write": {
+          "median": 69.32614183106776,
+          "min": 25.71488432544379,
+          "max": 92.85693234523809,
+          "sum": 1317.1096929996868
+        },
+        "block_wait_ms_per_task": {
+          "median": 136.46445796012176,
+          "min": 48.08088601653543,
+          "max": 345.1550239661157,
+          "sum": 2806.0588965097104
+        },
+        "metadata_wait_ms_per_task": {
+          "median": 120.77034367339982,
+          "min": 55.24112075556609,
+          "max": 192.50774555518535,
+          "sum": 2385.4272177016114
+        },
+        "fork_reexecute_per_committed": {
+          "median": 2.735666666666667,
+          "min": 1.8085333333333333,
+          "max": 3.0727333333333333,
+          "sum": 53.744933333333336
+        },
+        "execution_cache_hit_fraction": {
+          "median": 0.06598639455782312,
+          "min": 0.04,
+          "max": 0.2751842751842752,
+          "sum": 1.765433046644795
+        }
+      }
+    },
+    {
+      "nodes": 20,
+      "offered_tps": 30000,
+      "source_pattern": "r2-n20-20261116/0002-throughput-r1/*-load-stop.json:final.json",
+      "statistics": {
+        "reorganizations": {
+          "median": 37.0,
+          "min": 25,
+          "max": 48,
+          "sum": 766
+        },
+        "max_reorg_depth": {
+          "median": 22.5,
+          "min": 9,
+          "max": 36,
+          "sum": 452
+        },
+        "fork_reexecute_transactions": {
+          "median": 619848.0,
+          "min": 409184,
+          "max": 797216,
+          "sum": 12231760
+        },
+        "branch_append_transactions": {
+          "median": 192344.0,
+          "min": 143920,
+          "max": 239968,
+          "sum": 3776560
+        },
+        "replayed_transactions": {
+          "median": 826072.0,
+          "min": 644576,
+          "max": 943856,
+          "sum": 16008320
+        },
+        "committed": {
+          "median": 359936.0,
+          "min": 359936,
+          "max": 359936,
+          "sum": 7198720
+        },
+        "local_proposals": {
+          "median": 49.5,
+          "min": 36,
+          "max": 119,
+          "sum": 1214
+        },
+        "block_tasks": {
+          "median": 1213.5,
+          "min": 1073,
+          "max": 1298,
+          "sum": 24037
+        },
+        "block_queue_wait_ms": {
+          "median": 363231.321655,
+          "min": 95347.636275,
+          "max": 785604.312917,
+          "sum": 7121562.789712
+        },
+        "metadata_tasks": {
+          "median": 2088.5,
+          "min": 1856,
+          "max": 2173,
+          "sum": 41432
+        },
+        "metadata_queue_wait_ms": {
+          "median": 262856.95358950004,
+          "min": 126269.018548,
+          "max": 435862.372486,
+          "sum": 5387547.914572
+        },
+        "missing_transactions": {
+          "median": 276108.5,
+          "min": 151793,
+          "max": 460883,
+          "sum": 5638127
+        },
+        "network_bytes": {
+          "median": 719883609.5,
+          "min": 586618789,
+          "max": 834606878,
+          "sum": 14225472489
+        },
+        "network_sent_bytes": {
+          "median": 648912180.0,
+          "min": 481401854,
+          "max": 923619813,
+          "sum": 13120441561
+        },
+        "db_write_ms": {
+          "median": 6840.2501680000005,
+          "min": 4480.047874,
+          "max": 8779.70537,
+          "sum": 130906.725254
+        },
+        "db_writes": {
+          "median": 80.0,
+          "min": 64,
+          "max": 144,
+          "sum": 1855
+        },
+        "db_batch_bytes": {
+          "median": 289120615.0,
+          "min": 224872305,
+          "max": 330220545,
+          "sum": 5594939945
+        },
+        "process_write_bytes": {
+          "median": 597614592.0,
+          "min": 342888448,
+          "max": 673951744,
+          "sum": 11156000768
+        },
+        "process_cpu_seconds": {
+          "median": 42.6678775,
+          "min": 39.516235,
+          "max": 49.948287,
+          "sum": 865.791979
+        },
+        "elapsed_seconds": {
+          "median": 14.705997011000001,
+          "min": 12.037439454,
+          "max": 16.750989541,
+          "sum": 290.368647245
+        },
+        "signature_checks": {
+          "median": 359936.0,
+          "min": 359936,
+          "max": 359936,
+          "sum": 7198720
+        },
+        "signature_cache_hits": {
+          "median": 2636220.5,
+          "min": 1896976,
+          "max": 2904815,
+          "sum": 51638496
+        },
+        "execution_cache_hits": {
+          "median": 41.0,
+          "min": 27,
+          "max": 104,
+          "sum": 1021
+        },
+        "execution_cache_misses": {
+          "median": 325.5,
+          "min": 219,
+          "max": 389,
+          "sum": 6214
+        },
+        "compact_reconstructed": {
+          "median": 896.5,
+          "min": 740,
+          "max": 955,
+          "sum": 17568
+        },
+        "peak_working_set_bytes": {
+          "median": 873928704.0,
+          "min": 817594368,
+          "max": 959700992,
+          "sum": 17673457664
+        },
+        "cold_signature_ms": {
+          "median": 3502.3680555,
+          "min": 2746.846518,
+          "max": 4389.288432,
+          "sum": 68576.046217
+        },
+        "block_verify_ms": {
+          "median": 6404.0641985,
+          "min": 5096.134506,
+          "max": 7873.615451,
+          "sum": 127505.644853
+        },
+        "verify_worker_ms": {
+          "median": 33900.785032,
+          "min": 29660.810424,
+          "max": 58586.457766,
+          "sum": 710072.503365
+        },
+        "candidate_execute_ms": {
+          "median": 61.9071845,
+          "min": 30.809071,
+          "max": 114.84969,
+          "sum": 1256.439418
+        },
+        "commit_execute_ms": {
+          "median": 92.24480700000001,
+          "min": 62.432012,
+          "max": 123.052948,
+          "sum": 1817.913327
+        },
+        "peak_pending": {
+          "median": 41390.0,
+          "min": 40826,
+          "max": 43860,
+          "sum": 831948
+        },
+        "db_ms_per_write": {
+          "median": 86.29291894515669,
+          "min": 33.684570481203004,
+          "max": 120.34978208955225,
+          "sum": 1534.116540751768
+        },
+        "block_wait_ms_per_task": {
+          "median": 291.87377683580246,
+          "min": 84.30383401856764,
+          "max": 637.1486722765612,
+          "sum": 5937.031517856965
+        },
+        "metadata_wait_ms_per_task": {
+          "median": 122.43717743728041,
+          "min": 67.44520434349593,
+          "max": 215.66668603958436,
+          "sum": 2592.270222244486
+        },
+        "fork_reexecute_per_committed": {
+          "median": 1.7221061522048364,
+          "min": 1.1368243243243243,
+          "max": 2.2148826458036983,
+          "sum": 33.98315256045519
+        },
+        "execution_cache_hit_fraction": {
+          "median": 0.10914161467196068,
+          "min": 0.06490384615384616,
+          "max": 0.2980769230769231,
+          "sum": 2.894311367484524
+        }
+      }
+    }
+  ]
+}
