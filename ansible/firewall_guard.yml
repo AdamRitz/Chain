@@ -1,0 +1,58 @@
+---
+- name: Lease the isolated benchmark port on the private subnet
+  hosts: chain
+  gather_facts: false
+  become: true
+  tasks:
+    - name: Check firewall guard arguments
+      ansible.builtin.assert:
+        that:
+          - chain_firewall_guard_action in ['allow', 'restore', 'status']
+          - chain_run_group is match('^[A-Za-z0-9_-]{1,60}$')
+          - chain_run_owner is match('^[0-9a-f]{32}$')
+          - chain_firewall_guard_results_dir is match('^/.+')
+    - name: Create controller evidence directory
+      ansible.builtin.file:
+        path: "{{ chain_firewall_guard_results_dir }}"
+        state: directory
+        mode: '0700'
+      delegate_to: localhost
+      become: false
+      run_once: true
+    - name: Create tools directory
+      ansible.builtin.file:
+        path: "{{ chain_tools_root }}"
+        state: directory
+        mode: '0700'
+    - name: Install firewall guard
+      ansible.builtin.copy:
+        src: scripts/firewall_guard.py
+        dest: "{{ chain_tools_root }}/firewall_guard.py"
+        mode: '0700'
+    - name: Run guarded firewall operation
+      ansible.builtin.command:
+        argv:
+          - /usr/bin/python3
+          - "{{ chain_tools_root }}/firewall_guard.py"
+          - "{{ chain_firewall_guard_action }}"
+          - --run
+          - "{{ chain_run_group }}"
+          - --owner
+          - "{{ chain_run_owner }}"
+      register: chain_firewall_guard_result
+      changed_when: >-
+        chain_firewall_guard_result.rc == 0 and
+        ((chain_firewall_guard_result.stdout | from_json).result.changed | default(false) | bool)
+      failed_when: false
+    - name: Preserve firewall ownership and restoration evidence
+      ansible.builtin.copy:
+        content: "{{ chain_firewall_guard_result.stdout }}"
+        dest: "{{ chain_firewall_guard_results_dir }}/{{ chain_node_id }}.json"
+        mode: '0600'
+      delegate_to: localhost
+      become: false
+    - name: Require successful guarded firewall operation
+      ansible.builtin.assert:
+        that:
+          - chain_firewall_guard_result.rc == 0
+          - (chain_firewall_guard_result.stdout | from_json).ok | bool

@@ -1,0 +1,2272 @@
+{
+  "schema": 1,
+  "source_commit": "5171bd193aba0746422f0ceb159791cb03e7661c",
+  "binary_sha256": "aac8c4afc957a1e964a8e8db47ddeb3af0425f39a8c446f83b90e7085b09cbeb",
+  "expected_cases": 12,
+  "recorded_cases": 12,
+  "expected_nodes": 20,
+  "predeclared_steps": [
+    0,
+    500,
+    1000,
+    2000
+  ],
+  "predeclared_rates": [
+    20000,
+    30000
+  ],
+  "reported_comparison_passed": false,
+  "reported_latency_one_second_target_passed": false,
+  "qualified_throughput_cases": 7,
+  "same_binary_and_actual_step_proven_all_cases": true,
+  "database_cleanup": {
+    "expected": 240,
+    "records": 240,
+    "removed": 240,
+    "paths_verified": 240,
+    "all_cases_proved": true
+  },
+  "recovery": {
+    "completed": true,
+    "restored": true,
+    "cleanup": true,
+    "permanent_peers_restored": true,
+    "permanent_chain_unchanged": true,
+    "benchmark_exit": 2,
+    "restore_exit": 0,
+    "cleanup_exit": 0,
+    "finished": 1794884307.712141,
+    "failure": {
+      "present": false,
+      "categories": [],
+      "sha256": null
+    },
+    "pause_service_evidence": {
+      "records": 20,
+      "successful": 20,
+      "restored_identity_matches": null,
+      "complete": true
+    },
+    "restore_service_evidence": {
+      "records": 20,
+      "successful": 20,
+      "restored_identity_matches": 20,
+      "complete": true
+    },
+    "permanent_snapshots": {
+      "before_nodes": 20,
+      "after_nodes": 20,
+      "same_node_set": true,
+      "chain_and_state_unchanged": true,
+      "all_peers_restored": true
+    },
+    "outer_cleanup": {
+      "host_records": 20,
+      "successful_host_records": 20,
+      "case_checks": 240,
+      "removed_during_outer_cleanup": 0,
+      "already_absent_responses": 240,
+      "not_started": 0,
+      "reported_errors": 0,
+      "complete": true
+    }
+  },
+  "cases": [
+    {
+      "ordinal": 1,
+      "kind": "throughput",
+      "offered_tps": 20000,
+      "block_tx_step": 0,
+      "status": "complete",
+      "recorded": true,
+      "reported_success": true,
+      "tps_valid_reported": true,
+      "formal_tps_eligible": true,
+      "formal_tps": 17830.913261920265,
+      "actual_send_tps": 19993.6,
+      "load_success": true,
+      "sent_unique_completed_all_ingress": 239872,
+      "sent_unique_attempted_upper_bound": 240000,
+      "sent_wire_copies_completed": 4797824,
+      "partial_batch_present": true,
+      "measurement": {
+        "reported_passed": true,
+        "failure": {
+          "present": false,
+          "categories": [],
+          "sha256": null
+        },
+        "measurement_seconds": 9.999712150514824,
+        "transaction_delta": 178304,
+        "height_delta": 167,
+        "mean_common_block_interval_ms": 59.87851587134625,
+        "tps_bounds": [
+          17827.274167472857,
+          17834.55384237301
+        ],
+        "endpoint_spans": [
+          0.002336618024855852,
+          0.0017458790098316967
+        ],
+        "block_interval_bounds_ms": [
+          59.86629282633222,
+          59.89073891636029
+        ],
+        "endpoint_intervals": [
+          [
+            2.0003323139972053,
+            2.002668932022061
+          ],
+          [
+            12.000339834019542,
+            12.002085713029373
+          ]
+        ],
+        "independently_consistent": true
+      },
+      "state_audit": {
+        "reported_passed": true,
+        "independently_consistent": true,
+        "node_count": 20,
+        "accounts_checked_min": 1024,
+        "local_account_audits_passed": 20,
+        "head_variants": 1,
+        "account_state_hash_variants": 1,
+        "reported_heads_equal": true,
+        "reported_states_equal": true,
+        "confirmed_transactions": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 240000.0,
+          "min": 240000,
+          "max": 240000,
+          "sum": 4800000
+        },
+        "heights": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 234.0,
+          "min": 234,
+          "max": 234,
+          "sum": 4680
+        }
+      },
+      "drain": {
+        "reported_drained": true,
+        "reported_within_five_second_budget": true,
+        "independently_observed_within_budget": true,
+        "final_state_matches_accepted": true,
+        "observation_nodes": 20,
+        "last_observation_end_seconds": 14.001943630981259
+      },
+      "actual_start_proof": {
+        "expected_nodes": 20,
+        "actual_step_matches_nodes": 20,
+        "binary_matches_nodes": 20,
+        "argv_matches_nodes": 20,
+        "machine_records": 20,
+        "actual_numeric_argv_values": {
+          "block-ms": [
+            50
+          ],
+          "block-tx-step": [
+            0
+          ],
+          "candidate-ms": [
+            12
+          ],
+          "clock-drift-ppm": [
+            0
+          ],
+          "clock-offset-ms": [
+            0
+          ],
+          "clock-sync": [
+            1
+          ],
+          "experiment-index": [
+            1
+          ],
+          "io-threads": [
+            4
+          ],
+          "max-block-txs": [
+            6000
+          ],
+          "max-connections": [
+            128
+          ],
+          "max-peers": [
+            64
+          ],
+          "port": [
+            18089
+          ],
+          "produce": [
+            1
+          ],
+          "relay-transactions": [
+            0
+          ],
+          "round-ms": [
+            50
+          ],
+          "run-seconds": [
+            300
+          ],
+          "sync": [
+            1
+          ],
+          "sync-gain": [
+            0.25
+          ],
+          "sync-period-ms": [
+            100
+          ],
+          "verify-threads": [
+            8
+          ]
+        },
+        "proven": true
+      },
+      "database_cleanup": {
+        "expected_databases": 20,
+        "records": 20,
+        "removed": 20,
+        "paths_verified": 20,
+        "proved": true
+      },
+      "cleanup_error_count": 0,
+      "failure": {
+        "present": false,
+        "categories": [],
+        "sha256": null
+      },
+      "validation_errors": [],
+      "same_rate_baseline_formal_tps": 17830.913261920265,
+      "improvement_vs_step0_percent": 0.0
+    },
+    {
+      "ordinal": 2,
+      "kind": "throughput",
+      "offered_tps": 20000,
+      "block_tx_step": 500,
+      "status": "complete",
+      "recorded": true,
+      "reported_success": true,
+      "tps_valid_reported": true,
+      "formal_tps_eligible": true,
+      "formal_tps": 16096.648384835778,
+      "actual_send_tps": 19993.6,
+      "load_success": true,
+      "sent_unique_completed_all_ingress": 239872,
+      "sent_unique_attempted_upper_bound": 240000,
+      "sent_wire_copies_completed": 4797696,
+      "partial_batch_present": true,
+      "measurement": {
+        "reported_passed": true,
+        "failure": {
+          "present": false,
+          "categories": [],
+          "sha256": null
+        },
+        "measurement_seconds": 10.002082182007143,
+        "transaction_delta": 161000,
+        "height_delta": 102,
+        "mean_common_block_interval_ms": 98.05962923536416,
+        "tps_bounds": [
+          16091.186170177712,
+          16102.114309092374
+        ],
+        "endpoint_spans": [
+          0.001355511019937694,
+          0.005434979044366628
+        ],
+        "block_interval_bounds_ms": [
+          98.02634251936266,
+          98.09291595136564
+        ],
+        "endpoint_intervals": [
+          [
+            2.000277446000837,
+            2.0016329570207745
+          ],
+          [
+            12.000319893995766,
+            12.005754873040132
+          ]
+        ],
+        "independently_consistent": true
+      },
+      "state_audit": {
+        "reported_passed": true,
+        "independently_consistent": true,
+        "node_count": 20,
+        "accounts_checked_min": 1024,
+        "local_account_audits_passed": 20,
+        "head_variants": 1,
+        "account_state_hash_variants": 1,
+        "reported_heads_equal": true,
+        "reported_states_equal": true,
+        "confirmed_transactions": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 240000.0,
+          "min": 240000,
+          "max": 240000,
+          "sum": 4800000
+        },
+        "heights": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 137.0,
+          "min": 137,
+          "max": 137,
+          "sum": 2740
+        }
+      },
+      "drain": {
+        "reported_drained": true,
+        "reported_within_five_second_budget": true,
+        "independently_observed_within_budget": true,
+        "final_state_matches_accepted": true,
+        "observation_nodes": 20,
+        "last_observation_end_seconds": 14.001759942038916
+      },
+      "actual_start_proof": {
+        "expected_nodes": 20,
+        "actual_step_matches_nodes": 20,
+        "binary_matches_nodes": 20,
+        "argv_matches_nodes": 20,
+        "machine_records": 20,
+        "actual_numeric_argv_values": {
+          "block-ms": [
+            50
+          ],
+          "block-tx-step": [
+            500
+          ],
+          "candidate-ms": [
+            12
+          ],
+          "clock-drift-ppm": [
+            0
+          ],
+          "clock-offset-ms": [
+            0
+          ],
+          "clock-sync": [
+            1
+          ],
+          "experiment-index": [
+            1
+          ],
+          "io-threads": [
+            4
+          ],
+          "max-block-txs": [
+            6000
+          ],
+          "max-connections": [
+            128
+          ],
+          "max-peers": [
+            64
+          ],
+          "port": [
+            18089
+          ],
+          "produce": [
+            1
+          ],
+          "relay-transactions": [
+            0
+          ],
+          "round-ms": [
+            50
+          ],
+          "run-seconds": [
+            300
+          ],
+          "sync": [
+            1
+          ],
+          "sync-gain": [
+            0.25
+          ],
+          "sync-period-ms": [
+            100
+          ],
+          "verify-threads": [
+            8
+          ]
+        },
+        "proven": true
+      },
+      "database_cleanup": {
+        "expected_databases": 20,
+        "records": 20,
+        "removed": 20,
+        "paths_verified": 20,
+        "proved": true
+      },
+      "cleanup_error_count": 0,
+      "failure": {
+        "present": false,
+        "categories": [],
+        "sha256": null
+      },
+      "validation_errors": [],
+      "same_rate_baseline_formal_tps": 17830.913261920265,
+      "improvement_vs_step0_percent": -9.72616966730575
+    },
+    {
+      "ordinal": 3,
+      "kind": "throughput",
+      "offered_tps": 20000,
+      "block_tx_step": 1000,
+      "status": "complete",
+      "recorded": true,
+      "reported_success": true,
+      "tps_valid_reported": true,
+      "formal_tps_eligible": true,
+      "formal_tps": 20198.52905831475,
+      "actual_send_tps": 19993.6,
+      "load_success": true,
+      "sent_unique_completed_all_ingress": 239872,
+      "sent_unique_attempted_upper_bound": 240000,
+      "sent_wire_copies_completed": 4797696,
+      "partial_batch_present": true,
+      "measurement": {
+        "reported_passed": true,
+        "failure": {
+          "present": false,
+          "categories": [],
+          "sha256": null
+        },
+        "measurement_seconds": 10.00072824198287,
+        "transaction_delta": 202000,
+        "height_delta": 168,
+        "mean_common_block_interval_ms": 59.52814429751708,
+        "tps_bounds": [
+          20194.48284514204,
+          20202.576893229612
+        ],
+        "endpoint_spans": [
+          0.0014043599949218333,
+          0.002603177970740944
+        ],
+        "block_interval_bounds_ms": [
+          59.516217101190705,
+          59.540071493843456
+        ],
+        "endpoint_intervals": [
+          [
+            2.000286902009975,
+            2.001691262004897
+          ],
+          [
+            12.000415735004935,
+            12.003018912975676
+          ]
+        ],
+        "independently_consistent": true
+      },
+      "state_audit": {
+        "reported_passed": true,
+        "independently_consistent": true,
+        "node_count": 20,
+        "accounts_checked_min": 1024,
+        "local_account_audits_passed": 20,
+        "head_variants": 1,
+        "account_state_hash_variants": 1,
+        "reported_heads_equal": true,
+        "reported_states_equal": true,
+        "confirmed_transactions": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 240000.0,
+          "min": 240000,
+          "max": 240000,
+          "sum": 4800000
+        },
+        "heights": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 204.0,
+          "min": 204,
+          "max": 204,
+          "sum": 4080
+        }
+      },
+      "drain": {
+        "reported_drained": true,
+        "reported_within_five_second_budget": true,
+        "independently_observed_within_budget": true,
+        "final_state_matches_accepted": true,
+        "observation_nodes": 20,
+        "last_observation_end_seconds": 13.001949377998244
+      },
+      "actual_start_proof": {
+        "expected_nodes": 20,
+        "actual_step_matches_nodes": 20,
+        "binary_matches_nodes": 20,
+        "argv_matches_nodes": 20,
+        "machine_records": 20,
+        "actual_numeric_argv_values": {
+          "block-ms": [
+            50
+          ],
+          "block-tx-step": [
+            1000
+          ],
+          "candidate-ms": [
+            12
+          ],
+          "clock-drift-ppm": [
+            0
+          ],
+          "clock-offset-ms": [
+            0
+          ],
+          "clock-sync": [
+            1
+          ],
+          "experiment-index": [
+            1
+          ],
+          "io-threads": [
+            4
+          ],
+          "max-block-txs": [
+            6000
+          ],
+          "max-connections": [
+            128
+          ],
+          "max-peers": [
+            64
+          ],
+          "port": [
+            18089
+          ],
+          "produce": [
+            1
+          ],
+          "relay-transactions": [
+            0
+          ],
+          "round-ms": [
+            50
+          ],
+          "run-seconds": [
+            300
+          ],
+          "sync": [
+            1
+          ],
+          "sync-gain": [
+            0.25
+          ],
+          "sync-period-ms": [
+            100
+          ],
+          "verify-threads": [
+            8
+          ]
+        },
+        "proven": true
+      },
+      "database_cleanup": {
+        "expected_databases": 20,
+        "records": 20,
+        "removed": 20,
+        "paths_verified": 20,
+        "proved": true
+      },
+      "cleanup_error_count": 0,
+      "failure": {
+        "present": false,
+        "categories": [],
+        "sha256": null
+      },
+      "validation_errors": [],
+      "same_rate_baseline_formal_tps": 17830.913261920265,
+      "improvement_vs_step0_percent": 13.278152170987067
+    },
+    {
+      "ordinal": 4,
+      "kind": "throughput",
+      "offered_tps": 20000,
+      "block_tx_step": 2000,
+      "status": "complete",
+      "recorded": true,
+      "reported_success": true,
+      "tps_valid_reported": true,
+      "formal_tps_eligible": true,
+      "formal_tps": 20082.996599428086,
+      "actual_send_tps": 19993.6,
+      "load_success": true,
+      "sent_unique_completed_all_ingress": 239872,
+      "sent_unique_attempted_upper_bound": 240000,
+      "sent_wire_copies_completed": 4798080,
+      "partial_batch_present": true,
+      "measurement": {
+        "reported_passed": true,
+        "failure": {
+          "present": false,
+          "categories": [],
+          "sha256": null
+        },
+        "measurement_seconds": 10.000101279991213,
+        "transaction_delta": 200832,
+        "height_delta": 186,
+        "mean_common_block_interval_ms": 53.763985376296844,
+        "tps_bounds": [
+          20078.536818047516,
+          20087.45836243401
+        ],
+        "endpoint_spans": [
+          0.002121049037668854,
+          0.00232133298413828
+        ],
+        "block_interval_bounds_ms": [
+          53.75204348914145,
+          53.77592726345224
+        ],
+        "endpoint_intervals": [
+          [
+            2.0003864119644277,
+            2.0025074610020965
+          ],
+          [
+            12.000387549982406,
+            12.002708882966544
+          ]
+        ],
+        "independently_consistent": true
+      },
+      "state_audit": {
+        "reported_passed": true,
+        "independently_consistent": true,
+        "node_count": 20,
+        "accounts_checked_min": 1024,
+        "local_account_audits_passed": 20,
+        "head_variants": 1,
+        "account_state_hash_variants": 1,
+        "reported_heads_equal": true,
+        "reported_states_equal": true,
+        "confirmed_transactions": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 240000.0,
+          "min": 240000,
+          "max": 240000,
+          "sum": 4800000
+        },
+        "heights": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 208.0,
+          "min": 208,
+          "max": 208,
+          "sum": 4160
+        }
+      },
+      "drain": {
+        "reported_drained": true,
+        "reported_within_five_second_budget": true,
+        "independently_observed_within_budget": true,
+        "final_state_matches_accepted": true,
+        "observation_nodes": 20,
+        "last_observation_end_seconds": 13.00192002300173
+      },
+      "actual_start_proof": {
+        "expected_nodes": 20,
+        "actual_step_matches_nodes": 20,
+        "binary_matches_nodes": 20,
+        "argv_matches_nodes": 20,
+        "machine_records": 20,
+        "actual_numeric_argv_values": {
+          "block-ms": [
+            50
+          ],
+          "block-tx-step": [
+            2000
+          ],
+          "candidate-ms": [
+            12
+          ],
+          "clock-drift-ppm": [
+            0
+          ],
+          "clock-offset-ms": [
+            0
+          ],
+          "clock-sync": [
+            1
+          ],
+          "experiment-index": [
+            1
+          ],
+          "io-threads": [
+            4
+          ],
+          "max-block-txs": [
+            6000
+          ],
+          "max-connections": [
+            128
+          ],
+          "max-peers": [
+            64
+          ],
+          "port": [
+            18089
+          ],
+          "produce": [
+            1
+          ],
+          "relay-transactions": [
+            0
+          ],
+          "round-ms": [
+            50
+          ],
+          "run-seconds": [
+            300
+          ],
+          "sync": [
+            1
+          ],
+          "sync-gain": [
+            0.25
+          ],
+          "sync-period-ms": [
+            100
+          ],
+          "verify-threads": [
+            8
+          ]
+        },
+        "proven": true
+      },
+      "database_cleanup": {
+        "expected_databases": 20,
+        "records": 20,
+        "removed": 20,
+        "paths_verified": 20,
+        "proved": true
+      },
+      "cleanup_error_count": 0,
+      "failure": {
+        "present": false,
+        "categories": [],
+        "sha256": null
+      },
+      "validation_errors": [],
+      "same_rate_baseline_formal_tps": 17830.913261920265,
+      "improvement_vs_step0_percent": 12.630218679361626
+    },
+    {
+      "ordinal": 5,
+      "kind": "throughput",
+      "offered_tps": 30000,
+      "block_tx_step": 0,
+      "status": "complete",
+      "recorded": true,
+      "reported_success": false,
+      "tps_valid_reported": false,
+      "formal_tps_eligible": false,
+      "formal_tps": null,
+      "actual_send_tps": 30003.2,
+      "load_success": true,
+      "sent_unique_completed_all_ingress": 359936,
+      "sent_unique_attempted_upper_bound": 360000,
+      "sent_wire_copies_completed": 7198912,
+      "partial_batch_present": true,
+      "measurement": {
+        "reported_passed": false,
+        "failure": {
+          "present": true,
+          "categories": [
+            "state_audit_failed"
+          ],
+          "sha256": "529e5baca127929adf7a1541f36820492ad5be617e50c87487701faa741de248"
+        },
+        "measurement_seconds": null,
+        "transaction_delta": 114688,
+        "height_delta": 66,
+        "mean_common_block_interval_ms": null,
+        "tps_bounds": null,
+        "endpoint_spans": [
+          0.002820010995492339,
+          0.003046169993467629
+        ],
+        "block_interval_bounds_ms": null,
+        "endpoint_intervals": [
+          [
+            2.000283756002318,
+            2.0031037669978105
+          ],
+          [
+            12.000378647993784,
+            12.003424817987252
+          ]
+        ],
+        "independently_consistent": false
+      },
+      "state_audit": {
+        "reported_passed": false,
+        "independently_consistent": false,
+        "node_count": 20,
+        "accounts_checked_min": 1024,
+        "local_account_audits_passed": 20,
+        "head_variants": 6,
+        "account_state_hash_variants": 2,
+        "reported_heads_equal": false,
+        "reported_states_equal": false,
+        "confirmed_transactions": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 359936.0,
+          "min": 359936,
+          "max": 360000,
+          "sum": 7199168
+        },
+        "heights": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 150.0,
+          "min": 137,
+          "max": 165,
+          "sum": 3023
+        }
+      },
+      "drain": {
+        "reported_drained": false,
+        "reported_within_five_second_budget": false,
+        "independently_observed_within_budget": false,
+        "final_state_matches_accepted": false,
+        "observation_nodes": 20,
+        "last_observation_end_seconds": 16.002801858005114
+      },
+      "actual_start_proof": {
+        "expected_nodes": 20,
+        "actual_step_matches_nodes": 20,
+        "binary_matches_nodes": 20,
+        "argv_matches_nodes": 20,
+        "machine_records": 20,
+        "actual_numeric_argv_values": {
+          "block-ms": [
+            50
+          ],
+          "block-tx-step": [
+            0
+          ],
+          "candidate-ms": [
+            12
+          ],
+          "clock-drift-ppm": [
+            0
+          ],
+          "clock-offset-ms": [
+            0
+          ],
+          "clock-sync": [
+            1
+          ],
+          "experiment-index": [
+            1
+          ],
+          "io-threads": [
+            4
+          ],
+          "max-block-txs": [
+            6000
+          ],
+          "max-connections": [
+            128
+          ],
+          "max-peers": [
+            64
+          ],
+          "port": [
+            18089
+          ],
+          "produce": [
+            1
+          ],
+          "relay-transactions": [
+            0
+          ],
+          "round-ms": [
+            50
+          ],
+          "run-seconds": [
+            300
+          ],
+          "sync": [
+            1
+          ],
+          "sync-gain": [
+            0.25
+          ],
+          "sync-period-ms": [
+            100
+          ],
+          "verify-threads": [
+            8
+          ]
+        },
+        "proven": true
+      },
+      "database_cleanup": {
+        "expected_databases": 20,
+        "records": 20,
+        "removed": 20,
+        "paths_verified": 20,
+        "proved": true
+      },
+      "cleanup_error_count": 0,
+      "failure": {
+        "present": false,
+        "categories": [],
+        "sha256": null
+      },
+      "validation_errors": [],
+      "same_rate_baseline_formal_tps": null,
+      "improvement_vs_step0_percent": null
+    },
+    {
+      "ordinal": 6,
+      "kind": "throughput",
+      "offered_tps": 30000,
+      "block_tx_step": 500,
+      "status": "complete",
+      "recorded": true,
+      "reported_success": true,
+      "tps_valid_reported": true,
+      "formal_tps_eligible": true,
+      "formal_tps": 23048.683763430778,
+      "actual_send_tps": 30003.2,
+      "load_success": true,
+      "sent_unique_completed_all_ingress": 359936,
+      "sent_unique_attempted_upper_bound": 360000,
+      "sent_wire_copies_completed": 7198720,
+      "partial_batch_present": true,
+      "measurement": {
+        "reported_passed": true,
+        "failure": {
+          "present": false,
+          "categories": [],
+          "sha256": null
+        },
+        "measurement_seconds": 10.000571067997953,
+        "transaction_delta": 230500,
+        "height_delta": 73,
+        "mean_common_block_interval_ms": 136.99412421915005,
+        "tps_bounds": [
+          23039.609698210254,
+          23057.76497904163
+        ],
+        "endpoint_spans": [
+          0.003419714979827404,
+          0.004457661008927971
+        ],
+        "block_interval_bounds_ms": [
+          136.94016958909006,
+          137.04807884921001
+        ],
+        "endpoint_intervals": [
+          [
+            2.0002760959905572,
+            2.0036958109703846
+          ],
+          [
+            12.00032819097396,
+            12.004785851982888
+          ]
+        ],
+        "independently_consistent": true
+      },
+      "state_audit": {
+        "reported_passed": true,
+        "independently_consistent": true,
+        "node_count": 20,
+        "accounts_checked_min": 1024,
+        "local_account_audits_passed": 20,
+        "head_variants": 1,
+        "account_state_hash_variants": 1,
+        "reported_heads_equal": true,
+        "reported_states_equal": true,
+        "confirmed_transactions": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 359936.0,
+          "min": 359936,
+          "max": 359936,
+          "sum": 7198720
+        },
+        "heights": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 113.0,
+          "min": 113,
+          "max": 113,
+          "sum": 2260
+        }
+      },
+      "drain": {
+        "reported_drained": true,
+        "reported_within_five_second_budget": true,
+        "independently_observed_within_budget": true,
+        "final_state_matches_accepted": true,
+        "observation_nodes": 20,
+        "last_observation_end_seconds": 14.001795366988517
+      },
+      "actual_start_proof": {
+        "expected_nodes": 20,
+        "actual_step_matches_nodes": 20,
+        "binary_matches_nodes": 20,
+        "argv_matches_nodes": 20,
+        "machine_records": 20,
+        "actual_numeric_argv_values": {
+          "block-ms": [
+            50
+          ],
+          "block-tx-step": [
+            500
+          ],
+          "candidate-ms": [
+            12
+          ],
+          "clock-drift-ppm": [
+            0
+          ],
+          "clock-offset-ms": [
+            0
+          ],
+          "clock-sync": [
+            1
+          ],
+          "experiment-index": [
+            1
+          ],
+          "io-threads": [
+            4
+          ],
+          "max-block-txs": [
+            6000
+          ],
+          "max-connections": [
+            128
+          ],
+          "max-peers": [
+            64
+          ],
+          "port": [
+            18089
+          ],
+          "produce": [
+            1
+          ],
+          "relay-transactions": [
+            0
+          ],
+          "round-ms": [
+            50
+          ],
+          "run-seconds": [
+            300
+          ],
+          "sync": [
+            1
+          ],
+          "sync-gain": [
+            0.25
+          ],
+          "sync-period-ms": [
+            100
+          ],
+          "verify-threads": [
+            8
+          ]
+        },
+        "proven": true
+      },
+      "database_cleanup": {
+        "expected_databases": 20,
+        "records": 20,
+        "removed": 20,
+        "paths_verified": 20,
+        "proved": true
+      },
+      "cleanup_error_count": 0,
+      "failure": {
+        "present": false,
+        "categories": [],
+        "sha256": null
+      },
+      "validation_errors": [],
+      "same_rate_baseline_formal_tps": null,
+      "improvement_vs_step0_percent": null
+    },
+    {
+      "ordinal": 7,
+      "kind": "throughput",
+      "offered_tps": 30000,
+      "block_tx_step": 1000,
+      "status": "complete",
+      "recorded": true,
+      "reported_success": true,
+      "tps_valid_reported": true,
+      "formal_tps_eligible": true,
+      "formal_tps": 23401.194532673548,
+      "actual_send_tps": 30003.2,
+      "load_success": true,
+      "sent_unique_completed_all_ingress": 359936,
+      "sent_unique_attempted_upper_bound": 359936,
+      "sent_wire_copies_completed": 7198720,
+      "partial_batch_present": false,
+      "measurement": {
+        "reported_passed": true,
+        "failure": {
+          "present": false,
+          "categories": [],
+          "sha256": null
+        },
+        "measurement_seconds": 9.999489542009542,
+        "transaction_delta": 234000,
+        "height_delta": 65,
+        "mean_common_block_interval_ms": 153.83830064630064,
+        "tps_bounds": [
+          23391.332928721262,
+          23411.0644552839
+        ],
+        "endpoint_spans": [
+          0.004752649983856827,
+          0.003678763983771205
+        ],
+        "block_interval_bounds_ms": [
+          153.77344361578042,
+          153.90315767682085
+        ],
+        "endpoint_intervals": [
+          [
+            2.0003023050376214,
+            2.0050549550214782
+          ],
+          [
+            12.000328790047206,
+            12.004007554030977
+          ]
+        ],
+        "independently_consistent": true
+      },
+      "state_audit": {
+        "reported_passed": true,
+        "independently_consistent": true,
+        "node_count": 20,
+        "accounts_checked_min": 1024,
+        "local_account_audits_passed": 20,
+        "head_variants": 1,
+        "account_state_hash_variants": 1,
+        "reported_heads_equal": true,
+        "reported_states_equal": true,
+        "confirmed_transactions": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 359936.0,
+          "min": 359936,
+          "max": 359936,
+          "sum": 7198720
+        },
+        "heights": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 103.0,
+          "min": 103,
+          "max": 103,
+          "sum": 2060
+        }
+      },
+      "drain": {
+        "reported_drained": true,
+        "reported_within_five_second_budget": true,
+        "independently_observed_within_budget": true,
+        "final_state_matches_accepted": true,
+        "observation_nodes": 20,
+        "last_observation_end_seconds": 14.001894898014143
+      },
+      "actual_start_proof": {
+        "expected_nodes": 20,
+        "actual_step_matches_nodes": 20,
+        "binary_matches_nodes": 20,
+        "argv_matches_nodes": 20,
+        "machine_records": 20,
+        "actual_numeric_argv_values": {
+          "block-ms": [
+            50
+          ],
+          "block-tx-step": [
+            1000
+          ],
+          "candidate-ms": [
+            12
+          ],
+          "clock-drift-ppm": [
+            0
+          ],
+          "clock-offset-ms": [
+            0
+          ],
+          "clock-sync": [
+            1
+          ],
+          "experiment-index": [
+            1
+          ],
+          "io-threads": [
+            4
+          ],
+          "max-block-txs": [
+            6000
+          ],
+          "max-connections": [
+            128
+          ],
+          "max-peers": [
+            64
+          ],
+          "port": [
+            18089
+          ],
+          "produce": [
+            1
+          ],
+          "relay-transactions": [
+            0
+          ],
+          "round-ms": [
+            50
+          ],
+          "run-seconds": [
+            300
+          ],
+          "sync": [
+            1
+          ],
+          "sync-gain": [
+            0.25
+          ],
+          "sync-period-ms": [
+            100
+          ],
+          "verify-threads": [
+            8
+          ]
+        },
+        "proven": true
+      },
+      "database_cleanup": {
+        "expected_databases": 20,
+        "records": 20,
+        "removed": 20,
+        "paths_verified": 20,
+        "proved": true
+      },
+      "cleanup_error_count": 0,
+      "failure": {
+        "present": false,
+        "categories": [],
+        "sha256": null
+      },
+      "validation_errors": [],
+      "same_rate_baseline_formal_tps": null,
+      "improvement_vs_step0_percent": null
+    },
+    {
+      "ordinal": 8,
+      "kind": "throughput",
+      "offered_tps": 30000,
+      "block_tx_step": 2000,
+      "status": "complete",
+      "recorded": true,
+      "reported_success": true,
+      "tps_valid_reported": true,
+      "formal_tps_eligible": true,
+      "formal_tps": 23596.024609087763,
+      "actual_send_tps": 30003.2,
+      "load_success": true,
+      "sent_unique_completed_all_ingress": 359936,
+      "sent_unique_attempted_upper_bound": 360000,
+      "sent_wire_copies_completed": 7198784,
+      "partial_batch_present": true,
+      "measurement": {
+        "reported_passed": true,
+        "failure": {
+          "present": false,
+          "categories": [],
+          "sha256": null
+        },
+        "measurement_seconds": 10.001684771472355,
+        "transaction_delta": 236000,
+        "height_delta": 89,
+        "mean_common_block_interval_ms": 112.37848057834107,
+        "tps_bounds": [
+          23586.882162688584,
+          23605.174145592024
+        ],
+        "endpoint_spans": [
+          0.0033825249993242323,
+          0.004370925948023796
+        ],
+        "block_interval_bounds_ms": [
+          112.33492186515372,
+          112.42203929152842
+        ],
+        "endpoint_intervals": [
+          [
+            2.000263320049271,
+            2.003645845048595
+          ],
+          [
+            12.001453891047277,
+            12.0058248169953
+          ]
+        ],
+        "independently_consistent": true
+      },
+      "state_audit": {
+        "reported_passed": true,
+        "independently_consistent": true,
+        "node_count": 20,
+        "accounts_checked_min": 1024,
+        "local_account_audits_passed": 20,
+        "head_variants": 1,
+        "account_state_hash_variants": 1,
+        "reported_heads_equal": true,
+        "reported_states_equal": true,
+        "confirmed_transactions": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 360000.0,
+          "min": 360000,
+          "max": 360000,
+          "sum": 7200000
+        },
+        "heights": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 137.0,
+          "min": 137,
+          "max": 137,
+          "sum": 2740
+        }
+      },
+      "drain": {
+        "reported_drained": true,
+        "reported_within_five_second_budget": true,
+        "independently_observed_within_budget": true,
+        "final_state_matches_accepted": true,
+        "observation_nodes": 20,
+        "last_observation_end_seconds": 14.001857532013673
+      },
+      "actual_start_proof": {
+        "expected_nodes": 20,
+        "actual_step_matches_nodes": 20,
+        "binary_matches_nodes": 20,
+        "argv_matches_nodes": 20,
+        "machine_records": 20,
+        "actual_numeric_argv_values": {
+          "block-ms": [
+            50
+          ],
+          "block-tx-step": [
+            2000
+          ],
+          "candidate-ms": [
+            12
+          ],
+          "clock-drift-ppm": [
+            0
+          ],
+          "clock-offset-ms": [
+            0
+          ],
+          "clock-sync": [
+            1
+          ],
+          "experiment-index": [
+            1
+          ],
+          "io-threads": [
+            4
+          ],
+          "max-block-txs": [
+            6000
+          ],
+          "max-connections": [
+            128
+          ],
+          "max-peers": [
+            64
+          ],
+          "port": [
+            18089
+          ],
+          "produce": [
+            1
+          ],
+          "relay-transactions": [
+            0
+          ],
+          "round-ms": [
+            50
+          ],
+          "run-seconds": [
+            300
+          ],
+          "sync": [
+            1
+          ],
+          "sync-gain": [
+            0.25
+          ],
+          "sync-period-ms": [
+            100
+          ],
+          "verify-threads": [
+            8
+          ]
+        },
+        "proven": true
+      },
+      "database_cleanup": {
+        "expected_databases": 20,
+        "records": 20,
+        "removed": 20,
+        "paths_verified": 20,
+        "proved": true
+      },
+      "cleanup_error_count": 0,
+      "failure": {
+        "present": false,
+        "categories": [],
+        "sha256": null
+      },
+      "validation_errors": [],
+      "same_rate_baseline_formal_tps": null,
+      "improvement_vs_step0_percent": null
+    },
+    {
+      "ordinal": 9,
+      "kind": "latency",
+      "offered_tps": 20000,
+      "block_tx_step": 0,
+      "status": "complete",
+      "recorded": true,
+      "reported_success": true,
+      "tps_valid_reported": true,
+      "formal_tps_eligible": true,
+      "formal_tps": 16884.92430700539,
+      "actual_send_tps": 19993.6,
+      "load_success": true,
+      "sent_unique_completed_all_ingress": 239872,
+      "sent_unique_attempted_upper_bound": 240000,
+      "sent_wire_copies_completed": 4797824,
+      "partial_batch_present": true,
+      "measurement": {
+        "reported_passed": true,
+        "failure": {
+          "present": false,
+          "categories": [],
+          "sha256": null
+        },
+        "measurement_seconds": 9.998978789022658,
+        "transaction_delta": 168832,
+        "height_delta": 119,
+        "mean_common_block_interval_ms": 84.02503184052654,
+        "tps_bounds": [
+          16878.94957667371,
+          16890.90326864813
+        ],
+        "endpoint_spans": [
+          0.004217773966956884,
+          0.0028610079898498952
+        ],
+        "block_interval_bounds_ms": [
+          83.99528905919541,
+          84.05477462185766
+        ],
+        "endpoint_intervals": [
+          [
+            2.000662676000502,
+            2.004880449967459
+          ],
+          [
+            12.000319848011713,
+            12.003180856001563
+          ]
+        ],
+        "independently_consistent": true
+      },
+      "state_audit": {
+        "reported_passed": true,
+        "independently_consistent": true,
+        "node_count": 20,
+        "accounts_checked_min": 1024,
+        "local_account_audits_passed": 20,
+        "head_variants": 1,
+        "account_state_hash_variants": 1,
+        "reported_heads_equal": true,
+        "reported_states_equal": true,
+        "confirmed_transactions": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 240000.0,
+          "min": 240000,
+          "max": 240000,
+          "sum": 4800000
+        },
+        "heights": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 186.0,
+          "min": 186,
+          "max": 186,
+          "sum": 3720
+        }
+      },
+      "drain": {
+        "reported_drained": true,
+        "reported_within_five_second_budget": true,
+        "independently_observed_within_budget": true,
+        "final_state_matches_accepted": true,
+        "observation_nodes": 20,
+        "last_observation_end_seconds": 14.001791060960386
+      },
+      "actual_start_proof": {
+        "expected_nodes": 20,
+        "actual_step_matches_nodes": 20,
+        "binary_matches_nodes": 20,
+        "argv_matches_nodes": 20,
+        "machine_records": 20,
+        "actual_numeric_argv_values": {
+          "block-ms": [
+            50
+          ],
+          "block-tx-step": [
+            0
+          ],
+          "candidate-ms": [
+            12
+          ],
+          "clock-drift-ppm": [
+            0
+          ],
+          "clock-offset-ms": [
+            0
+          ],
+          "clock-sync": [
+            1
+          ],
+          "experiment-index": [
+            1
+          ],
+          "io-threads": [
+            4
+          ],
+          "max-block-txs": [
+            6000
+          ],
+          "max-connections": [
+            128
+          ],
+          "max-peers": [
+            64
+          ],
+          "port": [
+            18089
+          ],
+          "produce": [
+            1
+          ],
+          "relay-transactions": [
+            0
+          ],
+          "round-ms": [
+            50
+          ],
+          "run-seconds": [
+            300
+          ],
+          "sync": [
+            1
+          ],
+          "sync-gain": [
+            0.25
+          ],
+          "sync-period-ms": [
+            100
+          ],
+          "verify-threads": [
+            8
+          ]
+        },
+        "proven": true
+      },
+      "database_cleanup": {
+        "expected_databases": 20,
+        "records": 20,
+        "removed": 20,
+        "paths_verified": 20,
+        "proved": true
+      },
+      "cleanup_error_count": 0,
+      "failure": {
+        "present": false,
+        "categories": [],
+        "sha256": null
+      },
+      "latency": {
+        "available": true,
+        "expected_samples": 100,
+        "observed_and_persisted_samples": 100,
+        "missing_samples": 0,
+        "missing_fraction": 0.0,
+        "p50_upper_ms": 2162.1016019489616,
+        "p95_upper_ms": 4816.487291012891,
+        "p99_upper_ms": 5216.487291036174,
+        "unbounded_samples_in_percentile_population": 0,
+        "observed_above_one_second_samples": 98,
+        "within_one_second_fraction": 0.02,
+        "passed": true,
+        "all_samples_within_one_second": false,
+        "independently_consistent": true,
+        "observed_max_upper_ms": 5316.487291012891,
+        "batch_start_observed_max_upper_ms": 5314.871141046751
+      },
+      "validation_errors": [],
+      "same_rate_baseline_formal_tps": null,
+      "improvement_vs_step0_percent": null
+    },
+    {
+      "ordinal": 10,
+      "kind": "latency",
+      "offered_tps": 20000,
+      "block_tx_step": 500,
+      "status": "complete",
+      "recorded": true,
+      "reported_success": true,
+      "tps_valid_reported": true,
+      "formal_tps_eligible": true,
+      "formal_tps": 16796.369001249364,
+      "actual_send_tps": 19993.6,
+      "load_success": true,
+      "sent_unique_completed_all_ingress": 239872,
+      "sent_unique_attempted_upper_bound": 240000,
+      "sent_wire_copies_completed": 4797568,
+      "partial_batch_present": true,
+      "measurement": {
+        "reported_passed": true,
+        "failure": {
+          "present": false,
+          "categories": [],
+          "sha256": null
+        },
+        "measurement_seconds": 10.002161776006687,
+        "transaction_delta": 168000,
+        "height_delta": 105,
+        "mean_common_block_interval_ms": 95.25868358101607,
+        "tps_bounds": [
+          16790.03698514361,
+          16802.705795135473
+        ],
+        "endpoint_spans": [
+          0.0012815750087611377,
+          0.006262642971705645
+        ],
+        "block_interval_bounds_ms": [
+          95.22275873349004,
+          95.2946084285421
+        ],
+        "endpoint_intervals": [
+          [
+            2.0006592589779757,
+            2.001940833986737
+          ],
+          [
+            12.00033050100319,
+            12.006593143974897
+          ]
+        ],
+        "independently_consistent": true
+      },
+      "state_audit": {
+        "reported_passed": true,
+        "independently_consistent": true,
+        "node_count": 20,
+        "accounts_checked_min": 1024,
+        "local_account_audits_passed": 20,
+        "head_variants": 1,
+        "account_state_hash_variants": 1,
+        "reported_heads_equal": true,
+        "reported_states_equal": true,
+        "confirmed_transactions": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 240000.0,
+          "min": 240000,
+          "max": 240000,
+          "sum": 4800000
+        },
+        "heights": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 146.0,
+          "min": 146,
+          "max": 146,
+          "sum": 2920
+        }
+      },
+      "drain": {
+        "reported_drained": true,
+        "reported_within_five_second_budget": true,
+        "independently_observed_within_budget": true,
+        "final_state_matches_accepted": true,
+        "observation_nodes": 20,
+        "last_observation_end_seconds": 14.001687999989372
+      },
+      "actual_start_proof": {
+        "expected_nodes": 20,
+        "actual_step_matches_nodes": 20,
+        "binary_matches_nodes": 20,
+        "argv_matches_nodes": 20,
+        "machine_records": 20,
+        "actual_numeric_argv_values": {
+          "block-ms": [
+            50
+          ],
+          "block-tx-step": [
+            500
+          ],
+          "candidate-ms": [
+            12
+          ],
+          "clock-drift-ppm": [
+            0
+          ],
+          "clock-offset-ms": [
+            0
+          ],
+          "clock-sync": [
+            1
+          ],
+          "experiment-index": [
+            1
+          ],
+          "io-threads": [
+            4
+          ],
+          "max-block-txs": [
+            6000
+          ],
+          "max-connections": [
+            128
+          ],
+          "max-peers": [
+            64
+          ],
+          "port": [
+            18089
+          ],
+          "produce": [
+            1
+          ],
+          "relay-transactions": [
+            0
+          ],
+          "round-ms": [
+            50
+          ],
+          "run-seconds": [
+            300
+          ],
+          "sync": [
+            1
+          ],
+          "sync-gain": [
+            0.25
+          ],
+          "sync-period-ms": [
+            100
+          ],
+          "verify-threads": [
+            8
+          ]
+        },
+        "proven": true
+      },
+      "database_cleanup": {
+        "expected_databases": 20,
+        "records": 20,
+        "removed": 20,
+        "paths_verified": 20,
+        "proved": true
+      },
+      "cleanup_error_count": 0,
+      "failure": {
+        "present": false,
+        "categories": [],
+        "sha256": null
+      },
+      "latency": {
+        "available": true,
+        "expected_samples": 100,
+        "observed_and_persisted_samples": 100,
+        "missing_samples": 0,
+        "missing_fraction": 0.0,
+        "p50_upper_ms": 853.1358260079287,
+        "p95_upper_ms": 4131.221651972737,
+        "p99_upper_ms": 4531.22165199602,
+        "unbounded_samples_in_percentile_population": 0,
+        "observed_above_one_second_samples": 46,
+        "within_one_second_fraction": 0.54,
+        "passed": true,
+        "all_samples_within_one_second": false,
+        "independently_consistent": true,
+        "observed_max_upper_ms": 4631.221651972737,
+        "batch_start_observed_max_upper_ms": 4626.386691990774
+      },
+      "validation_errors": [],
+      "same_rate_baseline_formal_tps": null,
+      "improvement_vs_step0_percent": null
+    },
+    {
+      "ordinal": 11,
+      "kind": "latency",
+      "offered_tps": 20000,
+      "block_tx_step": 1000,
+      "status": "complete",
+      "recorded": true,
+      "reported_success": true,
+      "tps_valid_reported": true,
+      "formal_tps_eligible": true,
+      "formal_tps": 16000.673975592903,
+      "actual_send_tps": 19993.6,
+      "load_success": true,
+      "sent_unique_completed_all_ingress": 239872,
+      "sent_unique_attempted_upper_bound": 240000,
+      "sent_wire_copies_completed": 4797568,
+      "partial_batch_present": true,
+      "measurement": {
+        "reported_passed": true,
+        "failure": {
+          "present": false,
+          "categories": [],
+          "sha256": null
+        },
+        "measurement_seconds": 9.99957878299756,
+        "transaction_delta": 160000,
+        "height_delta": 92,
+        "mean_common_block_interval_ms": 108.69107372823434,
+        "tps_bounds": [
+          15998.01411693189,
+          16003.334718866781
+        ],
+        "endpoint_spans": [
+          0.002145521983038634,
+          0.0011795739992521703
+        ],
+        "block_interval_bounds_ms": [
+          108.67300255441755,
+          108.70914490205114
+        ],
+        "endpoint_intervals": [
+          [
+            2.000308616028633,
+            2.0024541380116716
+          ],
+          [
+            12.000370373018086,
+            12.001549947017338
+          ]
+        ],
+        "independently_consistent": true
+      },
+      "state_audit": {
+        "reported_passed": true,
+        "independently_consistent": true,
+        "node_count": 20,
+        "accounts_checked_min": 1024,
+        "local_account_audits_passed": 20,
+        "head_variants": 1,
+        "account_state_hash_variants": 1,
+        "reported_heads_equal": true,
+        "reported_states_equal": true,
+        "confirmed_transactions": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 240000.0,
+          "min": 240000,
+          "max": 240000,
+          "sum": 4800000
+        },
+        "heights": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 145.0,
+          "min": 145,
+          "max": 145,
+          "sum": 2900
+        }
+      },
+      "drain": {
+        "reported_drained": true,
+        "reported_within_five_second_budget": true,
+        "independently_observed_within_budget": true,
+        "final_state_matches_accepted": true,
+        "observation_nodes": 20,
+        "last_observation_end_seconds": 14.001852363988291
+      },
+      "actual_start_proof": {
+        "expected_nodes": 20,
+        "actual_step_matches_nodes": 20,
+        "binary_matches_nodes": 20,
+        "argv_matches_nodes": 20,
+        "machine_records": 20,
+        "actual_numeric_argv_values": {
+          "block-ms": [
+            50
+          ],
+          "block-tx-step": [
+            1000
+          ],
+          "candidate-ms": [
+            12
+          ],
+          "clock-drift-ppm": [
+            0
+          ],
+          "clock-offset-ms": [
+            0
+          ],
+          "clock-sync": [
+            1
+          ],
+          "experiment-index": [
+            1
+          ],
+          "io-threads": [
+            4
+          ],
+          "max-block-txs": [
+            6000
+          ],
+          "max-connections": [
+            128
+          ],
+          "max-peers": [
+            64
+          ],
+          "port": [
+            18089
+          ],
+          "produce": [
+            1
+          ],
+          "relay-transactions": [
+            0
+          ],
+          "round-ms": [
+            50
+          ],
+          "run-seconds": [
+            300
+          ],
+          "sync": [
+            1
+          ],
+          "sync-gain": [
+            0.25
+          ],
+          "sync-period-ms": [
+            100
+          ],
+          "verify-threads": [
+            8
+          ]
+        },
+        "proven": true
+      },
+      "database_cleanup": {
+        "expected_databases": 20,
+        "records": 20,
+        "removed": 20,
+        "paths_verified": 20,
+        "proved": true
+      },
+      "cleanup_error_count": 0,
+      "failure": {
+        "present": false,
+        "categories": [],
+        "sha256": null
+      },
+      "latency": {
+        "available": true,
+        "expected_samples": 100,
+        "observed_and_persisted_samples": 100,
+        "missing_samples": 0,
+        "missing_fraction": 0.0,
+        "p50_upper_ms": 866.8789270450361,
+        "p95_upper_ms": 3343.5577140189707,
+        "p99_upper_ms": 3743.557714042254,
+        "unbounded_samples_in_percentile_population": 0,
+        "observed_above_one_second_samples": 43,
+        "within_one_second_fraction": 0.57,
+        "passed": true,
+        "all_samples_within_one_second": false,
+        "independently_consistent": true,
+        "observed_max_upper_ms": 3843.5577140189707,
+        "batch_start_observed_max_upper_ms": 3840.321251016576
+      },
+      "validation_errors": [],
+      "same_rate_baseline_formal_tps": null,
+      "improvement_vs_step0_percent": null
+    },
+    {
+      "ordinal": 12,
+      "kind": "latency",
+      "offered_tps": 20000,
+      "block_tx_step": 2000,
+      "status": "complete",
+      "recorded": true,
+      "reported_success": true,
+      "tps_valid_reported": true,
+      "formal_tps_eligible": true,
+      "formal_tps": 17904.54443157791,
+      "actual_send_tps": 19993.6,
+      "load_success": true,
+      "sent_unique_completed_all_ingress": 239872,
+      "sent_unique_attempted_upper_bound": 240000,
+      "sent_wire_copies_completed": 4797440,
+      "partial_batch_present": true,
+      "measurement": {
+        "reported_passed": true,
+        "failure": {
+          "present": false,
+          "categories": [],
+          "sha256": null
+        },
+        "measurement_seconds": 9.99969592547859,
+        "transaction_delta": 179040,
+        "height_delta": 111,
+        "mean_common_block_interval_ms": 90.08735067998731,
+        "tps_bounds": [
+          17901.444060495094,
+          17907.645876760205
+        ],
+        "endpoint_spans": [
+          0.001954503997694701,
+          0.0015092130051925778
+        ],
+        "block_interval_bounds_ms": [
+          90.07174835114547,
+          90.10295300882913
+        ],
+        "endpoint_intervals": [
+          [
+            2.000304960005451,
+            2.0022594640031457
+          ],
+          [
+            12.000223530980293,
+            12.001732743985485
+          ]
+        ],
+        "independently_consistent": true
+      },
+      "state_audit": {
+        "reported_passed": true,
+        "independently_consistent": true,
+        "node_count": 20,
+        "accounts_checked_min": 1024,
+        "local_account_audits_passed": 20,
+        "head_variants": 1,
+        "account_state_hash_variants": 1,
+        "reported_heads_equal": true,
+        "reported_states_equal": true,
+        "confirmed_transactions": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 239872.0,
+          "min": 239872,
+          "max": 239872,
+          "sum": 4797440
+        },
+        "heights": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 145.0,
+          "min": 145,
+          "max": 145,
+          "sum": 2900
+        }
+      },
+      "drain": {
+        "reported_drained": true,
+        "reported_within_five_second_budget": true,
+        "independently_observed_within_budget": true,
+        "final_state_matches_accepted": true,
+        "observation_nodes": 20,
+        "last_observation_end_seconds": 14.001835389004555
+      },
+      "actual_start_proof": {
+        "expected_nodes": 20,
+        "actual_step_matches_nodes": 20,
+        "binary_matches_nodes": 20,
+        "argv_matches_nodes": 20,
+        "machine_records": 20,
+        "actual_numeric_argv_values": {
+          "block-ms": [
+            50
+          ],
+          "block-tx-step": [
+            2000
+          ],
+          "candidate-ms": [
+            12
+          ],
+          "clock-drift-ppm": [
+            0
+          ],
+          "clock-offset-ms": [
+            0
+          ],
+          "clock-sync": [
+            1
+          ],
+          "experiment-index": [
+            1
+          ],
+          "io-threads": [
+            4
+          ],
+          "max-block-txs": [
+            6000
+          ],
+          "max-connections": [
+            128
+          ],
+          "max-peers": [
+            64
+          ],
+          "port": [
+            18089
+          ],
+          "produce": [
+            1
+          ],
+          "relay-transactions": [
+            0
+          ],
+          "round-ms": [
+            50
+          ],
+          "run-seconds": [
+            300
+          ],
+          "sync": [
+            1
+          ],
+          "sync-gain": [
+            0.25
+          ],
+          "sync-period-ms": [
+            100
+          ],
+          "verify-threads": [
+            8
+          ]
+        },
+        "proven": true
+      },
+      "database_cleanup": {
+        "expected_databases": 20,
+        "records": 20,
+        "removed": 20,
+        "paths_verified": 20,
+        "proved": true
+      },
+      "cleanup_error_count": 0,
+      "failure": {
+        "present": false,
+        "categories": [],
+        "sha256": null
+      },
+      "latency": {
+        "available": true,
+        "expected_samples": 100,
+        "observed_and_persisted_samples": 100,
+        "missing_samples": 0,
+        "missing_fraction": 0.0,
+        "p50_upper_ms": 764.8588459705934,
+        "p95_upper_ms": 2101.2243009754457,
+        "p99_upper_ms": 2501.224300940521,
+        "unbounded_samples_in_percentile_population": 0,
+        "observed_above_one_second_samples": 31,
+        "within_one_second_fraction": 0.69,
+        "passed": true,
+        "all_samples_within_one_second": false,
+        "independently_consistent": true,
+        "observed_max_upper_ms": 2601.2243009754457,
+        "batch_start_observed_max_upper_ms": 2597.9973149951547
+      },
+      "validation_errors": [],
+      "same_rate_baseline_formal_tps": null,
+      "improvement_vs_step0_percent": null
+    }
+  ],
+  "source_evidence_sha256": {
+    "benchmark_results": "5be5d65fe5e5af3d3082b630be94bc3216f309ced09792a5ac442a80f4480328",
+    "benchmark_protocol": "7776e2575975cdbaa85891709cf6fc289c6a766fa620166895090998b02c4cc0",
+    "comparison_result": "6bb54cb76253ab5e258dfbcd4cbd784ca9edd3c31cdfab5da2dc4dece2768021"
+  },
+  "validation_errors": [],
+  "scope": {
+    "tps": "All-node persisted common-ancestor net transaction growth between exact 2s/12s head observations; single short run per variant.",
+    "failed_baseline": "An invalid K=0 window leaves its formal TPS and every same-rate relative improvement null; no diagnostic or historical value substitutes for it.",
+    "state_audit": "Full state objects include the chain head. Full-state/head inequality alone does not establish an account balance or nonce error; inspect local account audit counts and account_state_hash_variants separately.",
+    "latency": "Scheduled arrival to first full all-node identical-position observation, checked on final persisted canonical ledgers; includes batching, transmission, polling and RPC.",
+    "diagnostics": "Load-process cumulative counters through stop, including warmup/drain/stop; not the exact ten-second TPS window. Per-node ratios are calculated before node aggregation.",
+    "step_comparison": "K>1 also uses current-round scheduling; comparisons measure the complete step mode.",
+    "privacy": "Field allowlist; no host identifiers or addresses, arbitrary errors, logs, account records, original argv paths or credentials are emitted."
+  },
+  "validation_passed": true
+}

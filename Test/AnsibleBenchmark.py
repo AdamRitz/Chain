@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Fixed twenty-node native-transfer A/B benchmark, managed only by Ansible.
+"""Fixed twenty-node native-transfer release or block-step comparison via Ansible.
 
 The archived r2 measurement code supplies the unchanged batch128 broadcast
 sender, exact 2s/12s head observations and independent persisted ledger audit.
@@ -60,6 +60,26 @@ def PlaybookPath(context):
     return str(executable)
 
 
+def ComparisonSchedule(context):
+    releases = context.get('releases')
+    if 'block_tx_steps' in context:
+        steps = context['block_tx_steps']
+        Require(isinstance(steps, list) and steps and
+                all(type(step) is int and 0 <= step <= 10000 for step in steps),
+                'block_tx_steps must be a nonempty list of integers from 0 to 10000')
+        Require(len(set(steps)) == len(steps), 'block_tx_steps must not contain duplicates')
+        Require(isinstance(releases, list) and len(releases) == 1,
+                'Block-step comparison requires exactly one pinned release')
+    else:
+        steps = [None]
+        Require(isinstance(releases, list) and len(releases) == 2,
+                'Exactly two ordered A/B releases are required')
+    variants = [(release, step) for release in releases for step in steps]
+    # RPC31 observation changes measurement overhead: keep it out of TPS cases.
+    return ([(release, 'throughput', rate, step) for rate in RATES for release, step in variants] +
+            [(release, 'latency', 20000, step) for release, step in variants])
+
+
 def ReadContext(path):
     value = json.loads(Path(path).read_text(encoding='utf-8'))
     for name in ('inventory_file', 'ansible_dir', 'test_root', 'result_dir', 'dataset', 'genesis_file'):
@@ -83,7 +103,7 @@ def ReadContext(path):
         ids.add(name)
         endpoints.add((address, PORT))
     releases = value.get('releases')
-    Require(isinstance(releases, list) and len(releases) == 2, 'Exactly two ordered A/B releases are required')
+    ComparisonSchedule(value)
     release_ids = set()
     for release in releases:
         Require(re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9_.-]{0,79}', str(release.get('id', ''))) and
@@ -270,6 +290,8 @@ def ClusterType(C):
             # The final RPC31 checks require the persisted index to stay enabled.
             if '--experiment-index' not in arguments:
                 arguments += ['--experiment-index', '1']
+            if 'block-tx-step' in self.settings and '--block-tx-step' not in arguments:
+                arguments += ['--block-tx-step', str(self.settings['block-tx-step'])]
             self.audit_requests[node['id']] = arguments
             leader = self.audit_barrier.wait(timeout=60) == 0
             if leader:
@@ -457,10 +479,13 @@ def InstallMeasurement(E, C, release, latency):
     return registered, observers
 
 
-def RunCase(context, genesis, workers, release, kind, rate, ordinal, modules):
+def RunCase(context, genesis, workers, release, kind, rate, ordinal, modules, block_tx_step=None):
     C, E, R = modules
-    name = '%02d-%s-%s-%s' % (ordinal, release['id'], kind, rate)
-    run = context['case_prefix'] + '-%02d-%s-%s' % (ordinal, kind, rate)
+    if block_tx_step is not None:
+        Require(type(block_tx_step) is int and 0 <= block_tx_step <= 10000, 'Invalid case block_tx_step')
+    suffix = '' if block_tx_step is None else '-step%s' % block_tx_step
+    name = '%02d-%s-%s-%s' % (ordinal, release['id'], kind, rate) + suffix
+    run = context['case_prefix'] + '-%02d-%s-%s' % (ordinal, kind, rate) + suffix
     Require(len(run) <= 100 and ID.fullmatch(context['run_id']), 'Case run identifier exceeds worker limit')
     output = Path(context['result_dir']) / name
     output.mkdir()
@@ -471,17 +496,24 @@ def RunCase(context, genesis, workers, release, kind, rate, ordinal, modules):
                 'experiment-index': 1, 'clock-sync': 1, 'sync-period-ms': 100,
                 'sync-gain': .25, 'round-ms': 50, 'candidate-ms': 12,
                 'relay-transactions': 0, 'block-ms': 50, 'max-block-txs': 6000, 'run-seconds': 300}
+    if block_tx_step is not None:
+        settings['block-tx-step'] = block_tx_step
     cluster = ClusterType(C)(workers, release, nodes, run, genesis, settings, output)
     case = dict(suite='throughput', mode='throughput', rate=rate, nodes=20, repeat=1,
                 pattern='steady', group=kind, revision=release['id'])
+    step_metadata = {} if block_tx_step is None else dict(block_tx_step=block_tx_step)
+    case.update(step_metadata)
     plan = json.loads((REPO / 'Experiments/plan.json').read_text(encoding='utf-8'))
     plan.update(nodes=20, node_counts=[20], throughput_rates=list(RATES), throughput_modes=['throughput'],
                 warmup=2, duration=10, drain_seconds=5, repeats=1, parallel_ingress=False,
                 wallets=1024, batch=128, ingress='broadcast')
+    if block_tx_step is not None:
+        plan.setdefault('node_settings', {})['block-tx-step'] = block_tx_step
     E.ValidatePlan(plan)
     Save(output / 'protocol.json', dict(case=case, plan=plan, release=release,
+         node_settings=settings, **step_metadata,
          dataset_sha256=context['dataset_sha256'], genesis_sha256=context['genesis_sha256'], port=PORT))
-    row = dict(case=case, run=run, status='failed', success=False)
+    row = dict(case=case, run=run, status='failed', success=False, **step_metadata)
     registered, observers = InstallMeasurement(E, C, release, kind == 'latency')
     try:
         cluster.Start()
@@ -565,20 +597,24 @@ def Run(path):
         rates=list(RATES), warmup=2, duration=10, drain_seconds=5, repeats=1,
         dataset_transactions=DATASET_COUNT, latency_rate=20000, latency_sample_hz=10),
         dataset_sha256=context['dataset_sha256'], genesis_sha256=context['genesis_sha256'])
+    if 'block_tx_steps' in context:
+        summary['fixed_protocol']['block_tx_steps'] = context['block_tx_steps']
     Save(output / 'protocol.json', dict(**summary['fixed_protocol'], releases=context['releases'],
          case_prefix=context['case_prefix'],
          run_id=context['run_id'], run_owner=context['run_owner'],
          methods_directory=str(METHODS), method_hashes={name: Digest(METHODS / name) for name in
          ('RetestCases.py', 'RetestObserve.py', 'LightObserve.py', 'HeaderReader.py')}))
-    schedule = [(release, 'throughput', rate) for rate in RATES for release in context['releases']]
-    schedule += [(release, 'latency', 20000) for release in context['releases']]
+    schedule = ComparisonSchedule(context)
     def Interrupted(signum, frame):
         raise KeyboardInterrupt('Controller interrupted by signal ' + str(signum))
     previous_signals = {signum: signal.signal(signum, Interrupted) for signum in (signal.SIGINT, signal.SIGTERM)}
     try:
-        for ordinal, (release, kind, rate) in enumerate(schedule, 1):
-            print(json.dumps(dict(starting=ordinal, release=release['id'], kind=kind, rate=rate)), flush=True)
-            row = RunCase(context, genesis, workers, release, kind, rate, ordinal, (C, E, R))
+        for ordinal, (release, kind, rate, step) in enumerate(schedule, 1):
+            progress = dict(starting=ordinal, release=release['id'], kind=kind, rate=rate)
+            if step is not None:
+                progress['block_tx_step'] = step
+            print(json.dumps(progress), flush=True)
+            row = RunCase(context, genesis, workers, release, kind, rate, ordinal, (C, E, R), step)
             summary['cases'].append(row)
             Save(output / 'results.json', summary)
             if row.get('interrupted'):
@@ -587,9 +623,9 @@ def Run(path):
                 raise RuntimeError('Cleanup was not confirmed; refusing further cases')
         Require(Digest(context['dataset']) == context['dataset_sha256'] and
                 Digest(context['genesis_file']) == context['genesis_sha256'], 'Dataset/genesis changed during comparison')
-        summary['passed'] = len(summary['cases']) == 6 and all(row['success'] for row in summary['cases'])
+        summary['passed'] = len(summary['cases']) == len(schedule) and all(row['success'] for row in summary['cases'])
         summary['latency_one_second_target_passed'] = all(row['latency']['all_samples_within_one_second']
-             for row in summary['cases'] if row['case']['group'] == 'latency') and len(summary['cases']) == 6
+             for row in summary['cases'] if row['case']['group'] == 'latency') and len(summary['cases']) == len(schedule)
     except BaseException as error:
         summary['error'] = type(error).__name__ + ': ' + str(error)
     finally:

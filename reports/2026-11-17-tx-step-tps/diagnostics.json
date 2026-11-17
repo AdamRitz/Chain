@@ -1,0 +1,4673 @@
+{
+  "scope": "Load-process cumulative counters through stop, including warmup/drain/stop; not the exact ten-second TPS window. Per-node ratios are calculated before node aggregation.",
+  "cases": [
+    {
+      "ordinal": 1,
+      "kind": "throughput",
+      "offered_tps": 20000,
+      "block_tx_step": 0,
+      "load_snapshots": 20,
+      "complete": true,
+      "evidence_missing": [],
+      "statistics": {
+        "block_tx_step": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 0.0,
+          "min": 0,
+          "max": 0,
+          "sum": 0
+        },
+        "local_proposals": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 113.5,
+          "min": 47,
+          "max": 174,
+          "sum": 2212
+        },
+        "block_step_proposals": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 0.0,
+          "min": 0,
+          "max": 0,
+          "sum": 0
+        },
+        "block_tail_proposals": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 0.0,
+          "min": 0,
+          "max": 0,
+          "sum": 0
+        },
+        "block_step_wait_ms": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 0.0,
+          "min": 0.0,
+          "max": 0.0,
+          "sum": 0.0
+        },
+        "reorganizations": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 101.5,
+          "min": 46,
+          "max": 131,
+          "sum": 1949
+        },
+        "max_reorg_depth": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 9.0,
+          "min": 6,
+          "max": 10,
+          "sum": 178
+        },
+        "fork_reexecute_transactions": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 434752.0,
+          "min": 272640,
+          "max": 608352,
+          "sum": 8873872
+        },
+        "branch_append_transactions": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 118016.0,
+          "min": 52608,
+          "max": 164704,
+          "sum": 2254128
+        },
+        "replayed_transactions": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 552952.0,
+          "min": 435408,
+          "max": 667216,
+          "sum": 11128000
+        },
+        "committed": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 240000.0,
+          "min": 240000,
+          "max": 240000,
+          "sum": 4800000
+        },
+        "chain_transactions": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 240000.0,
+          "min": 240000,
+          "max": 240000,
+          "sum": 4800000
+        },
+        "candidate_executions": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 206.0,
+          "min": 145,
+          "max": 258,
+          "sum": 4232
+        },
+        "candidate_rank_skips": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 23.0,
+          "min": 5,
+          "max": 46,
+          "sum": 504
+        },
+        "execution_cache_hits": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 79.0,
+          "min": 13,
+          "max": 155,
+          "sum": 1622
+        },
+        "execution_cache_misses": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 374.0,
+          "min": 225,
+          "max": 507,
+          "sum": 7449
+        },
+        "block_tasks": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 1298.5,
+          "min": 1157,
+          "max": 1423,
+          "sum": 26155
+        },
+        "block_queue_wait_ms": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 21403.234773,
+          "min": 3698.139089,
+          "max": 58326.490049,
+          "sum": 491429.340937
+        },
+        "metadata_tasks": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 4186.5,
+          "min": 4010,
+          "max": 4309,
+          "sum": 83485
+        },
+        "metadata_queue_wait_ms": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 121071.992357,
+          "min": 21973.315914,
+          "max": 301876.636569,
+          "sum": 2716225.214557
+        },
+        "db_writes": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 180.5,
+          "min": 133,
+          "max": 230,
+          "sum": 3639
+        },
+        "db_write_ms": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 4653.3343825,
+          "min": 3289.81256,
+          "max": 7238.375232,
+          "sum": 102590.519648
+        },
+        "db_batch_bytes": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 220778635.5,
+          "min": 169319040,
+          "max": 264640247,
+          "sum": 4427798684
+        },
+        "network_bytes": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 339320667.5,
+          "min": 298803755,
+          "max": 375517211,
+          "sum": 6815874994
+        },
+        "network_sent_bytes": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 294343247.0,
+          "min": 260404563,
+          "max": 339710233,
+          "sum": 5971414821
+        },
+        "missing_transactions": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 33040.0,
+          "min": 15922,
+          "max": 91422,
+          "sum": 763226
+        },
+        "process_cpu_seconds": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 27.9653425,
+          "min": 25.778315,
+          "max": 32.530865,
+          "sum": 564.03578
+        },
+        "process_write_bytes": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 453820416.0,
+          "min": 270389248,
+          "max": 482922496,
+          "sum": 7771303936
+        },
+        "peak_working_set_bytes": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 470497280.0,
+          "min": 453484544,
+          "max": 500019200,
+          "sum": 9419964416
+        },
+        "signature_checks": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 240000.0,
+          "min": 240000,
+          "max": 240000,
+          "sum": 4800000
+        },
+        "signature_cache_hits": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 930765.5,
+          "min": 778076,
+          "max": 1062241,
+          "sum": 18731397
+        },
+        "candidate_execute_ms": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 51.7789245,
+          "min": 45.032708,
+          "max": 62.544031,
+          "sum": 1040.257942
+        },
+        "commit_execute_ms": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 74.5904785,
+          "min": 41.382229,
+          "max": 99.763246,
+          "sum": 1443.460888
+        },
+        "block_verify_ms": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 1937.2593350000002,
+          "min": 1531.88023,
+          "max": 2406.172761,
+          "sum": 38799.289971
+        },
+        "pool_refresh_ms": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 165.66031750000002,
+          "min": 84.898292,
+          "max": 305.090678,
+          "sum": 3452.061417
+        },
+        "peak_pending": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 40036.5,
+          "min": 34290,
+          "max": 40550,
+          "sum": 791735
+        },
+        "elapsed_seconds": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 12.204671254,
+          "min": 12.024309509,
+          "max": 13.508581428,
+          "sum": 249.598705258
+        },
+        "db_ms_per_write": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 25.05796325202097,
+          "min": 14.303532869565217,
+          "max": 53.063307413533835,
+          "sum": 590.3965071915159
+        },
+        "block_wait_ms_per_task": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 15.578031056469484,
+          "min": 2.9944446064777326,
+          "max": 43.46236218256334,
+          "sum": 370.0840584255536
+        },
+        "metadata_wait_ms_per_task": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 29.8586278342149,
+          "min": 5.377708251101321,
+          "max": 70.8131917825475,
+          "sum": 645.4157586978024
+        },
+        "fork_reexecute_per_committed": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 1.8114666666666666,
+          "min": 1.136,
+          "max": 2.5348,
+          "sum": 36.974466666666665
+        },
+        "execution_cache_hit_fraction": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 0.17429234248284467,
+          "min": 0.025,
+          "max": 0.39641943734015345,
+          "sum": 3.7706186649059785
+        }
+      }
+    },
+    {
+      "ordinal": 2,
+      "kind": "throughput",
+      "offered_tps": 20000,
+      "block_tx_step": 500,
+      "load_snapshots": 20,
+      "complete": true,
+      "evidence_missing": [],
+      "statistics": {
+        "block_tx_step": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 500.0,
+          "min": 500,
+          "max": 500,
+          "sum": 10000
+        },
+        "local_proposals": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 39.5,
+          "min": 24,
+          "max": 58,
+          "sum": 791
+        },
+        "block_step_proposals": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 39.5,
+          "min": 24,
+          "max": 58,
+          "sum": 790
+        },
+        "block_tail_proposals": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 0.0,
+          "min": 0,
+          "max": 1,
+          "sum": 1
+        },
+        "block_step_wait_ms": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 21.9229385,
+          "min": 12.558623,
+          "max": 27.255761,
+          "sum": 436.511905
+        },
+        "reorganizations": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 145.0,
+          "min": 115,
+          "max": 175,
+          "sum": 2856
+        },
+        "max_reorg_depth": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 7.0,
+          "min": 6,
+          "max": 10,
+          "sum": 139
+        },
+        "fork_reexecute_transactions": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 691000.0,
+          "min": 599000,
+          "max": 813000,
+          "sum": 13923500
+        },
+        "branch_append_transactions": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 26750.0,
+          "min": 1000,
+          "max": 59500,
+          "sum": 506000
+        },
+        "replayed_transactions": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 714250.0,
+          "min": 640000,
+          "max": 814000,
+          "sum": 14429500
+        },
+        "committed": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 240000.0,
+          "min": 240000,
+          "max": 240000,
+          "sum": 4800000
+        },
+        "chain_transactions": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 240000.0,
+          "min": 240000,
+          "max": 240000,
+          "sum": 4800000
+        },
+        "candidate_executions": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 129.0,
+          "min": 99,
+          "max": 154,
+          "sum": 2613
+        },
+        "candidate_rank_skips": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 16.0,
+          "min": 8,
+          "max": 31,
+          "sum": 323
+        },
+        "execution_cache_hits": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 14.5,
+          "min": 9,
+          "max": 19,
+          "sum": 294
+        },
+        "execution_cache_misses": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 430.0,
+          "min": 377,
+          "max": 479,
+          "sum": 8548
+        },
+        "block_tasks": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 901.0,
+          "min": 801,
+          "max": 970,
+          "sum": 17780
+        },
+        "block_queue_wait_ms": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 23394.0515155,
+          "min": 9179.225531,
+          "max": 59047.834693,
+          "sum": 591722.895752
+        },
+        "metadata_tasks": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 3553.0,
+          "min": 3382,
+          "max": 3653,
+          "sum": 70808
+        },
+        "metadata_queue_wait_ms": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 155770.515969,
+          "min": 84315.512334,
+          "max": 235315.559388,
+          "sum": 3083127.460681
+        },
+        "db_writes": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 163.5,
+          "min": 133,
+          "max": 192,
+          "sum": 3245
+        },
+        "db_write_ms": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 7119.561131,
+          "min": 6431.311142,
+          "max": 7941.062335,
+          "sum": 142458.32017
+        },
+        "db_batch_bytes": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 276935920.0,
+          "min": 249714438,
+          "max": 313578057,
+          "sum": 5585823064
+        },
+        "network_bytes": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 403831030.0,
+          "min": 364584202,
+          "max": 428987240,
+          "sum": 8066765918
+        },
+        "network_sent_bytes": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 363966391.0,
+          "min": 270042587,
+          "max": 453426097,
+          "sum": 7222328363
+        },
+        "missing_transactions": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 47233.5,
+          "min": 23297,
+          "max": 66854,
+          "sum": 920010
+        },
+        "process_cpu_seconds": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 28.790219999999998,
+          "min": 26.745054,
+          "max": 32.211012,
+          "sum": 576.720165
+        },
+        "process_write_bytes": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 487878656.0,
+          "min": 466190336,
+          "max": 545714176,
+          "sum": 9997484032
+        },
+        "peak_working_set_bytes": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 477089792.0,
+          "min": 454381568,
+          "max": 549408768,
+          "sum": 9663856640
+        },
+        "signature_checks": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 240000.0,
+          "min": 240000,
+          "max": 240000,
+          "sum": 4800000
+        },
+        "signature_cache_hits": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 498526.0,
+          "min": 390668,
+          "max": 583875,
+          "sum": 9848966
+        },
+        "candidate_execute_ms": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 32.686493999999996,
+          "min": 24.517694,
+          "max": 40.785703,
+          "sum": 656.974853
+        },
+        "commit_execute_ms": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 97.2870875,
+          "min": 81.900241,
+          "max": 106.03392,
+          "sum": 1908.051549
+        },
+        "block_verify_ms": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 1530.987642,
+          "min": 1434.129762,
+          "max": 1811.70681,
+          "sum": 30912.479747999998
+        },
+        "pool_refresh_ms": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 254.27712250000002,
+          "min": 210.402383,
+          "max": 349.024145,
+          "sum": 5201.321529
+        },
+        "peak_pending": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 40576.0,
+          "min": 40064,
+          "max": 40957,
+          "sum": 812647
+        },
+        "elapsed_seconds": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 12.3463570535,
+          "min": 12.046003556,
+          "max": 13.470607088,
+          "sum": 248.945108025
+        },
+        "db_ms_per_write": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 44.190710773601836,
+          "min": 38.084385114583334,
+          "max": 53.295720369127515,
+          "sum": 882.3628409247661
+        },
+        "block_wait_ms_per_task": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 26.184679070210905,
+          "min": 9.955776063991323,
+          "max": 64.87348569512196,
+          "sum": 665.1544585467736
+        },
+        "metadata_wait_ms_per_task": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 43.78613099400151,
+          "min": 24.06951536797031,
+          "max": 65.20242709559435,
+          "sum": 870.6978498231655
+        },
+        "fork_reexecute_per_committed": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 2.8791666666666664,
+          "min": 2.495833333333333,
+          "max": 3.3875,
+          "sum": 58.014583333333334
+        },
+        "execution_cache_hit_fraction": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 0.03278692440732707,
+          "min": 0.01867219917012448,
+          "max": 0.047979797979797977,
+          "sum": 0.6686147983699193
+        }
+      }
+    },
+    {
+      "ordinal": 3,
+      "kind": "throughput",
+      "offered_tps": 20000,
+      "block_tx_step": 1000,
+      "load_snapshots": 20,
+      "complete": true,
+      "evidence_missing": [],
+      "statistics": {
+        "block_tx_step": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 1000.0,
+          "min": 1000,
+          "max": 1000,
+          "sum": 20000
+        },
+        "local_proposals": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 126.0,
+          "min": 111,
+          "max": 142,
+          "sum": 2508
+        },
+        "block_step_proposals": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 123.5,
+          "min": 110,
+          "max": 141,
+          "sum": 2465
+        },
+        "block_tail_proposals": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 2.0,
+          "min": 0,
+          "max": 9,
+          "sum": 43
+        },
+        "block_step_wait_ms": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 170.3485175,
+          "min": 25.588396,
+          "max": 354.343772,
+          "sum": 3627.844705
+        },
+        "reorganizations": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 94.0,
+          "min": 87,
+          "max": 116,
+          "sum": 1914
+        },
+        "max_reorg_depth": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 6.0,
+          "min": 5,
+          "max": 7,
+          "sum": 120
+        },
+        "fork_reexecute_transactions": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 410876.0,
+          "min": 355856,
+          "max": 459856,
+          "sum": 8185584
+        },
+        "branch_append_transactions": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 6000.0,
+          "min": 3000,
+          "max": 15000,
+          "sum": 137208
+        },
+        "replayed_transactions": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 417716.0,
+          "min": 364856,
+          "max": 469960,
+          "sum": 8322792
+        },
+        "committed": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 240000.0,
+          "min": 240000,
+          "max": 240000,
+          "sum": 4800000
+        },
+        "chain_transactions": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 240000.0,
+          "min": 240000,
+          "max": 240000,
+          "sum": 4800000
+        },
+        "candidate_executions": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 215.0,
+          "min": 190,
+          "max": 235,
+          "sum": 4271
+        },
+        "candidate_rank_skips": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 24.5,
+          "min": 18,
+          "max": 32,
+          "sum": 502
+        },
+        "execution_cache_hits": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 120.5,
+          "min": 103,
+          "max": 134,
+          "sum": 2395
+        },
+        "execution_cache_misses": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 285.0,
+          "min": 250,
+          "max": 324,
+          "sum": 5644
+        },
+        "block_tasks": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 521.0,
+          "min": 472,
+          "max": 567,
+          "sum": 10460
+        },
+        "block_queue_wait_ms": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 1313.6917205,
+          "min": 364.838069,
+          "max": 3621.600391,
+          "sum": 27820.850955
+        },
+        "metadata_tasks": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 4659.0,
+          "min": 4548,
+          "max": 4747,
+          "sum": 93137
+        },
+        "metadata_queue_wait_ms": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 13018.826108000001,
+          "min": 6562.462827,
+          "max": 82898.635022,
+          "sum": 345366.835722
+        },
+        "db_writes": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 219.0,
+          "min": 205,
+          "max": 230,
+          "sum": 4363
+        },
+        "db_write_ms": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 4493.1325485,
+          "min": 3835.821071,
+          "max": 5428.406279,
+          "sum": 89437.307445
+        },
+        "db_batch_bytes": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 211746377.0,
+          "min": 193133352,
+          "max": 225931940,
+          "sum": 4220562945
+        },
+        "network_bytes": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 279969239.0,
+          "min": 268960657,
+          "max": 294257894,
+          "sum": 5618482226
+        },
+        "network_sent_bytes": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 235005143.0,
+          "min": 205141043,
+          "max": 285845944,
+          "sum": 4774043154
+        },
+        "missing_transactions": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 13426.0,
+          "min": 5267,
+          "max": 17445,
+          "sum": 251452
+        },
+        "process_cpu_seconds": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 24.867431500000002,
+          "min": 23.609973,
+          "max": 27.662167,
+          "sum": 497.550337
+        },
+        "process_write_bytes": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 288395264.0,
+          "min": 277065728,
+          "max": 442454016,
+          "sum": 6024986624
+        },
+        "peak_working_set_bytes": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 295884800.0,
+          "min": 283271168,
+          "max": 311586816,
+          "sum": 5918707712
+        },
+        "signature_checks": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 240000.0,
+          "min": 240000,
+          "max": 240000,
+          "sum": 4800000
+        },
+        "signature_cache_hits": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 239924.0,
+          "min": 206022,
+          "max": 274590,
+          "sum": 4839605
+        },
+        "candidate_execute_ms": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 44.6095605,
+          "min": 36.977528,
+          "max": 52.173178,
+          "sum": 887.191674
+        },
+        "commit_execute_ms": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 60.230104499999996,
+          "min": 51.143635,
+          "max": 66.275223,
+          "sum": 1196.362599
+        },
+        "block_verify_ms": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 704.0333975,
+          "min": 625.294382,
+          "max": 788.585437,
+          "sum": 14041.531665
+        },
+        "pool_refresh_ms": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 118.90724800000001,
+          "min": 98.393723,
+          "max": 142.457657,
+          "sum": 2406.012066
+        },
+        "peak_pending": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 18263.5,
+          "min": 14258,
+          "max": 39138,
+          "sum": 401473
+        },
+        "elapsed_seconds": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 12.130919030000001,
+          "min": 12.127862475,
+          "max": 12.926595421,
+          "sum": 243.951641584
+        },
+        "db_ms_per_write": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 20.546391336765886,
+          "min": 16.677482917391302,
+          "max": 24.21555988095238,
+          "sum": 410.6252471615924
+        },
+        "block_wait_ms_per_task": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 2.6199223888879954,
+          "min": 0.6503352388591801,
+          "max": 6.694270593345656,
+          "sum": 53.166102750188365
+        },
+        "metadata_wait_ms_per_task": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 2.788925784061635,
+          "min": 1.3891750268839966,
+          "max": 17.85454124962309,
+          "sum": 74.28516339193678
+        },
+        "fork_reexecute_per_committed": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 1.7119833333333334,
+          "min": 1.4827333333333332,
+          "max": 1.9160666666666666,
+          "sum": 34.1066
+        },
+        "execution_cache_hit_fraction": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 0.3052109181141439,
+          "min": 0.24121779859484777,
+          "max": 0.3403693931398417,
+          "sum": 5.96911685206132
+        }
+      }
+    },
+    {
+      "ordinal": 4,
+      "kind": "throughput",
+      "offered_tps": 20000,
+      "block_tx_step": 2000,
+      "load_snapshots": 20,
+      "complete": true,
+      "evidence_missing": [],
+      "statistics": {
+        "block_tx_step": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 2000.0,
+          "min": 2000,
+          "max": 2000,
+          "sum": 40000
+        },
+        "local_proposals": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 199.0,
+          "min": 193,
+          "max": 207,
+          "sum": 4002
+        },
+        "block_step_proposals": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 10.0,
+          "min": 5,
+          "max": 14,
+          "sum": 202
+        },
+        "block_tail_proposals": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 190.0,
+          "min": 185,
+          "max": 196,
+          "sum": 3800
+        },
+        "block_step_wait_ms": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 4703.7829205,
+          "min": 4470.427432,
+          "max": 5563.974146,
+          "sum": 97211.246574
+        },
+        "reorganizations": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 26.0,
+          "min": 17,
+          "max": 45,
+          "sum": 567
+        },
+        "max_reorg_depth": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 3.0,
+          "min": 3,
+          "max": 3,
+          "sum": 60
+        },
+        "fork_reexecute_transactions": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 83896.0,
+          "min": 67312,
+          "max": 112752,
+          "sum": 1690224
+        },
+        "branch_append_transactions": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 2520.0,
+          "min": 0,
+          "max": 8368,
+          "sum": 53536
+        },
+        "replayed_transactions": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 85384.0,
+          "min": 68304,
+          "max": 112752,
+          "sum": 1743760
+        },
+        "committed": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 240000.0,
+          "min": 240000,
+          "max": 240000,
+          "sum": 4800000
+        },
+        "chain_transactions": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 240000.0,
+          "min": 240000,
+          "max": 240000,
+          "sum": 4800000
+        },
+        "candidate_executions": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 272.0,
+          "min": 252,
+          "max": 297,
+          "sum": 5448
+        },
+        "candidate_rank_skips": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 115.5,
+          "min": 76,
+          "max": 141,
+          "sum": 2291
+        },
+        "execution_cache_hits": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 196.5,
+          "min": 192,
+          "max": 203,
+          "sum": 3940
+        },
+        "execution_cache_misses": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 46.5,
+          "min": 38,
+          "max": 65,
+          "sum": 956
+        },
+        "block_tasks": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 382.0,
+          "min": 321,
+          "max": 435,
+          "sum": 7607
+        },
+        "block_queue_wait_ms": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 126.79146499999999,
+          "min": 104.182304,
+          "max": 162.247172,
+          "sum": 2574.385412
+        },
+        "metadata_tasks": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 4879.0,
+          "min": 4810,
+          "max": 4954,
+          "sum": 97592
+        },
+        "metadata_queue_wait_ms": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 571.9406425,
+          "min": 167.570038,
+          "max": 2706.453571,
+          "sum": 14442.60028
+        },
+        "db_writes": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 229.0,
+          "min": 212,
+          "max": 244,
+          "sum": 4532
+        },
+        "db_write_ms": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 2669.6364425,
+          "min": 2013.471814,
+          "max": 3070.085685,
+          "sum": 52886.408842
+        },
+        "db_batch_bytes": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 111218109.0,
+          "min": 103918370,
+          "max": 122456916,
+          "sum": 2244281166
+        },
+        "network_bytes": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 248002686.5,
+          "min": 241800093,
+          "max": 263425682,
+          "sum": 5033652129
+        },
+        "network_sent_bytes": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 209382693.5,
+          "min": 188347457,
+          "max": 229919055,
+          "sum": 4189145448
+        },
+        "missing_transactions": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 1447.0,
+          "min": 128,
+          "max": 4961,
+          "sum": 35524
+        },
+        "process_cpu_seconds": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 21.643936,
+          "min": 20.504571,
+          "max": 23.986474,
+          "sum": 434.056069
+        },
+        "process_write_bytes": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 190771200.0,
+          "min": 144429056,
+          "max": 198176768,
+          "sum": 3494039552
+        },
+        "peak_working_set_bytes": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 219086848.0,
+          "min": 214642688,
+          "max": 227115008,
+          "sum": 4406648832
+        },
+        "signature_checks": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 240000.0,
+          "min": 240000,
+          "max": 240000,
+          "sum": 4800000
+        },
+        "signature_cache_hits": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 90459.0,
+          "min": 58510,
+          "max": 123873,
+          "sum": 1756938
+        },
+        "candidate_execute_ms": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 57.3269255,
+          "min": 48.391419,
+          "max": 73.296123,
+          "sum": 1189.575471
+        },
+        "commit_execute_ms": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 10.723352,
+          "min": 8.309209,
+          "max": 14.596285,
+          "sum": 221.19403
+        },
+        "block_verify_ms": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 339.2463595,
+          "min": 297.313801,
+          "max": 381.698812,
+          "sum": 6889.659299
+        },
+        "pool_refresh_ms": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 21.9205745,
+          "min": 15.652898,
+          "max": 32.042577,
+          "sum": 441.773917
+        },
+        "peak_pending": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 10256.5,
+          "min": 6257,
+          "max": 16268,
+          "sum": 214866
+        },
+        "elapsed_seconds": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 12.033672686,
+          "min": 12.028440429,
+          "max": 12.03730165,
+          "sum": 240.671475622
+        },
+        "db_ms_per_write": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 12.13320465765992,
+          "min": 9.321628768518519,
+          "max": 13.233127952586207,
+          "sum": 233.52841915442414
+        },
+        "block_wait_ms_per_task": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 0.3341729393869849,
+          "min": 0.2920273396226415,
+          "max": 0.3789184463840399,
+          "sum": 6.759258523801851
+        },
+        "metadata_wait_ms_per_task": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 0.11749417824432803,
+          "min": 0.03483784573804574,
+          "max": 0.5463168290270488,
+          "sum": 2.952040232021102
+        },
+        "fork_reexecute_per_committed": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 0.3495666666666667,
+          "min": 0.28046666666666664,
+          "max": 0.4698,
+          "sum": 7.0426
+        },
+        "execution_cache_hit_fraction": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 0.8082196441329568,
+          "min": 0.752851711026616,
+          "max": 0.8354978354978355,
+          "sum": 16.10742040924683
+        }
+      }
+    },
+    {
+      "ordinal": 5,
+      "kind": "throughput",
+      "offered_tps": 30000,
+      "block_tx_step": 0,
+      "load_snapshots": 20,
+      "complete": true,
+      "evidence_missing": [],
+      "statistics": {
+        "block_tx_step": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 0.0,
+          "min": 0,
+          "max": 0,
+          "sum": 0
+        },
+        "local_proposals": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 58.0,
+          "min": 45,
+          "max": 86,
+          "sum": 1178
+        },
+        "block_step_proposals": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 0.0,
+          "min": 0,
+          "max": 0,
+          "sum": 0
+        },
+        "block_tail_proposals": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 0.0,
+          "min": 0,
+          "max": 0,
+          "sum": 0
+        },
+        "block_step_wait_ms": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 0.0,
+          "min": 0.0,
+          "max": 0.0,
+          "sum": 0.0
+        },
+        "reorganizations": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 34.0,
+          "min": 17,
+          "max": 48,
+          "sum": 663
+        },
+        "max_reorg_depth": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 18.0,
+          "min": 7,
+          "max": 57,
+          "sum": 475
+        },
+        "fork_reexecute_transactions": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 540216.0,
+          "min": 253808,
+          "max": 1032912,
+          "sum": 11319280
+        },
+        "branch_append_transactions": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 217856.0,
+          "min": 119440,
+          "max": 259696,
+          "sum": 4315408
+        },
+        "replayed_transactions": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 749352.0,
+          "min": 506368,
+          "max": 1152352,
+          "sum": 15634688
+        },
+        "committed": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 359936.0,
+          "min": 359936,
+          "max": 360000,
+          "sum": 7199168
+        },
+        "chain_transactions": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 359936.0,
+          "min": 359936,
+          "max": 360000,
+          "sum": 7199168
+        },
+        "candidate_executions": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 86.5,
+          "min": 62,
+          "max": 115,
+          "sum": 1797
+        },
+        "candidate_rank_skips": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 2.0,
+          "min": 0,
+          "max": 8,
+          "sum": 44
+        },
+        "execution_cache_hits": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 48.0,
+          "min": 34,
+          "max": 81,
+          "sum": 1012
+        },
+        "execution_cache_misses": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 229.0,
+          "min": 137,
+          "max": 378,
+          "sum": 4656
+        },
+        "block_tasks": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 1429.5,
+          "min": 1052,
+          "max": 1661,
+          "sum": 28603
+        },
+        "block_queue_wait_ms": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 326760.38794449996,
+          "min": 229570.517301,
+          "max": 632744.826468,
+          "sum": 7411475.3751219995
+        },
+        "metadata_tasks": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 1890.0,
+          "min": 1781,
+          "max": 1970,
+          "sum": 37641
+        },
+        "metadata_queue_wait_ms": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 181446.1367095,
+          "min": 131634.781443,
+          "max": 300278.284455,
+          "sum": 3797404.350949
+        },
+        "db_writes": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 82.5,
+          "min": 63,
+          "max": 116,
+          "sum": 1732
+        },
+        "db_write_ms": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 4849.9455925,
+          "min": 3446.3088,
+          "max": 9368.65168,
+          "sum": 110864.768844
+        },
+        "db_batch_bytes": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 253366780.0,
+          "min": 164869283,
+          "max": 395840316,
+          "sum": 5271673266
+        },
+        "network_bytes": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 975834341.5,
+          "min": 683039078,
+          "max": 1140006732,
+          "sum": 19453866331
+        },
+        "network_sent_bytes": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 903264494.5,
+          "min": 536195340,
+          "max": 1303654161,
+          "sum": 18360694227
+        },
+        "missing_transactions": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 150382.5,
+          "min": 76116,
+          "max": 300491,
+          "sum": 3189602
+        },
+        "process_cpu_seconds": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 44.9624245,
+          "min": 41.792803,
+          "max": 50.559215,
+          "sum": 909.257555
+        },
+        "process_write_bytes": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 570353664.0,
+          "min": 246145024,
+          "max": 766128128,
+          "sum": 10007392256
+        },
+        "peak_working_set_bytes": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 1000400896.0,
+          "min": 885460992,
+          "max": 1171656704,
+          "sum": 20040839168
+        },
+        "signature_checks": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 360000.0,
+          "min": 360000,
+          "max": 360000,
+          "sum": 7200000
+        },
+        "signature_cache_hits": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 3553078.5,
+          "min": 2278152,
+          "max": 4697815,
+          "sum": 73143141
+        },
+        "candidate_execute_ms": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 60.2903185,
+          "min": 41.987016,
+          "max": 90.719814,
+          "sum": 1243.888588
+        },
+        "commit_execute_ms": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 73.42781099999999,
+          "min": 37.794487,
+          "max": 107.559219,
+          "sum": 1424.103766
+        },
+        "block_verify_ms": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 8427.557951,
+          "min": 7144.38268,
+          "max": 11444.715264,
+          "sum": 174050.031409
+        },
+        "pool_refresh_ms": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 217.7911435,
+          "min": 156.768047,
+          "max": 325.459168,
+          "sum": 4581.2592779999995
+        },
+        "peak_pending": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 41693.5,
+          "min": 41251,
+          "max": 46304,
+          "sum": 845562
+        },
+        "elapsed_seconds": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 13.024277394,
+          "min": 12.056397557,
+          "max": 19.906283929,
+          "sum": 283.116110056
+        },
+        "db_ms_per_write": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 55.750517735191636,
+          "min": 35.420206939655166,
+          "max": 131.9528405633803,
+          "sum": 1316.34617549221
+        },
+        "block_wait_ms_per_task": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 232.50135123296477,
+          "min": 146.40976868686226,
+          "max": 480.96080104477613,
+          "sum": 5328.12381412649
+        },
+        "metadata_wait_ms_per_task": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 97.36823044580788,
+          "min": 69.31794704739337,
+          "max": 155.6652589191291,
+          "sum": 2014.6081334499163
+        },
+        "fork_reexecute_per_committed": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 1.5008668207681366,
+          "min": 0.7051475817923186,
+          "max": 2.869710170697013,
+          "sum": 31.446016714082504
+        },
+        "execution_cache_hit_fraction": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 0.1866440449987772,
+          "min": 0.0825242718446602,
+          "max": 0.31840796019900497,
+          "sum": 3.7522602280522337
+        }
+      }
+    },
+    {
+      "ordinal": 6,
+      "kind": "throughput",
+      "offered_tps": 30000,
+      "block_tx_step": 500,
+      "load_snapshots": 20,
+      "complete": true,
+      "evidence_missing": [],
+      "statistics": {
+        "block_tx_step": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 500.0,
+          "min": 500,
+          "max": 500,
+          "sum": 10000
+        },
+        "local_proposals": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 24.0,
+          "min": 8,
+          "max": 44,
+          "sum": 512
+        },
+        "block_step_proposals": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 23.5,
+          "min": 7,
+          "max": 44,
+          "sum": 501
+        },
+        "block_tail_proposals": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 1.0,
+          "min": 0,
+          "max": 1,
+          "sum": 11
+        },
+        "block_step_wait_ms": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 10.2322495,
+          "min": 7.775426,
+          "max": 31.039448,
+          "sum": 236.450966
+        },
+        "reorganizations": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 81.0,
+          "min": 60,
+          "max": 91,
+          "sum": 1623
+        },
+        "max_reorg_depth": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 8.5,
+          "min": 5,
+          "max": 11,
+          "sum": 174
+        },
+        "fork_reexecute_transactions": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 832186.0,
+          "min": 650500,
+          "max": 907436,
+          "sum": 16256540
+        },
+        "branch_append_transactions": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 42218.0,
+          "min": 9500,
+          "max": 69500,
+          "sum": 768244
+        },
+        "replayed_transactions": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 869936.0,
+          "min": 716936,
+          "max": 929936,
+          "sum": 17024784
+        },
+        "committed": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 359936.0,
+          "min": 359936,
+          "max": 359936,
+          "sum": 7198720
+        },
+        "chain_transactions": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 359936.0,
+          "min": 359936,
+          "max": 359936,
+          "sum": 7198720
+        },
+        "candidate_executions": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 86.5,
+          "min": 67,
+          "max": 109,
+          "sum": 1747
+        },
+        "candidate_rank_skips": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 8.0,
+          "min": 4,
+          "max": 17,
+          "sum": 169
+        },
+        "execution_cache_hits": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 11.0,
+          "min": 4,
+          "max": 28,
+          "sum": 284
+        },
+        "execution_cache_misses": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 282.0,
+          "min": 225,
+          "max": 311,
+          "sum": 5572
+        },
+        "block_tasks": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 656.0,
+          "min": 580,
+          "max": 701,
+          "sum": 12974
+        },
+        "block_queue_wait_ms": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 39764.374614500004,
+          "min": 9847.92964,
+          "max": 79981.335253,
+          "sum": 819747.453512
+        },
+        "metadata_tasks": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 2156.5,
+          "min": 2030,
+          "max": 2237,
+          "sum": 42777
+        },
+        "metadata_queue_wait_ms": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 150507.96273600002,
+          "min": 80852.308935,
+          "max": 202217.063732,
+          "sum": 2964073.462944
+        },
+        "db_writes": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 98.5,
+          "min": 81,
+          "max": 120,
+          "sum": 2000
+        },
+        "db_write_ms": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 7070.8048524999995,
+          "min": 6289.649635,
+          "max": 7912.767692,
+          "sum": 142416.094643
+        },
+        "db_batch_bytes": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 297202485.0,
+          "min": 255093849,
+          "max": 324448669,
+          "sum": 5921343298
+        },
+        "network_bytes": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 537638928.5,
+          "min": 500156424,
+          "max": 565847028,
+          "sum": 10724959551
+        },
+        "network_sent_bytes": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 443923848.0,
+          "min": 358623196,
+          "max": 663361511,
+          "sum": 9457847971
+        },
+        "missing_transactions": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 87406.0,
+          "min": 45740,
+          "max": 138276,
+          "sum": 1673726
+        },
+        "process_cpu_seconds": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 37.6745145,
+          "min": 35.323202,
+          "max": 40.305301,
+          "sum": 755.245858
+        },
+        "process_write_bytes": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 569561088.0,
+          "min": 530243584,
+          "max": 610185216,
+          "sum": 11357835264
+        },
+        "peak_working_set_bytes": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 683094016.0,
+          "min": 635121664,
+          "max": 729747456,
+          "sum": 13625499648
+        },
+        "signature_checks": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 359936.0,
+          "min": 359936,
+          "max": 359936,
+          "sum": 7198720
+        },
+        "signature_cache_hits": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 580851.5,
+          "min": 430737,
+          "max": 658568,
+          "sum": 11466863
+        },
+        "candidate_execute_ms": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 33.975068,
+          "min": 26.894981,
+          "max": 60.345267,
+          "sum": 738.733258
+        },
+        "commit_execute_ms": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 96.12776,
+          "min": 81.218398,
+          "max": 118.603132,
+          "sum": 1913.17561
+        },
+        "block_verify_ms": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 2251.464228,
+          "min": 1989.511661,
+          "max": 2538.464191,
+          "sum": 44954.955612
+        },
+        "pool_refresh_ms": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 455.041507,
+          "min": 379.606497,
+          "max": 581.445119,
+          "sum": 9387.629967
+        },
+        "peak_pending": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 41243.5,
+          "min": 40665,
+          "max": 41976,
+          "sum": 826080
+        },
+        "elapsed_seconds": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 12.713065735499999,
+          "min": 12.183171274,
+          "max": 13.492260629,
+          "sum": 255.890116794
+        },
+        "db_ms_per_write": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 71.52990672772728,
+          "min": 56.95725971428572,
+          "max": 89.76081416049384,
+          "sum": 1437.038166501641
+        },
+        "block_wait_ms_per_task": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 62.44894354954832,
+          "min": 15.606861553090333,
+          "max": 130.47526142414355,
+          "sum": 1268.430151257964
+        },
+        "metadata_wait_ms_per_task": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 71.18108637764595,
+          "min": 39.82872361330049,
+          "max": 99.08201107307504,
+          "sum": 1386.1343619044408
+        },
+        "fork_reexecute_per_committed": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 2.3120388068990043,
+          "min": 1.8072657361308677,
+          "max": 2.521103751778094,
+          "sum": 45.16508490398293
+        },
+        "execution_cache_hit_fraction": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 0.039294039294039296,
+          "min": 0.013937282229965157,
+          "max": 0.10714285714285714,
+          "sum": 0.9785391939473148
+        }
+      }
+    },
+    {
+      "ordinal": 7,
+      "kind": "throughput",
+      "offered_tps": 30000,
+      "block_tx_step": 1000,
+      "load_snapshots": 20,
+      "complete": true,
+      "evidence_missing": [],
+      "statistics": {
+        "block_tx_step": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 1000.0,
+          "min": 1000,
+          "max": 1000,
+          "sum": 20000
+        },
+        "local_proposals": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 26.0,
+          "min": 10,
+          "max": 45,
+          "sum": 527
+        },
+        "block_step_proposals": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 25.0,
+          "min": 9,
+          "max": 44,
+          "sum": 510
+        },
+        "block_tail_proposals": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 1.0,
+          "min": 0,
+          "max": 2,
+          "sum": 17
+        },
+        "block_step_wait_ms": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 18.7228105,
+          "min": 1.29111,
+          "max": 63.517521,
+          "sum": 372.527458
+        },
+        "reorganizations": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 77.5,
+          "min": 62,
+          "max": 90,
+          "sum": 1569
+        },
+        "max_reorg_depth": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 6.0,
+          "min": 5,
+          "max": 8,
+          "sum": 123
+        },
+        "fork_reexecute_transactions": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 782000.0,
+          "min": 653000,
+          "max": 864344,
+          "sum": 15446136
+        },
+        "branch_append_transactions": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 54500.0,
+          "min": 0,
+          "max": 117936,
+          "sum": 1053744
+        },
+        "replayed_transactions": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 829436.0,
+          "min": 714936,
+          "max": 884344,
+          "sum": 16499880
+        },
+        "committed": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 359936.0,
+          "min": 359936,
+          "max": 359936,
+          "sum": 7198720
+        },
+        "chain_transactions": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 359936.0,
+          "min": 359936,
+          "max": 359936,
+          "sum": 7198720
+        },
+        "candidate_executions": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 87.5,
+          "min": 67,
+          "max": 123,
+          "sum": 1740
+        },
+        "candidate_rank_skips": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 13.0,
+          "min": 4,
+          "max": 30,
+          "sum": 303
+        },
+        "execution_cache_hits": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 15.5,
+          "min": 8,
+          "max": 26,
+          "sum": 321
+        },
+        "execution_cache_misses": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 249.5,
+          "min": 215,
+          "max": 271,
+          "sum": 4957
+        },
+        "block_tasks": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 638.5,
+          "min": 592,
+          "max": 694,
+          "sum": 12645
+        },
+        "block_queue_wait_ms": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 38959.701799500006,
+          "min": 16128.134823,
+          "max": 68489.101234,
+          "sum": 824512.302982
+        },
+        "metadata_tasks": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 2133.0,
+          "min": 2011,
+          "max": 2215,
+          "sum": 42433
+        },
+        "metadata_queue_wait_ms": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 158843.10621300002,
+          "min": 74055.401187,
+          "max": 224202.991189,
+          "sum": 2949260.512715
+        },
+        "db_writes": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 98.5,
+          "min": 82,
+          "max": 113,
+          "sum": 1952
+        },
+        "db_write_ms": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 7245.918677,
+          "min": 6109.699879,
+          "max": 7914.051873,
+          "sum": 143495.081861
+        },
+        "db_batch_bytes": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 288252893.0,
+          "min": 261566463,
+          "max": 307948225,
+          "sum": 5747064354
+        },
+        "network_bytes": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 553460735.0,
+          "min": 515734229,
+          "max": 591774856,
+          "sum": 11030123314
+        },
+        "network_sent_bytes": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 445079310.0,
+          "min": 378658954,
+          "max": 771502108,
+          "sum": 9763011722
+        },
+        "missing_transactions": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 64065.0,
+          "min": 40694,
+          "max": 92339,
+          "sum": 1279114
+        },
+        "process_cpu_seconds": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 37.3810425,
+          "min": 35.40606,
+          "max": 41.551537,
+          "sum": 751.056446
+        },
+        "process_write_bytes": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 552202240.0,
+          "min": 529260544,
+          "max": 609607680,
+          "sum": 11161559040
+        },
+        "peak_working_set_bytes": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 669227008.0,
+          "min": 601432064,
+          "max": 732200960,
+          "sum": 13448478720
+        },
+        "signature_checks": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 359936.0,
+          "min": 359936,
+          "max": 359936,
+          "sum": 7198720
+        },
+        "signature_cache_hits": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 520114.5,
+          "min": 439066,
+          "max": 581196,
+          "sum": 10307667
+        },
+        "candidate_execute_ms": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 32.0078665,
+          "min": 20.61641,
+          "max": 53.076785,
+          "sum": 685.110461
+        },
+        "commit_execute_ms": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 94.041684,
+          "min": 74.340151,
+          "max": 121.62799,
+          "sum": 1883.647034
+        },
+        "block_verify_ms": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 2053.22761,
+          "min": 1764.627736,
+          "max": 2449.927277,
+          "sum": 41072.397871
+        },
+        "pool_refresh_ms": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 428.60407699999996,
+          "min": 277.507722,
+          "max": 565.868667,
+          "sum": 8356.184576
+        },
+        "peak_pending": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 41559.0,
+          "min": 40673,
+          "max": 42312,
+          "sum": 829903
+        },
+        "elapsed_seconds": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 12.886639575,
+          "min": 12.111319255,
+          "max": 13.796938386,
+          "sum": 258.298424287
+        },
+        "db_ms_per_write": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 73.45390839466909,
+          "min": 54.06814052212389,
+          "max": 89.93240764772727,
+          "sum": 1485.6953922065197
+        },
+        "block_wait_ms_per_task": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 61.77767891520632,
+          "min": 24.39959882450832,
+          "max": 114.33906716861436,
+          "sum": 1319.7128136639317
+        },
+        "metadata_wait_ms_per_task": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 74.27827587405193,
+          "min": 35.741023738899614,
+          "max": 105.21022580431722,
+          "sum": 1388.7478854953024
+        },
+        "fork_reexecute_per_committed": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 2.1726084637268848,
+          "min": 1.8142114153627311,
+          "max": 2.4013824679943103,
+          "sum": 42.913562411095306
+        },
+        "execution_cache_hit_fraction": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 0.05883158835914741,
+          "min": 0.02962962962962963,
+          "max": 0.1015625,
+          "sum": 1.221950597078685
+        }
+      }
+    },
+    {
+      "ordinal": 8,
+      "kind": "throughput",
+      "offered_tps": 30000,
+      "block_tx_step": 2000,
+      "load_snapshots": 20,
+      "complete": true,
+      "evidence_missing": [],
+      "statistics": {
+        "block_tx_step": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 2000.0,
+          "min": 2000,
+          "max": 2000,
+          "sum": 40000
+        },
+        "local_proposals": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 43.0,
+          "min": 20,
+          "max": 60,
+          "sum": 816
+        },
+        "block_step_proposals": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 39.0,
+          "min": 18,
+          "max": 56,
+          "sum": 731
+        },
+        "block_tail_proposals": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 3.5,
+          "min": 1,
+          "max": 11,
+          "sum": 85
+        },
+        "block_step_wait_ms": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 330.5618115,
+          "min": 33.697618,
+          "max": 498.557132,
+          "sum": 5614.03699
+        },
+        "reorganizations": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 79.5,
+          "min": 67,
+          "max": 90,
+          "sum": 1568
+        },
+        "max_reorg_depth": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 6.0,
+          "min": 5,
+          "max": 8,
+          "sum": 122
+        },
+        "fork_reexecute_transactions": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 698704.0,
+          "min": 567760,
+          "max": 785104,
+          "sum": 13886496
+        },
+        "branch_append_transactions": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 29480.0,
+          "min": 10000,
+          "max": 73104,
+          "sum": 622320
+        },
+        "replayed_transactions": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 729704.0,
+          "min": 581760,
+          "max": 796144,
+          "sum": 14508816
+        },
+        "committed": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 360000.0,
+          "min": 360000,
+          "max": 360000,
+          "sum": 7200000
+        },
+        "chain_transactions": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 360000.0,
+          "min": 360000,
+          "max": 360000,
+          "sum": 7200000
+        },
+        "candidate_executions": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 118.0,
+          "min": 81,
+          "max": 135,
+          "sum": 2260
+        },
+        "candidate_rank_skips": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 18.0,
+          "min": 5,
+          "max": 31,
+          "sum": 352
+        },
+        "execution_cache_hits": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 35.5,
+          "min": 13,
+          "max": 47,
+          "sum": 677
+        },
+        "execution_cache_misses": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 267.5,
+          "min": 214,
+          "max": 290,
+          "sum": 5306
+        },
+        "block_tasks": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 673.5,
+          "min": 640,
+          "max": 759,
+          "sum": 13706
+        },
+        "block_queue_wait_ms": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 30821.4574225,
+          "min": 8936.941263,
+          "max": 78971.308181,
+          "sum": 767091.659411
+        },
+        "metadata_tasks": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 2482.5,
+          "min": 2438,
+          "max": 2582,
+          "sum": 49903
+        },
+        "metadata_queue_wait_ms": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 128859.37529299999,
+          "min": 67498.203866,
+          "max": 212279.961249,
+          "sum": 2771235.235379
+        },
+        "db_writes": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 116.0,
+          "min": 96,
+          "max": 138,
+          "sum": 2324
+        },
+        "db_write_ms": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 6897.1256855,
+          "min": 4926.911522,
+          "max": 8192.32468,
+          "sum": 136846.287562
+        },
+        "db_batch_bytes": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 272602951.0,
+          "min": 237400288,
+          "max": 290327438,
+          "sum": 5441623565
+        },
+        "network_bytes": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 505974396.5,
+          "min": 476194468,
+          "max": 536306276,
+          "sum": 10112790228
+        },
+        "network_sent_bytes": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 431709136.5,
+          "min": 337169439,
+          "max": 646450403,
+          "sum": 8845667370
+        },
+        "missing_transactions": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 50844.5,
+          "min": 17622,
+          "max": 79629,
+          "sum": 1019105
+        },
+        "process_cpu_seconds": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 36.910210500000005,
+          "min": 34.816177,
+          "max": 41.113765,
+          "sum": 740.582248
+        },
+        "process_write_bytes": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 538523648.0,
+          "min": 517980160,
+          "max": 578088960,
+          "sum": 10811629568
+        },
+        "peak_working_set_bytes": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 634894336.0,
+          "min": 584908800,
+          "max": 680112128,
+          "sum": 12592590848
+        },
+        "signature_checks": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 360000.0,
+          "min": 360000,
+          "max": 360000,
+          "sum": 7200000
+        },
+        "signature_cache_hits": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 529300.0,
+          "min": 426885,
+          "max": 606825,
+          "sum": 10300753
+        },
+        "candidate_execute_ms": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 36.330273500000004,
+          "min": 26.793575,
+          "max": 58.920885,
+          "sum": 779.034087
+        },
+        "commit_execute_ms": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 85.716312,
+          "min": 69.712966,
+          "max": 110.205765,
+          "sum": 1717.290595
+        },
+        "block_verify_ms": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 1837.0409144999999,
+          "min": 1586.601873,
+          "max": 2129.589953,
+          "sum": 36828.206164
+        },
+        "pool_refresh_ms": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 374.2170205,
+          "min": 265.98359,
+          "max": 449.112915,
+          "sum": 7213.822285
+        },
+        "peak_pending": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 41233.0,
+          "min": 40807,
+          "max": 41856,
+          "sum": 825309
+        },
+        "elapsed_seconds": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 13.308011762,
+          "min": 12.099610839,
+          "max": 13.947937107,
+          "sum": 263.888090659
+        },
+        "db_ms_per_write": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 57.35382641906682,
+          "min": 42.11035488888889,
+          "max": 75.61102412371133,
+          "sum": 1187.0600943939633
+        },
+        "block_wait_ms_per_task": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 43.91686775839523,
+          "min": 12.360914609958508,
+          "max": 118.04380894020927,
+          "sum": 1129.009600143177
+        },
+        "metadata_wait_ms_per_task": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 51.75150652971671,
+          "min": 27.3382761709194,
+          "max": 84.91198449960001,
+          "sum": 1109.8104724805326
+        },
+        "fork_reexecute_per_committed": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 1.9408444444444446,
+          "min": 1.5771111111111111,
+          "max": 2.1808444444444444,
+          "sum": 38.5736
+        },
+        "execution_cache_hit_fraction": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 0.1209111353414202,
+          "min": 0.04318936877076412,
+          "max": 0.18007662835249041,
+          "sum": 2.2731084950685854
+        }
+      }
+    },
+    {
+      "ordinal": 9,
+      "kind": "latency",
+      "offered_tps": 20000,
+      "block_tx_step": 0,
+      "load_snapshots": 20,
+      "complete": true,
+      "evidence_missing": [],
+      "statistics": {
+        "block_tx_step": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 0.0,
+          "min": 0,
+          "max": 0,
+          "sum": 0
+        },
+        "local_proposals": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 55.5,
+          "min": 41,
+          "max": 105,
+          "sum": 1225
+        },
+        "block_step_proposals": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 0.0,
+          "min": 0,
+          "max": 0,
+          "sum": 0
+        },
+        "block_tail_proposals": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 0.0,
+          "min": 0,
+          "max": 0,
+          "sum": 0
+        },
+        "block_step_wait_ms": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 0.0,
+          "min": 0.0,
+          "max": 0.0,
+          "sum": 0.0
+        },
+        "reorganizations": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 64.5,
+          "min": 50,
+          "max": 96,
+          "sum": 1350
+        },
+        "max_reorg_depth": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 17.0,
+          "min": 14,
+          "max": 21,
+          "sum": 339
+        },
+        "fork_reexecute_transactions": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 579040.0,
+          "min": 433536,
+          "max": 661232,
+          "sum": 11502688
+        },
+        "branch_append_transactions": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 100616.0,
+          "min": 77504,
+          "max": 127312,
+          "sum": 2031856
+        },
+        "replayed_transactions": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 674496.0,
+          "min": 557424,
+          "max": 745408,
+          "sum": 13534544
+        },
+        "committed": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 240000.0,
+          "min": 240000,
+          "max": 240000,
+          "sum": 4800000
+        },
+        "chain_transactions": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 240000.0,
+          "min": 240000,
+          "max": 240000,
+          "sum": 4800000
+        },
+        "candidate_executions": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 120.0,
+          "min": 89,
+          "max": 170,
+          "sum": 2477
+        },
+        "candidate_rank_skips": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 5.0,
+          "min": 2,
+          "max": 11,
+          "sum": 109
+        },
+        "execution_cache_hits": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 38.5,
+          "min": 23,
+          "max": 84,
+          "sum": 850
+        },
+        "execution_cache_misses": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 408.5,
+          "min": 291,
+          "max": 450,
+          "sum": 7967
+        },
+        "block_tasks": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 1234.0,
+          "min": 1177,
+          "max": 1355,
+          "sum": 24820
+        },
+        "block_queue_wait_ms": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 85302.089513,
+          "min": 30870.638625,
+          "max": 155024.106516,
+          "sum": 1689281.436095
+        },
+        "metadata_tasks": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 2644.5,
+          "min": 2442,
+          "max": 2708,
+          "sum": 52630
+        },
+        "metadata_queue_wait_ms": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 218815.01069,
+          "min": 93630.44909,
+          "max": 362728.323713,
+          "sum": 4513217.031378
+        },
+        "db_writes": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 115.5,
+          "min": 87,
+          "max": 140,
+          "sum": 2284
+        },
+        "db_write_ms": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 6140.370564999999,
+          "min": 4118.584553,
+          "max": 7079.017013,
+          "sum": 121866.69622499999
+        },
+        "db_batch_bytes": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 258135022.5,
+          "min": 213470155,
+          "max": 283256731,
+          "sum": 5162021009
+        },
+        "network_bytes": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 412734876.5,
+          "min": 365850369,
+          "max": 480858508,
+          "sum": 8303019484
+        },
+        "network_sent_bytes": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 363199694.5,
+          "min": 291791078,
+          "max": 488113018,
+          "sum": 7459049902
+        },
+        "missing_transactions": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 127372.5,
+          "min": 83521,
+          "max": 192232,
+          "sum": 2611018
+        },
+        "process_cpu_seconds": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 30.174384,
+          "min": 28.000755,
+          "max": 33.668207,
+          "sum": 611.720142
+        },
+        "process_write_bytes": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 485675008.0,
+          "min": 315318272,
+          "max": 540565504,
+          "sum": 9658830848
+        },
+        "peak_working_set_bytes": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 635746304.0,
+          "min": 587988992,
+          "max": 663429120,
+          "sum": 12721221632
+        },
+        "signature_checks": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 240000.0,
+          "min": 240000,
+          "max": 240000,
+          "sum": 4800000
+        },
+        "signature_cache_hits": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 1463045.0,
+          "min": 1330707,
+          "max": 1566243,
+          "sum": 29000248
+        },
+        "candidate_execute_ms": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 34.919767,
+          "min": 28.244909,
+          "max": 53.455725,
+          "sum": 737.409916
+        },
+        "commit_execute_ms": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 87.86033549999999,
+          "min": 62.82549,
+          "max": 99.428588,
+          "sum": 1684.45767
+        },
+        "block_verify_ms": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 2992.6231915,
+          "min": 2426.689727,
+          "max": 3599.993328,
+          "sum": 60905.626677
+        },
+        "pool_refresh_ms": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 220.88000849999997,
+          "min": 136.558025,
+          "max": 309.875877,
+          "sum": 4324.468796
+        },
+        "peak_pending": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 40577.0,
+          "min": 40388,
+          "max": 40864,
+          "sum": 811613
+        },
+        "elapsed_seconds": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 12.4743049365,
+          "min": 12.329468324,
+          "max": 13.27690662,
+          "sum": 253.90837881
+        },
+        "db_ms_per_write": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 54.35779650924199,
+          "min": 29.41846109285714,
+          "max": 70.16492181609195,
+          "sum": 1089.8431851018086
+        },
+        "block_wait_ms_per_task": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 70.99117937912672,
+          "min": 25.449825741962076,
+          "max": 130.60160616343722,
+          "sum": 1367.2115823027243
+        },
+        "metadata_wait_ms_per_task": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 83.25863557315742,
+          "min": 37.022716128904705,
+          "max": 133.94694376403248,
+          "sum": 1706.8798465524537
+        },
+        "fork_reexecute_per_committed": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 2.4126666666666665,
+          "min": 1.8064,
+          "max": 2.755133333333333,
+          "sum": 47.92786666666667
+        },
+        "execution_cache_hit_fraction": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 0.08567235369656943,
+          "min": 0.05,
+          "max": 0.21351351351351353,
+          "sum": 1.9707744009095218
+        }
+      }
+    },
+    {
+      "ordinal": 10,
+      "kind": "latency",
+      "offered_tps": 20000,
+      "block_tx_step": 500,
+      "load_snapshots": 20,
+      "complete": true,
+      "evidence_missing": [],
+      "statistics": {
+        "block_tx_step": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 500.0,
+          "min": 500,
+          "max": 500,
+          "sum": 10000
+        },
+        "local_proposals": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 43.0,
+          "min": 17,
+          "max": 67,
+          "sum": 846
+        },
+        "block_step_proposals": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 42.5,
+          "min": 16,
+          "max": 67,
+          "sum": 836
+        },
+        "block_tail_proposals": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 0.5,
+          "min": 0,
+          "max": 1,
+          "sum": 10
+        },
+        "block_step_wait_ms": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 12.6993385,
+          "min": 1.516333,
+          "max": 49.845142,
+          "sum": 316.375876
+        },
+        "reorganizations": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 155.0,
+          "min": 142,
+          "max": 176,
+          "sum": 3130
+        },
+        "max_reorg_depth": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 8.0,
+          "min": 7,
+          "max": 9,
+          "sum": 156
+        },
+        "fork_reexecute_transactions": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 720750.0,
+          "min": 625500,
+          "max": 782000,
+          "sum": 14219500
+        },
+        "branch_append_transactions": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 13250.0,
+          "min": 3000,
+          "max": 22500,
+          "sum": 261500
+        },
+        "replayed_transactions": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 733750.0,
+          "min": 647000,
+          "max": 790500,
+          "sum": 14481000
+        },
+        "committed": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 240000.0,
+          "min": 240000,
+          "max": 240000,
+          "sum": 4800000
+        },
+        "chain_transactions": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 240000.0,
+          "min": 240000,
+          "max": 240000,
+          "sum": 4800000
+        },
+        "candidate_executions": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 139.0,
+          "min": 105,
+          "max": 174,
+          "sum": 2812
+        },
+        "candidate_rank_skips": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 16.5,
+          "min": 8,
+          "max": 39,
+          "sum": 390
+        },
+        "execution_cache_hits": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 17.0,
+          "min": 3,
+          "max": 27,
+          "sum": 322
+        },
+        "execution_cache_misses": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 449.5,
+          "min": 392,
+          "max": 489,
+          "sum": 8926
+        },
+        "block_tasks": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 950.5,
+          "min": 873,
+          "max": 1018,
+          "sum": 18917
+        },
+        "block_queue_wait_ms": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 30658.3665425,
+          "min": 10654.802065,
+          "max": 42400.848388,
+          "sum": 596870.773599
+        },
+        "metadata_tasks": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 3853.0,
+          "min": 3748,
+          "max": 3992,
+          "sum": 77090
+        },
+        "metadata_queue_wait_ms": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 154506.84563250002,
+          "min": 55806.013058,
+          "max": 246676.819364,
+          "sum": 3041260.439147
+        },
+        "db_writes": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 176.5,
+          "min": 154,
+          "max": 202,
+          "sum": 3565
+        },
+        "db_write_ms": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 7137.101221000001,
+          "min": 6191.493978,
+          "max": 7627.415932,
+          "sum": 142040.851102
+        },
+        "db_batch_bytes": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 285056813.0,
+          "min": 257999158,
+          "max": 306218594,
+          "sum": 5663138290
+        },
+        "network_bytes": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 414306986.5,
+          "min": 391212477,
+          "max": 436279859,
+          "sum": 8287752377
+        },
+        "network_sent_bytes": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 368123304.5,
+          "min": 288376306,
+          "max": 450167244,
+          "sum": 7443754907
+        },
+        "missing_transactions": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 69993.5,
+          "min": 32061,
+          "max": 102612,
+          "sum": 1316300
+        },
+        "process_cpu_seconds": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 29.0036995,
+          "min": 27.397348,
+          "max": 31.749407,
+          "sum": 582.6004350000001
+        },
+        "process_write_bytes": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 515940352.0,
+          "min": 469286912,
+          "max": 535412736,
+          "sum": 10145296384
+        },
+        "peak_working_set_bytes": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 493561856.0,
+          "min": 475844608,
+          "max": 513413120,
+          "sum": 9856942080
+        },
+        "signature_checks": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 240000.0,
+          "min": 240000,
+          "max": 240000,
+          "sum": 4800000
+        },
+        "signature_cache_hits": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 616096.5,
+          "min": 544366,
+          "max": 649155,
+          "sum": 12207399
+        },
+        "candidate_execute_ms": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 32.1074915,
+          "min": 24.493691,
+          "max": 61.451343,
+          "sum": 692.218862
+        },
+        "commit_execute_ms": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 98.7027095,
+          "min": 87.570715,
+          "max": 106.646465,
+          "sum": 1981.474894
+        },
+        "block_verify_ms": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 1669.6038705,
+          "min": 1481.685294,
+          "max": 1941.536058,
+          "sum": 33609.07178
+        },
+        "pool_refresh_ms": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 287.103476,
+          "min": 214.097314,
+          "max": 354.141141,
+          "sum": 5694.228283
+        },
+        "peak_pending": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 40576.0,
+          "min": 40315,
+          "max": 41315,
+          "sum": 812923
+        },
+        "elapsed_seconds": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 12.260449748500001,
+          "min": 12.063768524,
+          "max": 13.206307168,
+          "sum": 246.722929788
+        },
+        "db_ms_per_write": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 40.04402907262364,
+          "min": 33.487998077720206,
+          "max": 48.80842755194805,
+          "sum": 800.7936856263223
+        },
+        "block_wait_ms_per_task": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 32.97928310096264,
+          "min": 10.861164184505606,
+          "max": 47.375249595530725,
+          "sum": 633.6968906565492
+        },
+        "metadata_wait_ms_per_task": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 40.69880629859236,
+          "min": 14.794807279427358,
+          "max": 65.51841151766268,
+          "sum": 788.4524565877502
+        },
+        "fork_reexecute_per_committed": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 3.003125,
+          "min": 2.60625,
+          "max": 3.2583333333333333,
+          "sum": 59.24791666666667
+        },
+        "execution_cache_hit_fraction": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 0.037883581145207214,
+          "min": 0.00631578947368421,
+          "max": 0.06443914081145585,
+          "sum": 0.704929688954645
+        }
+      }
+    },
+    {
+      "ordinal": 11,
+      "kind": "latency",
+      "offered_tps": 20000,
+      "block_tx_step": 1000,
+      "load_snapshots": 20,
+      "complete": true,
+      "evidence_missing": [],
+      "statistics": {
+        "block_tx_step": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 1000.0,
+          "min": 1000,
+          "max": 1000,
+          "sum": 20000
+        },
+        "local_proposals": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 40.5,
+          "min": 26,
+          "max": 70,
+          "sum": 817
+        },
+        "block_step_proposals": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 39.5,
+          "min": 25,
+          "max": 68,
+          "sum": 797
+        },
+        "block_tail_proposals": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 1.0,
+          "min": 0,
+          "max": 2,
+          "sum": 20
+        },
+        "block_step_wait_ms": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 141.2330795,
+          "min": 20.243071,
+          "max": 306.462415,
+          "sum": 2928.680542
+        },
+        "reorganizations": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 120.0,
+          "min": 108,
+          "max": 135,
+          "sum": 2406
+        },
+        "max_reorg_depth": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 6.0,
+          "min": 5,
+          "max": 6,
+          "sum": 118
+        },
+        "fork_reexecute_transactions": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 648892.0,
+          "min": 615000,
+          "max": 697000,
+          "sum": 13060920
+        },
+        "branch_append_transactions": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 17000.0,
+          "min": 2000,
+          "max": 36000,
+          "sum": 357592
+        },
+        "replayed_transactions": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 665528.0,
+          "min": 639000,
+          "max": 728272,
+          "sum": 13418512
+        },
+        "committed": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 240000.0,
+          "min": 240000,
+          "max": 240000,
+          "sum": 4800000
+        },
+        "chain_transactions": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 240000.0,
+          "min": 240000,
+          "max": 240000,
+          "sum": 4800000
+        },
+        "candidate_executions": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 123.0,
+          "min": 90,
+          "max": 144,
+          "sum": 2413
+        },
+        "candidate_rank_skips": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 11.0,
+          "min": 3,
+          "max": 20,
+          "sum": 224
+        },
+        "execution_cache_hits": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 23.0,
+          "min": 10,
+          "max": 47,
+          "sum": 457
+        },
+        "execution_cache_misses": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 400.0,
+          "min": 377,
+          "max": 423,
+          "sum": 7949
+        },
+        "block_tasks": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 781.0,
+          "min": 670,
+          "max": 882,
+          "sum": 15556
+        },
+        "block_queue_wait_ms": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 21034.96295,
+          "min": 7780.246162,
+          "max": 47652.435268,
+          "sum": 470754.719744
+        },
+        "metadata_tasks": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 3187.5,
+          "min": 3024,
+          "max": 3311,
+          "sum": 63734
+        },
+        "metadata_queue_wait_ms": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 124764.3854285,
+          "min": 64043.880167,
+          "max": 169305.0637,
+          "sum": 2431265.782984
+        },
+        "db_writes": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 145.0,
+          "min": 122,
+          "max": 186,
+          "sum": 2951
+        },
+        "db_write_ms": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 6761.876325499999,
+          "min": 5923.299981,
+          "max": 7215.17789,
+          "sum": 134350.020627
+        },
+        "db_batch_bytes": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 267858126.5,
+          "min": 256660846,
+          "max": 282802782,
+          "sum": 5358092676
+        },
+        "network_bytes": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 386042821.5,
+          "min": 333972593,
+          "max": 421981022,
+          "sum": 7668852716
+        },
+        "network_sent_bytes": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 336741658.0,
+          "min": 228974771,
+          "max": 450957986,
+          "sum": 6824771257
+        },
+        "missing_transactions": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 47054.0,
+          "min": 23814,
+          "max": 87761,
+          "sum": 1022833
+        },
+        "process_cpu_seconds": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 27.9514355,
+          "min": 26.36909,
+          "max": 30.81369,
+          "sum": 562.664715
+        },
+        "process_write_bytes": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 476921856.0,
+          "min": 461983744,
+          "max": 517943296,
+          "sum": 9560338432
+        },
+        "peak_working_set_bytes": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 489119744.0,
+          "min": 463638528,
+          "max": 516956160,
+          "sum": 9770323968
+        },
+        "signature_checks": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 240000.0,
+          "min": 240000,
+          "max": 240000,
+          "sum": 4800000
+        },
+        "signature_cache_hits": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 449951.5,
+          "min": 361151,
+          "max": 519255,
+          "sum": 8987002
+        },
+        "candidate_execute_ms": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 29.708904,
+          "min": 23.406961,
+          "max": 38.962247,
+          "sum": 598.727299
+        },
+        "commit_execute_ms": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 89.63915750000001,
+          "min": 84.074009,
+          "max": 98.794492,
+          "sum": 1803.601541
+        },
+        "block_verify_ms": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 1341.1178485,
+          "min": 1093.011925,
+          "max": 1549.454795,
+          "sum": 26861.032281
+        },
+        "pool_refresh_ms": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 248.95121899999998,
+          "min": 204.983274,
+          "max": 316.834169,
+          "sum": 4949.100638
+        },
+        "peak_pending": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 40434.0,
+          "min": 40266,
+          "max": 40906,
+          "sum": 810134
+        },
+        "elapsed_seconds": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 12.3427293885,
+          "min": 12.193660266,
+          "max": 13.142493246,
+          "sum": 248.760748048
+        },
+        "db_ms_per_write": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 45.42376603852722,
+          "min": 34.88003697849462,
+          "max": 55.035274104838706,
+          "sum": 919.2101807254719
+        },
+        "block_wait_ms_per_task": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 28.399490463095823,
+          "min": 9.262197811904763,
+          "max": 60.93661798976982,
+          "sum": 608.9883008012504
+        },
+        "metadata_wait_ms_per_task": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 39.50644701229088,
+          "min": 19.945151095297415,
+          "max": 52.67736891723709,
+          "sum": 763.078768638526
+        },
+        "fork_reexecute_per_committed": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 2.7037166666666668,
+          "min": 2.5625,
+          "max": 2.904166666666667,
+          "sum": 54.4205
+        },
+        "execution_cache_hit_fraction": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 0.055462380619613325,
+          "min": 0.02386634844868735,
+          "max": 0.10444444444444445,
+          "sum": 1.0825301330324517
+        }
+      }
+    },
+    {
+      "ordinal": 12,
+      "kind": "latency",
+      "offered_tps": 20000,
+      "block_tx_step": 2000,
+      "load_snapshots": 20,
+      "complete": true,
+      "evidence_missing": [],
+      "statistics": {
+        "block_tx_step": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 2000.0,
+          "min": 2000,
+          "max": 2000,
+          "sum": 40000
+        },
+        "local_proposals": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 99.0,
+          "min": 91,
+          "max": 112,
+          "sum": 2006
+        },
+        "block_step_proposals": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 25.0,
+          "min": 20,
+          "max": 33,
+          "sum": 512
+        },
+        "block_tail_proposals": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 75.0,
+          "min": 67,
+          "max": 82,
+          "sum": 1494
+        },
+        "block_step_wait_ms": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 2408.6003115000003,
+          "min": 1938.620989,
+          "max": 3032.928331,
+          "sum": 48599.624765
+        },
+        "reorganizations": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 81.5,
+          "min": 70,
+          "max": 91,
+          "sum": 1629
+        },
+        "max_reorg_depth": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 7.0,
+          "min": 5,
+          "max": 7,
+          "sum": 131
+        },
+        "fork_reexecute_transactions": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 491384.0,
+          "min": 431136,
+          "max": 552448,
+          "sum": 9764624
+        },
+        "branch_append_transactions": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 8896.0,
+          "min": 0,
+          "max": 18368,
+          "sum": 194800
+        },
+        "replayed_transactions": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 500496.0,
+          "min": 431136,
+          "max": 561872,
+          "sum": 9959424
+        },
+        "committed": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 239872.0,
+          "min": 239872,
+          "max": 239872,
+          "sum": 4797440
+        },
+        "chain_transactions": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 239872.0,
+          "min": 239872,
+          "max": 239872,
+          "sum": 4797440
+        },
+        "candidate_executions": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 210.0,
+          "min": 178,
+          "max": 235,
+          "sum": 4134
+        },
+        "candidate_rank_skips": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 51.5,
+          "min": 44,
+          "max": 73,
+          "sum": 1080
+        },
+        "execution_cache_hits": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 91.0,
+          "min": 80,
+          "max": 103,
+          "sum": 1791
+        },
+        "execution_cache_misses": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 235.0,
+          "min": 203,
+          "max": 261,
+          "sum": 4666
+        },
+        "block_tasks": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 567.5,
+          "min": 514,
+          "max": 626,
+          "sum": 11400
+        },
+        "block_queue_wait_ms": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 1784.4225784999999,
+          "min": 633.152363,
+          "max": 6957.680653,
+          "sum": 47011.581853
+        },
+        "metadata_tasks": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 3826.0,
+          "min": 3726,
+          "max": 3893,
+          "sum": 76508
+        },
+        "metadata_queue_wait_ms": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 16354.99926,
+          "min": 6053.789956,
+          "max": 67458.194221,
+          "sum": 498810.730607
+        },
+        "db_writes": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 174.0,
+          "min": 154,
+          "max": 190,
+          "sum": 3465
+        },
+        "db_write_ms": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 4511.8675025,
+          "min": 3644.794929,
+          "max": 5445.693422,
+          "sum": 90818.183293
+        },
+        "db_batch_bytes": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 223426050.5,
+          "min": 207180189,
+          "max": 239243826,
+          "sum": 4452817987
+        },
+        "network_bytes": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 331028448.5,
+          "min": 303366899,
+          "max": 356074979,
+          "sum": 6634596942
+        },
+        "network_sent_bytes": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 286482575.5,
+          "min": 256501863,
+          "max": 334817037,
+          "sum": 5790526083
+        },
+        "missing_transactions": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 6821.5,
+          "min": 1034,
+          "max": 18050,
+          "sum": 158783
+        },
+        "process_cpu_seconds": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 25.633577000000002,
+          "min": 23.739826,
+          "max": 27.755797,
+          "sum": 513.214245
+        },
+        "process_write_bytes": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 312111104.0,
+          "min": 294662144,
+          "max": 451362816,
+          "sum": 7095300096
+        },
+        "peak_working_set_bytes": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 333860864.0,
+          "min": 305561600,
+          "max": 355835904,
+          "sum": 6675292160
+        },
+        "signature_checks": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 239872.0,
+          "min": 239872,
+          "max": 239872,
+          "sum": 4797440
+        },
+        "signature_cache_hits": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 246480.5,
+          "min": 192920,
+          "max": 302747,
+          "sum": 4935387
+        },
+        "candidate_execute_ms": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 48.5853475,
+          "min": 38.210925,
+          "max": 65.950961,
+          "sum": 972.172532
+        },
+        "commit_execute_ms": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 61.647625500000004,
+          "min": 51.45553,
+          "max": 69.663452,
+          "sum": 1217.246252
+        },
+        "block_verify_ms": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 737.5831635,
+          "min": 650.224602,
+          "max": 914.153462,
+          "sum": 14685.094596
+        },
+        "pool_refresh_ms": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 119.5864795,
+          "min": 99.679565,
+          "max": 156.789855,
+          "sum": 2429.341627
+        },
+        "peak_pending": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 24267.0,
+          "min": 18237,
+          "max": 31432,
+          "sum": 490651
+        },
+        "elapsed_seconds": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 12.213407700000001,
+          "min": 12.102565429,
+          "max": 13.368265427,
+          "sum": 246.638144894
+        },
+        "db_ms_per_write": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 26.515577570892496,
+          "min": 22.432094505263155,
+          "max": 30.102605655844158,
+          "sum": 525.2516502185098
+        },
+        "block_wait_ms_per_task": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 3.0764004401330616,
+          "min": 1.2176006980769232,
+          "max": 13.053809855534709,
+          "sum": 83.13926077583127
+        },
+        "metadata_wait_ms_per_task": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 4.212912031378401,
+          "min": 1.5885043180267646,
+          "max": 17.60391289692067,
+          "sum": 130.29209381615283
+        },
+        "fork_reexecute_per_committed": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 2.048525880469584,
+          "min": 1.797358591248666,
+          "max": 2.3030949839914623,
+          "sum": 40.707644076840985
+        },
+        "execution_cache_hit_fraction": {
+          "observed_nodes": 20,
+          "expected_nodes": 20,
+          "complete": true,
+          "median": 0.27435776942355894,
+          "min": 0.23460410557184752,
+          "max": 0.3366013071895425,
+          "sum": 5.560452274285511
+        }
+      }
+    }
+  ]
+}

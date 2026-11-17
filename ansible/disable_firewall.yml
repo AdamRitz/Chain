@@ -1,0 +1,44 @@
+---
+- name: Disable the node firewall when explicitly requested by the operator
+  hosts: chain
+  gather_facts: false
+  become: true
+  tasks:
+    - name: Record the original firewalld state
+      ansible.builtin.command:
+        argv: [systemctl, show, firewalld.service, --property=LoadState, --property=ActiveState, --property=UnitFileState]
+      register: firewall_before
+      changed_when: false
+    - name: Require the known firewalld service
+      ansible.builtin.assert:
+        that: "'LoadState=loaded' in firewall_before.stdout_lines"
+    - name: Stop firewalld and disable its boot activation
+      ansible.builtin.systemd_service:
+        name: firewalld.service
+        state: stopped
+        enabled: false
+    - name: Read the resulting service state
+      ansible.builtin.command:
+        argv: [systemctl, show, firewalld.service, --property=LoadState, --property=ActiveState, --property=UnitFileState]
+      register: firewall_after
+      changed_when: false
+    - name: Create the controller evidence directory
+      ansible.builtin.file:
+        path: "{{ chain_result_dir }}/firewall-disabled"
+        state: directory
+        mode: '0700'
+      delegate_to: localhost
+      become: false
+      run_once: true
+    - name: Save before and after firewall states
+      ansible.builtin.copy:
+        content: "{{ {'before': firewall_before.stdout_lines, 'after': firewall_after.stdout_lines} | to_nice_json }}\n"
+        dest: "{{ chain_result_dir }}/firewall-disabled/{{ chain_node_id }}.json"
+        mode: '0600'
+      delegate_to: localhost
+      become: false
+    - name: Verify the firewall is stopped and disabled
+      ansible.builtin.assert:
+        that:
+          - "'ActiveState=inactive' in firewall_after.stdout_lines"
+          - "'UnitFileState=disabled' in firewall_after.stdout_lines"

@@ -1,13 +1,20 @@
 """Ansible lifecycle adapter. ClusterWorker retains process and DB ownership checks."""
 import argparse
+import errno
 import importlib.util
+import ipaddress
 import json
 import os
 from pathlib import Path
 import re
+import socket
 import subprocess
 import sys
 import time
+
+# Releases are immutable manifest-verified trees. This also covers transitive
+# imports such as Netem when loading ClusterWorker and the expiry subprocess.
+sys.dont_write_bytecode = True
 
 
 def Identifier(value):
@@ -69,6 +76,31 @@ def Worker(release):
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return module
+
+
+def WaitBindablePort(address, port, timeout=70, socket_factory=socket.socket,
+                     clock=time.monotonic, sleep=time.sleep):
+    address = ipaddress.ip_address(address)
+    if port == 8089 or not 1024 <= port <= 65535 or not 0 < timeout <= 70:
+        raise ValueError('Port wait requires an isolated test port and a timeout of at most 70 seconds')
+    family = socket.AF_INET6 if address.version == 6 else socket.AF_INET
+    started = clock()
+    deadline = started + timeout
+    while True:
+        try:
+            # Match the node's bind without SO_REUSEADDR. This waits out an old
+            # listener/TIME_WAIT and neither signals processes nor accepts peers.
+            with socket_factory(family, socket.SOCK_STREAM) as probe:
+                probe.bind((str(address), port))
+            return clock() - started
+        except OSError as error:
+            if error.errno != errno.EADDRINUSE:
+                raise
+            remaining = deadline - clock()
+            if remaining <= 0:
+                raise TimeoutError('Isolated test port %s:%s is still occupied after %ss; no process was stopped' %
+                                   (address, port, timeout)) from error
+            sleep(min(.25, remaining))
 
 
 def StopGuard(ledger):
@@ -143,11 +175,21 @@ def One(request):
             raise ValueError('An isolated non-production test port is required')
         if int(arguments[arguments.index('--port') + 1]) != port:
             raise ValueError('Node arguments do not use the isolated test port')
+        if arguments.count('--bind') > 1 or any(value.startswith('--bind=') for value in arguments):
+            raise ValueError('Node arguments must use at most one explicit --bind address')
+        bind_index = arguments.index('--bind') + 1 if '--bind' in arguments else None
+        if bind_index is not None and bind_index >= len(arguments):
+            raise ValueError('Missing node bind address')
+        bind_address = str(ipaddress.ip_address(arguments[bind_index] if bind_index is not None else '0.0.0.0'))
         lifetime = int(request.get('guard_seconds', 300))
         if not 30 <= lifetime <= 3600:
             raise ValueError('Guard lifetime must be between 30 and 3600 seconds')
         work.update(binary=str(release / 'bin' / 'boost'), genesis=request['genesis'], arguments=arguments,
                     restart=restart)
+        # Readiness precedes process creation and the measured load window. A
+        # timeout leaves a fresh case unclaimed and an audit restart ledger intact.
+        port_probe = dict(address=bind_address, port=port, timeout_seconds=70,
+                          wait_seconds=WaitBindablePort(bind_address, port))
         if not restart:
             reservation.parent.mkdir(parents=True, exist_ok=True)
             if not reservation.resolve().is_relative_to(root):
@@ -156,7 +198,8 @@ def One(request):
             with reservation.open('x', encoding='utf-8') as output:
                 json.dump({'owner': owner, 'run_group': group, 'ledger': str(ledger_file)}, output)
         # Persist intent before starting so controller interruption retains a cleanup target.
-        ledger = {'schema': 1, 'owner': owner, 'run_group': group, 'ledger': str(ledger_file), 'release_dir': str(release), 'request': work}
+        ledger = {'schema': 1, 'owner': owner, 'run_group': group, 'ledger': str(ledger_file), 'release_dir': str(release),
+                  'request': work, 'port_bind_probe': port_probe}
         Save(ledger_file, ledger)
         result = worker.Handle(work)
         ledger['process'] = result
@@ -168,7 +211,7 @@ def One(request):
         import psutil
         ledger['guard'] = {'pid': child.pid, 'created': psutil.Process(child.pid).create_time()}
         Save(ledger_file, ledger)
-        return result
+        return {**result, 'port_bind_probe': port_probe}
     ledger = json.loads(ledger_file.read_text())
     Authorize(ledger, root, run, node, group, owner, release, ledger_file, reservation)
     RecordedProcess(ledger, case)

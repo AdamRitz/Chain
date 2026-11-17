@@ -18,6 +18,9 @@
   "dataset_sha256": {{ chain_dataset_sha256 | to_json }},
   "genesis_file": {{ chain_genesis_file | to_json }},
   "genesis_sha256": {{ chain_genesis_sha256 | to_json }},
+{% if chain_block_tx_steps is defined %}
+  "block_tx_steps": {{ chain_block_tx_steps | to_json }},
+{% endif %}
   "releases": [
 {% for release in chain_stage_releases %}
     {"id": {{ release.id | to_json }}, "directory": {{ (chain_release_root + '/' + release.id) | to_json }}, "sha256": {{ chain_staged_metadata[release.id].binary_sha256 | to_json }}, "binary_sha256": {{ chain_staged_metadata[release.id].binary_sha256 | to_json }}, "package_sha256": {{ release.sha256 | to_json }}, "source_commit": {{ chain_staged_metadata[release.id].source_commit | to_json }}}{% if not loop.last %},{% endif %}

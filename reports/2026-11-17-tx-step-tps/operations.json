@@ -1,0 +1,112 @@
+{
+  "formal_run": "txstep20-4c3afec920",
+  "source_commit": "5171bd193aba0746422f0ceb159791cb03e7661c",
+  "binary_sha256": "aac8c4afc957a1e964a8e8db47ddeb3af0425f39a8c446f83b90e7085b09cbeb",
+  "release_package_sha256": "290113a9d363d7895b0a0339ab2c71e7e36c6cc8a38211343101f36cabc8c2b7",
+  "runner_archive_sha256": "8c1e8f68a0315640821f55fd3b5c47dda995dce2ac66a0e81987b74cf7c27247",
+  "runner_manifest_sha256": "b9babc882b7199578363f349974dcce6f63894be1dcca1b84495664d37a13743",
+  "private_evidence_archive_sha256": "f736f67be72a082a5973ae6bb1625ae608f7c1b75082c98f72863f7e83af9d2d",
+  "private_evidence_archive_bytes": 25343395,
+  "private_evidence_file_count_excluding_embedded_manifest": 4219,
+  "firewall_final": {
+    "hosts": 20,
+    "inactive_and_disabled": 20
+  },
+  "runtime_ctest": {
+    "tests": 15,
+    "passed": 15,
+    "seconds": 49.24,
+    "removed_databases": 51,
+    "removed_bytes": 140165937
+  },
+  "controller_tests": {
+    "ansible_tests": 27,
+    "release_lifecycle_tests": 17,
+    "passed": true
+  },
+  "formal_database_cleanup": {
+    "expected": 240,
+    "records": 240,
+    "removed": 240,
+    "paths_verified": 240,
+    "all_cases_proved": true
+  },
+  "formal_service_recovery": {
+    "completed": true,
+    "restored": true,
+    "cleanup": true,
+    "permanent_peers_restored": true,
+    "permanent_chain_unchanged": true,
+    "benchmark_exit": 2,
+    "restore_exit": 0,
+    "cleanup_exit": 0,
+    "finished": 1794884307.712141,
+    "failure": {
+      "present": false,
+      "categories": [],
+      "sha256": null
+    },
+    "pause_service_evidence": {
+      "records": 20,
+      "successful": 20,
+      "restored_identity_matches": null,
+      "complete": true
+    },
+    "restore_service_evidence": {
+      "records": 20,
+      "successful": 20,
+      "restored_identity_matches": 20,
+      "complete": true
+    },
+    "permanent_snapshots": {
+      "before_nodes": 20,
+      "after_nodes": 20,
+      "same_node_set": true,
+      "chain_and_state_unchanged": true,
+      "all_peers_restored": true
+    },
+    "outer_cleanup": {
+      "host_records": 20,
+      "successful_host_records": 20,
+      "case_checks": 240,
+      "removed_during_outer_cleanup": 0,
+      "already_absent_responses": 240,
+      "not_started": 0,
+      "reported_errors": 0,
+      "complete": true
+    }
+  },
+  "validation_passed": true,
+  "preparation_runs": [
+    {
+      "run": "txstep20-acd1a316de",
+      "original_wrapper": {
+        "completed": false,
+        "cleanup": false,
+        "restored": true,
+        "benchmark_exit": null
+      },
+      "recovery": {
+        "permanent_chain_unchanged": true,
+        "permanent_peers_restored": true,
+        "cleanup_passed": true,
+        "node_count": 20
+      }
+    },
+    {
+      "run": "txstep20-53541f1692",
+      "original_wrapper": {
+        "completed": true,
+        "cleanup": true,
+        "restored": true,
+        "benchmark_exit": 2
+      },
+      "recovery": {
+        "permanent_chain_unchanged": true,
+        "permanent_peers_restored": true,
+        "cleanup_passed": true,
+        "node_count": 20
+      }
+    }
+  ]
+}

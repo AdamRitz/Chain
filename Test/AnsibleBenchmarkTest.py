@@ -82,11 +82,153 @@ class WorkerContractTests(unittest.TestCase):
 class StubCluster:
     def __init__(self, nodes, run, genesis, settings, output):
         self.nodes, self.run, self.genesis, self.output = nodes, run, genesis, output
+        self.settings, self.started = settings, set()
+        self.starts = [None for node in nodes]
         self.clients, self.offline, self.cleanup_errors = [], set(), []
         self.pool = concurrent.futures.ThreadPoolExecutor(20)
 
+    def WaitReady(self, indices):
+        pass
+
+    def Stats(self):
+        return [dict(failed=False, peers=19) for node in self.nodes]
+
+
+class StepComparisonTests(unittest.TestCase):
+    def test_default_preserves_two_release_order_and_omits_step(self):
+        releases = [dict(id='old'), dict(id='new')]
+        schedule = B.ComparisonSchedule(dict(releases=releases))
+        self.assertEqual([(release['id'], kind, rate, step) for release, kind, rate, step in schedule],
+                         [('old', 'throughput', 20000, None), ('new', 'throughput', 20000, None),
+                          ('old', 'throughput', 30000, None), ('new', 'throughput', 30000, None),
+                          ('old', 'latency', 20000, None), ('new', 'latency', 20000, None)])
+
+    def test_step_schedule_finishes_pure_throughput_before_latency(self):
+        steps = [0, 500, 1000, 2000]
+        release = dict(id='new')
+        schedule = B.ComparisonSchedule(dict(releases=[release], block_tx_steps=steps))
+        self.assertEqual(schedule, [(release, 'throughput', rate, step) for rate in B.RATES for step in steps] +
+                         [(release, 'latency', 20000, step) for step in steps])
+        self.assertEqual(len(schedule), 12)
+        self.assertEqual(B.ComparisonSchedule(dict(releases=[release], block_tx_steps=[1, 10000]))[-1][-1], 10000)
+
+    def test_invalid_steps_and_release_counts_are_rejected(self):
+        for steps in (None, [], '500', [True], [500.0], [-1], [10001], [500, 500]):
+            with self.subTest(steps=steps), self.assertRaises(ValueError):
+                B.ComparisonSchedule(dict(releases=[dict(id='new')], block_tx_steps=steps))
+        for releases, steps in (([], [500]), ([{}, {}], [500]), ([{}], None), ([], None)):
+            context = dict(releases=releases)
+            if steps is not None:
+                context['block_tx_steps'] = steps
+            with self.subTest(context=context), self.assertRaises(ValueError):
+                B.ComparisonSchedule(context)
+
+    def test_actual_case_arguments_and_evidence_preserve_step_zero_and_legacy(self):
+        with tempfile.TemporaryDirectory() as directory, mock.patch.object(B, 'Discover'), \
+                mock.patch.object(B, 'InstallMeasurement', return_value=([], [])), \
+                mock.patch.dict(sys.modules, {'psutil': SimpleNamespace()}):
+            import Experiments as E
+            root = Path(directory)
+            context = dict(nodes=Nodes(), run_id='comparison', case_prefix='comparison-owned',
+                           test_root='/var/tmp/isolated-tests', result_dir=str(root),
+                           dataset=str(root / 'unused.bin'), dataset_sha256='d' * 64, genesis_sha256='e' * 64)
+            release = dict(id='new', directory='/opt/releases/new', sha256='a' * 64)
+            calls = []
+            class Workers:
+                def Call(self, action, run, selected, genesis=None, arguments=None, restart=False):
+                    calls.append(dict(action=action, run=run, arguments=arguments))
+                    return {node['node_id']: dict(binary_sha256=release['sha256'], stopped=True, removed=True)
+                            for node in context['nodes']}
+            experiments = SimpleNamespace(ValidatePlan=E.ValidatePlan,
+                LoadCase=mock.Mock(side_effect=RuntimeError('local fixture after start')))
+            runs = set()
+            for step in (None, 0, 500, 1000, 2000):
+                row = B.RunCase(context, {}, Workers(), release, 'throughput', 20000, 1,
+                                (SimpleNamespace(Cluster=StubCluster), experiments, SimpleNamespace()), step)
+                self.assertIn('local fixture after start', row['error'])
+                self.assertEqual(row['cleanup_errors'], [])
+                runs.add(row['run'])
+                suffix = '' if step is None else '-step%s' % step
+                output = root / ('01-new-throughput-20000' + suffix)
+                protocol = json.loads((output / 'protocol.json').read_text())
+                saved = json.loads((output / 'result.json').read_text())
+                starts = json.loads((output / 'load-starts.json').read_text())
+                self.assertEqual(len(starts), 20)
+                self.assertEqual(saved, row)
+                for item in starts:
+                    argv = item['arguments']
+                    if step is None:
+                        self.assertNotIn('--block-tx-step', argv)
+                    else:
+                        self.assertEqual(argv.count('--block-tx-step'), 1)
+                        self.assertEqual(argv[argv.index('--block-tx-step') + 1], str(step))
+                for evidence in (row, row['case'], protocol, protocol['case']):
+                    if step is None:
+                        self.assertNotIn('block_tx_step', evidence)
+                    else:
+                        self.assertEqual(evidence['block_tx_step'], step)
+                for settings in (protocol['node_settings'], protocol['plan']['node_settings']):
+                    if step is None:
+                        self.assertNotIn('block-tx-step', settings)
+                    else:
+                        self.assertEqual(settings['block-tx-step'], step)
+            self.assertEqual(len(runs), 5)
+            self.assertEqual([item['action'] for item in calls], ['start', 'stop', 'collect', 'delete-db'] * 5)
+
+    def test_run_summary_uses_schedule_size_and_retains_step_protocol(self):
+        for steps in (None, [0, 500, 1000, 2000]):
+            with self.subTest(steps=steps), tempfile.TemporaryDirectory() as directory:
+                root = Path(directory)
+                context = dict(run_id='comparison', run_owner='a' * 32, result_dir=str(root / 'results'),
+                               dataset='dataset', genesis_file='genesis', dataset_sha256='a' * 64,
+                               genesis_sha256='a' * 64, releases=[dict(id='old'), dict(id='new')])
+                if steps is not None:
+                    context.update(releases=[dict(id='new')], block_tx_steps=steps)
+                def Case(context, genesis, workers, release, kind, rate, ordinal, modules, step):
+                    return dict(success=True, case=dict(group=kind, block_tx_step=step),
+                                latency=dict(all_samples_within_one_second=True))
+                with mock.patch.object(B, 'ReadContext', return_value=(context, {})), \
+                     mock.patch.object(B, 'Digest', return_value='a' * 64), \
+                     mock.patch.object(B, 'RunCase', side_effect=Case) as run_case, \
+                     mock.patch.dict(sys.modules, {name: SimpleNamespace() for name in ('Cluster', 'Experiments', 'RetestCases')}), \
+                     mock.patch('builtins.print'):
+                    self.assertEqual(B.Run(root / 'unused.json'), 0)
+                summary = json.loads((root / 'results/results.json').read_text())
+                protocol = json.loads((root / 'results/protocol.json').read_text())
+                self.assertTrue(summary['passed'])
+                self.assertTrue(summary['latency_one_second_target_passed'])
+                self.assertEqual(run_case.call_count, 6 if steps is None else 12)
+                if steps is None:
+                    self.assertNotIn('block_tx_steps', protocol)
+                else:
+                    self.assertEqual(protocol['block_tx_steps'], steps)
+                    self.assertEqual(summary['fixed_protocol']['block_tx_steps'], steps)
+
 
 class LifecycleBatchTests(unittest.TestCase):
+    def test_offline_audit_restart_keeps_explicit_zero_step(self):
+        release = dict(id='new', sha256='a' * 64)
+        calls = []
+        nodes = [dict(id=node['node_id']) for node in Nodes()]
+        class Workers:
+            def Call(self, action, run, selected, genesis=None, arguments=None, restart=False):
+                calls.append((action, arguments))
+                return {node['id']: dict(binary_sha256=release['sha256']) for node in nodes}
+        cluster = B.ClusterType(SimpleNamespace(Cluster=StubCluster))(
+            Workers(), release, nodes, 'case-step0', {}, {'block-tx-step': 0}, Path('.'))
+        try:
+            def Restart(node):
+                return cluster.AuditWorker(node, dict(action='start', run='case-step0', restart=True,
+                    arguments=['--port', 18089, '--produce', 0]))
+            with concurrent.futures.ThreadPoolExecutor(20) as pool:
+                self.assertEqual(len(list(pool.map(Restart, nodes))), 20)
+            self.assertEqual(len(calls), 1)
+            self.assertEqual(calls[0][0], 'start')
+            for arguments in calls[0][1].values():
+                self.assertEqual(arguments[arguments.index('--block-tx-step') + 1], '0')
+        finally:
+            cluster.pool.shutdown()
+
     def test_parallel_stop_and_audit_restart_are_single_fleet_operations(self):
         release = dict(id='old', sha256='a' * 64)
         calls = []

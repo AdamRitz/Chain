@@ -1,0 +1,9 @@
+﻿ordinal,offered_tps,block_tx_step,status,formal_tps_eligible,formal_tps,actual_send_tps,same_rate_baseline_formal_tps,improvement_vs_step0_percent,measurement_seconds,mean_common_block_interval_ms,drained_within_budget,drained,state_audit_passed,actual_start_proven,cleanup_proven,validation_error_count
+1,20000,0,complete,True,17830.913261920265,19993.6,17830.913261920265,0.0,9.999712150514824,59.87851587134625,True,True,True,True,True,0
+2,20000,500,complete,True,16096.648384835778,19993.6,17830.913261920265,-9.72616966730575,10.002082182007143,98.05962923536416,True,True,True,True,True,0
+3,20000,1000,complete,True,20198.52905831475,19993.6,17830.913261920265,13.278152170987067,10.00072824198287,59.52814429751708,True,True,True,True,True,0
+4,20000,2000,complete,True,20082.996599428086,19993.6,17830.913261920265,12.630218679361626,10.000101279991213,53.763985376296844,True,True,True,True,True,0
+5,30000,0,complete,False,,30003.2,,,,,False,False,False,True,True,0
+6,30000,500,complete,True,23048.683763430778,30003.2,,,10.000571067997953,136.99412421915005,True,True,True,True,True,0
+7,30000,1000,complete,True,23401.194532673548,30003.2,,,9.999489542009542,153.83830064630064,True,True,True,True,True,0
+8,30000,2000,complete,True,23596.024609087763,30003.2,,,10.001684771472355,112.37848057834107,True,True,True,True,True,0

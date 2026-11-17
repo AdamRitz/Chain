@@ -52,6 +52,14 @@ context 的 `releases[].sha256`、`binary_sha256` 都是实际 boost 哈希，`p
 
 context 与回收结果保存在 `chain_result_dir`；driver 独占全新的 `chain_result_dir/benchmark` 子目录。同一次测试不要重复使用已有 benchmark 目录，新测试使用新的 run ID 和输出目录。
 
+默认比较两个 release：每个输入速率 20,000、30,000 TPS 按 release 顺序分别测量，再以 20,000 TPS 各测一轮延迟，共六轮。比较同一版本的打包步长时，`chain_releases` 只提供一个支持该参数的 release，并添加：
+
+```yaml
+chain_block_tx_steps: [0, 500, 1000, 2000]
+```
+
+模板将其写入 context 的 `block_tx_steps`；步长必须是不重复的 0–10,000 整数，顺序即执行顺序。先在 20,000 TPS 下逐个步长测吞吐，再在 30,000 TPS 下逐个步长测吞吐，最后在 20,000 TPS 下逐个步长独立测延迟，共十二轮。每轮预热 2 秒、测量 10 秒、最多等待 5 秒，各一次，均核对二十节点的持久化账户和规范链。延迟观测额外 RPC 不进入吞吐轮次。case 目录、启动 argv、参数记录和结果都包含步长；`0` 也显式传入，以覆盖版本自带配置。未设置 `chain_block_tx_steps` 时保留原两版本流程，启动 argv 不添加该参数，兼容旧二进制。
+
 ## Worker 与恢复接口
 
 `workers.yml` 一次覆盖选中机器，`--limit` 可选择 10 或 20 台。结果写入 `<chain_worker_results_dir>/<node_id>.json`，格式为 `{ok,result}`；失败也先保存证据再报错。
@@ -71,7 +79,7 @@ context 与回收结果保存在 `chain_result_dir`；driver 独占全新的 `ch
 
 禁止 arguments 覆盖 `--data`、`--genesis`、`--metrics`。start 保留实际 `binary_sha256`。export-headers 在归属核对且停止的同一 DB 上，使用保留的 HeaderReader 和该 release 的 RocksDB 库只读导出块头与分数。
 
-使用支持整数步长打包的版本时，可在 `chain_worker_arguments` 或各节点的 `chain_worker_arguments_by_node` 中加入 `--block-tx-step 500`（也可为 1000、2000，0 关闭）。时间轮次参数例如 `--round-ms 50 --candidate-ms 12`。同一实验的生产节点应统一设置步长；旧版二进制不认识此参数，原版对照应省略。`Test/AnsibleBenchmark.py` 的既有固定对照配置不会自动添加该参数，专项比较需要在各轮节点启动参数中显式指定并保存证据。
+使用支持整数步长打包的版本时，可在 `chain_worker_arguments` 或各节点的 `chain_worker_arguments_by_node` 中加入 `--block-tx-step 500`（也可为 1000、2000，0 关闭）。时间轮次参数例如 `--round-ms 50 --candidate-ms 12`。同一实验的生产节点应统一设置步长；旧版二进制不认识此参数，原版对照应省略。一键对照 driver 使用上述 `chain_block_tx_steps` 配置，不读取手工 worker 参数作为比较档位。
 
 ```bash
 ../.venv/bin/ansible-playbook -i /srv/chain/inventory.yml cleanup.yml -e @/srv/chain/run.yml \
@@ -79,6 +87,26 @@ context 与回收结果保存在 `chain_result_dir`；driver 独占全新的 `ch
 ```
 
 回收先停止、收集，再请求既有 ClusterWorker 删本轮 DB。路径或身份核对失败则保留该 DB、返回错误，其他节点继续。代码、参数、创世、记录和日志保留。
+
+实验端口被 firewalld 阻挡时，使用 `firewall_guard.yml` 临时允许来自 `192.168.0.0/24` 的 IPv4 TCP 18089。它在当前 active zones（无 active zone 时使用 default zone）添加 runtime rich rule，不修改 permanent 配置、不 reload；firewalld 未运行时仅保存跳过证据。规则带 2,400 秒超时，run/owner 派生的优先级用于精确区分本次规则；已有完全相同的规则保留。
+
+```bash
+../.venv/bin/ansible-playbook -i /srv/chain/inventory.yml firewall_guard.yml -e @/srv/chain/run.yml \
+  -e chain_firewall_guard_action=allow -e chain_run_group=unique_test_group \
+  -e chain_run_owner=0123456789abcdef0123456789abcdef \
+  -e chain_firewall_guard_results_dir=/srv/chain/results/firewall-allow
+# 外层 finally 中运行；allow 仅部分成功时也执行。
+../.venv/bin/ansible-playbook -i /srv/chain/inventory.yml firewall_guard.yml -e @/srv/chain/run.yml \
+  -e chain_firewall_guard_action=restore -e chain_run_group=unique_test_group \
+  -e chain_run_owner=0123456789abcdef0123456789abcdef \
+  -e chain_firewall_guard_results_dir=/srv/chain/results/firewall-restore
+```
+
+每次运行使用独立 group 和随机 UUID hex owner，与 benchmark 共用。机器端状态位于 `/var/lib/chain/ansible-firewall-guards/<group>.json`，加锁并在修改前持久化 ownership；控制端每台保存操作结果。restore 只删除本次新增的精确规则，规则已超时也可成功；失败可用相同 group/owner 重试。重复 allow 不延长 40 分钟截止，restore 完成后该 group 不再复用。可用 `chain_firewall_guard_action=status` 查询。规则和超时行为依据 [firewalld CLI 文档](https://firewalld.org/documentation/man-pages/firewall-cmd.html)；优先级与匹配范围见 [rich language 文档](https://firewalld.org/documentation/man-pages/firewalld.richlanguage.html)。
+
+操作人员明确要求关闭系统防火墙时，可以运行 `disable_firewall.yml -e @/srv/chain/run.yml`。该 playbook 对清单内节点执行 firewalld stop 和 disable，并核对 `inactive/disabled`；修改前后状态保存在 `chain_result_dir/firewall-disabled/`。这与有时限的临时规则是两个独立操作，benchmark 不会自动执行关闭防火墙。
+
+运行辅助模块禁止写入 release 内的 Python 字节码缓存，确保重复 stage 仍通过原始清单校验。节点启动及审计重启前会对隔离地址/端口执行不带 `SO_REUSEADDR` 的 bind 探测，遇到 `EADDRINUSE` 最多等待 70 秒；不停止占用者，其他绑定错误立即失败。等待发生在负载开始之前，`port_bind_probe` 保存等待记录，节点 watchdog 从实际启动后计时。
 
 ## 滚动部署与回退
 
