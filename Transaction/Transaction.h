@@ -43,6 +43,8 @@ void WakeMainLoop() {
 }
 size_t maxPoolTx=200000;
 size_t maxBlockTx=6000;
+// Local proposal batching; 0 and 1 preserve unrestricted transaction counts.
+size_t blockTxStep=0;
 atomic<uint64_t> receivedTx{0},validTx{0},invalidTx{0},duplicateTx{0},rejectedTx{0};
 atomic<uint64_t> invalidUserTx{0},conflictTx{0};
 atomic<uint64_t> txCommitWaitNs{0},txReadNs{0},txPoolWaitNs{0};

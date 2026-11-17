@@ -53,6 +53,10 @@ int main(int argc,char* argv[]) {
             if (node["block_verify_threads"]) blockVerifyCount=node["block_verify_threads"].as<int>();
             if (node["query_threads"]) queryNum=node["query_threads"].as<int>();
             if (node["block_ms"]) blockInterval=node["block_ms"].as<int>();
+            if (node["max_block_txs"]) maxBlockTx=ParseNumber(node["max_block_txs"].as<string>(),1,maxProtocolTx);
+            if (node["block_tx_step"]) blockTxStep=ParseNumber(node["block_tx_step"].as<string>(),0,maxProtocolTx);
+            if (node["round_ms"]) nodeClock.roundMs=int(ParseNumber(node["round_ms"].as<string>(),0,5000));
+            if (node["candidate_ms"]) nodeClock.candidateMs=int(ParseNumber(node["candidate_ms"].as<string>(),0,5000));
             if (node["sync"]) sync=node["sync"].as<bool>();
             if (node["produce"]) produceBlocks=node["produce"].as<bool>();
             if (node["peers"]) for (const auto& peer:node["peers"]) AddConfiguredPeer(peer.as<string>());
@@ -84,6 +88,7 @@ int main(int argc,char* argv[]) {
             else if (name=="--sync-window") syncWindow=ParseNumber(value,4,64);
             else if (name=="--block-ms") blockInterval=int(ParseNumber(value,1,5000));
             else if (name=="--max-block-txs") maxBlockTx=ParseNumber(value,1,maxProtocolTx);
+            else if (name=="--block-tx-step") blockTxStep=ParseNumber(value,0,maxProtocolTx);
             else if (name=="--max-pool") maxPoolTx=ParseNumber(value,6000,2000000);
             else if (name=="--max-pending") maxPendingVerify=ParseNumber(value,6000,1000000);
             else if (name=="--sync") sync=ParseNumber(value,0,1)!=0;
@@ -157,7 +162,7 @@ int main(int argc,char* argv[]) {
         if (!listenAddressV6.empty()) co_spawn(io,Listen(listenPort,listenAddressV6),onError);
         co_spawn(make_strand(io),OpenDiscoveryMode(),onError);
         if (observeClock) co_spawn(make_strand(io),SynchronizeClock(),onError);
-        spdlog::info("Node ready. IO:{}, Verify:{}, BlockMs:{}, Produce:{}",ioNum,verifyNum,blockInterval,produceBlocks);
+        spdlog::info("Node ready. IO:{}, Verify:{}, BlockMs:{}, BlockTxStep:{}, Produce:{}",ioNum,verifyNum,blockInterval,blockTxStep,produceBlocks);
         thread blockThread(MainLoop);
         vector<thread> threads;
         for (int i=0;i<ioNum;i++) threads.emplace_back([&] {

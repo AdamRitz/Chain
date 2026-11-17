@@ -1,0 +1,1131 @@
+{
+  "schema": 1,
+  "requested_root": "/opt/chain/build/20261117-txstep",
+  "resolved_root": "/opt/chain/releases/070fbb46ff25bce38d9599c5165dce66d63fc561/build/20261117-txstep",
+  "started_at": "2026-11-17T01:44:22.336845+00:00",
+  "finished_at": "2026-11-17T01:44:24.238108+00:00",
+  "status": "complete",
+  "test_roots": [
+    {
+      "path": "/opt/chain/releases/070fbb46ff25bce38d9599c5165dce66d63fc561/build/20261117-txstep/deploy/tests-r1",
+      "status": "present"
+    },
+    {
+      "path": "/opt/chain/releases/070fbb46ff25bce38d9599c5165dce66d63fc561/build/20261117-txstep/deploy/multi-producer-r1",
+      "status": "present"
+    }
+  ],
+  "process_checks": [
+    {
+      "checked_at": "2026-11-17T01:44:22.352945+00:00",
+      "blockers": [],
+      "unreadable": []
+    },
+    {
+      "checked_at": "2026-11-17T01:44:22.705508+00:00",
+      "blockers": [],
+      "unreadable": []
+    },
+    {
+      "checked_at": "2026-11-17T01:44:22.722999+00:00",
+      "blockers": [],
+      "unreadable": []
+    },
+    {
+      "checked_at": "2026-11-17T01:44:22.748887+00:00",
+      "blockers": [],
+      "unreadable": []
+    },
+    {
+      "checked_at": "2026-11-17T01:44:22.772937+00:00",
+      "blockers": [],
+      "unreadable": []
+    },
+    {
+      "checked_at": "2026-11-17T01:44:22.795138+00:00",
+      "blockers": [],
+      "unreadable": []
+    },
+    {
+      "checked_at": "2026-11-17T01:44:22.822558+00:00",
+      "blockers": [],
+      "unreadable": []
+    },
+    {
+      "checked_at": "2026-11-17T01:44:22.844982+00:00",
+      "blockers": [],
+      "unreadable": []
+    },
+    {
+      "checked_at": "2026-11-17T01:44:22.868095+00:00",
+      "blockers": [],
+      "unreadable": []
+    },
+    {
+      "checked_at": "2026-11-17T01:44:22.893209+00:00",
+      "blockers": [],
+      "unreadable": []
+    },
+    {
+      "checked_at": "2026-11-17T01:44:22.915588+00:00",
+      "blockers": [],
+      "unreadable": []
+    },
+    {
+      "checked_at": "2026-11-17T01:44:22.937534+00:00",
+      "blockers": [],
+      "unreadable": []
+    },
+    {
+      "checked_at": "2026-11-17T01:44:22.959857+00:00",
+      "blockers": [],
+      "unreadable": []
+    },
+    {
+      "checked_at": "2026-11-17T01:44:22.982320+00:00",
+      "blockers": [],
+      "unreadable": []
+    },
+    {
+      "checked_at": "2026-11-17T01:44:23.004018+00:00",
+      "blockers": [],
+      "unreadable": []
+    },
+    {
+      "checked_at": "2026-11-17T01:44:23.028001+00:00",
+      "blockers": [],
+      "unreadable": []
+    },
+    {
+      "checked_at": "2026-11-17T01:44:23.049875+00:00",
+      "blockers": [],
+      "unreadable": []
+    },
+    {
+      "checked_at": "2026-11-17T01:44:23.073032+00:00",
+      "blockers": [],
+      "unreadable": []
+    },
+    {
+      "checked_at": "2026-11-17T01:44:23.096253+00:00",
+      "blockers": [],
+      "unreadable": []
+    },
+    {
+      "checked_at": "2026-11-17T01:44:23.120601+00:00",
+      "blockers": [],
+      "unreadable": []
+    },
+    {
+      "checked_at": "2026-11-17T01:44:23.143257+00:00",
+      "blockers": [],
+      "unreadable": []
+    },
+    {
+      "checked_at": "2026-11-17T01:44:23.168313+00:00",
+      "blockers": [],
+      "unreadable": []
+    },
+    {
+      "checked_at": "2026-11-17T01:44:23.193090+00:00",
+      "blockers": [],
+      "unreadable": []
+    },
+    {
+      "checked_at": "2026-11-17T01:44:23.215400+00:00",
+      "blockers": [],
+      "unreadable": []
+    },
+    {
+      "checked_at": "2026-11-17T01:44:23.240758+00:00",
+      "blockers": [],
+      "unreadable": []
+    },
+    {
+      "checked_at": "2026-11-17T01:44:23.262986+00:00",
+      "blockers": [],
+      "unreadable": []
+    },
+    {
+      "checked_at": "2026-11-17T01:44:23.284511+00:00",
+      "blockers": [],
+      "unreadable": []
+    },
+    {
+      "checked_at": "2026-11-17T01:44:23.308213+00:00",
+      "blockers": [],
+      "unreadable": []
+    },
+    {
+      "checked_at": "2026-11-17T01:44:23.336709+00:00",
+      "blockers": [],
+      "unreadable": []
+    },
+    {
+      "checked_at": "2026-11-17T01:44:23.360919+00:00",
+      "blockers": [],
+      "unreadable": []
+    },
+    {
+      "checked_at": "2026-11-17T01:44:23.382982+00:00",
+      "blockers": [],
+      "unreadable": []
+    },
+    {
+      "checked_at": "2026-11-17T01:44:23.406522+00:00",
+      "blockers": [],
+      "unreadable": []
+    },
+    {
+      "checked_at": "2026-11-17T01:44:23.433700+00:00",
+      "blockers": [],
+      "unreadable": []
+    },
+    {
+      "checked_at": "2026-11-17T01:44:23.460971+00:00",
+      "blockers": [],
+      "unreadable": []
+    },
+    {
+      "checked_at": "2026-11-17T01:44:23.485440+00:00",
+      "blockers": [],
+      "unreadable": []
+    },
+    {
+      "checked_at": "2026-11-17T01:44:23.507814+00:00",
+      "blockers": [],
+      "unreadable": []
+    },
+    {
+      "checked_at": "2026-11-17T01:44:23.532763+00:00",
+      "blockers": [],
+      "unreadable": []
+    },
+    {
+      "checked_at": "2026-11-17T01:44:23.557238+00:00",
+      "blockers": [],
+      "unreadable": []
+    },
+    {
+      "checked_at": "2026-11-17T01:44:23.583325+00:00",
+      "blockers": [],
+      "unreadable": []
+    },
+    {
+      "checked_at": "2026-11-17T01:44:23.608778+00:00",
+      "blockers": [],
+      "unreadable": []
+    },
+    {
+      "checked_at": "2026-11-17T01:44:23.633718+00:00",
+      "blockers": [],
+      "unreadable": []
+    },
+    {
+      "checked_at": "2026-11-17T01:44:23.657284+00:00",
+      "blockers": [],
+      "unreadable": []
+    },
+    {
+      "checked_at": "2026-11-17T01:44:23.679581+00:00",
+      "blockers": [],
+      "unreadable": []
+    },
+    {
+      "checked_at": "2026-11-17T01:44:23.707649+00:00",
+      "blockers": [],
+      "unreadable": []
+    },
+    {
+      "checked_at": "2026-11-17T01:44:23.732874+00:00",
+      "blockers": [],
+      "unreadable": []
+    },
+    {
+      "checked_at": "2026-11-17T01:44:23.755350+00:00",
+      "blockers": [],
+      "unreadable": []
+    },
+    {
+      "checked_at": "2026-11-17T01:44:23.781560+00:00",
+      "blockers": [],
+      "unreadable": []
+    },
+    {
+      "checked_at": "2026-11-17T01:44:23.804789+00:00",
+      "blockers": [],
+      "unreadable": []
+    },
+    {
+      "checked_at": "2026-11-17T01:44:23.827625+00:00",
+      "blockers": [],
+      "unreadable": []
+    },
+    {
+      "checked_at": "2026-11-17T01:44:23.850927+00:00",
+      "blockers": [],
+      "unreadable": []
+    },
+    {
+      "checked_at": "2026-11-17T01:44:23.874263+00:00",
+      "blockers": [],
+      "unreadable": []
+    },
+    {
+      "checked_at": "2026-11-17T01:44:23.899612+00:00",
+      "blockers": [],
+      "unreadable": []
+    },
+    {
+      "checked_at": "2026-11-17T01:44:23.927550+00:00",
+      "blockers": [],
+      "unreadable": []
+    },
+    {
+      "checked_at": "2026-11-17T01:44:23.955236+00:00",
+      "blockers": [],
+      "unreadable": []
+    },
+    {
+      "checked_at": "2026-11-17T01:44:23.978768+00:00",
+      "blockers": [],
+      "unreadable": []
+    },
+    {
+      "checked_at": "2026-11-17T01:44:24.002266+00:00",
+      "blockers": [],
+      "unreadable": []
+    },
+    {
+      "checked_at": "2026-11-17T01:44:24.025333+00:00",
+      "blockers": [],
+      "unreadable": []
+    },
+    {
+      "checked_at": "2026-11-17T01:44:24.061632+00:00",
+      "blockers": [],
+      "unreadable": []
+    },
+    {
+      "checked_at": "2026-11-17T01:44:24.093245+00:00",
+      "blockers": [],
+      "unreadable": []
+    },
+    {
+      "checked_at": "2026-11-17T01:44:24.117556+00:00",
+      "blockers": [],
+      "unreadable": []
+    },
+    {
+      "checked_at": "2026-11-17T01:44:24.148702+00:00",
+      "blockers": [],
+      "unreadable": []
+    },
+    {
+      "checked_at": "2026-11-17T01:44:24.183818+00:00",
+      "blockers": [],
+      "unreadable": []
+    }
+  ],
+  "databases": [
+    {
+      "path": "/opt/chain/releases/070fbb46ff25bce38d9599c5165dce66d63fc561/build/20261117-txstep/deploy/tests-r1/admission-network-test-data/1794879596353108931/full-block-batch/full-batch/db",
+      "test_root": "/opt/chain/releases/070fbb46ff25bce38d9599c5165dce66d63fc561/build/20261117-txstep/deploy/tests-r1",
+      "state": "deleted",
+      "tree_bytes_before": 6397909,
+      "files_before": 7,
+      "deleted_bytes": 6397909,
+      "bytes_at_delete": 6397909,
+      "files_at_delete": 7,
+      "deleted_at": "2026-11-17T01:44:22.735880+00:00"
+    },
+    {
+      "path": "/opt/chain/releases/070fbb46ff25bce38d9599c5165dce66d63fc561/build/20261117-txstep/deploy/tests-r1/admission-network-test-data/1794879596353108931/large-block-batch/full-batch/db",
+      "test_root": "/opt/chain/releases/070fbb46ff25bce38d9599c5165dce66d63fc561/build/20261117-txstep/deploy/tests-r1",
+      "state": "deleted",
+      "tree_bytes_before": 10606844,
+      "files_before": 7,
+      "deleted_bytes": 10606844,
+      "bytes_at_delete": 10606844,
+      "files_at_delete": 7,
+      "deleted_at": "2026-11-17T01:44:22.759936+00:00"
+    },
+    {
+      "path": "/opt/chain/releases/070fbb46ff25bce38d9599c5165dce66d63fc561/build/20261117-txstep/deploy/tests-r1/experiment-test-data/1794879591909124199/index/index/db",
+      "test_root": "/opt/chain/releases/070fbb46ff25bce38d9599c5165dce66d63fc561/build/20261117-txstep/deploy/tests-r1",
+      "state": "deleted",
+      "tree_bytes_before": 93305,
+      "files_before": 10,
+      "deleted_bytes": 93305,
+      "bytes_at_delete": 93305,
+      "files_at_delete": 10,
+      "deleted_at": "2026-11-17T01:44:22.782399+00:00"
+    },
+    {
+      "path": "/opt/chain/releases/070fbb46ff25bce38d9599c5165dce66d63fc561/build/20261117-txstep/deploy/tests-r1/tx-step-network/1794879576444606220/bytes-0/follower/db",
+      "test_root": "/opt/chain/releases/070fbb46ff25bce38d9599c5165dce66d63fc561/build/20261117-txstep/deploy/tests-r1",
+      "state": "deleted",
+      "tree_bytes_before": 4405091,
+      "files_before": 7,
+      "deleted_bytes": 4405091,
+      "bytes_at_delete": 4405091,
+      "files_at_delete": 7,
+      "deleted_at": "2026-11-17T01:44:22.809954+00:00"
+    },
+    {
+      "path": "/opt/chain/releases/070fbb46ff25bce38d9599c5165dce66d63fc561/build/20261117-txstep/deploy/tests-r1/tx-step-network/1794879576444606220/bytes-0/producer/db",
+      "test_root": "/opt/chain/releases/070fbb46ff25bce38d9599c5165dce66d63fc561/build/20261117-txstep/deploy/tests-r1",
+      "state": "deleted",
+      "tree_bytes_before": 4405091,
+      "files_before": 7,
+      "deleted_bytes": 4405091,
+      "bytes_at_delete": 4405091,
+      "files_at_delete": 7,
+      "deleted_at": "2026-11-17T01:44:22.832020+00:00"
+    },
+    {
+      "path": "/opt/chain/releases/070fbb46ff25bce38d9599c5165dce66d63fc561/build/20261117-txstep/deploy/tests-r1/tx-step-network/1794879576444606220/bytes-300/follower/db",
+      "test_root": "/opt/chain/releases/070fbb46ff25bce38d9599c5165dce66d63fc561/build/20261117-txstep/deploy/tests-r1",
+      "state": "deleted",
+      "tree_bytes_before": 4405099,
+      "files_before": 7,
+      "deleted_bytes": 4405099,
+      "bytes_at_delete": 4405099,
+      "files_at_delete": 7,
+      "deleted_at": "2026-11-17T01:44:22.855299+00:00"
+    },
+    {
+      "path": "/opt/chain/releases/070fbb46ff25bce38d9599c5165dce66d63fc561/build/20261117-txstep/deploy/tests-r1/tx-step-network/1794879576444606220/bytes-300/producer/db",
+      "test_root": "/opt/chain/releases/070fbb46ff25bce38d9599c5165dce66d63fc561/build/20261117-txstep/deploy/tests-r1",
+      "state": "deleted",
+      "tree_bytes_before": 4405099,
+      "files_before": 7,
+      "deleted_bytes": 4405099,
+      "bytes_at_delete": 4405099,
+      "files_at_delete": 7,
+      "deleted_at": "2026-11-17T01:44:22.880319+00:00"
+    },
+    {
+      "path": "/opt/chain/releases/070fbb46ff25bce38d9599c5165dce66d63fc561/build/20261117-txstep/deploy/tests-r1/tx-step-network/1794879576444606220/configuration/valid-0/db",
+      "test_root": "/opt/chain/releases/070fbb46ff25bce38d9599c5165dce66d63fc561/build/20261117-txstep/deploy/tests-r1",
+      "state": "deleted",
+      "tree_bytes_before": 43022,
+      "files_before": 7,
+      "deleted_bytes": 43022,
+      "bytes_at_delete": 43022,
+      "files_at_delete": 7,
+      "deleted_at": "2026-11-17T01:44:22.902154+00:00"
+    },
+    {
+      "path": "/opt/chain/releases/070fbb46ff25bce38d9599c5165dce66d63fc561/build/20261117-txstep/deploy/tests-r1/tx-step-network/1794879576444606220/configuration/valid-1/db",
+      "test_root": "/opt/chain/releases/070fbb46ff25bce38d9599c5165dce66d63fc561/build/20261117-txstep/deploy/tests-r1",
+      "state": "deleted",
+      "tree_bytes_before": 43030,
+      "files_before": 7,
+      "deleted_bytes": 43030,
+      "bytes_at_delete": 43030,
+      "files_at_delete": 7,
+      "deleted_at": "2026-11-17T01:44:22.924634+00:00"
+    },
+    {
+      "path": "/opt/chain/releases/070fbb46ff25bce38d9599c5165dce66d63fc561/build/20261117-txstep/deploy/tests-r1/tx-step-network/1794879576444606220/configuration/valid-2/db",
+      "test_root": "/opt/chain/releases/070fbb46ff25bce38d9599c5165dce66d63fc561/build/20261117-txstep/deploy/tests-r1",
+      "state": "deleted",
+      "tree_bytes_before": 43030,
+      "files_before": 7,
+      "deleted_bytes": 43030,
+      "bytes_at_delete": 43030,
+      "files_at_delete": 7,
+      "deleted_at": "2026-11-17T01:44:22.947031+00:00"
+    },
+    {
+      "path": "/opt/chain/releases/070fbb46ff25bce38d9599c5165dce66d63fc561/build/20261117-txstep/deploy/tests-r1/tx-step-network/1794879576444606220/configuration/valid-3/db",
+      "test_root": "/opt/chain/releases/070fbb46ff25bce38d9599c5165dce66d63fc561/build/20261117-txstep/deploy/tests-r1",
+      "state": "deleted",
+      "tree_bytes_before": 43034,
+      "files_before": 7,
+      "deleted_bytes": 43034,
+      "bytes_at_delete": 43034,
+      "files_at_delete": 7,
+      "deleted_at": "2026-11-17T01:44:22.969054+00:00"
+    },
+    {
+      "path": "/opt/chain/releases/070fbb46ff25bce38d9599c5165dce66d63fc561/build/20261117-txstep/deploy/tests-r1/tx-step-network/1794879576444606220/configuration/valid-4/db",
+      "test_root": "/opt/chain/releases/070fbb46ff25bce38d9599c5165dce66d63fc561/build/20261117-txstep/deploy/tests-r1",
+      "state": "deleted",
+      "tree_bytes_before": 43022,
+      "files_before": 7,
+      "deleted_bytes": 43022,
+      "bytes_at_delete": 43022,
+      "files_at_delete": 7,
+      "deleted_at": "2026-11-17T01:44:22.991296+00:00"
+    },
+    {
+      "path": "/opt/chain/releases/070fbb46ff25bce38d9599c5165dce66d63fc561/build/20261117-txstep/deploy/tests-r1/tx-step-network/1794879576444606220/gas-0/follower/db",
+      "test_root": "/opt/chain/releases/070fbb46ff25bce38d9599c5165dce66d63fc561/build/20261117-txstep/deploy/tests-r1",
+      "state": "deleted",
+      "tree_bytes_before": 48164,
+      "files_before": 7,
+      "deleted_bytes": 48164,
+      "bytes_at_delete": 48164,
+      "files_at_delete": 7,
+      "deleted_at": "2026-11-17T01:44:23.014984+00:00"
+    },
+    {
+      "path": "/opt/chain/releases/070fbb46ff25bce38d9599c5165dce66d63fc561/build/20261117-txstep/deploy/tests-r1/tx-step-network/1794879576444606220/gas-0/producer/db",
+      "test_root": "/opt/chain/releases/070fbb46ff25bce38d9599c5165dce66d63fc561/build/20261117-txstep/deploy/tests-r1",
+      "state": "deleted",
+      "tree_bytes_before": 48173,
+      "files_before": 7,
+      "deleted_bytes": 48173,
+      "bytes_at_delete": 48173,
+      "files_at_delete": 7,
+      "deleted_at": "2026-11-17T01:44:23.036933+00:00"
+    },
+    {
+      "path": "/opt/chain/releases/070fbb46ff25bce38d9599c5165dce66d63fc561/build/20261117-txstep/deploy/tests-r1/tx-step-network/1794879576444606220/gas-300/follower/db",
+      "test_root": "/opt/chain/releases/070fbb46ff25bce38d9599c5165dce66d63fc561/build/20261117-txstep/deploy/tests-r1",
+      "state": "deleted",
+      "tree_bytes_before": 48170,
+      "files_before": 7,
+      "deleted_bytes": 48170,
+      "bytes_at_delete": 48170,
+      "files_at_delete": 7,
+      "deleted_at": "2026-11-17T01:44:23.058817+00:00"
+    },
+    {
+      "path": "/opt/chain/releases/070fbb46ff25bce38d9599c5165dce66d63fc561/build/20261117-txstep/deploy/tests-r1/tx-step-network/1794879576444606220/gas-300/producer/db",
+      "test_root": "/opt/chain/releases/070fbb46ff25bce38d9599c5165dce66d63fc561/build/20261117-txstep/deploy/tests-r1",
+      "state": "deleted",
+      "tree_bytes_before": 48178,
+      "files_before": 7,
+      "deleted_bytes": 48178,
+      "bytes_at_delete": 48178,
+      "files_at_delete": 7,
+      "deleted_at": "2026-11-17T01:44:23.083384+00:00"
+    },
+    {
+      "path": "/opt/chain/releases/070fbb46ff25bce38d9599c5165dce66d63fc561/build/20261117-txstep/deploy/tests-r1/tx-step-network/1794879576444606220/native-1000-0/follower/db",
+      "test_root": "/opt/chain/releases/070fbb46ff25bce38d9599c5165dce66d63fc561/build/20261117-txstep/deploy/tests-r1",
+      "state": "deleted",
+      "tree_bytes_before": 311674,
+      "files_before": 7,
+      "deleted_bytes": 311674,
+      "bytes_at_delete": 311674,
+      "files_at_delete": 7,
+      "deleted_at": "2026-11-17T01:44:23.107234+00:00"
+    },
+    {
+      "path": "/opt/chain/releases/070fbb46ff25bce38d9599c5165dce66d63fc561/build/20261117-txstep/deploy/tests-r1/tx-step-network/1794879576444606220/native-1000-0/producer/db",
+      "test_root": "/opt/chain/releases/070fbb46ff25bce38d9599c5165dce66d63fc561/build/20261117-txstep/deploy/tests-r1",
+      "state": "deleted",
+      "tree_bytes_before": 311666,
+      "files_before": 7,
+      "deleted_bytes": 311666,
+      "bytes_at_delete": 311666,
+      "files_at_delete": 7,
+      "deleted_at": "2026-11-17T01:44:23.130096+00:00"
+    },
+    {
+      "path": "/opt/chain/releases/070fbb46ff25bce38d9599c5165dce66d63fc561/build/20261117-txstep/deploy/tests-r1/tx-step-network/1794879576444606220/native-1000-300/follower/db",
+      "test_root": "/opt/chain/releases/070fbb46ff25bce38d9599c5165dce66d63fc561/build/20261117-txstep/deploy/tests-r1",
+      "state": "deleted",
+      "tree_bytes_before": 312042,
+      "files_before": 7,
+      "deleted_bytes": 312042,
+      "bytes_at_delete": 312042,
+      "files_at_delete": 7,
+      "deleted_at": "2026-11-17T01:44:23.152545+00:00"
+    },
+    {
+      "path": "/opt/chain/releases/070fbb46ff25bce38d9599c5165dce66d63fc561/build/20261117-txstep/deploy/tests-r1/tx-step-network/1794879576444606220/native-1000-300/producer/db",
+      "test_root": "/opt/chain/releases/070fbb46ff25bce38d9599c5165dce66d63fc561/build/20261117-txstep/deploy/tests-r1",
+      "state": "deleted",
+      "tree_bytes_before": 312042,
+      "files_before": 7,
+      "deleted_bytes": 312042,
+      "bytes_at_delete": 312042,
+      "files_at_delete": 7,
+      "deleted_at": "2026-11-17T01:44:23.179904+00:00"
+    },
+    {
+      "path": "/opt/chain/releases/070fbb46ff25bce38d9599c5165dce66d63fc561/build/20261117-txstep/deploy/tests-r1/tx-step-network/1794879576444606220/native-2000-0/follower/db",
+      "test_root": "/opt/chain/releases/070fbb46ff25bce38d9599c5165dce66d63fc561/build/20261117-txstep/deploy/tests-r1",
+      "state": "deleted",
+      "tree_bytes_before": 574730,
+      "files_before": 7,
+      "deleted_bytes": 574730,
+      "bytes_at_delete": 574730,
+      "files_at_delete": 7,
+      "deleted_at": "2026-11-17T01:44:23.202458+00:00"
+    },
+    {
+      "path": "/opt/chain/releases/070fbb46ff25bce38d9599c5165dce66d63fc561/build/20261117-txstep/deploy/tests-r1/tx-step-network/1794879576444606220/native-2000-0/producer/db",
+      "test_root": "/opt/chain/releases/070fbb46ff25bce38d9599c5165dce66d63fc561/build/20261117-txstep/deploy/tests-r1",
+      "state": "deleted",
+      "tree_bytes_before": 574728,
+      "files_before": 7,
+      "deleted_bytes": 574728,
+      "bytes_at_delete": 574728,
+      "files_at_delete": 7,
+      "deleted_at": "2026-11-17T01:44:23.224541+00:00"
+    },
+    {
+      "path": "/opt/chain/releases/070fbb46ff25bce38d9599c5165dce66d63fc561/build/20261117-txstep/deploy/tests-r1/tx-step-network/1794879576444606220/native-2000-300/follower/db",
+      "test_root": "/opt/chain/releases/070fbb46ff25bce38d9599c5165dce66d63fc561/build/20261117-txstep/deploy/tests-r1",
+      "state": "deleted",
+      "tree_bytes_before": 575098,
+      "files_before": 7,
+      "deleted_bytes": 575098,
+      "bytes_at_delete": 575098,
+      "files_at_delete": 7,
+      "deleted_at": "2026-11-17T01:44:23.250343+00:00"
+    },
+    {
+      "path": "/opt/chain/releases/070fbb46ff25bce38d9599c5165dce66d63fc561/build/20261117-txstep/deploy/tests-r1/tx-step-network/1794879576444606220/native-2000-300/producer/db",
+      "test_root": "/opt/chain/releases/070fbb46ff25bce38d9599c5165dce66d63fc561/build/20261117-txstep/deploy/tests-r1",
+      "state": "deleted",
+      "tree_bytes_before": 575099,
+      "files_before": 7,
+      "deleted_bytes": 575099,
+      "bytes_at_delete": 575099,
+      "files_at_delete": 7,
+      "deleted_at": "2026-11-17T01:44:23.272043+00:00"
+    },
+    {
+      "path": "/opt/chain/releases/070fbb46ff25bce38d9599c5165dce66d63fc561/build/20261117-txstep/deploy/tests-r1/tx-step-network/1794879576444606220/native-500-0/follower/db",
+      "test_root": "/opt/chain/releases/070fbb46ff25bce38d9599c5165dce66d63fc561/build/20261117-txstep/deploy/tests-r1",
+      "state": "deleted",
+      "tree_bytes_before": 180137,
+      "files_before": 7,
+      "deleted_bytes": 180137,
+      "bytes_at_delete": 180137,
+      "files_at_delete": 7,
+      "deleted_at": "2026-11-17T01:44:23.295539+00:00"
+    },
+    {
+      "path": "/opt/chain/releases/070fbb46ff25bce38d9599c5165dce66d63fc561/build/20261117-txstep/deploy/tests-r1/tx-step-network/1794879576444606220/native-500-0/producer/db",
+      "test_root": "/opt/chain/releases/070fbb46ff25bce38d9599c5165dce66d63fc561/build/20261117-txstep/deploy/tests-r1",
+      "state": "deleted",
+      "tree_bytes_before": 180137,
+      "files_before": 7,
+      "deleted_bytes": 180137,
+      "bytes_at_delete": 180137,
+      "files_at_delete": 7,
+      "deleted_at": "2026-11-17T01:44:23.321557+00:00"
+    },
+    {
+      "path": "/opt/chain/releases/070fbb46ff25bce38d9599c5165dce66d63fc561/build/20261117-txstep/deploy/tests-r1/tx-step-network/1794879576444606220/native-500-300/follower/db",
+      "test_root": "/opt/chain/releases/070fbb46ff25bce38d9599c5165dce66d63fc561/build/20261117-txstep/deploy/tests-r1",
+      "state": "deleted",
+      "tree_bytes_before": 180505,
+      "files_before": 7,
+      "deleted_bytes": 180505,
+      "bytes_at_delete": 180505,
+      "files_at_delete": 7,
+      "deleted_at": "2026-11-17T01:44:23.347974+00:00"
+    },
+    {
+      "path": "/opt/chain/releases/070fbb46ff25bce38d9599c5165dce66d63fc561/build/20261117-txstep/deploy/tests-r1/tx-step-network/1794879576444606220/native-500-300/producer/db",
+      "test_root": "/opt/chain/releases/070fbb46ff25bce38d9599c5165dce66d63fc561/build/20261117-txstep/deploy/tests-r1",
+      "state": "deleted",
+      "tree_bytes_before": 180505,
+      "files_before": 7,
+      "deleted_bytes": 180505,
+      "bytes_at_delete": 180505,
+      "files_at_delete": 7,
+      "deleted_at": "2026-11-17T01:44:23.370055+00:00"
+    },
+    {
+      "path": "/opt/chain/releases/070fbb46ff25bce38d9599c5165dce66d63fc561/build/20261117-txstep/deploy/tests-r1/tx-step-network/1794879576444606220/shutdown-candidate/producer/db",
+      "test_root": "/opt/chain/releases/070fbb46ff25bce38d9599c5165dce66d63fc561/build/20261117-txstep/deploy/tests-r1",
+      "state": "deleted",
+      "tree_bytes_before": 90551,
+      "files_before": 10,
+      "deleted_bytes": 90551,
+      "bytes_at_delete": 90551,
+      "files_at_delete": 10,
+      "deleted_at": "2026-11-17T01:44:23.393450+00:00"
+    },
+    {
+      "path": "/opt/chain/releases/070fbb46ff25bce38d9599c5165dce66d63fc561/build/20261117-txstep/deploy/tests-r1/tx-step-network/1794879576444606220/shutdown-tail-0/producer/db",
+      "test_root": "/opt/chain/releases/070fbb46ff25bce38d9599c5165dce66d63fc561/build/20261117-txstep/deploy/tests-r1",
+      "state": "deleted",
+      "tree_bytes_before": 90551,
+      "files_before": 10,
+      "deleted_bytes": 90551,
+      "bytes_at_delete": 90551,
+      "files_at_delete": 10,
+      "deleted_at": "2026-11-17T01:44:23.420572+00:00"
+    },
+    {
+      "path": "/opt/chain/releases/070fbb46ff25bce38d9599c5165dce66d63fc561/build/20261117-txstep/deploy/tests-r1/tx-step-network/1794879576444606220/shutdown-tail-300/producer/db",
+      "test_root": "/opt/chain/releases/070fbb46ff25bce38d9599c5165dce66d63fc561/build/20261117-txstep/deploy/tests-r1",
+      "state": "deleted",
+      "tree_bytes_before": 90537,
+      "files_before": 10,
+      "deleted_bytes": 90537,
+      "bytes_at_delete": 90537,
+      "files_at_delete": 10,
+      "deleted_at": "2026-11-17T01:44:23.443868+00:00"
+    },
+    {
+      "path": "/opt/chain/releases/070fbb46ff25bce38d9599c5165dce66d63fc561/build/20261117-txstep/deploy/multi-producer-r1/1794879615918971460/step-1000/producer-0/db",
+      "test_root": "/opt/chain/releases/070fbb46ff25bce38d9599c5165dce66d63fc561/build/20261117-txstep/deploy/multi-producer-r1",
+      "state": "deleted",
+      "tree_bytes_before": 575699,
+      "files_before": 7,
+      "deleted_bytes": 575699,
+      "bytes_at_delete": 575699,
+      "files_at_delete": 7,
+      "deleted_at": "2026-11-17T01:44:23.470223+00:00"
+    },
+    {
+      "path": "/opt/chain/releases/070fbb46ff25bce38d9599c5165dce66d63fc561/build/20261117-txstep/deploy/multi-producer-r1/1794879615918971460/step-1000/producer-1/db",
+      "test_root": "/opt/chain/releases/070fbb46ff25bce38d9599c5165dce66d63fc561/build/20261117-txstep/deploy/multi-producer-r1",
+      "state": "deleted",
+      "tree_bytes_before": 575687,
+      "files_before": 7,
+      "deleted_bytes": 575687,
+      "bytes_at_delete": 575687,
+      "files_at_delete": 7,
+      "deleted_at": "2026-11-17T01:44:23.494714+00:00"
+    },
+    {
+      "path": "/opt/chain/releases/070fbb46ff25bce38d9599c5165dce66d63fc561/build/20261117-txstep/deploy/multi-producer-r1/1794879615918971460/step-1000/producer-2/db",
+      "test_root": "/opt/chain/releases/070fbb46ff25bce38d9599c5165dce66d63fc561/build/20261117-txstep/deploy/multi-producer-r1",
+      "state": "deleted",
+      "tree_bytes_before": 575695,
+      "files_before": 7,
+      "deleted_bytes": 575695,
+      "bytes_at_delete": 575695,
+      "files_at_delete": 7,
+      "deleted_at": "2026-11-17T01:44:23.519491+00:00"
+    },
+    {
+      "path": "/opt/chain/releases/070fbb46ff25bce38d9599c5165dce66d63fc561/build/20261117-txstep/deploy/multi-producer-r1/1794879615918971460/step-2000/producer-0/db",
+      "test_root": "/opt/chain/releases/070fbb46ff25bce38d9599c5165dce66d63fc561/build/20261117-txstep/deploy/multi-producer-r1",
+      "state": "deleted",
+      "tree_bytes_before": 1101799,
+      "files_before": 7,
+      "deleted_bytes": 1101799,
+      "bytes_at_delete": 1101799,
+      "files_at_delete": 7,
+      "deleted_at": "2026-11-17T01:44:23.542482+00:00"
+    },
+    {
+      "path": "/opt/chain/releases/070fbb46ff25bce38d9599c5165dce66d63fc561/build/20261117-txstep/deploy/multi-producer-r1/1794879615918971460/step-2000/producer-1/db",
+      "test_root": "/opt/chain/releases/070fbb46ff25bce38d9599c5165dce66d63fc561/build/20261117-txstep/deploy/multi-producer-r1",
+      "state": "deleted",
+      "tree_bytes_before": 1101799,
+      "files_before": 7,
+      "deleted_bytes": 1101799,
+      "bytes_at_delete": 1101799,
+      "files_at_delete": 7,
+      "deleted_at": "2026-11-17T01:44:23.568446+00:00"
+    },
+    {
+      "path": "/opt/chain/releases/070fbb46ff25bce38d9599c5165dce66d63fc561/build/20261117-txstep/deploy/multi-producer-r1/1794879615918971460/step-2000/producer-2/db",
+      "test_root": "/opt/chain/releases/070fbb46ff25bce38d9599c5165dce66d63fc561/build/20261117-txstep/deploy/multi-producer-r1",
+      "state": "deleted",
+      "tree_bytes_before": 1101800,
+      "files_before": 7,
+      "deleted_bytes": 1101800,
+      "bytes_at_delete": 1101800,
+      "files_at_delete": 7,
+      "deleted_at": "2026-11-17T01:44:23.593745+00:00"
+    },
+    {
+      "path": "/opt/chain/releases/070fbb46ff25bce38d9599c5165dce66d63fc561/build/20261117-txstep/deploy/multi-producer-r1/1794879615918971460/step-500/producer-0/db",
+      "test_root": "/opt/chain/releases/070fbb46ff25bce38d9599c5165dce66d63fc561/build/20261117-txstep/deploy/multi-producer-r1",
+      "state": "deleted",
+      "tree_bytes_before": 312627,
+      "files_before": 7,
+      "deleted_bytes": 312627,
+      "bytes_at_delete": 312627,
+      "files_at_delete": 7,
+      "deleted_at": "2026-11-17T01:44:23.620613+00:00"
+    },
+    {
+      "path": "/opt/chain/releases/070fbb46ff25bce38d9599c5165dce66d63fc561/build/20261117-txstep/deploy/multi-producer-r1/1794879615918971460/step-500/producer-1/db",
+      "test_root": "/opt/chain/releases/070fbb46ff25bce38d9599c5165dce66d63fc561/build/20261117-txstep/deploy/multi-producer-r1",
+      "state": "deleted",
+      "tree_bytes_before": 312635,
+      "files_before": 7,
+      "deleted_bytes": 312635,
+      "bytes_at_delete": 312635,
+      "files_at_delete": 7,
+      "deleted_at": "2026-11-17T01:44:23.643413+00:00"
+    },
+    {
+      "path": "/opt/chain/releases/070fbb46ff25bce38d9599c5165dce66d63fc561/build/20261117-txstep/deploy/multi-producer-r1/1794879615918971460/step-500/producer-2/db",
+      "test_root": "/opt/chain/releases/070fbb46ff25bce38d9599c5165dce66d63fc561/build/20261117-txstep/deploy/multi-producer-r1",
+      "state": "deleted",
+      "tree_bytes_before": 312635,
+      "files_before": 7,
+      "deleted_bytes": 312635,
+      "bytes_at_delete": 312635,
+      "files_at_delete": 7,
+      "deleted_at": "2026-11-17T01:44:23.666479+00:00"
+    },
+    {
+      "path": "/opt/chain/releases/070fbb46ff25bce38d9599c5165dce66d63fc561/build/20261117-txstep/deploy/tests-r1/account-network-test-data/1794879590263568262/follower/db",
+      "test_root": "/opt/chain/releases/070fbb46ff25bce38d9599c5165dce66d63fc561/build/20261117-txstep/deploy/tests-r1",
+      "state": "deleted",
+      "tree_bytes_before": 45561,
+      "files_before": 7,
+      "deleted_bytes": 45561,
+      "bytes_at_delete": 45561,
+      "files_at_delete": 7,
+      "deleted_at": "2026-11-17T01:44:23.689413+00:00"
+    },
+    {
+      "path": "/opt/chain/releases/070fbb46ff25bce38d9599c5165dce66d63fc561/build/20261117-txstep/deploy/tests-r1/account-network-test-data/1794879590263568262/leader/db",
+      "test_root": "/opt/chain/releases/070fbb46ff25bce38d9599c5165dce66d63fc561/build/20261117-txstep/deploy/tests-r1",
+      "state": "deleted",
+      "tree_bytes_before": 90532,
+      "files_before": 10,
+      "deleted_bytes": 90532,
+      "bytes_at_delete": 90532,
+      "files_at_delete": 10,
+      "deleted_at": "2026-11-17T01:44:23.719630+00:00"
+    },
+    {
+      "path": "/opt/chain/releases/070fbb46ff25bce38d9599c5165dce66d63fc561/build/20261117-txstep/deploy/tests-r1/admission-network-test-data/1794879596353108931/admission/db",
+      "test_root": "/opt/chain/releases/070fbb46ff25bce38d9599c5165dce66d63fc561/build/20261117-txstep/deploy/tests-r1",
+      "state": "deleted",
+      "tree_bytes_before": 45580,
+      "files_before": 7,
+      "deleted_bytes": 45580,
+      "bytes_at_delete": 45580,
+      "files_at_delete": 7,
+      "deleted_at": "2026-11-17T01:44:23.742292+00:00"
+    },
+    {
+      "path": "/opt/chain/releases/070fbb46ff25bce38d9599c5165dce66d63fc561/build/20261117-txstep/deploy/tests-r1/admission-network-test-data/1794879596353108931/reliable/db",
+      "test_root": "/opt/chain/releases/070fbb46ff25bce38d9599c5165dce66d63fc561/build/20261117-txstep/deploy/tests-r1",
+      "state": "deleted",
+      "tree_bytes_before": 5379088,
+      "files_before": 7,
+      "deleted_bytes": 5379088,
+      "bytes_at_delete": 5379088,
+      "files_at_delete": 7,
+      "deleted_at": "2026-11-17T01:44:23.768428+00:00"
+    },
+    {
+      "path": "/opt/chain/releases/070fbb46ff25bce38d9599c5165dce66d63fc561/build/20261117-txstep/deploy/tests-r1/network-test-data/1794879586801482631/follower/db",
+      "test_root": "/opt/chain/releases/070fbb46ff25bce38d9599c5165dce66d63fc561/build/20261117-txstep/deploy/tests-r1",
+      "state": "deleted",
+      "tree_bytes_before": 1929417,
+      "files_before": 7,
+      "deleted_bytes": 1929417,
+      "bytes_at_delete": 1929417,
+      "files_at_delete": 7,
+      "deleted_at": "2026-11-17T01:44:23.791226+00:00"
+    },
+    {
+      "path": "/opt/chain/releases/070fbb46ff25bce38d9599c5165dce66d63fc561/build/20261117-txstep/deploy/tests-r1/network-test-data/1794879586801482631/graceful/db",
+      "test_root": "/opt/chain/releases/070fbb46ff25bce38d9599c5165dce66d63fc561/build/20261117-txstep/deploy/tests-r1",
+      "state": "deleted",
+      "tree_bytes_before": 206182,
+      "files_before": 7,
+      "deleted_bytes": 206182,
+      "bytes_at_delete": 206182,
+      "files_at_delete": 7,
+      "deleted_at": "2026-11-17T01:44:23.814251+00:00"
+    },
+    {
+      "path": "/opt/chain/releases/070fbb46ff25bce38d9599c5165dce66d63fc561/build/20261117-txstep/deploy/tests-r1/network-test-data/1794879586801482631/leader/db",
+      "test_root": "/opt/chain/releases/070fbb46ff25bce38d9599c5165dce66d63fc561/build/20261117-txstep/deploy/tests-r1",
+      "state": "deleted",
+      "tree_bytes_before": 1451116,
+      "files_before": 10,
+      "deleted_bytes": 1451116,
+      "bytes_at_delete": 1451116,
+      "files_at_delete": 10,
+      "deleted_at": "2026-11-17T01:44:23.837832+00:00"
+    },
+    {
+      "path": "/opt/chain/releases/070fbb46ff25bce38d9599c5165dce66d63fc561/build/20261117-txstep/deploy/tests-r1/evm-network-test-data/follower/db",
+      "test_root": "/opt/chain/releases/070fbb46ff25bce38d9599c5165dce66d63fc561/build/20261117-txstep/deploy/tests-r1",
+      "state": "deleted",
+      "tree_bytes_before": 145102,
+      "files_before": 12,
+      "deleted_bytes": 145102,
+      "bytes_at_delete": 145102,
+      "files_at_delete": 12,
+      "deleted_at": "2026-11-17T01:44:23.861026+00:00"
+    },
+    {
+      "path": "/opt/chain/releases/070fbb46ff25bce38d9599c5165dce66d63fc561/build/20261117-txstep/deploy/tests-r1/evm-network-test-data/producer/db",
+      "test_root": "/opt/chain/releases/070fbb46ff25bce38d9599c5165dce66d63fc561/build/20261117-txstep/deploy/tests-r1",
+      "state": "deleted",
+      "tree_bytes_before": 103505,
+      "files_before": 10,
+      "deleted_bytes": 103505,
+      "bytes_at_delete": 103505,
+      "files_at_delete": 10,
+      "deleted_at": "2026-11-17T01:44:23.885314+00:00"
+    },
+    {
+      "path": "/opt/chain/releases/070fbb46ff25bce38d9599c5165dce66d63fc561/build/20261117-txstep/deploy/tests-r1/flow-test-data/427844407676294/deterministic",
+      "test_root": "/opt/chain/releases/070fbb46ff25bce38d9599c5165dce66d63fc561/build/20261117-txstep/deploy/tests-r1",
+      "state": "deleted",
+      "tree_bytes_before": 33281,
+      "files_before": 7,
+      "deleted_bytes": 33281,
+      "bytes_at_delete": 33281,
+      "files_at_delete": 7,
+      "deleted_at": "2026-11-17T01:44:23.914328+00:00"
+    },
+    {
+      "path": "/opt/chain/releases/070fbb46ff25bce38d9599c5165dce66d63fc561/build/20261117-txstep/deploy/tests-r1/flow-test-data/427844407676294/ranked",
+      "test_root": "/opt/chain/releases/070fbb46ff25bce38d9599c5165dce66d63fc561/build/20261117-txstep/deploy/tests-r1",
+      "state": "deleted",
+      "tree_bytes_before": 30111,
+      "files_before": 7,
+      "deleted_bytes": 30111,
+      "bytes_at_delete": 30111,
+      "files_at_delete": 7,
+      "deleted_at": "2026-11-17T01:44:23.939461+00:00"
+    },
+    {
+      "path": "/opt/chain/releases/070fbb46ff25bce38d9599c5165dce66d63fc561/build/20261117-txstep/deploy/tests-r1/fork-network-test-data/a/db",
+      "test_root": "/opt/chain/releases/070fbb46ff25bce38d9599c5165dce66d63fc561/build/20261117-txstep/deploy/tests-r1",
+      "state": "deleted",
+      "tree_bytes_before": 200133,
+      "files_before": 10,
+      "deleted_bytes": 200133,
+      "bytes_at_delete": 200133,
+      "files_at_delete": 10,
+      "deleted_at": "2026-11-17T01:44:23.965305+00:00"
+    },
+    {
+      "path": "/opt/chain/releases/070fbb46ff25bce38d9599c5165dce66d63fc561/build/20261117-txstep/deploy/tests-r1/fork-network-test-data/b/db",
+      "test_root": "/opt/chain/releases/070fbb46ff25bce38d9599c5165dce66d63fc561/build/20261117-txstep/deploy/tests-r1",
+      "state": "deleted",
+      "tree_bytes_before": 202224,
+      "files_before": 10,
+      "deleted_bytes": 202224,
+      "bytes_at_delete": 202224,
+      "files_at_delete": 10,
+      "deleted_at": "2026-11-17T01:44:23.988988+00:00"
+    },
+    {
+      "path": "/opt/chain/releases/070fbb46ff25bce38d9599c5165dce66d63fc561/build/20261117-txstep/deploy/tests-r1/fork-network-test-data/future/db",
+      "test_root": "/opt/chain/releases/070fbb46ff25bce38d9599c5165dce66d63fc561/build/20261117-txstep/deploy/tests-r1",
+      "state": "deleted",
+      "tree_bytes_before": 208013,
+      "files_before": 7,
+      "deleted_bytes": 208013,
+      "bytes_at_delete": 208013,
+      "files_at_delete": 7,
+      "deleted_at": "2026-11-17T01:44:24.011651+00:00"
+    },
+    {
+      "path": "/opt/chain/releases/070fbb46ff25bce38d9599c5165dce66d63fc561/build/20261117-txstep/deploy/tests-r1/fork-state-data/427821045297156/large-fork",
+      "test_root": "/opt/chain/releases/070fbb46ff25bce38d9599c5165dce66d63fc561/build/20261117-txstep/deploy/tests-r1",
+      "state": "deleted",
+      "tree_bytes_before": 81406250,
+      "files_before": 10,
+      "deleted_bytes": 81406250,
+      "bytes_at_delete": 81406250,
+      "files_at_delete": 10,
+      "deleted_at": "2026-11-17T01:44:24.047876+00:00"
+    },
+    {
+      "path": "/opt/chain/releases/070fbb46ff25bce38d9599c5165dce66d63fc561/build/20261117-txstep/deploy/tests-r1/user-test-data/427820870760084/chain",
+      "test_root": "/opt/chain/releases/070fbb46ff25bce38d9599c5165dce66d63fc561/build/20261117-txstep/deploy/tests-r1",
+      "state": "deleted",
+      "tree_bytes_before": 141301,
+      "files_before": 15,
+      "deleted_bytes": 141301,
+      "bytes_at_delete": 141301,
+      "files_at_delete": 15,
+      "deleted_at": "2026-11-17T01:44:24.075389+00:00"
+    },
+    {
+      "path": "/opt/chain/releases/070fbb46ff25bce38d9599c5165dce66d63fc561/build/20261117-txstep/deploy/tests-r1/flow-test-data/427844407676294",
+      "test_root": "/opt/chain/releases/070fbb46ff25bce38d9599c5165dce66d63fc561/build/20261117-txstep/deploy/tests-r1",
+      "state": "deleted",
+      "tree_bytes_before": 139552,
+      "files_before": 24,
+      "deleted_bytes": 76160,
+      "bytes_at_delete": 76160,
+      "files_at_delete": 10,
+      "deleted_at": "2026-11-17T01:44:24.104068+00:00"
+    },
+    {
+      "path": "/opt/chain/releases/070fbb46ff25bce38d9599c5165dce66d63fc561/build/20261117-txstep/deploy/tests-r1/fork-state-data/427821045297156",
+      "test_root": "/opt/chain/releases/070fbb46ff25bce38d9599c5165dce66d63fc561/build/20261117-txstep/deploy/tests-r1",
+      "state": "deleted",
+      "tree_bytes_before": 81503619,
+      "files_before": 22,
+      "deleted_bytes": 97369,
+      "bytes_at_delete": 97369,
+      "files_at_delete": 12,
+      "deleted_at": "2026-11-17T01:44:24.129344+00:00"
+    },
+    {
+      "path": "/opt/chain/releases/070fbb46ff25bce38d9599c5165dce66d63fc561/build/20261117-txstep/deploy/tests-r1/test-data/427820577442610",
+      "test_root": "/opt/chain/releases/070fbb46ff25bce38d9599c5165dce66d63fc561/build/20261117-txstep/deploy/tests-r1",
+      "state": "deleted",
+      "tree_bytes_before": 532603,
+      "files_before": 15,
+      "deleted_bytes": 532603,
+      "bytes_at_delete": 532603,
+      "files_at_delete": 15,
+      "deleted_at": "2026-11-17T01:44:24.166465+00:00"
+    },
+    {
+      "path": "/opt/chain/releases/070fbb46ff25bce38d9599c5165dce66d63fc561/build/20261117-txstep/deploy/tests-r1/tx-step-data/427844601017529",
+      "test_root": "/opt/chain/releases/070fbb46ff25bce38d9599c5165dce66d63fc561/build/20261117-txstep/deploy/tests-r1",
+      "state": "deleted",
+      "tree_bytes_before": 8252853,
+      "files_before": 7,
+      "deleted_bytes": 8252853,
+      "bytes_at_delete": 8252853,
+      "files_at_delete": 7,
+      "deleted_at": "2026-11-17T01:44:24.194985+00:00"
+    }
+  ],
+  "missing_evidence": [],
+  "evidence_files": [
+    "build/Testing/Temporary/LastTest.log",
+    "deploy/build.log",
+    "deploy/cleanup.json",
+    "deploy/ctest.xml",
+    "deploy/multi-producer-r1/1794879615918971460/result.json",
+    "deploy/multi-producer-r1/1794879615918971460/step-1000/producer-0/final.json",
+    "deploy/multi-producer-r1/1794879615918971460/step-1000/producer-0/node.log",
+    "deploy/multi-producer-r1/1794879615918971460/step-1000/producer-1/final.json",
+    "deploy/multi-producer-r1/1794879615918971460/step-1000/producer-1/node.log",
+    "deploy/multi-producer-r1/1794879615918971460/step-1000/producer-2/final.json",
+    "deploy/multi-producer-r1/1794879615918971460/step-1000/producer-2/node.log",
+    "deploy/multi-producer-r1/1794879615918971460/step-1000/result.json",
+    "deploy/multi-producer-r1/1794879615918971460/step-2000/producer-0/final.json",
+    "deploy/multi-producer-r1/1794879615918971460/step-2000/producer-0/node.log",
+    "deploy/multi-producer-r1/1794879615918971460/step-2000/producer-1/final.json",
+    "deploy/multi-producer-r1/1794879615918971460/step-2000/producer-1/node.log",
+    "deploy/multi-producer-r1/1794879615918971460/step-2000/producer-2/final.json",
+    "deploy/multi-producer-r1/1794879615918971460/step-2000/producer-2/node.log",
+    "deploy/multi-producer-r1/1794879615918971460/step-2000/result.json",
+    "deploy/multi-producer-r1/1794879615918971460/step-500/producer-0/final.json",
+    "deploy/multi-producer-r1/1794879615918971460/step-500/producer-0/node.log",
+    "deploy/multi-producer-r1/1794879615918971460/step-500/producer-1/final.json",
+    "deploy/multi-producer-r1/1794879615918971460/step-500/producer-1/node.log",
+    "deploy/multi-producer-r1/1794879615918971460/step-500/producer-2/final.json",
+    "deploy/multi-producer-r1/1794879615918971460/step-500/producer-2/node.log",
+    "deploy/multi-producer-r1/1794879615918971460/step-500/result.json",
+    "deploy/multi-producer.log",
+    "deploy/multi_producer.py",
+    "deploy/proof.json",
+    "deploy/tests-r1/account-network-test-data/1794879590263568262/follower/final.json",
+    "deploy/tests-r1/account-network-test-data/1794879590263568262/follower/node.log",
+    "deploy/tests-r1/account-network-test-data/1794879590263568262/leader/final.json",
+    "deploy/tests-r1/account-network-test-data/1794879590263568262/leader/node.log",
+    "deploy/tests-r1/admission-network-test-data/1794879596353108931/admission/final.json",
+    "deploy/tests-r1/admission-network-test-data/1794879596353108931/admission/node.log",
+    "deploy/tests-r1/admission-network-test-data/1794879596353108931/full-block-batch/full-batch/final.json",
+    "deploy/tests-r1/admission-network-test-data/1794879596353108931/full-block-batch/full-batch/node.log",
+    "deploy/tests-r1/admission-network-test-data/1794879596353108931/large-block-batch/full-batch/final.json",
+    "deploy/tests-r1/admission-network-test-data/1794879596353108931/large-block-batch/full-batch/node.log",
+    "deploy/tests-r1/admission-network-test-data/1794879596353108931/reliable/final.json",
+    "deploy/tests-r1/admission-network-test-data/1794879596353108931/reliable/node.log",
+    "deploy/tests-r1/evm-network-test-data/follower/final.json",
+    "deploy/tests-r1/evm-network-test-data/follower/node.log",
+    "deploy/tests-r1/evm-network-test-data/producer/final.json",
+    "deploy/tests-r1/evm-network-test-data/producer/node.log",
+    "deploy/tests-r1/evm-network-test-data/result.json",
+    "deploy/tests-r1/experiment-test-data/1794879591909124199/index/index/final.json",
+    "deploy/tests-r1/experiment-test-data/1794879591909124199/index/index/node.log",
+    "deploy/tests-r1/experiment-test-data/1794879591909124199/rounds/nodes/rounds/node001/final.json",
+    "deploy/tests-r1/experiment-test-data/1794879591909124199/rounds/nodes/rounds/node001/node.log",
+    "deploy/tests-r1/experiment-test-data/1794879591909124199/rounds/nodes/rounds/node002/final.json",
+    "deploy/tests-r1/experiment-test-data/1794879591909124199/rounds/nodes/rounds/node002/node.log",
+    "deploy/tests-r1/fork-network-test-data/a/final.json",
+    "deploy/tests-r1/fork-network-test-data/a/node.log",
+    "deploy/tests-r1/fork-network-test-data/b/final.json",
+    "deploy/tests-r1/fork-network-test-data/b/node.log",
+    "deploy/tests-r1/fork-network-test-data/future/final.json",
+    "deploy/tests-r1/fork-network-test-data/future/node.log",
+    "deploy/tests-r1/fork-network-test-data/result.json",
+    "deploy/tests-r1/ipv6-network/dual/node.log",
+    "deploy/tests-r1/ipv6-network/ipv6-only/node.log",
+    "deploy/tests-r1/ipv6-network/legacy-ipv4/node.log",
+    "deploy/tests-r1/ipv6-network/result.json",
+    "deploy/tests-r1/network-test-data/1794879586801482631/follower/final.json",
+    "deploy/tests-r1/network-test-data/1794879586801482631/follower/node.log",
+    "deploy/tests-r1/network-test-data/1794879586801482631/graceful/final.json",
+    "deploy/tests-r1/network-test-data/1794879586801482631/graceful/node.log",
+    "deploy/tests-r1/network-test-data/1794879586801482631/leader/final.json",
+    "deploy/tests-r1/network-test-data/1794879586801482631/leader/node.log",
+    "deploy/tests-r1/network-test-data/1794879586801482631/result.json",
+    "deploy/tests-r1/tx-step-network/1794879576444606220/bytes-0/follower/final.json",
+    "deploy/tests-r1/tx-step-network/1794879576444606220/bytes-0/follower/node.log",
+    "deploy/tests-r1/tx-step-network/1794879576444606220/bytes-0/producer/final.json",
+    "deploy/tests-r1/tx-step-network/1794879576444606220/bytes-0/producer/node.log",
+    "deploy/tests-r1/tx-step-network/1794879576444606220/bytes-300/follower/final.json",
+    "deploy/tests-r1/tx-step-network/1794879576444606220/bytes-300/follower/node.log",
+    "deploy/tests-r1/tx-step-network/1794879576444606220/bytes-300/producer/final.json",
+    "deploy/tests-r1/tx-step-network/1794879576444606220/bytes-300/producer/node.log",
+    "deploy/tests-r1/tx-step-network/1794879576444606220/configuration/valid-0/final.json",
+    "deploy/tests-r1/tx-step-network/1794879576444606220/configuration/valid-0/node.log",
+    "deploy/tests-r1/tx-step-network/1794879576444606220/configuration/valid-1/final.json",
+    "deploy/tests-r1/tx-step-network/1794879576444606220/configuration/valid-1/node.log",
+    "deploy/tests-r1/tx-step-network/1794879576444606220/configuration/valid-2/final.json",
+    "deploy/tests-r1/tx-step-network/1794879576444606220/configuration/valid-2/node.log",
+    "deploy/tests-r1/tx-step-network/1794879576444606220/configuration/valid-3/final.json",
+    "deploy/tests-r1/tx-step-network/1794879576444606220/configuration/valid-3/node.log",
+    "deploy/tests-r1/tx-step-network/1794879576444606220/configuration/valid-4/final.json",
+    "deploy/tests-r1/tx-step-network/1794879576444606220/configuration/valid-4/node.log",
+    "deploy/tests-r1/tx-step-network/1794879576444606220/gas-0/follower/final.json",
+    "deploy/tests-r1/tx-step-network/1794879576444606220/gas-0/follower/node.log",
+    "deploy/tests-r1/tx-step-network/1794879576444606220/gas-0/producer/final.json",
+    "deploy/tests-r1/tx-step-network/1794879576444606220/gas-0/producer/node.log",
+    "deploy/tests-r1/tx-step-network/1794879576444606220/gas-300/follower/final.json",
+    "deploy/tests-r1/tx-step-network/1794879576444606220/gas-300/follower/node.log",
+    "deploy/tests-r1/tx-step-network/1794879576444606220/gas-300/producer/final.json",
+    "deploy/tests-r1/tx-step-network/1794879576444606220/gas-300/producer/node.log",
+    "deploy/tests-r1/tx-step-network/1794879576444606220/native-1000-0/follower/final.json",
+    "deploy/tests-r1/tx-step-network/1794879576444606220/native-1000-0/follower/node.log",
+    "deploy/tests-r1/tx-step-network/1794879576444606220/native-1000-0/producer/final.json",
+    "deploy/tests-r1/tx-step-network/1794879576444606220/native-1000-0/producer/node.log",
+    "deploy/tests-r1/tx-step-network/1794879576444606220/native-1000-300/follower/final.json",
+    "deploy/tests-r1/tx-step-network/1794879576444606220/native-1000-300/follower/node.log",
+    "deploy/tests-r1/tx-step-network/1794879576444606220/native-1000-300/producer/final.json",
+    "deploy/tests-r1/tx-step-network/1794879576444606220/native-1000-300/producer/node.log",
+    "deploy/tests-r1/tx-step-network/1794879576444606220/native-2000-0/follower/final.json",
+    "deploy/tests-r1/tx-step-network/1794879576444606220/native-2000-0/follower/node.log",
+    "deploy/tests-r1/tx-step-network/1794879576444606220/native-2000-0/producer/final.json",
+    "deploy/tests-r1/tx-step-network/1794879576444606220/native-2000-0/producer/node.log",
+    "deploy/tests-r1/tx-step-network/1794879576444606220/native-2000-300/follower/final.json",
+    "deploy/tests-r1/tx-step-network/1794879576444606220/native-2000-300/follower/node.log",
+    "deploy/tests-r1/tx-step-network/1794879576444606220/native-2000-300/producer/final.json",
+    "deploy/tests-r1/tx-step-network/1794879576444606220/native-2000-300/producer/node.log",
+    "deploy/tests-r1/tx-step-network/1794879576444606220/native-500-0/follower/final.json",
+    "deploy/tests-r1/tx-step-network/1794879576444606220/native-500-0/follower/node.log",
+    "deploy/tests-r1/tx-step-network/1794879576444606220/native-500-0/producer/final.json",
+    "deploy/tests-r1/tx-step-network/1794879576444606220/native-500-0/producer/node.log",
+    "deploy/tests-r1/tx-step-network/1794879576444606220/native-500-300/follower/final.json",
+    "deploy/tests-r1/tx-step-network/1794879576444606220/native-500-300/follower/node.log",
+    "deploy/tests-r1/tx-step-network/1794879576444606220/native-500-300/producer/final.json",
+    "deploy/tests-r1/tx-step-network/1794879576444606220/native-500-300/producer/node.log",
+    "deploy/tests-r1/tx-step-network/1794879576444606220/result.json",
+    "deploy/tests-r1/tx-step-network/1794879576444606220/shutdown-candidate/producer/final.json",
+    "deploy/tests-r1/tx-step-network/1794879576444606220/shutdown-candidate/producer/node.log",
+    "deploy/tests-r1/tx-step-network/1794879576444606220/shutdown-tail-0/producer/final.json",
+    "deploy/tests-r1/tx-step-network/1794879576444606220/shutdown-tail-0/producer/node.log",
+    "deploy/tests-r1/tx-step-network/1794879576444606220/shutdown-tail-300/producer/final.json",
+    "deploy/tests-r1/tx-step-network/1794879576444606220/shutdown-tail-300/producer/node.log",
+    "source/SOURCE_MANIFEST.json"
+  ],
+  "errors": [],
+  "proof": {
+    "status": "passed",
+    "passed": true,
+    "tests": 15
+  },
+  "deleted_database_count": 60,
+  "deleted_bytes": 146213020
+}

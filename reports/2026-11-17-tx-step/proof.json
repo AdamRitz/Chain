@@ -1,0 +1,24 @@
+{
+  "passed": true,
+  "tests": 15,
+  "test_names": [
+    "ChainCorrectness",
+    "AccountCorrectness",
+    "ForkStateCorrectness",
+    "ThroughputCorrectness",
+    "FlowCorrectness",
+    "SendBudgetCorrectness",
+    "TxStepCorrectness",
+    "TxStepNetwork",
+    "ChainNetwork",
+    "AccountNetwork",
+    "ForkNetwork",
+    "EvmNetwork",
+    "ExperimentNetwork",
+    "AdmissionNetwork",
+    "IPv6Network"
+  ],
+  "source_sha256": "58d04fc0eedf62a39c5e96f710d7d0d31ff0f162a953bcfbd8175e68c66ca8d5",
+  "base_commit": "aed94f4bf5439f1e7d709fbd927cf1d697fa7cbf",
+  "binary_sha256": "aac8c4afc957a1e964a8e8db47ddeb3af0425f39a8c446f83b90e7085b09cbeb"
+}

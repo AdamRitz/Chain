@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="(empty)"
+	tests="15"
+	failures="0"
+	disabled="0"
+	skipped="0"
+	hostname=""
+	time="50"
+	timestamp="2026-11-17T09:39:11"
+	>
+	<testcase name="ChainCorrectness" classname="ChainCorrectness" time="0.293904" status="run">
+		<properties/>
+		<system-out>PASS 2268 assertions. Database: /opt/chain/build/20261117-txstep/deploy/tests-r1/test-data/427820577442610
+</system-out>
+	</testcase>
+	<testcase name="AccountCorrectness" classname="AccountCorrectness" time="0.174781" status="run">
+		<properties/>
+		<system-out>PASS 54 account checks. Database: /opt/chain/build/20261117-txstep/deploy/tests-r1/user-test-data/427820870760084/chain
+</system-out>
+	</testcase>
+	<testcase name="ForkStateCorrectness" classname="ForkStateCorrectness" time="23.3279" status="run">
+		<properties/>
+		<system-out>[2026-11-17 09:39:11.985] [info] RocksDB Started. Path:/opt/chain/build/20261117-txstep/deploy/tests-r1/fork-state-data/427821045297156, Sync:true
+[2026-11-17 09:39:11.988] [info] Genesis Block Generated. Height:1
+[2026-11-17 09:39:12.024] [info] RocksDB Started. Path:/opt/chain/build/20261117-txstep/deploy/tests-r1/fork-state-data/427821045297156, Sync:true
+[2026-11-17 09:39:12.055] [info] RocksDB Started. Path:/opt/chain/build/20261117-txstep/deploy/tests-r1/fork-state-data/427821045297156, Sync:true
+[2026-11-17 09:39:12.055] [info] Existing chain restored. Height:2
+[2026-11-17 09:39:12.084] [info] RocksDB Started. Path:/opt/chain/build/20261117-txstep/deploy/tests-r1/fork-state-data/427821045297156/large-fork, Sync:true
+[2026-11-17 09:39:12.087] [info] Genesis Block Generated. Height:1
+[2026-11-17 09:39:35.198] [info] RocksDB Started. Path:/opt/chain/build/20261117-txstep/deploy/tests-r1/fork-state-data/427821045297156/large-fork, Sync:true
+Fork state, large-branch and write-failure checks passed
+</system-out>
+	</testcase>
+	<testcase name="ThroughputCorrectness" classname="ThroughputCorrectness" time="0.034088" status="run">
+		<properties/>
+		<system-out>Overlay, execution bounds and batch checks passed
+</system-out>
+	</testcase>
+	<testcase name="FlowCorrectness" classname="FlowCorrectness" time="0.176246" status="run">
+		<properties/>
+		<system-out>[2026-11-17 09:39:35.348] [info] RocksDB Started. Path:/opt/chain/build/20261117-txstep/deploy/tests-r1/flow-test-data/427844407676294, Sync:true
+[2026-11-17 09:39:35.353] [info] Genesis Block Generated. Height:1
+[2026-11-17 09:39:35.399] [info] RocksDB Started. Path:/opt/chain/build/20261117-txstep/deploy/tests-r1/flow-test-data/427844407676294, Sync:true
+[2026-11-17 09:39:35.399] [info] Existing chain restored. Height:2
+[2026-11-17 09:39:35.427] [info] RocksDB Started. Path:/opt/chain/build/20261117-txstep/deploy/tests-r1/flow-test-data/427844407676294/deterministic, Sync:true
+[2026-11-17 09:39:35.431] [info] Genesis Block Generated. Height:1
+[2026-11-17 09:39:35.465] [info] RocksDB Started. Path:/opt/chain/build/20261117-txstep/deploy/tests-r1/flow-test-data/427844407676294/ranked, Sync:true
+[2026-11-17 09:39:35.468] [info] Genesis Block Generated. Height:1
+Admission, compact indexes and changed-state fork checks passed
+</system-out>
+	</testcase>
+	<testcase name="SendBudgetCorrectness" classname="SendBudgetCorrectness" time="0.016785" status="run">
+		<properties/>
+		<system-out>Send budget limits, cancellation and concurrent ownership checks passed
+</system-out>
+	</testcase>
+	<testcase name="TxStepCorrectness" classname="TxStepCorrectness" time="0.87628" status="run">
+		<properties/>
+		<system-out>PASS 169 transaction step checks. Database: /opt/chain/build/20261117-txstep/deploy/tests-r1/tx-step-data/427844601017529
+</system-out>
+	</testcase>
+	<testcase name="TxStepNetwork" classname="TxStepNetwork" time="10.3857" status="run">
+		<properties/>
+		<system-out>{"configuration": "CLI, YAML, override and invalid values passed", "cases": [{"step": 500, "round_ms": 0, "block_counts": [3, 500, 7], "low_load_seconds": 0.20931406400632113, "head": "e73f2fd1f943af3303f91bb135faf62a148205685f48b1373b61dda40328be19"}, {"step": 1000, "round_ms": 0, "block_counts": [3, 1000, 7], "low_load_seconds": 0.20977963699260727, "head": "d8a88cb287b7b84e260c25a369c14fa1daa07bb5de9be015810cdfd63fce8333"}, {"step": 2000, "round_ms": 0, "block_counts": [3, 2000, 7], "low_load_seconds": 0.20961615000851452, "head": "c16dac13eb879f3478512847f368c7f2eda429f2e907d52c5cc13ecf7d33a05d"}, {"budget": "gas", "round_ms": 0, "block_counts": [3, 2], "elapsed_seconds": 0.41041642002528533}, {"budget": "bytes", "round_ms": 0, "block_counts": [249, 7], "elapsed_seconds": 0.4496152250212617}, {"shutdown_round_ms": 0, "received_candidate": false, "committed": 3, "head": "b42ea128fa49453cc265bd421f527e5737dd9a9ef3ce4b44188f5b9461054f15"}, {"step": 500, "round_ms": 300, "block_counts": [3, 500, 7], "low_load...
+[This part of the test output was removed since it exceeds the threshold of 1024 bytes.]
+</system-out>
+	</testcase>
+	<testcase name="ChainNetwork" classname="ChainNetwork" time="3.44818" status="run">
+		<properties/>
+		<system-out>{
+  "passed": 10,
+  "checks": [
+    "slow handshake does not block accept loop",
+    "bad type, oversized and malformed length rejected before payload allocation",
+    "invalid signatures rejected in transaction and sync block paths",
+    "fragmented frame and complete batch handled; replay does not commit twice",
+    "4096 unique network transactions committed without loss",
+    "late follower verifies history and reaches same height/head",
+    "live block broadcast and bidirectional peer connection remain active",
+    "producer and follower balances and nonces match independent execution",
+    "process termination/restart restores committed head and rejects replay",
+    "timed graceful shutdown with an active peer exits cleanly and writes metrics"
+  ],
+  "work": "/opt/chain/releases/070fbb46ff25bce38d9599c5165dce66d63fc561/build/20261117-txstep/deploy/tests-r1/network-test-data/1794879586801482631"
+}
+</system-out>
+	</testcase>
+	<testcase name="AccountNetwork" classname="AccountNetwork" time="0.349088" status="run">
+		<properties/>
+		<system-out>{
+  "passed": 7,
+  "checks": [
+    "explicit genesis funding and zero balance for a new public key",
+    "out-of-order transfers execute in nonce order with exact balances and fees",
+    "account query CLI returns committed state",
+    "self transfer charges one nonrecoverable base fee",
+    "insufficient balance transaction is rejected over the network",
+    "historical synchronization replays balances, nonces and burned fees",
+    "restart restores genesis policy and account state without the external genesis file argument"
+  ]
+}
+</system-out>
+	</testcase>
+	<testcase name="ForkNetwork" classname="ForkNetwork" time="0.49896" status="run">
+		<properties/>
+		<system-out>{"checks": ["equal height chooses branch with more valid transactions; native state rolled back", "multi-block branch replay and parent-by-hash retrieval", "restart preserves selected head and rollback state", "invalid larger future candidate preserves valid alternative"]}
+</system-out>
+	</testcase>
+	<testcase name="EvmNetwork" classname="EvmNetwork" time="0.748636" status="run">
+		<properties/>
+		<system-out>{"checks": ["deploy and execute persistent storage with return value", "REVERT restores storage and consumes nonce and actual gas", "out of gas restores contract state", "SHA256 precompile returns the expected digest", "signature binds full contract input", "Solidity 0.8.28 Shanghai bytecode events nested CALL and revert", "modular exponentiation precompile", "follower independently replays code storage fees and receipts", "compact announcement fetches missing EVM transactions and replays consecutive calls", "restart recovers contract state and supply", "same height tie converges by hash; EVM storage receipts native balances and fees follow selected branch"]}
+</system-out>
+	</testcase>
+	<testcase name="ExperimentNetwork" classname="ExperimentNetwork" time="4.50913" status="run">
+		<properties/>
+		<system-out>{"checks": ["parallel directories", "network impairment scope/cleanup retry", "dynamic inventory", "canonical transaction index rollback/restart", "synchronized round execution"]}
+</system-out>
+	</testcase>
+	<testcase name="AdmissionNetwork" classname="AdmissionNetwork" time="4.81033" status="run">
+		<properties/>
+		<system-out>{"checks": ["gap capacity", "known/busy/invalid feedback", "malformed batch releases the connection", "four full blocks across bounded synchronization frames", "reliable sender", "complete balances and nonces"]}
+</system-out>
+	</testcase>
+	<testcase name="IPv6Network" classname="IPv6Network" time="0.701903" status="run">
+		<properties/>
+		<system-out>{"checks": ["experiment inventory accepts IPv6 endpoints and SSH destinations", "IPv6-only sender propagates one signed transaction through dual-stack and legacy IPv4 peers", "sender CLI resolves and queries IPv6", "version-2 discovery contains IPv4 and IPv6; legacy discovery keeps six-byte records", "invalid teaching query returns an error without stopping the node"]}
+</system-out>
+	</testcase>
+</testsuite>

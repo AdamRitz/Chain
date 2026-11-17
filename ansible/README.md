@@ -71,6 +71,8 @@ context 与回收结果保存在 `chain_result_dir`；driver 独占全新的 `ch
 
 禁止 arguments 覆盖 `--data`、`--genesis`、`--metrics`。start 保留实际 `binary_sha256`。export-headers 在归属核对且停止的同一 DB 上，使用保留的 HeaderReader 和该 release 的 RocksDB 库只读导出块头与分数。
 
+使用支持整数步长打包的版本时，可在 `chain_worker_arguments` 或各节点的 `chain_worker_arguments_by_node` 中加入 `--block-tx-step 500`（也可为 1000、2000，0 关闭）。时间轮次参数例如 `--round-ms 50 --candidate-ms 12`。同一实验的生产节点应统一设置步长；旧版二进制不认识此参数，原版对照应省略。`Test/AnsibleBenchmark.py` 的既有固定对照配置不会自动添加该参数，专项比较需要在各轮节点启动参数中显式指定并保存证据。
+
 ```bash
 ../.venv/bin/ansible-playbook -i /srv/chain/inventory.yml cleanup.yml -e @/srv/chain/run.yml \
   -e chain_run_group=original_group -e chain_run_owner=original_32_hex_owner
