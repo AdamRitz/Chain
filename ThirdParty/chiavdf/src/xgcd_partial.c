@@ -1,0 +1,272 @@
+/*
+    Copyright (C) 2012 William Hart
+
+    Permission is hereby granted, free of charge, to any person obtaining a copy of this
+    software and associated documentation files (the "Software"), to deal in the Software
+    without restriction, including without limitation the rights to use, copy, modify, merge,
+    publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons
+    to whom the Software is furnished to do so, subject to the following conditions:
+
+    The above copyright notice and this permission notice shall be included in all copies or
+    substantial portions of the Software.
+
+    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+    INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
+    PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE
+    FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+    OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+    DEALINGS IN THE SOFTWARE.
+
+    MIT licensing permission obtained January 13, 2020 by Chia Network Inc. from William Hart
+    */
+
+#ifndef _XGCD_PARTIAL
+#define _XGCD_PARTIAL
+
+#include <gmp.h>
+#include <stdint.h>
+#include <climits>
+
+#include "xgcd_lehmer_step.h"
+#include "xgcd_partial.h"
+
+#if !defined(__MPIR_VERSION) && (LONG_MAX < INT64_MAX)
+#define CHIAVDF_GMP_NARROW_LONG 1
+#endif
+
+#if defined(_MSC_VER)
+#include <intrin.h>
+
+// MSVC doesn't provide `__builtin_clz*`; use bit-scan intrinsics instead.
+static inline int chiavdf_clz_u32(unsigned long x)
+{
+   unsigned long idx = 0;
+   _BitScanReverse(&idx, x); // x != 0
+   return 31 - (int)idx;
+}
+
+static inline int chiavdf_clz_u64(unsigned __int64 x)
+{
+   unsigned long idx = 0;
+#if defined(_M_X64) || defined(_M_ARM64)
+   _BitScanReverse64(&idx, x); // x != 0
+   return 63 - (int)idx;
+#else
+   // 32-bit targets: synthesize using two 32-bit scans.
+   const unsigned long hi = (unsigned long)(x >> 32);
+   if (hi != 0) {
+      _BitScanReverse(&idx, hi);
+      return 31 - (int)idx;
+   }
+   const unsigned long lo = (unsigned long)(x & 0xffffffffu);
+   _BitScanReverse(&idx, lo);
+   return 63 - (int)idx;
+#endif
+}
+#endif
+
+// Fast helpers (avoid mpz temporaries in tight loops).
+static inline mp_limb_signed_t chiavdf_mpz_bitlen_nonneg(const mpz_t x)
+{
+   // Match mpz_sizeinbase(x, 2) for x >= 0:
+   // - returns 1 for x == 0
+   // - otherwise returns exact bit length
+   const size_t n = mpz_size(x); // number of limbs (abs)
+   if (n == 0) return 1;
+   const mp_limb_t top = mpz_getlimbn(x, (mp_size_t)(n - 1));
+   // top is non-zero when n != 0, but be defensive.
+   if (top == 0) return 1;
+#if GMP_LIMB_BITS == 64
+#if defined(_MSC_VER)
+   const int lead = chiavdf_clz_u64((unsigned __int64)top);
+#else
+   const int lead = __builtin_clzll((unsigned long long)top);
+#endif
+#elif GMP_LIMB_BITS == 32
+#if defined(_MSC_VER)
+   const int lead = chiavdf_clz_u32((unsigned long)top);
+#else
+   const int lead = __builtin_clz((unsigned int)top);
+#endif
+#else
+   // Fallback (unlikely): conservative loop.
+   int lead = 0;
+   for (int b = GMP_LIMB_BITS - 1; b >= 0; --b) {
+      if ((top >> b) & 1) break;
+      ++lead;
+   }
+#endif
+   const mp_limb_signed_t top_bits = (mp_limb_signed_t)(GMP_LIMB_BITS - lead);
+   return (mp_limb_signed_t)((n - 1) * (size_t)GMP_LIMB_BITS) + top_bits;
+}
+
+static inline mp_limb_signed_t chiavdf_mpz_extract_uword_from_shift_nonneg(const mpz_t x, mp_limb_signed_t shift_bits)
+{
+   // Return the low word of (x >> shift_bits), assuming x >= 0 and shift_bits >= 0.
+   // This is what `mpz_get_ui(tmp)` would yield after `mpz_tdiv_q_2exp(tmp, x, shift_bits)`,
+   // but without allocating or touching an mpz temp.
+   if (shift_bits <= 0) {
+      // limb 0 is enough for our use here.
+      return (mp_limb_signed_t)mpz_getlimbn(x, 0);
+   }
+   const mp_limb_signed_t limb_bits = (mp_limb_signed_t)GMP_LIMB_BITS;
+   const mp_limb_signed_t limb_idx = shift_bits / limb_bits;
+   const mp_limb_signed_t off = shift_bits - limb_idx * limb_bits;
+   mp_limb_t lo = mpz_getlimbn(x, (mp_size_t)limb_idx);
+   if (off == 0) return (mp_limb_signed_t)lo;
+   mp_limb_t hi = mpz_getlimbn(x, (mp_size_t)(limb_idx + 1));
+   lo >>= (unsigned)off;
+   hi <<= (unsigned)(limb_bits - off);
+   return (mp_limb_signed_t)(lo | hi);
+}
+
+#if defined(CHIAVDF_GMP_NARROW_LONG)
+static_assert(sizeof(mp_limb_signed_t) == sizeof(uint64_t), "mp_limb_signed_t must be 64-bit");
+
+static inline void chiavdf_set_limb_signed(mpz_ptr rop, mp_limb_signed_t val) {
+    if (val == 0) {
+        mpz_set_ui(rop, 0);
+    } else if (val > 0) {
+        mp_limb_t u = (mp_limb_t)val;
+        mpz_import(rop, 1, -1, sizeof(mp_limb_t), 0, 0, &u);
+    } else {
+        mp_limb_t u = 0 - (mp_limb_t)val;
+        mpz_import(rop, 1, -1, sizeof(mp_limb_t), 0, 0, &u);
+        mpz_neg(rop, rop);
+    }
+}
+#endif
+
+void mpz_xgcd_partial(mpz_t co2, mpz_t co1,
+                                    mpz_t r2, mpz_t r1, const mpz_t L)
+{
+   // Hot-path note:
+   // This function can run in the inner loop of NUDUPL; avoid per-call
+   // `mpz_init/mpz_clear` by using thread-local temporaries.
+   //
+   // Important for ASAN/LSan: these temporaries must be freed at thread-exit, otherwise
+   // LeakSanitizer will report per-thread GMP allocations as leaked.
+   struct chiavdf_xgcd_partial_tls {
+      mpz_t q;
+      mpz_t r;
+#if defined(CHIAVDF_GMP_NARROW_LONG)
+      mpz_t t_aa1;
+      mpz_t t_aa2;
+      mpz_t t_bb1;
+      mpz_t t_bb2;
+
+      chiavdf_xgcd_partial_tls() {
+         mpz_init(q); mpz_init(r);
+         mpz_init(t_aa1); mpz_init(t_aa2);
+         mpz_init(t_bb1); mpz_init(t_bb2);
+      }
+      ~chiavdf_xgcd_partial_tls() {
+         mpz_clear(q); mpz_clear(r);
+         mpz_clear(t_aa1); mpz_clear(t_aa2);
+         mpz_clear(t_bb1); mpz_clear(t_bb2);
+      }
+#else
+      chiavdf_xgcd_partial_tls() { mpz_init(q); mpz_init(r); }
+      ~chiavdf_xgcd_partial_tls() { mpz_clear(q); mpz_clear(r); }
+#endif
+
+      chiavdf_xgcd_partial_tls(const chiavdf_xgcd_partial_tls&) = delete;
+      chiavdf_xgcd_partial_tls& operator=(const chiavdf_xgcd_partial_tls&) = delete;
+   };
+   static thread_local chiavdf_xgcd_partial_tls tls;
+   mpz_ptr q = tls.q;
+   mpz_ptr r = tls.r;
+   mp_limb_signed_t aa2, aa1, bb2, bb1, rr1, rr2, bb, i;
+   xgcd_lehmer_round round;
+   mp_limb_signed_t bits, bits1, bits2;
+
+   mpz_set_ui(co2, 0);
+   mpz_set_si(co1, -1);
+
+   while (mpz_cmp_ui(r1, 0) && mpz_cmp(r1, L) > 0)
+   {
+      // r2/r1 are expected to be nonnegative here (algorithm maintains sign after each step).
+      bits2 = chiavdf_mpz_bitlen_nonneg(r2);
+      bits1 = chiavdf_mpz_bitlen_nonneg(r1);
+      bits = __GMP_MAX(bits2, bits1) - GMP_LIMB_BITS + 1;
+      if (bits < 0) bits = 0;
+
+      rr2 = chiavdf_mpz_extract_uword_from_shift_nonneg(r2, bits);
+      rr1 = chiavdf_mpz_extract_uword_from_shift_nonneg(r1, bits);
+      bb  = chiavdf_mpz_extract_uword_from_shift_nonneg(L,  bits);
+
+      xgcd_lehmer_begin(&round, rr2, rr1, bb, 0);
+      while (xgcd_lehmer_step(&round)) {}
+      i = round.i;
+      aa2 = round.aa2; aa1 = round.aa1;
+      bb2 = round.bb2; bb1 = round.bb1;
+
+      if (i == 0)
+      {
+         // r2,r1 are nonnegative here; trunc and floor division are equivalent, and
+         // `mpz_tdiv_qr` avoids extra sign-handling overhead.
+         mpz_tdiv_qr(q, r2, r2, r1);
+         mpz_swap(r2, r1);
+
+         mpz_submul(co2, co1, q);
+         mpz_swap(co2, co1);
+      } else
+      {
+#if defined(CHIAVDF_GMP_NARROW_LONG)
+         chiavdf_set_limb_signed(tls.t_bb2, bb2);
+         chiavdf_set_limb_signed(tls.t_aa2, aa2);
+         chiavdf_set_limb_signed(tls.t_aa1, aa1);
+         chiavdf_set_limb_signed(tls.t_bb1, bb1);
+
+         mpz_mul(r, r2, tls.t_bb2);
+         mpz_addmul(r, r1, tls.t_aa2);
+
+         mpz_mul(r1, r1, tls.t_aa1);
+         mpz_addmul(r1, r2, tls.t_bb1);
+         mpz_set(r2, r);
+
+         mpz_mul(r, co2, tls.t_bb2);
+         mpz_addmul(r, co1, tls.t_aa2);
+
+         mpz_mul(co1, co1, tls.t_aa1);
+         mpz_addmul(co1, co2, tls.t_bb1);
+         mpz_set(co2, r);
+#else
+         mpz_mul_si(r, r2, bb2);
+         if (aa2 >= 0)
+            mpz_addmul_ui(r, r1, aa2);
+         else
+            mpz_submul_ui(r, r1, -aa2);
+         mpz_mul_si(r1, r1, aa1);
+         if (bb1 >= 0)
+            mpz_addmul_ui(r1, r2, bb1);
+         else
+            mpz_submul_ui(r1, r2, -bb1);
+         // The old r2 is no longer needed; reuse its allocation as scratch.
+         mpz_swap(r2, r);
+
+         mpz_mul_si(r, co2, bb2);
+         if (aa2 >= 0)
+            mpz_addmul_ui(r, co1, aa2);
+         else
+            mpz_submul_ui(r, co1, -aa2);
+         mpz_mul_si(co1, co1, aa1);
+         if (bb1 >= 0)
+            mpz_addmul_ui(co1, co2, bb1);
+         else
+            mpz_submul_ui(co1, co2, -bb1);
+         mpz_swap(co2, r);
+#endif
+
+         if (mpz_sgn(r1) < 0) { mpz_neg(co1, co1); mpz_neg(r1, r1); }
+         if (mpz_sgn(r2) < 0) { mpz_neg(co2, co2); mpz_neg(r2, r2); }
+      }
+   }
+
+   if (mpz_sgn(r2) < 0)
+   {
+      mpz_neg(co2, co2); mpz_neg(co1, co1);
+      mpz_neg(r2, r2);
+   }
+}
+#endif /* _XGCD_PARTIAL */

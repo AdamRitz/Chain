@@ -4,6 +4,7 @@
 #include "../Crypto/MerkleTree.h"
 #include <boost/asio/thread_pool.hpp>
 #include <boost/asio/post.hpp>
+#include <functional>
 #include <latch>
 using namespace std;
 
@@ -15,7 +16,13 @@ struct Block {
     array<uint8_t,32> hash{};
     vector<array<uint8_t,176>> txs;
     EvmPayloads evm;
+    optional<chain::vdf_consensus::Extension> vdf;
 };
+// Set once before starting node threads. Preparation runs under the shared
+// database commit lock and before the transaction pool lock; signing runs after
+// both locks have been released.
+std::function<bool(uint64_t,const array<uint8_t,32>&,chain::vdf_consensus::Extension&)> prepareVdfBlock;
+std::function<bool(const array<uint8_t,32>&,chain::vdf_consensus::Signature&)> signVdfBlock;
 uint64_t epoch=2;
 pair<Block,vector<uint8_t>> BlockBuffer[3];
 mutex blockBufferLock;
@@ -74,7 +81,7 @@ array<uint8_t,80> SerializeBlockHeader(const Block& block) {
 bool UnSerializeBlock(const vector<uint8_t>& data,Block& block) {
     if (data.size()<112) return false;
     auto num=ReadU64(data.data()+72);
-    if (!ReadEvmPayloads(data,block.evm)) return false;
+    if (!ReadBlockPayloads(data,&block.evm,&block.vdf)) return false;
     memcpy(block.previousHash.data(),data.data(),32);
     memcpy(block.merkleRoot.data(),data.data()+32,32);
     block.height=ReadU64(data.data()+64);
@@ -98,6 +105,10 @@ vector<uint8_t> SerializeBlockALL(Block& block) {
     memcpy(data.data()+80,block.hash.data(),32);
     if (block.txNum) memcpy(data.data()+112,block.txs.data(),block.txNum*176);
     AppendEvmPayloads(data,block.evm);
+    if (block.vdf) {
+        const auto extension=chain::vdf_consensus::Encode(*block.vdf);
+        data.insert(data.end(),extension.begin(),extension.end());
+    }
     return data;
 }
 
@@ -115,6 +126,14 @@ vector<uint8_t> GenerateBlock(size_t txStep=0,bool allowPartial=true) {
         if (height==UINT64_MAX) throw runtime_error("Block height overflow");
         block.height=height+1;
         block.previousHash=DBReadCurrentBlock();
+        if (chain::vdf_consensus::config.enabled) {
+            chain::vdf_consensus::Extension extension;
+            if (!prepareVdfBlock||!signVdfBlock||!prepareVdfBlock(block.height,block.previousHash,extension)) return {};
+            const auto extensionBytes=chain::vdf_consensus::Encode(extension).size();
+            if (extensionBytes>maxBlockBytes-blockBytes) return {};
+            blockBytes+=extensionBytes;
+            block.vdf=std::move(extension);
+        }
         lock_guard lock(txpoolMutex);
         selected.reserve(min(maxBlockTx,txpool.size()));
         vector<pair<array<uint8_t,32>,uint64_t>> dropped;
@@ -156,7 +175,7 @@ vector<uint8_t> GenerateBlock(size_t txStep=0,bool allowPartial=true) {
         }
         for (const auto& [key,nonce]:dropped) DropUserPoolFrom(key,nonce);
     }
-    if (selected.empty()) return {};
+    if (selected.empty()&&!block.vdf) return {};
     if (txStep>1) {
         auto count=selected.size()/txStep*txStep;
         if (!count&&!allowPartial) {
@@ -182,6 +201,14 @@ vector<uint8_t> GenerateBlock(size_t txStep=0,bool allowPartial=true) {
     }
     // 提议时不删除交易；写库成功后再移除。
     block.merkleRoot=MerkleCompute(hashes);
+    if (block.vdf) {
+        block.merkleRoot=chain::vdf_consensus::MerkleRoot(block.merkleRoot,*block.vdf);
+        block.txNum=block.txs.size();
+        const auto header=SerializeBlockHeader(block);
+        crypto_generichash(block.hash.data(),block.hash.size(),header.data(),header.size(),nullptr,0);
+        if (!signVdfBlock(block.hash,block.vdf->signature)||
+            !chain::vdf_consensus::VerifySignature(*block.vdf,block.hash)) return {};
+    }
     auto data=SerializeBlockALL(block);
     blockBuildNs+=GetSteadyTime()-start;
     return data;
@@ -194,6 +221,12 @@ bool VerifyBlock(const vector<uint8_t>& data,Block* result=nullptr) {
     array<uint8_t,32> hash;
     crypto_generichash(hash.data(),32,header.data(),header.size(),nullptr,0);
     if (hash!=block.hash) return false;
+    if (block.height==1) {
+        if (block.vdf) return false;
+    } else {
+        if (chain::vdf_consensus::config.enabled!=block.vdf.has_value()) return false;
+        if (block.vdf&&!chain::vdf_consensus::VerifySignature(*block.vdf,block.hash)) return false;
+    }
     vector<array<uint8_t,32>> hashes;
     hashes.reserve(block.txNum);
     unordered_set<array<uint8_t,32>,GetMapHash> unique;
@@ -218,10 +251,14 @@ bool VerifyBlock(const vector<uint8_t>& data,Block* result=nullptr) {
         if (!unique.insert(txHash).second) return false;
         hashes.push_back(txHash);
     }
-    if (block.height==0||(block.txNum==0&&block.height!=1)) return false;
+    if (block.height==0||(block.txNum==0&&block.height!=1&&!block.vdf)) return false;
     if (block.height==1) {
         if (block.txNum||block.previousHash!=array<uint8_t,32>{}||block.merkleRoot!=genesisRoot) return false;
-    } else if (MerkleCompute(hashes)!=block.merkleRoot) return false;
+    } else {
+        auto expectedRoot=MerkleCompute(hashes);
+        if (block.vdf) expectedRoot=chain::vdf_consensus::MerkleRoot(expectedRoot,*block.vdf);
+        if (expectedRoot!=block.merkleRoot) return false;
+    }
     if (result) *result=std::move(block);
     blockVerifyNs+=GetSteadyTime()-start;
     return true;
@@ -274,6 +311,20 @@ void GenerateGenesisBlock() {
 // 维护三个高度的候选窗口，按交易数量和哈希比较。
 bool QueueForkBlock(Block block,vector<uint8_t> data,bool notify);
 bool HasForkBlock(const array<uint8_t,32>& hash,const vector<uint8_t>& data);
+// This check depends on the current clock and belongs at network admission.
+// Generic VerifyBlock also validates saved blocks during database startup.
+bool CheckReceivedBlockTime(const Block& block) {
+    if (!chain::vdf_consensus::config.enabled) return true;
+    if (!block.vdf) return false;
+    try {
+        const auto slot=block.vdf->slot;
+        if (slot<chain::vdf_consensus::MinimumSlot(block.height)) return false;
+        const auto now=chain::vdf_consensus::CurrentSlot();
+        return slot<=now||slot-now<=chain::vdf_consensus::config.futureSlots;
+    } catch (const exception&) {
+        return false;
+    }
+}
 bool ProcessBlock(vector<uint8_t> data) {
     if (data.size()<112) return false;
     auto height=ReadU64(data.data()+64);
@@ -295,6 +346,7 @@ bool ProcessBlock(vector<uint8_t> data) {
     if (HasForkBlock(hash,data)) { duplicateBlocks++; return false; }
     Block block;
     if (!VerifyBlock(data,&block)) return false;
+    if (!CheckReceivedBlockTime(block)) return false;
     if (height!=current+1||block.previousHash!=head) {
         auto canonical=DBReadBlockByHeight(to_string(height));
         if (canonical==data) return false;

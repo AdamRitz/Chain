@@ -9,6 +9,7 @@
 #include <nlohmann/json.hpp>
 #include <sodium.h>
 #include "../Tool/Tool.h"
+#include "../Consensus/VdfRules.h"
 using namespace std;
 
 struct User {
@@ -30,7 +31,12 @@ uint64_t ReadUserNumber(const nlohmann::json& value) {
 nlohmann::json GetGenesisConfig() {
     auto accounts=nlohmann::json::array();
     for (const auto& [key,user]:genesisUsers) accounts.push_back({{"public_key",U32ToHex(key)},{"balance",user.balance}});
-    return {{"base_fee",baseFee},{"accounts",accounts}};
+    nlohmann::json result={{"base_fee",baseFee},{"accounts",accounts}};
+    const auto& vdf=chain::vdf_consensus::config;
+    if (vdf.enabled) result["vdf"]={{"enabled",true},{"epoch_blocks",vdf.epochBlocks},{"iterations",vdf.iterations},
+        {"slot_ms",vdf.slotMs},{"start_time_ms",vdf.startTimeMs},{"fallback_slots",vdf.fallbackSlots},
+        {"future_slots",vdf.futureSlots},{"producers",5}};
+    return result;
 }
 void SetGenesisUsers(const nlohmann::json& config) {
     if (!config.is_object()||!config.contains("accounts")||!config["accounts"].is_array()) throw invalid_argument("Genesis requires an accounts array");
@@ -38,6 +44,26 @@ void SetGenesisUsers(const nlohmann::json& config) {
     map<array<uint8_t,32>,User> parsed;
     uint64_t supply=0;
     auto fee=config.contains("base_fee")?ReadUserNumber(config["base_fee"]):0;
+    chain::vdf_consensus::Config vdf;
+    if (config.contains("vdf")) {
+        const auto& settings=config.at("vdf");
+        if (!settings.is_object()) throw invalid_argument("Genesis vdf must be an object");
+        for (const auto& [name,value]:settings.items()) {
+            if (name!="enabled"&&name!="epoch_blocks"&&name!="iterations"&&name!="slot_ms"&&name!="start_time_ms"&&
+                name!="fallback_slots"&&name!="future_slots"&&name!="producers") throw invalid_argument("Unknown genesis vdf parameter: "+name);
+        }
+        vdf.enabled=settings.value("enabled",true);
+        if (settings.contains("epoch_blocks")) vdf.epochBlocks=ReadUserNumber(settings.at("epoch_blocks"));
+        if (settings.contains("iterations")) vdf.iterations=ReadUserNumber(settings.at("iterations"));
+        if (settings.contains("slot_ms")) vdf.slotMs=ReadUserNumber(settings.at("slot_ms"));
+        if (vdf.enabled&&!settings.contains("start_time_ms")) throw invalid_argument("VDF genesis requires start_time_ms");
+        if (settings.contains("start_time_ms")) vdf.startTimeMs=ReadUserNumber(settings.at("start_time_ms"));
+        if (settings.contains("fallback_slots")) vdf.fallbackSlots=ReadUserNumber(settings.at("fallback_slots"));
+        if (settings.contains("future_slots")) vdf.futureSlots=ReadUserNumber(settings.at("future_slots"));
+        if (settings.contains("producers")&&ReadUserNumber(settings.at("producers"))!=5) throw invalid_argument("VDF consensus selects at most five producers");
+        chain::vdf_consensus::ValidateConfig(vdf);
+        if (!vdf.enabled&&settings.size()!=1) throw invalid_argument("Disabled genesis vdf must omit its parameters");
+    }
     for (const auto& item:config["accounts"]) {
         auto key=HexToU32(item.at("public_key").get<string>());
         auto balance=ReadUserNumber(item.at("balance"));
@@ -62,7 +88,14 @@ void SetGenesisUsers(const nlohmann::json& config) {
         WriteU64(numbers.data(),user.balance);
         crypto_generichash_update(&state,numbers.data(),8);
     }
+    if (vdf.enabled) {
+        const string vdfDomain="Chain VDF consensus v1";
+        const auto parameters=chain::vdf_consensus::EncodeConfig(vdf);
+        crypto_generichash_update(&state,reinterpret_cast<const uint8_t*>(vdfDomain.data()),vdfDomain.size());
+        crypto_generichash_update(&state,parameters.data(),parameters.size());
+    }
     crypto_generichash_final(&state,genesisRoot.data(),32);
+    chain::vdf_consensus::config=vdf;
     genesisConfigured=true;
 }
 void LoadGenesisUsers(const string& path) {

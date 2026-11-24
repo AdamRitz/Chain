@@ -136,3 +136,110 @@ python -m unittest discover -s ansible/tests -v
 ```
 
 回归覆盖包校验、路径/链接、重复发布、防篡改、失败部署还原及 DB 保留、既有 case 拒绝、跨 owner 拒绝和失败回收。默认并发 SSH 为 32，机器数由清单决定；1024 节点吞吐和亚秒最终性需要协议及规模实验另行验证。
+
+## VDF 新链的源码构建与独立部署
+
+`vdf_prepare.yml` 在 EL9 目标从校验过的源码包构建 GCC 13 / CMake / Ninja `RelWithDebInfo` 版本，保留源码和调试信息，运行全部已注册 CTest。`vdf_deploy.yml` 先执行 prepare，再建立独立的 `chain-vdf-<name>.service`。清单继续使用 `chain` 组和 `chain_node_id`；控制端要求与前述 Ansible 相同。现有 `deploy.yml` 的升级行为不变。
+
+在仓库根目录打包工作树，输出路径必须尚不存在：
+
+```bash
+python -B ansible/scripts/vdf_source.py pack --source "$PWD" \
+  --output /srv/chain-vdf/source.tar.gz --source-commit "$(git rev-parse HEAD)"
+```
+
+默认只读取 Git 已跟踪文件。新增而未暂存的源码逐个使用 `--include relative/path` 显式加入；参数可重复。凭据文件名、`.git`、构建目录、数据库、日志、钱包及本地配置被排除，链接被拒绝。打包结果报告排除的路径和 SHA256；仍需确认将要发布的源码和配置没有敏感内容。`source_commit` 表示工作树的基准提交，实际部署内容由包哈希和逐文件清单识别，不把未提交工作树当作该提交的原样副本。
+
+默认关闭界面构建，运行至少十五项核心基线测试以及新增 VDF 测试。需要界面及其测试时，先在 `Classroom` 使用项目要求的 Node.js 版本执行 `npm ci`、`npm run build`，打包时增加 `--include-frontend`，并配置 `chain_vdf_classroom: true`。这会将 `Classroom/dist` 的普通静态文件一同纳入校验清单，运行至少二十四项基线测试以及新增测试；测试数不设上限。
+
+在控制端创建独立变量文件，例如 `/srv/chain-vdf/run.yml`：
+
+```yaml
+chain_vdf_source_package: /srv/chain-vdf/source.tar.gz
+chain_vdf_source_sha256: <pack 输出的 SHA256>
+chain_vdf_source_commit: <打包时的四十位 Git 基准提交>
+chain_vdf_release_id: vdf-development-001
+chain_vdf_build_run_id: full-001
+chain_vdf_install_dependencies: true
+chain_vdf_build_jobs: 1
+chain_vdf_prepare_serial: 32
+chain_serial: 1
+chain_vdf_classroom: false
+# 目标已有独立 Boost 头文件时指定；应包含 boost/asio.hpp。
+# chain_vdf_boost_dir: /opt/chain-deps/boost_1_86_0
+# 使用其他 RocksDB CMake 包时指定；默认生成指向系统共享库的适配配置。
+# chain_vdf_rocksdb_dir: /opt/chain-deps/cmake/RocksDB
+chain_vdf_required_tests:
+  - ChainCorrectness
+  - ForkStateCorrectness
+  - ForkNetwork
+  - EvmNetwork
+  - IPv6Network
+  - VdfCorrectness
+  - VdfElectionCorrectness
+  - VdfRulesCorrectness
+  - VdfBlockCorrectness
+  - VdfStateCorrectness
+  - VdfNetwork
+
+chain_vdf_instance_id: experiment-001
+chain_vdf_service_name: chain-vdf-experiment-001.service
+chain_vdf_instance_dir: /var/lib/chain-vdf/experiment-001
+chain_vdf_port: 18089
+chain_vdf_arguments: ['--produce', '1', '--io-threads', '2', '--verify-threads', '2']
+# 使用本版本协议要求的完整节点配置和独立创世对象。
+chain_vdf_node_config: "{{ lookup('file', '/srv/chain-vdf/node.yaml') | from_yaml }}"
+chain_vdf_genesis: "{{ lookup('file', '/srv/chain-vdf/genesis.json') | from_json }}"
+```
+
+CentOS Stream 9、Rocky 9、AlmaLinux 9 自动启用 CRB 并安装 EPEL 依赖。其他 EL9 发行版需预先配置其相应开发仓库。依赖已经安装时设置 `chain_vdf_install_dependencies: false`，工具仍会实际构建并校验。默认构建并行度为一，适用于 2 vCPU / 4 GiB 内存主机；不会自动增加交换空间。
+
+默认必需测试列表显式包含 `VdfCorrectness`、`VdfElectionCorrectness`、`VdfRulesCorrectness`、`VdfBlockCorrectness`、`VdfStateCorrectness` 和 `VdfNetwork`。构建工具要求这些名称出现在本次 CTest 计划中，且全量模式运行全部已注册测试；服务工具还要求 `complete: true` 的构建证明与当前源码、二进制哈希一致。
+
+多机部署的并发和 CPU 使用分别配置：
+
+| 配置 | 默认 | 作用 |
+|---|---:|---|
+| `chain_vdf_prepare_serial` | 32 | 每批执行依赖安装、源码构建和 CTest 的主机数；按软件仓库、镜像服务及控制端容量调整 |
+| `chain_serial` | 1 | prepare 完成后，每批创建并检查新服务的主机数 |
+| `ansible-playbook -f N` | 本目录 `ansible.cfg` 为 32 | 控制端 SSH 工作进程数；从仓库根执行可显式传 `-f` |
+| `chain_vdf_build_jobs` | 1 | 每台主机 `cmake --build --parallel` 的编译并行数 |
+| CTest `--parallel` | 固定 1 | 每台主机串行运行测试；`VdfNetwork` 自身启动七个进程 |
+| `chain_vdf_arguments` 中的线程参数 | 由显式 argv 决定 | 节点 I/O、交易验证、候选执行、区块验签和查询工作线程数 |
+
+2 vCPU 调试机可从 `--io-threads 1 --verify-threads 1 --candidate-threads 1 --block-verify-threads 1 --query-threads 1` 开始。生产节点另有一个 VDF 计算线程，启用 VDF 的节点有一个候选证明验证线程；这些数量不由编译并行数控制。当前服务不设置 CPU 亲和性或 CPU 配额，也没有对应 playbook 变量，线程由操作系统调度。
+
+例如清单包含大量主机时，按每批八台构建、每批八台启动，控制端最多十六个 SSH 工作进程：
+
+```bash
+ansible-playbook -f 16 -i /srv/chain/inventory.yml ansible/vdf_deploy.yml -e @/srv/chain-vdf/run.yml \
+  -e chain_vdf_prepare_serial=8 -e chain_serial=8 -e chain_vdf_build_jobs=1
+```
+
+这组数值是批量调度示例。当前流程在每台目标实际编译和运行 CTest；增加到 1000 台不会省去这些工作，源码分发、依赖仓库和控制端资源也需要分批安排。批次设置不代表已通过 1000 节点通信、TPS 或确认时间测试。
+
+```bash
+# 仅构建和测试，不启动常驻节点。
+ansible-playbook -i /srv/chain/inventory.yml ansible/vdf_prepare.yml -e @/srv/chain-vdf/run.yml
+# 同一配置下构建、全量验收并启动新链；已成功的相同 release 只重新核对。
+ansible-playbook -i /srv/chain/inventory.yml ansible/vdf_deploy.yml -e @/srv/chain-vdf/run.yml
+```
+
+默认 release 位于 `<chain_release_root>/vdf/<chain_vdf_release_id>`，工具位于 `<chain_tools_root>/vdf`，分别可用 `chain_vdf_release_root`、`chain_vdf_tools_root` 覆盖。源码解包拒绝链接、路径穿越、哈希不符和已有不同源码；不会覆盖同 ID 的其他源码。每次构建尝试使用新的 `chain_vdf_build_run_id`，保存 `build-attempts/<run_id>/` 下的编译日志、CTest 计划、JUnit、测试数据和结果。失败尝试不能复用 run ID，日志及数据库均保留。全量通过后生成 `build-proof.json`，其中包含源码清单、Boost 版本头和实际二进制哈希，并检查运行库与调试段。
+
+开发期间可以筛选测试和目标，使用独立的变量文件覆盖以下参数：
+
+```yaml
+chain_vdf_build_run_id: primitives-001
+chain_vdf_ctest_regex: '^Vdf(Correctness|ElectionCorrectness)$'
+chain_vdf_build_targets: [vdf_test, vdf_election_test] # 必须使用当前 CMake 中的目标名
+chain_vdf_required_tests: [VdfCorrectness, VdfElectionCorrectness]
+```
+
+筛选后只保存 `complete: false` 的本次结果，不生成部署所需的 `build-proof.json`。最终使用新的 run ID，删除 `chain_vdf_ctest_regex` 和 `chain_vdf_build_targets`，恢复完整的必需测试名单后运行全量 prepare。已经验收的 release 不再接受部分重建；修改代码或重新调试构建应选择新的 release ID。
+
+新实例默认路径为 `<instance_dir>/data`、`node.yaml`、`genesis.json` 和 `logs/metrics.json`，可分别用 `chain_vdf_data_dir`、`chain_vdf_config_path`、`chain_vdf_genesis_path`、`chain_vdf_metrics_path` 显式设置，但必须位于该新实例目录内且互不覆盖。启动参数中由工具固定 `--data`、`--config`、`--genesis`、`--metrics`、`--port`，额外 argv 不能替换这些参数或指定退出时间。服务以独立非 root 用户运行。
+
+首次部署拒绝已有实例目录、已有服务和已占用端口。创世、节点配置采用只创建写入；相同已成功实例的重复部署仅核对，内容不同则拒绝，不覆盖数据库或创世。健康检查核对 systemd PID、二进制、全部 argv、该进程的监听端口和 published-head RPC；可用 `chain_vdf_expected_genesis` 指定必须匹配的链摘要。失败时停止并移除本次新建服务定义，保存 `deployment.json` 的恢复结果，保留源码、配置、创世、数据库和日志。失败或中断的实例保留用于排查，下次部署使用新的 instance ID。该流程不会停止原有 Chain 服务或修改防火墙。
+
+源码调试使用该 release 的未剥离二进制，例如 `gdb --args <release>/build/boost --config <new-debug-config> --genesis <new-debug-genesis> --data <fresh-debug-data>`；调试进程使用独立数据目录和端口。部署检查进程及链头可查询性，性能和网络条件下的确认时间仍由相应测试结果给出。

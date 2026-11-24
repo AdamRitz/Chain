@@ -317,8 +317,10 @@ void SaveBranchMemory(rocksdb::WriteBatch& batch) {
     CheckDBStatus(batch.Iterate(&save));
 }
 
+bool DBValidateVdfBlock(const vector<uint8_t>& data);
 bool DBApplyBlockUsers(const vector<uint8_t>& data,UserMap& changed,EvmExecution* output=nullptr) {
     if (data.size()<112) return false;
+    if (!DBValidateVdfBlock(data)) return false;
     auto num=ReadU64(data.data()+72);
     EvmPayloads payloads;
     if (!ReadEvmPayloads(data,payloads)) return false;
@@ -449,6 +451,84 @@ array<uint8_t,32> DBReadCurrentBlock() {
     memcpy(hash.data(),value.data(),32);
     return hash;
 }
+// These helpers require the caller to hold dbCommitMutex. DBGet also reads the
+// branchBatch overlay, so fork replay derives every context from its own parent.
+chain::vdf_election::Context DBVdfContext(uint64_t targetEpoch) {
+    using namespace chain::vdf_consensus;
+    auto genesis=DBReadBlockByHeight("1");
+    if (genesis.size()<112) throw runtime_error("Missing VDF genesis block");
+    Digest genesisHash{}; memcpy(genesisHash.data(),genesis.data()+80,32);
+    return ContextForEpoch(config,genesisRoot,genesisHash,targetEpoch,[](uint64_t height)->optional<Digest> {
+        string encoded;
+        if (!DBGet("height/"+to_string(height),encoded)) return nullopt;
+        if (encoded.size()!=32) throw runtime_error("Invalid VDF anchor height index");
+        Digest hash{}; memcpy(hash.data(),encoded.data(),32); return hash;
+    });
+}
+uint64_t DBVdfParentSlot() {
+    if (!chain::vdf_consensus::config.enabled) return 0;
+    if (DBReadBlockHeight()<=1) return chain::vdf_consensus::StartSlot()-1;
+    const auto parent=DBReadBlockByHash(DBReadCurrentBlock());
+    optional<chain::vdf_consensus::Extension> extension;
+    if (!ReadVdfExtension(parent,extension)||!extension) throw runtime_error("Missing VDF parent extension");
+    return extension->slot;
+}
+vector<chain::vdf_election::Candidate> DBVdfActiveCandidates(uint64_t height) {
+    using namespace chain::vdf_consensus;
+    if (!config.enabled||height<2) return {};
+    const auto epoch=Epoch(height);
+    if (epoch<2) return {};
+    const auto end=EpochStart(epoch)-1;
+    const auto block=DBReadBlockByHeight(to_string(end));
+    optional<Extension> extension;
+    if (!ReadVdfExtension(block,extension)||!extension) throw runtime_error("Missing VDF election boundary block");
+    return extension->candidates;
+}
+vector<chain::vdf_election::Candidate> DBVdfCandidatesForNextBlock() {
+    using namespace chain::vdf_consensus;
+    const auto height=DBReadBlockHeight();
+    if (!config.enabled||height<2) return {};
+    if (height==UINT64_MAX) throw runtime_error("VDF next block height overflow");
+    if (Epoch(height)!=Epoch(height+1)) return {};
+    const auto parent=DBReadBlockByHash(DBReadCurrentBlock());
+    optional<Extension> extension;
+    if (!ReadVdfExtension(parent,extension)||!extension) throw runtime_error("Missing VDF parent candidates");
+    return extension->candidates;
+}
+optional<chain::vdf_election::Context> DBVdfNextContext(uint64_t height) {
+    using namespace chain::vdf_consensus;
+    if (!config.enabled||height<2) return nullopt;
+    const auto epoch=Epoch(height);
+    if (!epoch) return nullopt;
+    if (epoch==UINT64_MAX) throw runtime_error("VDF target epoch overflow");
+    return DBVdfContext(epoch+1);
+}
+// Generic block encoding, transaction signatures and the bound Merkle root are
+// checked before this function. Eligibility is checked again for this parent
+// before either a cached execution or fork replay can commit the block.
+bool DBValidateVdfBlock(const vector<uint8_t>& data) {
+    using namespace chain::vdf_consensus;
+    if (data.size()<112) return false;
+    optional<Extension> extension;
+    if (!ReadVdfExtension(data,extension)) return false;
+    const auto height=ReadU64(data.data()+64);
+    if (!config.enabled||height==1) return !extension;
+    if (!extension) return false;
+    const auto parentHeight=DBReadBlockHeight();
+    const auto parentHash=DBReadCurrentBlock();
+    if (parentHeight==UINT64_MAX||height!=parentHeight+1||memcmp(data.data(),parentHash.data(),32)) return false;
+    try {
+        Digest hash{}; memcpy(hash.data(),data.data()+80,32);
+        if (!VerifySignature(*extension,hash)) return false;
+        const auto current=DBVdfContext(Epoch(height));
+        const auto next=DBVdfNextContext(height);
+        const auto previousCandidates=DBVdfCandidatesForNextBlock();
+        const auto activeCandidates=DBVdfActiveCandidates(height);
+        return VerifyRules(*extension,DBVdfParentSlot(),previousCandidates,activeCandidates,current,next,MinimumSlot(height));
+    } catch (...) {
+        return false;
+    }
+}
 // 调用方持有提交锁，在原子写入和账户发布完成后更新。
 void PublishChainHead() {
     ChainHead head{DBReadBlockHeight(),DBReadNumber("ChainTx"),dbStateVersion,userBurned,users.size(),evmState.get_accounts().size(),DBReadCurrentBlock()};
@@ -472,6 +552,7 @@ CandidateCheckResult DBPrepareBlockUsers(const vector<uint8_t>& data,const vecto
     if (current<UINT64_MAX&&height>current+1) return CandidateCheckResult::Valid;
     auto previous=DBReadCurrentBlock();
     if (current==UINT64_MAX||height!=current+1||memcmp(data.data(),previous.data(),32)!=0) return CandidateCheckResult::Invalid;
+    if (!DBValidateVdfBlock(data)) return CandidateCheckResult::Invalid;
     {
         lock_guard cacheLock(executionMutex);
         for (const auto& cached:executionCache) {
@@ -527,6 +608,7 @@ bool DBCommitBlockLocked(const array<uint8_t,32>& hash,const vector<uint8_t>& da
     auto currentHeight=DBReadBlockHeight();
     auto previousHash=DBReadCurrentBlock();
     if (currentHeight==UINT64_MAX||height!=currentHeight+1||memcmp(data.data(),previousHash.data(),32)!=0) return false;
+    if (!DBValidateVdfBlock(data)) return false;
     UserMap changed;
     EvmExecution execution;
     unique_ptr<CachedExecution> cached;

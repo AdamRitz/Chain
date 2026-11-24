@@ -4,7 +4,7 @@ cd "$(dirname "$0")/.."
 if [[ "${1:-}" == "--install" ]]; then
     sudo apt-get update
     sudo apt-get install -y build-essential cmake ninja-build libboost-dev librocksdb-dev \
-        libsodium-dev libspdlog-dev libyaml-cpp-dev nlohmann-json3-dev python3-venv iproute2
+        libsodium-dev libspdlog-dev libyaml-cpp-dev nlohmann-json3-dev libgmp-dev python3-venv iproute2
 fi
 python3 -m venv .venv
 .venv/bin/python -m pip install -r Experiments/requirements.txt

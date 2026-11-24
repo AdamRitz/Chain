@@ -5,29 +5,53 @@
 #include <vector>
 #include <sodium.h>
 #include "../Tool/Tool.h"
+#include "../Consensus/VdfRules.h"
 using namespace std;
 constexpr size_t maxBlockBytes=2*1024*1024;
 constexpr size_t maxProtocolTx=10000;
 constexpr size_t maxEvmInput=49152;
 constexpr uint64_t maxEvmGas=10000000,maxBlockGas=30000000;
 using EvmPayloads=map<size_t,vector<uint8_t>>;
-bool ReadEvmPayloads(span<const uint8_t> block,EvmPayloads& result) {
-    result.clear();
+// Walk forward from the declared transaction boundary. Signature bytes and
+// EVM input bytes may contain VDB1; neither is a delimiter for this parser.
+bool ReadBlockPayloads(span<const uint8_t> block,EvmPayloads* evm,
+                       optional<chain::vdf_consensus::Extension>* vdf) {
+    if (evm) evm->clear();
+    if (vdf) vdf->reset();
     if (block.size()<112||block.size()>maxBlockBytes) return false;
     auto count=ReadU64(block.data()+72);
     if (count>maxProtocolTx||count>(block.size()-112)/176) return false;
     size_t offset=112+count*176;
     if (offset==block.size()) return true;
-    if (block.size()-offset<8||memcmp(block.data()+offset,"EVT1",4)) return false;
-    auto entries=ReadU32(block.data()+offset+4); offset+=8;
-    if (!entries||entries>count) return false;
-    for (size_t i=0;i<entries;i++) {
+    EvmPayloads parsed;
+    if (block.size()-offset>=4&&!memcmp(block.data()+offset,"EVT1",4)) {
         if (block.size()-offset<8) return false;
-        auto index=ReadU32(block.data()+offset),length=ReadU32(block.data()+offset+4); offset+=8;
-        if (index>=count||length<45||length>45+maxEvmInput||length>block.size()-offset||(!result.empty()&&index<=result.rbegin()->first)) return false;
-        result.emplace(index,vector<uint8_t>(block.begin()+offset,block.begin()+offset+length)); offset+=length;
+        auto entries=ReadU32(block.data()+offset+4); offset+=8;
+        if (!entries||entries>count) return false;
+        uint32_t previous=0;
+        for (size_t i=0;i<entries;i++) {
+            if (block.size()-offset<8) return false;
+            auto index=ReadU32(block.data()+offset),length=ReadU32(block.data()+offset+4); offset+=8;
+            if (index>=count||length<45||length>45+maxEvmInput||length>block.size()-offset||(i&&index<=previous)) return false;
+            if (evm) parsed.emplace(index,vector<uint8_t>(block.begin()+offset,block.begin()+offset+length));
+            previous=index; offset+=length;
+        }
     }
-    return offset==block.size();
+    optional<chain::vdf_consensus::Extension> extension;
+    if (offset<block.size()) {
+        chain::vdf_consensus::Extension decoded;
+        if (!chain::vdf_consensus::Parse(block.subspan(offset),decoded)) return false;
+        extension=std::move(decoded);
+    }
+    if (evm) *evm=std::move(parsed);
+    if (vdf) *vdf=std::move(extension);
+    return true;
+}
+bool ReadEvmPayloads(span<const uint8_t> block,EvmPayloads& result) {
+    return ReadBlockPayloads(block,&result,nullptr);
+}
+bool ReadVdfExtension(span<const uint8_t> block,optional<chain::vdf_consensus::Extension>& result) {
+    return ReadBlockPayloads(block,nullptr,&result);
 }
 void AppendEvmPayloads(vector<uint8_t>& block,const EvmPayloads& payloads) {
     if (payloads.empty()) return;

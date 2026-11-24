@@ -1,0 +1,277 @@
+{
+  "schema": 1,
+  "date": "2026-11-24",
+  "scope": "VDF protocol correctness, source debugging and single-server deployment",
+  "source": {
+    "release_artifact_id": "dev-006",
+    "revision_kind": "base_commit_plus_uncommitted_worktree_changes",
+    "base_commit": "d566e81214633492ffb5de4d930e4798f6d6b5a8",
+    "source_package_sha256": "26fc52cefb74eb4343fbdedb86bc909880e986d9adeffccb466725d3f66bebd0",
+    "source_manifest_sha256": "a6487250261eb8fb5fcd5618c39480c1d5c4acd670bb7e20d6dc44969fc0be2d",
+    "node_binary_sha256": "5a0f7ac1a84caa3f3b0d7d07f00296ded11f4bd9750654fe032ac0a27ef569ba",
+    "files_compared_after_full_ctest": 780,
+    "post_build_changed_files": [
+      {
+        "file": "ansible/scripts/vdf_instance.py",
+        "sha256": "df04220f240973dc9ae6b7aedb3f4d3001eb04c8ddd9810e557ba5dd0b42988a"
+      },
+      {
+        "file": "ansible/tests/test_vdf_deployment.py",
+        "sha256": "37c82b5023be2a7ad0ac87a94594a7ea4d91ee52ddd1c123563f616a808866a3"
+      }
+    ],
+    "cpp_unchanged_since_full_ctest": true,
+    "identity_note": "The base commit identifies the starting revision; package and manifest hashes identify the tested worktree snapshot."
+  },
+  "environment": {
+    "os_family": "EL9",
+    "architecture": "x86_64",
+    "vcpu": 2,
+    "compiler": "GCC 13",
+    "build_type": "RelWithDebInfo",
+    "classroom_enabled": true
+  },
+  "tests": {
+    "ctest": {
+      "status": "passed",
+      "registered": 30,
+      "passed": 30,
+      "failed": 0,
+      "skipped": 0,
+      "elapsed_seconds": 177.18,
+      "elapsed_source": "ctest.log",
+      "tests": [
+        "AccountCorrectness",
+        "AccountNetwork",
+        "AdmissionNetwork",
+        "ChainCorrectness",
+        "ChainNetwork",
+        "ChatFunding",
+        "ClassroomChains",
+        "ClassroomFundingNetwork",
+        "ClassroomIndex",
+        "ClassroomJoin",
+        "ClassroomNetwork",
+        "ClassroomWallets",
+        "EvmNetwork",
+        "ExperimentNetwork",
+        "FlowCorrectness",
+        "ForkNetwork",
+        "ForkStateCorrectness",
+        "IPv6Network",
+        "InviteCorrectness",
+        "InviteNetwork",
+        "SendBudgetCorrectness",
+        "ThroughputCorrectness",
+        "TxStepCorrectness",
+        "TxStepNetwork",
+        "VdfBlockCorrectness",
+        "VdfCorrectness",
+        "VdfElectionCorrectness",
+        "VdfNetwork",
+        "VdfRulesCorrectness",
+        "VdfStateCorrectness"
+      ]
+    },
+    "vdf_network": {
+      "status": "passed",
+      "hosts": 1,
+      "processes": 7,
+      "producing_processes": 6,
+      "sync_only_processes": 1,
+      "elapsed_seconds": 40.44656373500038,
+      "config": {
+        "iterations": 4096,
+        "epoch_blocks": 8,
+        "slot_ms": 250,
+        "fallback_slots": 20,
+        "future_slots": 2,
+        "producers": 5
+      },
+      "cases": [
+        {
+          "case": "election",
+          "status": "passed"
+        },
+        {
+          "case": "rejection",
+          "status": "passed"
+        },
+        {
+          "case": "restart",
+          "status": "passed"
+        },
+        {
+          "case": "partition",
+          "status": "passed"
+        },
+        {
+          "case": "fallback",
+          "status": "passed"
+        }
+      ]
+    },
+    "python_after_deployment_fix": {
+      "status": "passed",
+      "passed": 64,
+      "failed": 0,
+      "skipped": 0,
+      "elapsed_seconds": 1.035,
+      "includes_linux_systemd_analyze_verify": true
+    }
+  },
+  "deployment": {
+    "status": "active",
+    "service": "chain-vdf-vdf-20261124-002.service",
+    "port": 18089,
+    "active_producers": 1,
+    "config": {
+      "enabled": true,
+      "iterations": 65536,
+      "epoch_blocks": 32,
+      "slot_ms": 50,
+      "fallback_slots": 20,
+      "future_slots": 2,
+      "producers": 5,
+      "start_time_ms_committed_in_genesis": true
+    },
+    "final_health": {
+      "ok": true,
+      "first_height": 15409,
+      "second_height": 15430,
+      "epoch": 482,
+      "chain_transactions": 2,
+      "peers": 0,
+      "failed": false
+    },
+    "host_firewall_allows_node_port": true,
+    "external_connectivity": {
+      "ssh_tcp": "passed",
+      "node_tcp_18089": "timeout",
+      "public_node_connection_passed": false,
+      "cloud_security_group_check": "pending",
+      "probe_source": "operator external TCP probe"
+    }
+  },
+  "deployment_smoke": {
+    "status": "passed",
+    "hosts": 1,
+    "history_sync_and_block_bytes_match": true,
+    "signed_transfers": 2,
+    "service_transactions_before": 0,
+    "service_transactions_after": 2,
+    "observer_transactions": 2,
+    "service_height": 1290,
+    "observer_height": 1290,
+    "heads_match": true,
+    "fee_burned": 2,
+    "accounts_by_role": {
+      "founder": {
+        "exists": true,
+        "balance": 999999999999984,
+        "nonce": 2
+      },
+      "receiver": {
+        "exists": true,
+        "balance": 14,
+        "nonce": 0
+      }
+    },
+    "observer_vdf_computed": 0,
+    "observer_local_proposals": 0,
+    "observer_exit_code": 0
+  },
+  "source_debug": {
+    "status": "passed",
+    "debugger": "GDB",
+    "breakpoint": "PrepareVdfBlock",
+    "source_file": "Network/Vdf.h",
+    "source_line": 123,
+    "independent_debug_process": true
+  },
+  "final_test_database_cleanup": {
+    "applied": true,
+    "database_count": 94,
+    "bytes": 141685398,
+    "preserved": [
+      "node logs",
+      "RocksDB LOG files",
+      "configuration",
+      "genesis",
+      "identities",
+      "wallets",
+      "SQLite",
+      "test results"
+    ]
+  },
+  "not_performed": {
+    "thousand_node_tps": true,
+    "large_network_final_confirmation_latency_measurement": true,
+    "new_windows_installer_build": true
+  },
+  "evidence": {
+    "publication": "Sanitized summary only; raw evidence retained privately.",
+    "files": [
+      {
+        "name": "build-proof.json",
+        "sha256": "e9cb830b28450ade280dcc4ea7b38c5513bd406aa6488a4ce4c476cae3b7de08",
+        "bytes": 2237
+      },
+      {
+        "name": "ctest.xml",
+        "sha256": "757e8186b7adafb5ea2bd30f770ad3834fed58876cd6ccf2d6bde1ecf4e457f8",
+        "bytes": 16235
+      },
+      {
+        "name": "ctest.log",
+        "sha256": "ae015faa9c4e20dd48e3db5e8189b786420f241f55cc75aa46f0e20d851c8650",
+        "bytes": 3564
+      },
+      {
+        "name": "vdf-network.json",
+        "sha256": "b30b73205dbf804775c9a8a24c589155ecca87761cd4e711e3de9ebfa22099f0",
+        "bytes": 682
+      },
+      {
+        "name": "deployment-tests.log",
+        "sha256": "ec6de15590f3c5224dd1a55a1bc1198a05dcf64a8d2aa7552f961e81df898f85",
+        "bytes": 9687
+      },
+      {
+        "name": "deployment.json",
+        "sha256": "01d9ffeae6525493bb66d7e38d833be7b097884928782869ff4695b9ee454555",
+        "bytes": 2810
+      },
+      {
+        "name": "deployment-smoke.json",
+        "sha256": "af0a803b18e8a68597c8c4fc1dc72f1c353fdaee7599df0b236f1a679136f779",
+        "bytes": 16799
+      },
+      {
+        "name": "source-debug.json",
+        "sha256": "f8e7be31ab3ee8853a1b6cbd288cdce8d0e4e6e896ce17fccb6412c11cf8a055",
+        "bytes": 1054
+      },
+      {
+        "name": "gdb.log",
+        "sha256": "6f9f963120cecacd148ed72d42864de7e268d1857de19749dc0053033739b481",
+        "bytes": 3898
+      },
+      {
+        "name": "final-health.json",
+        "sha256": "339fcad1ca24c11dcb23731e4516299e96991473a56fad76b09d2e93ab72286a",
+        "bytes": 1118
+      },
+      {
+        "name": "source-comparison.json",
+        "sha256": "763841d1d679cdc178686011a1f130994dc776f5b67821706e1eb0200ec55275",
+        "bytes": 358
+      },
+      {
+        "name": "cleanup-final-result.json",
+        "sha256": "58ba903d1d3324eb2e0cd74ca358087316b5074aa576a8ce7b4e24f6b8aaa4f0",
+        "bytes": 138365
+      }
+    ]
+  }
+}

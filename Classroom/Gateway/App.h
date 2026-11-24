@@ -459,6 +459,8 @@ class ClassroomApp {
         for (const auto &account : profile.at("genesis").at("accounts"))
             accounts.push_back({{"public_key", account.at("public_key")}, {"balance", account.at("balance")}});
         Json genesis = {{"accounts", accounts}, {"base_fee", profile.at("genesis").value("base_fee", Json(0))}};
+        // The profile's validated consensus parameters are part of genesis_root.
+        if (profile.at("genesis").contains("vdf")) genesis["vdf"] = profile.at("genesis").at("vdf");
         Json info = {{"version", ChatVersion()}, {"title", profile.at("title")},
             {"genesis", genesis}, {"genesis_root", profile.at("genesis_root")},
             {"contract", profile.at("contract")}, {"contract_code_sha256", Sha256(Runtime())}};

@@ -3,6 +3,7 @@
 // 摘要保留区块头、交易哈希和输入类型，缺少的完整交易按索引补传。
 struct CompactBlock {
     vector<uint8_t> header;
+    vector<uint8_t> vdf;
     vector<array<uint8_t,32>> hashes;
     vector<uint8_t> contracts;
     vector<vector<uint8_t>> transactions;
@@ -63,7 +64,9 @@ void AnnounceBlock(const vector<uint8_t>& data) {
     vector<shared_ptr<Peer>> peers;
     { lock_guard lock(peerMutex); for (const auto& [key,peer]:peerPool) peers.push_back(peer); }
     if (peers.empty()) return;
-    EvmPayloads payloads; if (!ReadEvmPayloads(data,payloads)) return;
+    EvmPayloads payloads;
+    optional<chain::vdf_consensus::Extension> extension;
+    if (!ReadBlockPayloads(data,&payloads,&extension)) return;
     auto num=ReadU64(data.data()+72);
     array<uint8_t,32> hash; memcpy(hash.data(),data.data()+80,32);
     uint64_t source=0;
@@ -101,6 +104,10 @@ void AnnounceBlock(const vector<uint8_t>& data) {
         memcpy(compact.data()+112+i*33,data.data()+112+i*176+80,32);
         compact[112+i*33+32]=payloads.count(i)?1:0;
     }
+    if (extension) {
+        const auto encoded=chain::vdf_consensus::Encode(*extension);
+        compact.insert(compact.end(),encoded.begin(),encoded.end());
+    }
     auto summary=make_shared<const vector<uint8_t>>(GenerateMessage(39,compact));
     shared_ptr<const vector<uint8_t>> full;
     unordered_set<uint64_t> sent;
@@ -123,6 +130,7 @@ void SubmitCompactBlock(const array<uint8_t,32>& hash,const shared_ptr<CompactBl
         if (block->contracts[i]) inputs.emplace(i,vector<uint8_t>(tx.begin()+176,tx.end()));
     }
     AppendEvmPayloads(data,inputs);
+    data.insert(data.end(),block->vdf.begin(),block->vdf.end());
     if (data.size()>maxBlockBytes) { CompleteBlockReceive(hash); return; }
     auto peer=block->source.lock();
     if (!peer) { CompleteBlockReceive(hash); return; }
@@ -132,10 +140,27 @@ void SubmitCompactBlock(const array<uint8_t,32>& hash,const shared_ptr<CompactBl
 void ReceiveCompactBlock(const shared_ptr<Peer>& peer,const vector<uint8_t>& data) {
     if (!peer->compact||data.size()<112) return;
     auto num=ReadU64(data.data()+72),height=ReadU64(data.data()+64);
-    if (!num||num>maxProtocolTx||data.size()!=112+num*33||height<2) return;
+    if (num>maxProtocolTx||height<2) return;
+    const size_t transactionEnd=112+num*33;
+    if (data.size()<transactionEnd||data.size()-transactionEnd>chain::vdf_consensus::kMaxEncodedBytes) return;
+    optional<chain::vdf_consensus::Extension> extension;
+    if (data.size()>transactionEnd) {
+        chain::vdf_consensus::Extension decoded;
+        if (!chain::vdf_consensus::Parse(span<const uint8_t>(data).subspan(transactionEnd),decoded)) return;
+        extension=std::move(decoded);
+    }
+    if (chain::vdf_consensus::config.enabled!=extension.has_value()||(!num&&!extension)) return;
+    if (extension) {
+        try {
+            if (extension->slot<chain::vdf_consensus::MinimumSlot(height)) return;
+            const auto now=chain::vdf_consensus::CurrentSlot();
+            if (extension->slot>now&&extension->slot-now>chain::vdf_consensus::config.futureSlots) return;
+        } catch (const invalid_argument&) { return; }
+    }
     array<uint8_t,32> hash,calculated; memcpy(hash.data(),data.data()+80,32);
     crypto_generichash(calculated.data(),32,data.data(),80,nullptr,0);
     if (hash!=calculated) return;
+    if (extension&&!chain::vdf_consensus::VerifySignature(*extension,hash)) return;
     auto current=ReadChainHead().height;
     if ((height>current&&height-current>256)||(current>height&&current-height>256)) return;
     if (KnowsForkBlock(hash)) return;
@@ -145,6 +170,7 @@ void ReceiveCompactBlock(const shared_ptr<Peer>& peer,const vector<uint8_t>& dat
         if (compactBlocks.count(hash)||inflightBlocks.count(hash)||compactBlocks.size()>=maxCompactBlocks) { relaySuppressed++; return; }
     }
     auto block=make_shared<CompactBlock>(); block->header.assign(data.begin(),data.begin()+112);
+    block->vdf.assign(data.begin()+transactionEnd,data.end());
     block->hashes.resize(num); block->contracts.resize(num); block->transactions.resize(num);
     block->source=peer; block->sourceId=PeerId(peer); block->created=GetSteadyTime();
     block->bytes=data.size()+num*sizeof(vector<uint8_t>);
@@ -153,13 +179,17 @@ void ReceiveCompactBlock(const shared_ptr<Peer>& peer,const vector<uint8_t>& dat
         if (block->contracts[i]>1) return;
     }
     array<uint8_t,32> root; memcpy(root.data(),data.data()+32,32);
-    if (MerkleCompute(block->hashes)!=root) return;
+    auto expectedRoot=MerkleCompute(block->hashes);
+    if (extension) expectedRoot=chain::vdf_consensus::MerkleRoot(expectedRoot,*extension);
+    if (expectedRoot!=root) return;
     vector<uint8_t> request(hash.begin(),hash.end());
     {
         lock_guard lock(txpoolMutex);
         for (size_t i=0;i<num;i++) {
             auto tx=txpool.find(block->hashes[i]); auto input=evmPool.find(block->hashes[i]);
             if (tx!=txpool.end()&&bool(input!=evmPool.end())==bool(block->contracts[i])) {
+                const auto size=size_t(176)+(input==evmPool.end()?0:input->second.size());
+                if (size>maxCompactBytes-block->bytes) return;
                 auto& encoded=block->transactions[i]; encoded.assign(tx->second.begin(),tx->second.end());
                 if (input!=evmPool.end()) encoded.insert(encoded.end(),input->second.begin(),input->second.end());
                 block->bytes+=encoded.size();
@@ -171,6 +201,7 @@ void ReceiveCompactBlock(const shared_ptr<Peer>& peer,const vector<uint8_t>& dat
         for (size_t i=0;i<num;i++) if (block->transactions[i].empty()) {
             auto known=recentBlockTransactions.find(block->hashes[i]);
             if (known!=recentBlockTransactions.end()&&bool(known->second.size()>176)==bool(block->contracts[i])) {
+                if (known->second.size()>maxCompactBytes-block->bytes) return;
                 block->transactions[i]=known->second; block->bytes+=known->second.size(); recentTransactionHits++;
             } else {
                 auto offset=request.size(); request.resize(offset+4); WriteU32(request.data()+offset,uint32_t(i)); block->missing++;

@@ -175,7 +175,8 @@ awaitable<void> ProcessMessage(shared_ptr<Peer> peer,uint8_t type,vector<uint8_t
                         Block parsed; auto height=ReadU64(block.data()+64);
                         uint64_t current; bool known;
                         { shared_lock lock(dbCommitMutex);current=DBReadBlockHeight();known=DBReadBlockByHeight(to_string(height))==block; }
-                        if (!known&&!HasForkBlock(hash,block)&&height>=2&&height<=current+256&&current<=height+256&&VerifyBlock(block,&parsed)) {
+                        if (!known&&!HasForkBlock(hash,block)&&height>=2&&height<=current+256&&current<=height+256&&
+                            VerifyBlock(block,&parsed)&&CheckReceivedBlockTime(parsed)) {
                             accepted=QueueForkBlock(std::move(parsed),std::move(block),false); queuedBatch|=accepted;
                         }
                     } else accepted=ProcessBlock(std::move(block));
@@ -355,6 +356,16 @@ awaitable<void> session(uint64_t key,shared_ptr<Peer> peer) {
             if (peer->compact) co_await SendBlockReply(peer,type,std::move(data));
         } else if (type==43&&peer->compact) {
             co_await ProcessMessage(peer,type,std::move(data));
+        } else if (type==49&&VdfConsensus::config.enabled) {
+            VdfElection::Candidate record;
+            if (!VdfElection::DecodeCandidate(data,record)) { VdfConsensus::invalidProofs++; continue; }
+            steady_timer wait(co_await this_coro::executor);
+            while (!QueueVdfCandidate(record,PeerId(peer))) {
+                if (!nodeRunning||peer->closed) co_return;
+                wait.expires_after(milliseconds(2)); co_await wait.async_wait(use_awaitable);
+            }
+        } else if (type==50&&VdfConsensus::config.enabled) {
+            SendVdfCandidates(peer);
         } else if (type==27) {
             auto received=GetLogicalTimeUs();
             array<uint8_t,24> response;
@@ -389,8 +400,12 @@ awaitable<void> session(uint64_t key,shared_ptr<Peer> peer) {
             array<uint8_t,32> remote; memcpy(remote.data(),data.data()+32,32);
             peer->remoteHeight=ReadU64(data.data()+64);
             auto localHead=ReadChainHead(); auto height=localHead.height; auto local=localHead.hash;
-            if (local!=remote&&(peer->remoteHeight<=height||peer->remoteHeight-height<=256)&&peer->requestedHead!=remote) {
-                peer->requestedHead=remote; SendData(peer,GenerateMessage(21,remote));
+            const auto now=GetSteadyTime();
+            const bool retry=VdfConsensus::config.enabled&&now-peer->requestedHeadAt>=1000000000ULL;
+            if (local!=remote&&(peer->remoteHeight<=height||peer->remoteHeight-height<=256)&&
+                (peer->requestedHead!=remote||(retry&&!KnowsForkBlock(remote)))) {
+                peer->requestedHead=remote; peer->requestedHeadAt=now;
+                SendData(peer,GenerateMessage(21,remote));
             }
             if (!peer->syncing&&peer->remoteHeight>height) {
                 StartSync(peer);
@@ -420,6 +435,7 @@ awaitable<void> AcceptPeer(shared_ptr<Peer> peer) {
             peerPool.emplace(peer->key,peer);
         }
         QueryHeight(peer);
+        if (VdfConsensus::config.enabled) SendData(peer,GenerateMessage(50,{}));
     }
     co_await session(peer->key,peer);
 }
@@ -427,6 +443,11 @@ awaitable<void> Listen(unsigned short port,const string& address) {
     auto executor=co_await this_coro::executor;
     tcp::acceptor acceptor(executor);auto local=ip::make_address(address);
     acceptor.open(local.is_v6()?tcp::v6():tcp::v4());
+#ifndef _WIN32
+    // Linux retains accepted connections in TIME_WAIT after a clean shutdown.
+    // SO_REUSEADDR permits restarting the listener without sharing a live port.
+    acceptor.set_option(tcp::acceptor::reuse_address(true));
+#endif
     if (local.is_v6()) acceptor.set_option(ip::v6_only(true));
     acceptor.bind(tcp::endpoint(local,port));acceptor.listen();
     spdlog::info("Server started on {}",port);

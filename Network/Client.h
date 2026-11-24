@@ -71,6 +71,7 @@ struct Peer:enable_shared_from_this<Peer> {
     ip::address address=ip::address_v4::any();
     bool discoveryV2=false;
     array<uint8_t,32> requestedHead{};
+    uint64_t requestedHeadAt=0;
     uint64_t admissionRead=0,admissionWrite=0;
     map<uint64_t,PendingSend> admissionReplies;
     bool writing=false,closed=false,syncing=false,compact=false;
@@ -203,6 +204,7 @@ void BroadcastData(vector<uint8_t> data,uint64_t source=0) {
 }
 awaitable<void> ProcessMessage(shared_ptr<Peer> peer,uint8_t type,vector<uint8_t> data);
 #include "Blocks.h"
+#include "Vdf.h"
 void QueryHeight(const shared_ptr<Peer>& peer) { SendData(peer,GenerateMessage(19,{})); }
 void QueryBlock(const shared_ptr<Peer>& peer,uint64_t height) {
     array<uint8_t,8> data;
@@ -247,6 +249,7 @@ awaitable<void> Connect(ip::address address,uint16_t port,unsigned delayMs=0) {
     }
     co_spawn(peer->strand,session(peer->key,peer),[peer](exception_ptr error){PeerError(peer,error);});
     QueryHeight(peer);
+    if (VdfConsensus::config.enabled) SendData(peer,GenerateMessage(50,{}));
 }
 awaitable<void> ConnectSeed(const string& host="127.0.0.1",uint16_t port=8089) {
     auto executor=co_await this_coro::executor;
@@ -449,11 +452,14 @@ vector<uint8_t> GenerateSteppedBlock(steady_clock::time_point deadline,bool stop
             return GenerateBlock(blockTxStep,true);
         }
         auto ready=readyPoolTx;
-        if (ready>=blockTxStep&&ready!=attemptedReady) {
+        // The largest permitted step multiple is a full block. Smaller
+        // multiples keep collecting transactions until the send time.
+        auto fullCount=(maxBlockTx/blockTxStep)*blockTxStep;
+        if (fullCount&&ready>=fullCount&&ready!=attemptedReady) {
             attemptedReady=ready;
             lock.unlock();
             auto data=GenerateBlock(blockTxStep,false);
-            if (!data.empty()) return data;
+            if (!data.empty()&&ReadU64(data.data()+72)>=fullCount) return data;
             // Ready nonces can exceed the actually selectable byte/gas/balance
             // budget. Retry on pool progress or at the fixed partial deadline.
             continue;
@@ -461,7 +467,7 @@ vector<uint8_t> GenerateSteppedBlock(steady_clock::time_point deadline,bool stop
         auto start=GetSteadyTime();
         txpoolCondition.wait_until(lock,min(deadline,steady_clock::now()+milliseconds(5)),[&] {
             return !nodeRunning||forkReady||(stopOnCandidate&&blockReady)||
-                (readyPoolTx>=blockTxStep&&readyPoolTx!=attemptedReady);
+                (fullCount&&readyPoolTx>=fullCount&&readyPoolTx!=attemptedReady);
         });
         blockStepWaitNs+=GetSteadyTime()-start;
     }
@@ -473,6 +479,7 @@ void RecordSteppedProposal(uint64_t txCount) {
     }
 }
 void MainLoop() {
+    if (VdfConsensus::config.enabled) { RunVdfBlockLoop(); return; }
     try {
         int64_t lastRound=-1;
         while (true) {
@@ -577,7 +584,7 @@ nlohmann::json GetNodeStats() {
     auto height=snapshot.height,chainTx=snapshot.transactions,burned=snapshot.burned;
     auto userCount=snapshot.users,evmCount=snapshot.contracts; auto head=snapshot.hash;
     auto sends=sendQueueBudget.Snapshot();
-    nlohmann::json stats={{"received",receivedTx.load()},{"valid",validTx.load()},{"invalid",invalidTx.load()},
+    nlohmann::json stats={{"vdf",GetVdfStats()},{"received",receivedTx.load()},{"valid",validTx.load()},{"invalid",invalidTx.load()},
         {"duplicate",duplicateTx.load()},{"rejected",rejectedTx.load()},{"committed",committedTx.load()},
         {"pool",poolSize},{"ready_pool",readySize},{"pending",pendingVerify.load()},{"peak_pending",peakPendingVerify.load()},
         {"blocks",blockCount.load()},{"height",height},{"head",U32ToHex(head)},

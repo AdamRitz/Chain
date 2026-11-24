@@ -30,7 +30,7 @@ void AddConfiguredPeer(const string& value) {
 int main(int argc,char* argv[]) {
     try {
         Utf8Arguments unicode(argc,argv);
-        string configPath,dataPath="data/accounts-v7",metricsPath,genesisPath,stopFile;
+        string configPath,dataPath="data/accounts-v7",metricsPath,genesisPath,stopFile,vdfKeyPath;
         int ioNum=4,verifyNum=8,candidateNum=0,blockVerifyCount=0,queryNum=1,runSeconds=0;
         bool sync=true,observeClock=false;
         for (int i=1;i<argc;i++) {
@@ -47,6 +47,7 @@ int main(int argc,char* argv[]) {
             if (node["peer_protocol"]) {auto version=node["peer_protocol"].as<unsigned>();if(version<1||version>2)throw invalid_argument("Invalid peer protocol");peerProtocolV2=version==2;}
             if (node["data"]) dataPath=node["data"].as<string>();
             if (node["genesis"]) genesisPath=node["genesis"].as<string>();
+            if (node["vdf_key"]) vdfKeyPath=node["vdf_key"].as<string>();
             if (node["io_threads"]) ioNum=node["io_threads"].as<int>();
             if (node["verify_threads"]) verifyNum=node["verify_threads"].as<int>();
             if (node["candidate_threads"]) candidateNum=node["candidate_threads"].as<int>();
@@ -68,6 +69,7 @@ int main(int argc,char* argv[]) {
             if (name=="--config") continue;
             if (name=="--data") dataPath=value;
             else if (name=="--genesis") genesisPath=value;
+            else if (name=="--vdf-key") vdfKeyPath=value;
             else if (name=="--network-info") nodeNetworkInfoPath=value;
             else if (name=="--stop-file") stopFile=value;
             else if (name=="--bind") listenAddress=value;
@@ -120,6 +122,7 @@ int main(int argc,char* argv[]) {
         if (nodeClock.candidateMs>=nodeClock.roundMs&&nodeClock.candidateMs) throw invalid_argument("Candidate window must be shorter than round");
         InitTime();
         InitSodium();
+        VdfConsensus::currentTimeMs=[] { return uint64_t(max(int64_t(0),GetLogicalTimeUs()/1000)); };
         if (!genesisPath.empty()) LoadGenesisUsers(genesisPath);
         InitDB(dataPath,sync);
         InitWallet();
@@ -128,6 +131,7 @@ int main(int argc,char* argv[]) {
         for (auto& cache:verifiedTransactions) { cache.hashes.reserve(maxVerifiedPerBucket); cache.pending.reserve(32); }
         io_context io;
         nodeIO=&io;
+        InitializeVdfRuntime(dataPath,vdfKeyPath);
         verifyThreads=make_unique<thread_pool>(verifyNum);
         candidateThreads=make_unique<thread_pool>(candidateNum);
         queryThreads=make_unique<thread_pool>(queryNum);
@@ -178,6 +182,7 @@ int main(int argc,char* argv[]) {
         nodeRunning=false;
         WakeMainLoop();
         blockThread.join();
+        StopVdfRuntime();
         blockVerifyThreads->join();
         blockVerifyThreads.reset();
         // 所有工作线程结束后，在 io_context 析构前释放全局节点连接。
@@ -225,6 +230,8 @@ int main(int argc,char* argv[]) {
         db.reset();
         return nodeFailed?1:0;
     } catch (const exception& e) {
+        nodeRunning=false;
+        StopVdfRuntime();
         cerr<<"Node failed: "<<e.what()<<endl;
         return 1;
     }

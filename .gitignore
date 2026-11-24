@@ -45,6 +45,7 @@
 !.env.template
 *.pem
 *.key
+*.seed
 *.p12
 *.pfx
 id_rsa

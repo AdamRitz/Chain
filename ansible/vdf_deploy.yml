@@ -1,0 +1,67 @@
+- ansible.builtin.import_playbook: vdf_prepare.yml
+
+- name: Start an independently configured VDF chain without replacing an existing chain
+  hosts: chain
+  gather_facts: false
+  become: true
+  serial: "{{ chain_serial | default(1) }}"
+  any_errors_fatal: true
+  vars:
+    chain_vdf_release_root: "{{ chain_release_root }}/vdf"
+    chain_vdf_tools_root: "{{ chain_tools_root }}/vdf"
+    chain_vdf_build_python: /usr/bin/python3.11
+    chain_vdf_user: chain-vdf
+  tasks:
+    - name: Require explicit new-chain identity, configuration and arguments
+      ansible.builtin.assert:
+        that:
+          - chain_vdf_instance_id is match('^[A-Za-z0-9_-]{1,100}$')
+          - chain_vdf_service_name is match('^chain-vdf-[A-Za-z0-9_-]{1,100}\.service$')
+          - chain_vdf_instance_dir is match('^/.+')
+          - chain_vdf_port | int >= 1024
+          - chain_vdf_port | int <= 65535
+          - chain_vdf_node_config is mapping
+          - chain_vdf_genesis is mapping
+          - chain_vdf_arguments is sequence
+          - chain_vdf_arguments is not string
+          - chain_vdf_user is match('^[a-z_][a-z0-9_-]{0,30}$')
+          - chain_vdf_user != 'root'
+    - name: Create a dedicated service group
+      ansible.builtin.group:
+        name: "{{ chain_vdf_user }}"
+        system: true
+    - name: Create a dedicated unprivileged node account
+      ansible.builtin.user:
+        name: "{{ chain_vdf_user }}"
+        group: "{{ chain_vdf_user }}"
+        system: true
+        create_home: false
+        shell: /sbin/nologin
+    - name: Refuse a linked deployment request path
+      ansible.builtin.command:
+        argv:
+          - "{{ chain_vdf_build_python }}"
+          - -c
+          - "import pathlib,sys; p=pathlib.Path(sys.argv[1]); assert not any(x.is_symlink() for x in (p,*p.parents)), 'Linked request path'"
+          - "{{ chain_vdf_tools_root }}/requests/{{ chain_vdf_instance_id }}-{{ chain_node_id }}.json"
+      changed_when: false
+    - name: Render the explicit deployment request outside the node database
+      ansible.builtin.template:
+        src: vdf-request.json.j2
+        dest: "{{ chain_vdf_tools_root }}/requests/{{ chain_vdf_instance_id }}-{{ chain_node_id }}.json"
+        mode: '0600'
+    - name: Create the new service and verify its process, port and published chain head
+      ansible.builtin.command:
+        argv:
+          - "{{ chain_vdf_release_root }}/{{ chain_vdf_release_id }}/venv/bin/python"
+          - "{{ chain_vdf_tools_root }}/vdf_instance.py"
+          - --request
+          - "{{ chain_vdf_tools_root }}/requests/{{ chain_vdf_instance_id }}-{{ chain_node_id }}.json"
+      register: chain_vdf_deployment
+      changed_when: (chain_vdf_deployment.stdout | from_json).changed | default(false)
+      failed_when: chain_vdf_deployment.rc != 0 or not (chain_vdf_deployment.stdout | from_json).ok
+      environment:
+        PYTHONDONTWRITEBYTECODE: '1'
+    - name: Report the active VDF service and its retained deployment proof
+      ansible.builtin.debug:
+        msg: "{{ chain_vdf_deployment.stdout | from_json }}"

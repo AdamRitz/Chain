@@ -22,3 +22,40 @@ Chain adapts the state transition and host implementation under upstream `test/s
 Contract compilation: `Contracts/Counter.compiled.json` was produced from `Counter.sol` with Solidity `0.8.28`, optimizer runs 200, EVM target `shanghai`. Compiler version and settings are embedded in the artifact. Node execution uses the pinned source libraries above.
 
 2026-10-13 overlay patch: `test/state/state.hpp`, `state.cpp` add a read-only parent with lazy account/slot loading, deletion markers, and cleanup restricted to each transaction's accessed accounts and slots. `host.cpp` routes storage reads, writes, warm access and create-collision checks through the overlay. Chain publishes only changed state after its atomic database write. `ThroughputCorrectness`, `ForkStateCorrectness` and `EvmNetwork` cover parent isolation, rollback, account recreation, repeated calls, nested calls, failure and restart.
+
+## VDF dependency
+
+| Project | Version | Git commit | Upstream |
+|---|---|---|---|
+| chiavdf | 1.2.3 | `b72bae6f1d013183c7d89a9e5aeef7f8215b26e9` | https://github.com/Chia-Network/chiavdf |
+
+`chiavdf/` contains the transitive source dependencies of `verifier.h` and
+`prover_slow.h`, the portable leading-zero counter, and the Windows uint128
+fallback. The sources are unmodified. The upstream Apache-2.0 license, embedded
+MIT notices (including PicoSHA2 and NUCOMP), the uint128 license, and the
+public-domain/MIT-0 notice in `refcode/lzcnt.c` are retained. The upstream Python,
+network client, hardware, assembly generation and build-download code are not
+included or invoked.
+
+The `chain_vdf` static library links system GMP and GMPXX (`libgmp-dev` on Debian
+and Ubuntu; `mingw-w64-ucrt-x86_64-gmp` with MSYS2 UCRT). GMP's own license and
+redistribution requirements apply to that dependency. CMake also accepts MPIR
+and MPIRXX library names with their matching headers. Windows uses native
+128-bit integers when the compiler supports them, otherwise upstream's fallback.
+
+`Crypto/VDF.cpp` is the sole translation unit including the upstream headers.
+It fixes the challenge at 32 bytes, discriminant at 1024 bits, initial element
+at `{0x08, 0, ...}`, and proof encoding at 200 bytes (100-byte Y followed by the
+100-byte Wesolowski proof). Strict form decoding validates canonical encoding.
+Iterations are restricted to 1 through 100,000,000 before computation. Above
+1,000,000 iterations the prover uses upstream's checkpoint implementation,
+which computes the same bytes with less memory and about twice the squarings.
+The caller constructs the challenge from its protocol context and supplies the
+expected iterations; this primitive does not choose epochs or elect producers.
+
+`VdfCorrectness` covers deterministic generation, small iteration counts,
+challenge/iteration/proof changes, invalid lengths, canonical identity padding,
+malformed forms, iteration bounds, concurrent calls, and the official fixed
+proof in chiavdf `src/vdf.txt` lines 85-90. `vdf_test --extended` also generates
+that 2,023,424-iteration proof through the checkpoint implementation and compares
+all 200 bytes with the upstream result.

@@ -1,0 +1,19 @@
+{{ {
+  'instance_id': chain_vdf_instance_id,
+  'node_id': chain_node_id,
+  'release_dir': chain_vdf_release_root + '/' + chain_vdf_release_id,
+  'instance_dir': chain_vdf_instance_dir,
+  'service': chain_vdf_service_name,
+  'user': chain_vdf_user,
+  'port': chain_vdf_port | int,
+  'arguments': chain_vdf_arguments,
+  'data_dir': chain_vdf_data_dir | default(chain_vdf_instance_dir + '/data'),
+  'config_path': chain_vdf_config_path | default(chain_vdf_instance_dir + '/node.yaml'),
+  'genesis_path': chain_vdf_genesis_path | default(chain_vdf_instance_dir + '/genesis.json'),
+  'metrics_path': chain_vdf_metrics_path | default(chain_vdf_instance_dir + '/logs/metrics.json'),
+  'config_text': chain_vdf_node_config | to_nice_yaml,
+  'genesis': chain_vdf_genesis,
+  'health_host': chain_vdf_health_host | default('127.0.0.1'),
+  'health_timeout': chain_vdf_health_timeout | default(45) | int,
+  'expected_genesis': chain_vdf_expected_genesis | default('')
+} | to_nice_json }}

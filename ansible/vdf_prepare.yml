@@ -1,0 +1,200 @@
+- name: Prepare and test an isolated EL9 VDF source release
+  hosts: chain
+  gather_facts: true
+  become: true
+  serial: "{{ chain_vdf_prepare_serial | default(32) }}"
+  vars:
+    chain_vdf_release_root: "{{ chain_release_root }}/vdf"
+    chain_vdf_tools_root: "{{ chain_tools_root }}/vdf"
+    chain_vdf_build_python: /usr/bin/python3.11
+    chain_vdf_required_tests: [ChainCorrectness, ForkStateCorrectness, ForkNetwork, EvmNetwork, IPv6Network, VdfCorrectness, VdfElectionCorrectness, VdfRulesCorrectness, VdfBlockCorrectness, VdfStateCorrectness, VdfNetwork]
+  tasks:
+    - name: Validate explicit source identity and isolated release names
+      ansible.builtin.assert:
+        that:
+          - ansible_system == 'Linux'
+          - ansible_os_family == 'RedHat'
+          - ansible_distribution_major_version == '9'
+          - ansible_architecture == 'x86_64'
+          - chain_node_id is match('^[A-Za-z0-9_-]{1,100}$')
+          - groups['chain'] | map('extract', hostvars, 'chain_node_id') | list | unique | length == groups['chain'] | length
+          - chain_vdf_release_id is match('^[A-Za-z0-9][A-Za-z0-9_.-]{0,79}$')
+          - chain_vdf_build_run_id is match('^[A-Za-z0-9_-]{1,100}$')
+          - chain_vdf_source_sha256 is match('^[0-9a-f]{64}$')
+          - chain_vdf_source_commit is match('^[0-9a-f]{40}$')
+          - chain_vdf_source_package is match('^/.+')
+          - chain_vdf_release_root is match('^/.+')
+          - chain_vdf_tools_root is match('^/.+')
+          - chain_vdf_required_tests | length > 0
+    - name: Check the controller source archive before changing the target
+      ansible.builtin.stat:
+        path: "{{ chain_vdf_source_package }}"
+        checksum_algorithm: sha256
+        follow: false
+      delegate_to: localhost
+      become: false
+      register: chain_vdf_local_package
+    - name: Require an ordinary source archive with its declared checksum
+      ansible.builtin.assert:
+        that:
+          - chain_vdf_local_package.stat.isreg | default(false)
+          - not (chain_vdf_local_package.stat.islnk | default(false))
+          - chain_vdf_local_package.stat.checksum == chain_vdf_source_sha256
+    - name: Install EL9 build and test dependencies when requested
+      when: chain_vdf_install_dependencies | default(true) | bool
+      block:
+        - name: Install repository management support
+          ansible.builtin.dnf:
+            name: [dnf-plugins-core, epel-release]
+            state: present
+        - name: Enable the CentOS, Rocky or AlmaLinux CRB repository
+          ansible.builtin.command:
+            argv: [dnf, config-manager, --set-enabled, crb]
+          changed_when: false
+          when: ansible_distribution in ['CentOS', 'Rocky', 'AlmaLinux']
+        - name: Install compiler, debug symbols support, CMake and libraries
+          ansible.builtin.dnf:
+            name:
+              - gcc-toolset-13-gcc
+              - gcc-toolset-13-gcc-c++
+              - cmake
+              - ninja-build
+              - gdb
+              - binutils
+              - boost-devel
+              - rocksdb-devel
+              - libsodium-devel
+              - spdlog-devel
+              - yaml-cpp-devel
+              - nlohmann-json-devel
+              - gmp-devel
+              - sqlite-devel
+              - python3.11
+              - python3.11-pip
+            state: present
+    - name: Refuse linked or traversing managed roots before creating directories
+      ansible.builtin.command:
+        argv:
+          - "{{ chain_vdf_build_python }}"
+          - -c
+          - "import pathlib,sys; paths=[pathlib.Path(v) for v in sys.argv[1:]]; assert all(p.is_absolute() and '..' not in p.parts and p!=pathlib.Path('/') and not any(x.is_symlink() for x in (p,*p.parents)) for p in paths), 'Unsafe managed root'"
+          - "{{ chain_vdf_release_root }}"
+          - "{{ chain_vdf_tools_root }}"
+          - "{{ chain_vdf_tools_root }}/packages"
+          - "{{ chain_vdf_tools_root }}/requests"
+          - "{{ chain_vdf_tools_root }}/packages/{{ chain_vdf_source_sha256 }}.tar.gz"
+          - "{{ chain_vdf_tools_root }}/vdf_source.py"
+          - "{{ chain_vdf_tools_root }}/vdf_build.py"
+          - "{{ chain_vdf_tools_root }}/vdf_instance.py"
+      changed_when: false
+    - name: Create only dedicated VDF build and tool roots
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: directory
+        mode: '0755'
+      loop:
+        - "{{ chain_vdf_release_root }}"
+        - "{{ chain_vdf_tools_root }}"
+        - "{{ chain_vdf_tools_root }}/packages"
+        - "{{ chain_vdf_tools_root }}/requests"
+    - name: Install source verification and build tools
+      ansible.builtin.copy:
+        src: "scripts/{{ item }}"
+        dest: "{{ chain_vdf_tools_root }}/{{ item }}"
+        mode: '0755'
+      loop: [vdf_source.py, vdf_build.py, vdf_instance.py]
+    - name: Transfer the checksum-addressed source archive
+      ansible.builtin.copy:
+        src: "{{ chain_vdf_source_package }}"
+        dest: "{{ chain_vdf_tools_root }}/packages/{{ chain_vdf_source_sha256 }}.tar.gz"
+        mode: '0644'
+    - name: Verify every source member and atomically stage the new release
+      ansible.builtin.command:
+        argv:
+          - "{{ chain_vdf_build_python }}"
+          - "{{ chain_vdf_tools_root }}/vdf_source.py"
+          - stage
+          - --package
+          - "{{ chain_vdf_tools_root }}/packages/{{ chain_vdf_source_sha256 }}.tar.gz"
+          - --sha256
+          - "{{ chain_vdf_source_sha256 }}"
+          - --release-dir
+          - "{{ chain_vdf_release_root }}/{{ chain_vdf_release_id }}"
+          - --source-commit
+          - "{{ chain_vdf_source_commit }}"
+      register: chain_vdf_source_stage
+      changed_when: (chain_vdf_source_stage.stdout | from_json).changed
+      environment:
+        PYTHONDONTWRITEBYTECODE: '1'
+    - name: Refuse linked build and Python environment directories
+      ansible.builtin.command:
+        argv:
+          - "{{ chain_vdf_build_python }}"
+          - -c
+          - "import pathlib,sys; paths=[pathlib.Path(v) for v in sys.argv[1:]]; assert all(not any(x.is_symlink() for x in (p,*p.parents)) for p in paths), 'Linked build/venv path'"
+          - "{{ chain_vdf_release_root }}/{{ chain_vdf_release_id }}/venv"
+          - "{{ chain_vdf_release_root }}/{{ chain_vdf_release_id }}/venv/bin"
+          - "{{ chain_vdf_release_root }}/{{ chain_vdf_release_id }}/build"
+      changed_when: false
+    - name: Create an isolated build/test Python environment
+      ansible.builtin.command:
+        argv: ["{{ chain_vdf_build_python }}", -m, venv, "{{ chain_vdf_release_root }}/{{ chain_vdf_release_id }}/venv"]
+        creates: "{{ chain_vdf_release_root }}/{{ chain_vdf_release_id }}/venv/bin/python"
+    - name: Install the source release test requirements
+      ansible.builtin.pip:
+        requirements: "{{ chain_vdf_release_root }}/{{ chain_vdf_release_id }}/source/Experiments/requirements.txt"
+        executable: "{{ chain_vdf_release_root }}/{{ chain_vdf_release_id }}/venv/bin/pip"
+    - name: Construct the explicit build and full-test command
+      ansible.builtin.set_fact:
+        chain_vdf_build_command:
+          - "{{ chain_vdf_build_python }}"
+          - "{{ chain_vdf_tools_root }}/vdf_build.py"
+          - --release-dir
+          - "{{ chain_vdf_release_root }}/{{ chain_vdf_release_id }}"
+          - --run-id
+          - "{{ chain_vdf_build_run_id }}"
+          - --python
+          - "{{ chain_vdf_release_root }}/{{ chain_vdf_release_id }}/venv/bin/python"
+          - --jobs
+          - "{{ chain_vdf_build_jobs | default(1) | string }}"
+    - name: Require the declared baseline and VDF tests to be registered
+      ansible.builtin.set_fact:
+        chain_vdf_build_command: "{{ chain_vdf_build_command + ['--require-test', item] }}"
+      loop: "{{ chain_vdf_required_tests }}"
+    - name: Add an explicitly supplied RocksDB CMake package directory
+      ansible.builtin.set_fact:
+        chain_vdf_build_command: "{{ chain_vdf_build_command + ['--rocksdb-dir', chain_vdf_rocksdb_dir] }}"
+      when: chain_vdf_rocksdb_dir is defined
+    - name: Use an explicitly supplied Boost header directory
+      ansible.builtin.set_fact:
+        chain_vdf_build_command: "{{ chain_vdf_build_command + ['--boost-dir', chain_vdf_boost_dir] }}"
+      when: chain_vdf_boost_dir is defined
+    - name: Include the graphical gateway and its complete test suite
+      ansible.builtin.set_fact:
+        chain_vdf_build_command: "{{ chain_vdf_build_command + ['--classroom'] }}"
+      when: chain_vdf_classroom | default(false) | bool
+    - name: Select a partial test filter for development iterations
+      ansible.builtin.set_fact:
+        chain_vdf_build_command: "{{ chain_vdf_build_command + ['--test-regex', chain_vdf_ctest_regex] }}"
+      when: chain_vdf_ctest_regex is defined and chain_vdf_ctest_regex | length > 0
+    - name: Select individual build targets only for partial test iterations
+      ansible.builtin.set_fact:
+        chain_vdf_build_command: "{{ chain_vdf_build_command + ['--target', item] }}"
+      loop: "{{ chain_vdf_build_targets | default([]) }}"
+    - name: Use the same optional runtime library path in tests and the service
+      ansible.builtin.set_fact:
+        chain_vdf_build_command: "{{ chain_vdf_build_command + ['--library-path', chain_vdf_library_path] }}"
+      when: chain_vdf_library_path is defined
+    - name: Build with debug information and run all CTests in a fresh directory
+      ansible.builtin.command:
+        argv: "{{ chain_vdf_build_command }}"
+      async: 14400
+      poll: 10
+      register: chain_vdf_build_result
+      changed_when: (chain_vdf_build_result.stdout | from_json).changed | default(false)
+      failed_when: chain_vdf_build_result.rc != 0 or not (chain_vdf_build_result.stdout | from_json).ok
+      environment:
+        PYTHONDONTWRITEBYTECODE: '1'
+    - name: Report retained build, source and test evidence
+      ansible.builtin.debug:
+        msg: "{{ chain_vdf_build_result.stdout | from_json }}"
