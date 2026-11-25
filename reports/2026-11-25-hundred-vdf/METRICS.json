@@ -1,0 +1,911 @@
+{
+  "schema": 1,
+  "generated_utc": "2026-11-25T07:39:00.239557+00:00",
+  "date": "2026-11-25",
+  "source_commit": "ab7b53e2e52886d683392756865dc719d4cb7f83",
+  "hardware": {
+    "servers": 100,
+    "vcpus_per_server": 2,
+    "memory_gb_per_server": 4
+  },
+  "graph": {
+    "nodes": 100,
+    "edges": 400,
+    "min_degree": 8,
+    "max_degree": 8,
+    "max_distance_from_first_node": 4,
+    "connected": true
+  },
+  "stage": {
+    "ok": true,
+    "seconds": 151.58693146705627,
+    "operations": [
+      {
+        "operation": "bootstrap",
+        "code": 0,
+        "seconds": 17.424647331237793
+      },
+      {
+        "operation": "stage",
+        "code": 0,
+        "seconds": 134.16176676750183
+      }
+    ]
+  },
+  "measurement": {
+    "tps": "Change in common-chain transaction count divided by recorded measurement duration.",
+    "confirmation_ms": "Time from scheduled send to matching transaction block replies from all nodes; includes query intervals and query time.",
+    "drain": "The polling-loop deadline is warmup + duration + drain_seconds. In-progress queries and final state checks may finish later.",
+    "reorganizations": "Sum of per-node counter differences between the first and last measurement-window records. One branch change can be counted by multiple nodes.",
+    "query_sweep_seconds": "All query sweeps in the run, including startup and final verification.",
+    "vdf_timing": "VDF slot_ms determines block timing; benchmark CLI block-ms is 50 and persistent CLI block-ms is 200."
+  },
+  "runs": [
+    {
+      "run": "vdf100-10000-04",
+      "ok": true,
+      "nodes": 100,
+      "injector_count": 4,
+      "configuration": {
+        "rate": 10000,
+        "duration": 10.0,
+        "warmup": 2.0,
+        "drain_seconds": 5.0,
+        "wallets": 1024,
+        "batch": 128,
+        "query_workers": 100,
+        "forks": 32,
+        "poll_seconds": 0.1,
+        "metrics_period": 1.0,
+        "sample_hz": 20.0,
+        "binary_sha256": "73ac73e8091e82832078cabffdaa629faaf0874c97a8574436ebd990d3914ac0",
+        "dataset_sha256": "fb1b66a92d81fbe78eece1976401060237beb95c889c3c63904baccdff36585b",
+        "genesis_sha256": "e3325066b86887bbfca74d045e21de986886de3e1e53951ac6cca33e1e2082ef",
+        "release_id": "prop-009-compatible",
+        "node_settings": {
+          "block-ms": 50,
+          "max-block-txs": 6000,
+          "block-tx-step": 2000,
+          "sync": 1
+        }
+      },
+      "vdf": {
+        "enabled": true,
+        "epoch_blocks": 32,
+        "fallback_slots": 20,
+        "future_slots": 2,
+        "iterations": 65536,
+        "producers": 5,
+        "slot_ms": 200,
+        "start_time_ms": 1795591771600
+      },
+      "metrics": {
+        "offered_tps": 10000,
+        "achieved_send_tps": 10011.216092219041,
+        "common_commit_tps": 7499.125019186028,
+        "sent_unique": 120000,
+        "sent_wire_copies": 120000,
+        "p50_ms": 2490.457415002311,
+        "p95_ms": 9430.796727003326,
+        "p99_ms": 9880.796727000416,
+        "p99_after_send_ms": 9876.983374000702,
+        "samples": 200,
+        "unresolved_samples": 0,
+        "deadline_success_fraction": 0.055,
+        "send_lateness_p99_ms": 11.473881000711117,
+        "logical_backlog_end": 31571,
+        "logical_backlog_growth_per_second": 2097.9004958590726,
+        "invalid_or_rejected_sum": 60,
+        "drained": true,
+        "sustainable": false,
+        "tx_sustainable": false,
+        "measurement_seconds": 8.937175981001928,
+        "measurement_samples": 23,
+        "controller_cpu_core_equivalents": 0.10765998960466173
+      },
+      "query_sweep_seconds": {
+        "count": 412,
+        "p50": 0.015464635001990246,
+        "p95": 0.23438329000055091,
+        "max": 0.6069369819997519
+      },
+      "resources_across_nodes": {
+        "cpu_core_equivalents": {
+          "count": 100,
+          "mean": 1.736734670212896,
+          "max": 2.004451857956106,
+          "min": 1.2507728418643955
+        },
+        "peak_resident_bytes": {
+          "count": 100,
+          "mean": 241200660.48,
+          "max": 275038208,
+          "min": 162082816
+        },
+        "received_bytes_per_second": {
+          "count": 100,
+          "mean": 11252396.045884497,
+          "max": 20481649.504173562,
+          "min": 7263737.912064954
+        },
+        "sent_bytes_per_second": {
+          "count": 100,
+          "mean": 11371173.778610868,
+          "max": 18991182.042380705,
+          "min": 6819332.4300152715
+        },
+        "process_write_bytes_per_second": {
+          "count": 100,
+          "mean": 8690714.06058321,
+          "max": 12075560.359269232,
+          "min": 2864897.8216863507
+        },
+        "db_write_ms_per_second": {
+          "count": 100,
+          "mean": 144.4120755195546,
+          "max": 201.04075737340145,
+          "min": 39.00986673431431
+        }
+      },
+      "reorganizations": {
+        "measurement_window": {
+          "first_seconds_after_load_start": 2.123981458000344,
+          "last_seconds_after_load_start": 11.061157439002272,
+          "first_counter_sum": 905,
+          "last_counter_sum": 4942,
+          "delta_sum": 4037,
+          "first_common_transactions": 12000,
+          "last_common_transactions": 79021,
+          "per_node_delta": {
+            "count": 100,
+            "mean": 40.37,
+            "max": 67,
+            "min": 0
+          },
+          "counter_reset_node_count": 0
+        },
+        "whole_timeline": {
+          "first_seconds_after_load_start": 0.013735135999013437,
+          "last_seconds_after_load_start": 18.010149710000405,
+          "first_counter_sum": 653,
+          "last_counter_sum": 5918,
+          "delta_sum": 5265,
+          "first_common_transactions": 0,
+          "last_common_transactions": 111024,
+          "per_node_delta": {
+            "count": 100,
+            "mean": 52.65,
+            "max": 89,
+            "min": 1
+          },
+          "counter_reset_node_count": 0
+        }
+      },
+      "state_checks": {
+        "accounts_checked_per_node": 1024,
+        "state": {
+          "transactions": 120000,
+          "supply": 1024000000000,
+          "burned": 0,
+          "state_hash": "b6358e4c314f611dea61d3fadae1cc2d7d9f578aaded3ea7e33e461dc2e95345"
+        },
+        "common_block": {
+          "height": 161,
+          "hash": "0b5d9c717c1727297b6a01bc549854a6ad5b1671720044147c6e9318a9f2d4ab",
+          "transactions": 120000
+        },
+        "distinct_heads_at_state_check": 11
+      },
+      "cleanup": {
+        "expected_nodes": 100,
+        "files": 100,
+        "ok_nodes": 100,
+        "all_ok": true,
+        "databases_removed": 100,
+        "databases_already_absent": 0
+      }
+    },
+    {
+      "run": "vdf100-2000-04",
+      "ok": true,
+      "nodes": 100,
+      "injector_count": 4,
+      "configuration": {
+        "rate": 2000,
+        "duration": 10.0,
+        "warmup": 2.0,
+        "drain_seconds": 5.0,
+        "wallets": 1024,
+        "batch": 128,
+        "query_workers": 100,
+        "forks": 32,
+        "poll_seconds": 0.1,
+        "metrics_period": 1.0,
+        "sample_hz": 20.0,
+        "binary_sha256": "73ac73e8091e82832078cabffdaa629faaf0874c97a8574436ebd990d3914ac0",
+        "dataset_sha256": "fb1b66a92d81fbe78eece1976401060237beb95c889c3c63904baccdff36585b",
+        "genesis_sha256": "904debd1e1eb8257a798ab904f421fc6bdf7850733813fbb14acfb00eb52522f",
+        "release_id": "prop-009-compatible",
+        "node_settings": {
+          "block-ms": 50,
+          "max-block-txs": 6000,
+          "block-tx-step": 2000,
+          "sync": 1
+        }
+      },
+      "vdf": {
+        "enabled": true,
+        "epoch_blocks": 32,
+        "fallback_slots": 20,
+        "future_slots": 2,
+        "iterations": 65536,
+        "producers": 5,
+        "slot_ms": 200,
+        "start_time_ms": 1795591178600
+      },
+      "metrics": {
+        "offered_tps": 2000,
+        "achieved_send_tps": 2004.793232307615,
+        "common_commit_tps": 1709.315143231027,
+        "sent_unique": 24000,
+        "sent_wire_copies": 24000,
+        "p50_ms": 1165.9240090011735,
+        "p95_ms": 2714.8446780011,
+        "p99_ms": 3114.844677998917,
+        "p99_after_send_ms": 3065.0268319986935,
+        "samples": 200,
+        "unresolved_samples": 0,
+        "deadline_success_fraction": 0.385,
+        "send_lateness_p99_ms": 13.859982002031757,
+        "logical_backlog_end": 3273,
+        "logical_backlog_growth_per_second": 264.57408998977985,
+        "invalid_or_rejected_sum": 0,
+        "drained": true,
+        "sustainable": false,
+        "tx_sustainable": false,
+        "measurement_seconds": 9.960129393002717,
+        "measurement_samples": 73,
+        "controller_cpu_core_equivalents": 0.24431704846788976
+      },
+      "query_sweep_seconds": {
+        "count": 592,
+        "p50": 0.013887895998777822,
+        "p95": 0.0468622240005061,
+        "max": 1.6208551449999504
+      },
+      "resources_across_nodes": {
+        "cpu_core_equivalents": {
+          "count": 100,
+          "mean": 0.7055896176346073,
+          "max": 0.8204402450575445,
+          "min": 0.46075817079485476
+        },
+        "peak_resident_bytes": {
+          "count": 100,
+          "mean": 78115020.8,
+          "max": 84623360,
+          "min": 67362816
+        },
+        "received_bytes_per_second": {
+          "count": 100,
+          "mean": 2524185.277920429,
+          "max": 3093057.1064310665,
+          "min": 1907442.7901857297
+        },
+        "sent_bytes_per_second": {
+          "count": 100,
+          "mean": 2535661.5173837743,
+          "max": 4281486.847947856,
+          "min": 1742347.947024835
+        },
+        "process_write_bytes_per_second": {
+          "count": 100,
+          "mean": 1244583.8634093152,
+          "max": 1352978.4070342674,
+          "min": 744343.7436875453
+        },
+        "db_write_ms_per_second": {
+          "count": 100,
+          "mean": 60.44427409777886,
+          "max": 84.33244808948947,
+          "min": 16.224416031535377
+        }
+      },
+      "reorganizations": {
+        "measurement_window": {
+          "first_seconds_after_load_start": 2.0382311739995203,
+          "last_seconds_after_load_start": 11.998360567002237,
+          "first_counter_sum": 1289,
+          "last_counter_sum": 5918,
+          "delta_sum": 4629,
+          "first_common_transactions": 3638,
+          "last_common_transactions": 20663,
+          "per_node_delta": {
+            "count": 100,
+            "mean": 46.29,
+            "max": 58,
+            "min": 0
+          },
+          "counter_reset_node_count": 0
+        },
+        "whole_timeline": {
+          "first_seconds_after_load_start": 0.013271527001052164,
+          "last_seconds_after_load_start": 14.37656894400061,
+          "first_counter_sum": 761,
+          "last_counter_sum": 5953,
+          "delta_sum": 5192,
+          "first_common_transactions": 0,
+          "last_common_transactions": 24000,
+          "per_node_delta": {
+            "count": 100,
+            "mean": 51.92,
+            "max": 66,
+            "min": 1
+          },
+          "counter_reset_node_count": 0
+        }
+      },
+      "state_checks": {
+        "accounts_checked_per_node": 1024,
+        "state": {
+          "transactions": 24000,
+          "supply": 1024000000000,
+          "burned": 0,
+          "state_hash": "62cb48e0783688468d2306149db59ac07c9a05859546bba412304fc2264f4250"
+        },
+        "common_block": {
+          "height": 235,
+          "hash": "951b702f1a6eb1af1aace02a48e25a5125a1f09b040e7bde9397fe387596e43a",
+          "transactions": 24000
+        },
+        "distinct_heads_at_state_check": 11
+      },
+      "cleanup": {
+        "expected_nodes": 100,
+        "files": 100,
+        "ok_nodes": 100,
+        "all_ok": true,
+        "databases_removed": 100,
+        "databases_already_absent": 0
+      }
+    },
+    {
+      "run": "vdf100-20000-01",
+      "ok": false,
+      "nodes": 100,
+      "injector_count": 4,
+      "configuration": {
+        "rate": 20000,
+        "duration": 10.0,
+        "warmup": 2.0,
+        "drain_seconds": 5.0,
+        "wallets": 1024,
+        "batch": 128,
+        "query_workers": 100,
+        "forks": 32,
+        "poll_seconds": 0.1,
+        "metrics_period": 1.0,
+        "sample_hz": 20.0,
+        "binary_sha256": "73ac73e8091e82832078cabffdaa629faaf0874c97a8574436ebd990d3914ac0",
+        "dataset_sha256": "fb1b66a92d81fbe78eece1976401060237beb95c889c3c63904baccdff36585b",
+        "genesis_sha256": "6df92957e3448416b701abedda613fec31565f8ca3d236c0a1d468f1bdd9e591",
+        "release_id": "prop-009-compatible",
+        "node_settings": {
+          "block-ms": 50,
+          "max-block-txs": 6000,
+          "block-tx-step": 2000,
+          "sync": 1
+        }
+      },
+      "vdf": {
+        "enabled": true,
+        "epoch_blocks": 32,
+        "fallback_slots": 20,
+        "future_slots": 2,
+        "iterations": 65536,
+        "producers": 5,
+        "slot_ms": 50,
+        "start_time_ms": 1795590242350
+      },
+      "metrics": {},
+      "query_sweep_seconds": {
+        "count": 285,
+        "p50": 0.04861824100225931,
+        "p95": 0.304659082001308,
+        "max": 0.9721413680017577
+      },
+      "failed_phase": "start",
+      "resources_across_nodes": {
+        "cpu_core_equivalents": {
+          "count": 0
+        },
+        "peak_resident_bytes": {
+          "count": 0
+        },
+        "received_bytes_per_second": {
+          "count": 0
+        },
+        "sent_bytes_per_second": {
+          "count": 0
+        },
+        "process_write_bytes_per_second": {
+          "count": 0
+        },
+        "db_write_ms_per_second": {
+          "count": 0
+        }
+      },
+      "reorganizations": {},
+      "state_checks": null,
+      "cleanup": {
+        "expected_nodes": 100,
+        "files": 100,
+        "ok_nodes": 100,
+        "all_ok": true,
+        "databases_removed": 99,
+        "databases_already_absent": 1
+      }
+    },
+    {
+      "run": "vdf100-20000-02",
+      "ok": false,
+      "nodes": 100,
+      "injector_count": 4,
+      "configuration": {
+        "rate": 20000,
+        "duration": 10.0,
+        "warmup": 2.0,
+        "drain_seconds": 5.0,
+        "wallets": 1024,
+        "batch": 128,
+        "query_workers": 100,
+        "forks": 32,
+        "poll_seconds": 0.1,
+        "metrics_period": 1.0,
+        "sample_hz": 20.0,
+        "binary_sha256": "73ac73e8091e82832078cabffdaa629faaf0874c97a8574436ebd990d3914ac0",
+        "dataset_sha256": "fb1b66a92d81fbe78eece1976401060237beb95c889c3c63904baccdff36585b",
+        "genesis_sha256": "6ace9dfb81f6c2f2acde8a8cb06d70654451fc82a7c9f52765badd25b2bba193",
+        "release_id": "prop-009-compatible",
+        "node_settings": {
+          "block-ms": 50,
+          "max-block-txs": 6000,
+          "block-tx-step": 2000,
+          "sync": 1
+        }
+      },
+      "vdf": {
+        "enabled": true,
+        "epoch_blocks": 32,
+        "fallback_slots": 20,
+        "future_slots": 2,
+        "iterations": 65536,
+        "producers": 5,
+        "slot_ms": 50,
+        "start_time_ms": 1795590615650
+      },
+      "metrics": {},
+      "query_sweep_seconds": {
+        "count": 294,
+        "p50": 0.026939392999338452,
+        "p95": 0.26637211199704325,
+        "max": 0.9219847140011552
+      },
+      "failed_phase": "start",
+      "resources_across_nodes": {
+        "cpu_core_equivalents": {
+          "count": 0
+        },
+        "peak_resident_bytes": {
+          "count": 0
+        },
+        "received_bytes_per_second": {
+          "count": 0
+        },
+        "sent_bytes_per_second": {
+          "count": 0
+        },
+        "process_write_bytes_per_second": {
+          "count": 0
+        },
+        "db_write_ms_per_second": {
+          "count": 0
+        }
+      },
+      "reorganizations": {},
+      "state_checks": null,
+      "cleanup": {
+        "expected_nodes": 100,
+        "files": 100,
+        "ok_nodes": 100,
+        "all_ok": true,
+        "databases_removed": 99,
+        "databases_already_absent": 1
+      }
+    },
+    {
+      "run": "vdf100-20000-03",
+      "ok": false,
+      "nodes": 100,
+      "injector_count": 4,
+      "configuration": {
+        "rate": 20000,
+        "duration": 10.0,
+        "warmup": 2.0,
+        "drain_seconds": 5.0,
+        "wallets": 1024,
+        "batch": 128,
+        "query_workers": 100,
+        "forks": 32,
+        "poll_seconds": 0.1,
+        "metrics_period": 1.0,
+        "sample_hz": 20.0,
+        "binary_sha256": "73ac73e8091e82832078cabffdaa629faaf0874c97a8574436ebd990d3914ac0",
+        "dataset_sha256": "fb1b66a92d81fbe78eece1976401060237beb95c889c3c63904baccdff36585b",
+        "genesis_sha256": "090fbb692527e5f2ffeba69689b6a597048ebe8b1a91b8876c2b13372baea6e3",
+        "release_id": "prop-009-compatible",
+        "node_settings": {
+          "block-ms": 50,
+          "max-block-txs": 6000,
+          "block-tx-step": 2000,
+          "sync": 1
+        }
+      },
+      "vdf": {
+        "enabled": true,
+        "epoch_blocks": 32,
+        "fallback_slots": 20,
+        "future_slots": 2,
+        "iterations": 65536,
+        "producers": 5,
+        "slot_ms": 200,
+        "start_time_ms": 1795590881000
+      },
+      "metrics": {
+        "offered_tps": 20000,
+        "achieved_send_tps": 19784.663774989418,
+        "common_commit_tps": 4226.448327851056,
+        "sent_unique": 240000,
+        "sent_wire_copies": 240000,
+        "p50_ms": null,
+        "p95_ms": null,
+        "p99_ms": null,
+        "p99_after_send_ms": null,
+        "samples": 200,
+        "unresolved_samples": 200,
+        "deadline_success_fraction": 0.0,
+        "send_lateness_p99_ms": 340.0263610019465,
+        "logical_backlog_end": 182568,
+        "logical_backlog_growth_per_second": 15129.634511611506,
+        "invalid_or_rejected_sum": 45,
+        "drained": false,
+        "sustainable": false,
+        "tx_sustainable": false,
+        "measurement_seconds": 7.925330538000708,
+        "measurement_samples": 6,
+        "controller_cpu_core_equivalents": 0.06167942287636705
+      },
+      "query_sweep_seconds": {
+        "count": 301,
+        "p50": 0.01491527899997891,
+        "p95": 0.3545523470020271,
+        "max": 0.7651902100005827
+      },
+      "resources_across_nodes": {
+        "cpu_core_equivalents": {
+          "count": 100,
+          "mean": 1.0930343735777228,
+          "max": 1.2245556136070315,
+          "min": 0.9508527075138282
+        },
+        "peak_resident_bytes": {
+          "count": 100,
+          "mean": 203087421.44,
+          "max": 263061504,
+          "min": 132984832
+        },
+        "received_bytes_per_second": {
+          "count": 100,
+          "mean": 8583212.489855388,
+          "max": 10948780.947865654,
+          "min": 6178403.129713809
+        },
+        "sent_bytes_per_second": {
+          "count": 100,
+          "mean": 9421003.817064183,
+          "max": 14296731.405297747,
+          "min": 4226210.861414675
+        },
+        "process_write_bytes_per_second": {
+          "count": 100,
+          "mean": 4330120.935076756,
+          "max": 10173161.057877988,
+          "min": 1199031.3784940527
+        },
+        "db_write_ms_per_second": {
+          "count": 100,
+          "mean": 76.53803504238725,
+          "max": 141.3494143403385,
+          "min": 11.049200355760883
+        }
+      },
+      "reorganizations": {
+        "measurement_window": {
+          "first_seconds_after_load_start": 2.967020145999413,
+          "last_seconds_after_load_start": 10.892350684000121,
+          "first_counter_sum": 1588,
+          "last_counter_sum": 2141,
+          "delta_sum": 553,
+          "first_common_transactions": 0,
+          "last_common_transactions": 33496,
+          "per_node_delta": {
+            "count": 100,
+            "mean": 5.53,
+            "max": 15,
+            "min": 0
+          },
+          "counter_reset_node_count": 0
+        },
+        "whole_timeline": {
+          "first_seconds_after_load_start": 0.014417726000829134,
+          "last_seconds_after_load_start": 17.26621554000303,
+          "first_counter_sum": 1326,
+          "last_counter_sum": 2293,
+          "delta_sum": 967,
+          "first_common_transactions": 0,
+          "last_common_transactions": 34229,
+          "per_node_delta": {
+            "count": 100,
+            "mean": 9.67,
+            "max": 22,
+            "min": 0
+          },
+          "counter_reset_node_count": 0
+        }
+      },
+      "state_checks": null,
+      "cleanup": {
+        "expected_nodes": 100,
+        "files": 100,
+        "ok_nodes": 100,
+        "all_ok": true,
+        "databases_removed": 100,
+        "databases_already_absent": 0
+      }
+    },
+    {
+      "run": "vdf100-5000-04",
+      "ok": true,
+      "nodes": 100,
+      "injector_count": 4,
+      "configuration": {
+        "rate": 5000,
+        "duration": 10.0,
+        "warmup": 2.0,
+        "drain_seconds": 5.0,
+        "wallets": 1024,
+        "batch": 128,
+        "query_workers": 100,
+        "forks": 32,
+        "poll_seconds": 0.1,
+        "metrics_period": 1.0,
+        "sample_hz": 20.0,
+        "binary_sha256": "73ac73e8091e82832078cabffdaa629faaf0874c97a8574436ebd990d3914ac0",
+        "dataset_sha256": "fb1b66a92d81fbe78eece1976401060237beb95c889c3c63904baccdff36585b",
+        "genesis_sha256": "e5e51bdecbb954b448faaaaad6b174000913db28beb53090c4d56a70daa9b4e0",
+        "release_id": "prop-009-compatible",
+        "node_settings": {
+          "block-ms": 50,
+          "max-block-txs": 6000,
+          "block-tx-step": 2000,
+          "sync": 1
+        }
+      },
+      "vdf": {
+        "enabled": true,
+        "epoch_blocks": 32,
+        "fallback_slots": 20,
+        "future_slots": 2,
+        "iterations": 65536,
+        "producers": 5,
+        "slot_ms": 200,
+        "start_time_ms": 1795591481400
+      },
+      "metrics": {
+        "offered_tps": 5000,
+        "achieved_send_tps": 4997.731255919293,
+        "common_commit_tps": 4631.648256979872,
+        "sent_unique": 60000,
+        "sent_wire_copies": 60000,
+        "p50_ms": 2095.107425000606,
+        "p95_ms": 3946.191449998878,
+        "p99_ms": 4146.1914499996055,
+        "p99_after_send_ms": 4126.598869002919,
+        "samples": 200,
+        "unresolved_samples": 0,
+        "deadline_success_fraction": 0.15,
+        "send_lateness_p99_ms": 8.59574099740712,
+        "logical_backlog_end": 13703,
+        "logical_backlog_growth_per_second": 710.7499713265868,
+        "invalid_or_rejected_sum": 0,
+        "drained": true,
+        "sustainable": false,
+        "tx_sustainable": false,
+        "measurement_seconds": 9.809250935999444,
+        "measurement_samples": 53,
+        "controller_cpu_core_equivalents": 0.19941876398226516
+      },
+      "query_sweep_seconds": {
+        "count": 514,
+        "p50": 0.014562935000867583,
+        "p95": 0.09466276300008758,
+        "max": 0.8044351550015563
+      },
+      "resources_across_nodes": {
+        "cpu_core_equivalents": {
+          "count": 100,
+          "mean": 0.9882964900430752,
+          "max": 1.2003913526961145,
+          "min": 0.7300597208415024
+        },
+        "peak_resident_bytes": {
+          "count": 100,
+          "mean": 162419015.68,
+          "max": 194850816,
+          "min": 106463232
+        },
+        "received_bytes_per_second": {
+          "count": 100,
+          "mean": 5810450.354657257,
+          "max": 7431196.986966766,
+          "min": 4323587.221563806
+        },
+        "sent_bytes_per_second": {
+          "count": 100,
+          "mean": 5816788.520578962,
+          "max": 8617649.762610253,
+          "min": 4118252.174765477
+        },
+        "process_write_bytes_per_second": {
+          "count": 100,
+          "mean": 5462719.12805749,
+          "max": 9828227.723912055,
+          "min": 1692808.5649292376
+        },
+        "db_write_ms_per_second": {
+          "count": 100,
+          "mean": 117.84682343251919,
+          "max": 205.15530708002618,
+          "min": 24.110488511618748
+        }
+      },
+      "reorganizations": {
+        "measurement_window": {
+          "first_seconds_after_load_start": 2.037907874000666,
+          "last_seconds_after_load_start": 11.84715881000011,
+          "first_counter_sum": 1243,
+          "last_counter_sum": 5487,
+          "delta_sum": 4244,
+          "first_common_transactions": 0,
+          "last_common_transactions": 45433,
+          "per_node_delta": {
+            "count": 100,
+            "mean": 42.44,
+            "max": 80,
+            "min": 0
+          },
+          "counter_reset_node_count": 0
+        },
+        "whole_timeline": {
+          "first_seconds_after_load_start": 0.4320337829994969,
+          "last_seconds_after_load_start": 15.944500868998148,
+          "first_counter_sum": 723,
+          "last_counter_sum": 5884,
+          "delta_sum": 5161,
+          "first_common_transactions": 0,
+          "last_common_transactions": 60000,
+          "per_node_delta": {
+            "count": 100,
+            "mean": 51.61,
+            "max": 97,
+            "min": 1
+          },
+          "counter_reset_node_count": 0
+        }
+      },
+      "state_checks": {
+        "accounts_checked_per_node": 1024,
+        "state": {
+          "transactions": 60000,
+          "supply": 1024000000000,
+          "burned": 0,
+          "state_hash": "f9ab9d6bc6ebf63417c1c20e4564f8a3c967127ec38ecd9bd802b1c2ce05b1a6"
+        },
+        "common_block": {
+          "height": 160,
+          "hash": "d090843ca701edc0366ac08bb75545be9e03dcc293e29e3f71f0416e492d814c",
+          "transactions": 60000
+        },
+        "distinct_heads_at_state_check": 15
+      },
+      "cleanup": {
+        "expected_nodes": 100,
+        "files": 100,
+        "ok_nodes": 100,
+        "all_ok": true,
+        "databases_removed": 100,
+        "databases_already_absent": 0
+      }
+    }
+  ],
+  "persistent": {
+    "ok": true,
+    "started": 1795592084.6453664,
+    "finished": 1795592339.8428736,
+    "cluster": "hundred-persistent-01",
+    "nodes": 100,
+    "port": 28189,
+    "collection_ok": true,
+    "genesis_file_sha256": "b4f84409ffa3da1a06cc1a0619039b0c42715e35d135668daf4ff7ea42ea4453",
+    "network": {
+      "ok": true,
+      "started": 1795592195.276615,
+      "finished": 1795592281.9283085,
+      "elapsed_seconds": 86.65169619200242,
+      "node_count": 100,
+      "slot_ms": 200,
+      "genesis": "a41143f8cd7dc8e07d5bf522e9fafa9b242afdf0dbb959ac31752b78796eacb6",
+      "first_common": {
+        "hash": "1b36353f32462b1f359cb7832e27ec6c9ea7e19d4e7d7f00dc3b5ee2b9291f25",
+        "height": 66,
+        "transactions": 0
+      },
+      "final_common": {
+        "hash": "1573aa4f7aa83d397f4c5763d50fdabb53073c107c8462cd5e6dbc36b5f9e903",
+        "height": 73,
+        "transactions": 0
+      },
+      "responding": 100,
+      "heights": {
+        "count": 100,
+        "mean": 81,
+        "max": 81,
+        "min": 81
+      },
+      "peers": {
+        "count": 100,
+        "mean": 9.92,
+        "max": 12,
+        "min": 8
+      },
+      "producer_counts": [
+        5
+      ]
+    },
+    "operations": [
+      {
+        "name": "deploy",
+        "code": 0,
+        "seconds": 53.57207202911377
+      },
+      {
+        "name": "status",
+        "code": 0,
+        "seconds": 56.652600049972534
+      },
+      {
+        "name": "collect",
+        "code": 0,
+        "seconds": 57.58616662025452
+      }
+    ]
+  },
+  "completion": {
+    "completed": 1795592341.8977828,
+    "persistent_nodes": 100,
+    "test_runs_cleaned": 6,
+    "test_databases_absent": 600,
+    "temporary_authentication_file_removed": true
+  },
+  "evidence_archive_sha256": "7e4ac2226fe0ce8b7a800433e07c10dad4b81082aeb0bcd7c02984a86321026e"
+}

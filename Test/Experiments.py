@@ -147,6 +147,10 @@ def CheckSamples(cluster, load):
 
 
 def VerifyNativeState(cluster, dataset, genesis, count, wallets):
+    vdf_enabled = 'vdf' in genesis and genesis['vdf'].get('enabled', True)
+    common = cluster.Common() if vdf_enabled else None
+    if vdf_enabled and (not common or common['transactions'] != count):
+        raise AssertionError('Common chain does not contain all sent transactions')
     expected = {row['public_key']: {'balance': row['balance'], 'nonce': 0} for row in genesis['accounts']}
     fee = genesis['base_fee']
     # The prepared dataset repeats one sender/receiver cycle with increasing account nonces.
@@ -169,11 +173,22 @@ def VerifyNativeState(cluster, dataset, genesis, count, wallets):
             if row != [expected[key] for key in batch]:
                 raise AssertionError(f'Account state mismatch at {cluster.nodes[index]["id"]}')
     states = cluster.All(lambda index: cluster.clients[index].Query(35))
-    if not all(state == states[0] for state in states):
-        raise AssertionError('Chain head or account/contract state differs between nodes')
+    # VDF empty blocks keep advancing the head during the queries. Account/EVM
+    # state must still agree, and the fixed common block is checked again below.
+    compared = ([{key: value for key, value in state.items() if key != 'head'} for state in states]
+                if vdf_enabled else states)
+    if not all(state == compared[0] for state in compared):
+        raise AssertionError('Account/contract state differs between nodes' if vdf_enabled else
+                             'Chain head or account/contract state differs between nodes')
     if states[0]['transactions'] != count or states[0]['burned'] != count*fee:
         raise AssertionError('Unique transaction count or burned fees mismatch')
-    return {'accounts_checked_per_node': len(keys), 'state': states[0]}
+    checks = {'accounts_checked_per_node': len(keys), 'state': compared[0]}
+    if vdf_enabled:
+        anchors = cluster.All(lambda index: cluster.clients[index].Query(29, struct.pack('<Q', common['height'])))
+        if not all(anchor == common for anchor in anchors):
+            raise AssertionError('Common transaction-containing block changed during state verification')
+        checks.update(common_block=common, node_states={node['id']: state for node, state in zip(cluster.nodes, states)})
+    return checks
 
 
 def ClockCase(cluster, plan, output):

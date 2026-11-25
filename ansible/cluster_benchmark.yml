@@ -66,5 +66,14 @@
           run_once: true
           register: chain_cluster_benchmark
           changed_when: true
+          # A failed run_once task removes the other hosts before their cleanup.
+          # Keep them active and report the command result after recovery.
+          failed_when: false
       always:
         - ansible.builtin.include_tasks: tasks/cleanup_group.yml
+    - name: Report benchmark failure after every host has completed recovery
+      ansible.builtin.assert:
+        that:
+          - chain_cluster_benchmark.rc == 0
+        fail_msg: "The benchmark failed; inspect {{ chain_result_dir }}/benchmark/result.json and cleanup evidence."
+      run_once: true
