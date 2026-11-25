@@ -179,10 +179,13 @@ chain_vdf_required_tests:
   - IPv6Network
   - VdfCorrectness
   - VdfElectionCorrectness
+  - VdfPeerProtocolCorrectness
   - VdfRulesCorrectness
   - VdfBlockCorrectness
   - VdfStateCorrectness
   - VdfNetwork
+  - VdfRotationNetwork
+  - VdfProducerPeersNetwork
 
 chain_vdf_instance_id: experiment-001
 chain_vdf_service_name: chain-vdf-experiment-001.service
@@ -196,7 +199,7 @@ chain_vdf_genesis: "{{ lookup('file', '/srv/chain-vdf/genesis.json') | from_json
 
 CentOS Stream 9、Rocky 9、AlmaLinux 9 自动启用 CRB 并安装 EPEL 依赖。其他 EL9 发行版需预先配置其相应开发仓库。依赖已经安装时设置 `chain_vdf_install_dependencies: false`，工具仍会实际构建并校验。默认构建并行度为一，适用于 2 vCPU / 4 GiB 内存主机；不会自动增加交换空间。
 
-默认必需测试列表显式包含 `VdfCorrectness`、`VdfElectionCorrectness`、`VdfRulesCorrectness`、`VdfBlockCorrectness`、`VdfStateCorrectness` 和 `VdfNetwork`。构建工具要求这些名称出现在本次 CTest 计划中，且全量模式运行全部已注册测试；服务工具还要求 `complete: true` 的构建证明与当前源码、二进制哈希一致。
+默认必需测试列表包含 VDF 计算、选举、连接身份协议、区块规则、状态和网络测试，以及 `VdfRotationNetwork`、`VdfProducerPeersNetwork`。构建工具要求这些名称出现在本次 CTest 计划中，且全量模式运行全部已注册测试；服务工具还要求 `complete: true` 的构建证明与当前源码、二进制哈希一致。
 
 多机部署的并发和 CPU 使用分别配置：
 

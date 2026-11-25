@@ -290,6 +290,7 @@ void AnnounceBlock(const vector<uint8_t>& data) {
     vector<array<uint8_t,32>> shortHashes;
     chain::compact::Decoded shortDecoded;
     peers=SelectBroadcastPeers(source,hash,blockRelayPeers);
+    peers=PrioritizeVdfBlockPeers(data,std::move(peers),source);
     unordered_set<uint64_t> sent;
     for (const auto& peer:peers) {
         if (source&&PeerId(peer)==source) { relaySuppressed++; continue; }
@@ -310,16 +311,16 @@ void AnnounceBlock(const vector<uint8_t>& data) {
                 auto entries=SelectCompactPrefilled(peer,data,payloads,shortHashes,shortDecoded);
                 if (!entries.empty()) {
                     auto message=make_shared<const vector<uint8_t>>(GenerateMessage(52,chain::compact::EncodePrefilled(shortPayload,entries)));
-                    if (TrySendGossip(peer,message)) { compactPrefilledAnnouncements++; compactPrefilledTransactions+=entries.size(); }
+                    if (TrySendGossip(peer,message)) { compactPrefilledAnnouncements++; compactPrefilledTransactions+=entries.size(); RecordVdfBlockRecipient(data,peer); }
                     continue;
                 }
             }
-            TrySendGossip(peer,shortSummary);
+            if (TrySendGossip(peer,shortSummary)) RecordVdfBlockRecipient(data,peer);
         }
-        else if (peer->compact) TrySendGossip(peer,summary);
+        else if (peer->compact) {if (TrySendGossip(peer,summary)) RecordVdfBlockRecipient(data,peer);}
         else {
             if (!full) full=make_shared<const vector<uint8_t>>(GenerateNewBlockMessage(data));
-            TrySendGossip(peer,full);
+            if (TrySendGossip(peer,full)) RecordVdfBlockRecipient(data,peer);
         }
     }
     compactAnnouncements++;

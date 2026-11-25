@@ -94,6 +94,13 @@ struct Peer:enable_shared_from_this<Peer> {
     bool discoveryV2=false;
     bool outbound=false;
     string remoteInstance; // protected by peerMutex
+    bool vdfPeerProtocol=false,vdfChallengeSent=false,vdfChallengeAnswered=false,vdfChainMatched=false; // strand only
+    array<uint8_t,32> vdfChallenge{};
+    uint64_t vdfChallengeAt=0,vdfHintsAt=0;
+    bool vdfAuthenticated=false,vdfReserved=false,vdfPending=false; // protected by peerMutex
+    array<uint8_t,32> vdfPeerKey{};
+    optional<array<uint8_t,32>> expectedVdfKey;
+    uint64_t vdfPendingAt=0;
     array<uint8_t,32> requestedHead{};
     uint64_t requestedHeadAt=0;
     uint64_t admissionRead=0,admissionWrite=0;
@@ -108,6 +115,9 @@ struct Peer:enable_shared_from_this<Peer> {
 };
 unordered_map<uint64_t,shared_ptr<Peer>> peerPool;
 mutex peerMutex;
+vector<shared_ptr<Peer>> PrioritizeVdfBlockPeers(const vector<uint8_t>& data,vector<shared_ptr<Peer>> peers,uint64_t source);
+void RecordVdfBlockRecipient(const vector<uint8_t>& data,const shared_ptr<Peer>& peer);
+nlohmann::json GetVdfPeerStats();
 awaitable<void> session(uint64_t key,shared_ptr<Peer> peer);
 awaitable<void> SyncBlock(shared_ptr<Peer> peer);
 
@@ -314,6 +324,7 @@ awaitable<void> ProcessMessage(shared_ptr<Peer> peer,uint8_t type,vector<uint8_t
 #include "Blocks.h"
 #include "TransactionRelay.h"
 #include "Vdf.h"
+#include "VdfPeers.h"
 EarlyRelayBudget earlyRelayBudget;
 atomic<uint64_t> preExecutionRelayedBlocks{0},preExecutionRelayLimited{0};
 void RelayBeforeExecution(const vector<uint8_t>& data,const Block& block,uint64_t source) {
@@ -348,10 +359,11 @@ size_t ConnectedPeerCountLocked(bool includeAttempts=false) {
     if (includeAttempts) endpoints.insert(addressAttempts.begin(),addressAttempts.end());
     return endpoints.size();
 }
-awaitable<void> Connect(ip::address address,uint16_t port,unsigned delayMs=0,bool backup=false) {
+awaitable<void> Connect(ip::address address,uint16_t port,unsigned delayMs=0,bool backup=false,
+        optional<array<uint8_t,32>> expectedVdfKey=nullopt) {
     address=CanonicalAddress(address);
     auto executor=co_await this_coro::executor;
-    if (!port||connectionCount>=maxConnections) co_return;
+    if (!port||connectionCount>=VdfConnectionLimit()) co_return;
     if (!peerRetrySchedule.Ready({address.to_string(),port},GetSteadyTime())) co_return;
     {
         lock_guard lock(peerMutex);
@@ -382,10 +394,11 @@ awaitable<void> Connect(ip::address address,uint16_t port,unsigned delayMs=0,boo
     peer->port=port;
     peer->address=address;
     peer->compact=true;
+    peer->expectedVdfKey=expectedVdfKey;
     {
         lock_guard lock(peerMutex);
         if (backup&&ConnectedPeerCountLocked()>=targetPeers) {attempt.success=true;co_return;}
-        if (peerPool.size()>=maxPeers||peerPool.count(peer->key)) co_return;
+        if (!AdmitVdfPeerLocked(peer)||peerPool.count(peer->key)) co_return;
         peerPool.emplace(peer->key,peer);
     }
     attempt.success=true;
@@ -393,6 +406,16 @@ awaitable<void> Connect(ip::address address,uint16_t port,unsigned delayMs=0,boo
     QueryHeight(peer);
     SendData(peer,GenerateMessage(13,{}));
     if (VdfConsensus::config.enabled) SendData(peer,GenerateMessage(50,{}));
+}
+awaitable<void> MaintainVdfProducerPeers() {
+    steady_timer timer(co_await this_coro::executor);
+    while (nodeRunning) {
+        auto targets=RefreshVdfProducerPeers();
+        for (const auto& target:targets)
+            co_spawn(timer.get_executor(),Connect(target.address,target.port,0,false,target.publicKey),[](exception_ptr){});
+        timer.expires_after(milliseconds(200));
+        co_await timer.async_wait(use_awaitable);
+    }
 }
 awaitable<void> ConnectSeed(string host="127.0.0.1",uint16_t port=8089,bool backup=false) {
     auto executor=co_await this_coro::executor;
@@ -745,7 +768,7 @@ nlohmann::json GetNodeStats() {
     auto height=snapshot.height,chainTx=snapshot.transactions,burned=snapshot.burned;
     auto userCount=snapshot.users,evmCount=snapshot.contracts; auto head=snapshot.hash;
     auto sends=sendQueueBudget.Snapshot();
-    nlohmann::json stats={{"relay_protocol",shortIds?2:1},{"relay_instance",NodeRelayInstance()},{"compact_prefill",shortIds&&compactPrefill},{"tx_inventory",txInventory},{"message_fragments",fragmentMessages},
+    nlohmann::json stats={{"relay_protocol",shortIds?2:1},{"relay_instance",NodeRelayInstance()},{"vdf_peer_protocol",VdfProducerMeshEnabled()?1:0},{"compact_prefill",shortIds&&compactPrefill},{"tx_inventory",txInventory},{"message_fragments",fragmentMessages},
         {"vdf",GetVdfStats()},{"received",receivedTx.load()},{"valid",validTx.load()},{"invalid",invalidTx.load()},
         {"duplicate",duplicateTx.load()},{"rejected",rejectedTx.load()},{"committed",committedTx.load()},
         {"pool",poolSize},{"ready_pool",readySize},{"pending",pendingVerify.load()},{"peak_pending",peakPendingVerify.load()},

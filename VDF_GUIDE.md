@@ -64,6 +64,20 @@ PY
 
 生产节点使用独立 Ed25519 身份。可通过 `--vdf-key /path/identity.seed` 或 YAML `node.vdf_key` 指定包含 64 个十六进制字符的 32 字节种子文件，按 `0600` 权限保存。未指定时在本节点数据目录创建并保留 `vdf-identity.seed`。每个生产节点使用自己的种子；不要把测试代码中的确定性种子用于实际链。`--produce 0` 只同步和验证，不加载生产身份、不计算或发布自己的候选。
 
+## 出块节点直连
+
+`producer_rotation: true` 时，当前五位出块者分别连接另外四位，形成十条双向 TCP 连接。节点每 200 毫秒更新一次当前名单和下一轮前五份已验证候选；当前或下一轮名单中的本机提前连接这两个名单中的其他成员。下一轮候选变化时，连接目标随之更新，正式出块名单仍取上一轮最后一块的记录。
+
+`--max-peers` 保留普通邻居额度，另为当前和下一轮出块者预留最多九个连接名额。最多四个额外连接可以等待身份握手，三秒未完成即关闭。身份验证通过且公钥仍在当前或下一轮名单内，连接才使用预留名额。名单更新后撤销旧成员的保护，超出普通额度的连接会关闭。底层 `--max-connections` 同时增加最多十三个名额，以容纳这九个连接和四个握手。
+
+节点通过已有邻居传播所选公钥的 IP 和监听端口，支持 IPv4、IPv6。地址记录只用于查找连接目标；每条连接使用独立的随机挑战，验证对端对创世摘要、公钥、监听端口和挑战的 Ed25519 签名。最多保存十个所选公钥，每个公钥最多四个地址，三十秒未更新的地址删除。
+
+发布新区块时，先把摘要加入下一时间片出块者的发送队列，再发送给另外三位当前出块者，随后向普通邻居转发。出块者连接不受 `--block-relay-peers` 的普通转发数量限制。跨轮次的最后一块按它携带的新名单选择下一位。各 TCP 连接并行发送。
+
+能力字段 `vdf_peer_protocol: 1` 通过现有消息 13/14 协商。新增消息：56 为 32 字节挑战；57 为 32 字节公钥和 64 字节签名；58 为地址记录，每条 51 字节，每个消息最多十条。未协商的旧节点继续使用原有传播协议。此次更新不改变区块编码、创世摘要和按时间片轮值的规则。
+
+本地验证使用 `VdfPeerProtocolCorrectness` 和 `VdfProducerPeersNetwork`。后者运行七个节点，普通连接上限设为二，检查当前五人十条直连、下一轮提前连接、发块发送顺序、错误身份拒绝和重启后的账户状态。
+
 ## 计算、存储与网络开销
 
 `--vdf-bootstrap-produce 0`（YAML `node.vdf_bootstrap_produce: false`）只关闭本节点在最初两组的出块，保留 VDF 计算和传播。默认值为 `1`。大集群首次启动只让一个节点设为 `1`；从第三组开始所有生产节点自动执行正常轮值，无需重启。这个开关只控制本机生成区块，不改变收到区块的验证规则。
@@ -88,6 +102,12 @@ PY
 | `computed`、`generation_ms` | 本进程生成的记录数、累计生成耗时；重启清零 |
 | `proof_checks`、`proof_cache_hits` | 实际证明校验次数、已验证记录缓存命中次数 |
 | `invalid_proofs`、`skipped_proofs`、`pending_proofs` | 无效记录、重复或较差记录跳过次数、待验证任务数 |
+| `producer_peers`、`next_producer_peers` | 已通过连接身份验证的当前、下一轮出块者公钥 |
+| `next_producers` | 当前分支记录与本地已验证候选合并后的下一轮前五个公钥 |
+| `peer_connections` | 已验证连接的公钥、IP、监听端口及是否使用预留名额 |
+| `peer_reserve_limit`、`peer_pending_limit`、`peer_pending` | 出块者预留名额、额外握手上限和当前等待数 |
+| `peer_authentication_failures` | 身份签名、链、端口或挑战验证失败的次数 |
+| `last_block_hash`、`last_block_height`、`last_block_slot`、`last_block_epoch`、`last_block_recipients` | 本机最近生成区块的信息，以及成功加入发送队列的已验证公钥顺序 |
 
 可用 `generation_ms / computed` 观察本机平均候选生成开销。`vdf_test` 输出一次真实 `T=4096` 的 `prove_ms` 和 `verify_ms`；这两个数是该机器、该输入的原语测量，不包含网络传播和区块执行。
 
@@ -128,10 +148,13 @@ chain_vdf_required_tests:
   - IPv6Network
   - VdfCorrectness
   - VdfElectionCorrectness
+  - VdfPeerProtocolCorrectness
   - VdfRulesCorrectness
   - VdfBlockCorrectness
   - VdfStateCorrectness
   - VdfNetwork
+  - VdfRotationNetwork
+  - VdfProducerPeersNetwork
 chain_vdf_instance_id: experiment-001
 chain_vdf_service_name: chain-vdf-experiment-001.service
 chain_vdf_instance_dir: /var/lib/chain-vdf/experiment-001
@@ -153,7 +176,7 @@ ansible-playbook -i /srv/chain/inventory.yml ansible/vdf_deploy.yml -e @/srv/cha
 
 `prepare` 只构建测试；`deploy` 会先执行相同 prepare 验收，然后启动新实例。默认路径为 `/opt/chain/releases/vdf/<release_id>/source` 和 `build`；每次构建使用新的 `build_run_id`，日志、JUnit 和隔离测试数据在 `build-attempts/<run_id>/`。全量成功生成 `build-proof.json`；测试过滤得到的部分成功不允许部署。
 
-默认必需测试列表包含 VDF 原语、选举、规则、区块编码、数据库状态和七进程网络六项测试；上面的列表与 playbook 默认值一致。`chain_vdf_prepare_serial` 控制每批构建/验收的主机数，默认 32，可按软件仓库、镜像服务和控制端容量调整；`chain_serial` 控制随后每批启动服务的主机数，默认 1。可显式使用 `-f 16 -e chain_vdf_prepare_serial=8 -e chain_serial=8` 设置 SSH 并发及两阶段批次。
+默认必需测试列表包含 VDF 原语、选举、节点身份协议、规则、区块编码、数据库状态，以及七进程同步、轮值和出块者连接测试；上面的列表与 playbook 默认值一致。`chain_vdf_prepare_serial` 控制每批构建/验收的主机数，默认 32，可按软件仓库、镜像服务和控制端容量调整；`chain_serial` 控制随后每批启动服务的主机数，默认 1。可显式使用 `-f 16 -e chain_vdf_prepare_serial=8 -e chain_serial=8` 设置 SSH 并发及两阶段批次。
 
 每台的 `chain_vdf_build_jobs` 默认 1，CTest 固定串行；网络测试内部仍有七个节点进程。节点工作线程通过 `chain_vdf_arguments` 中的 `--io-threads`、`--verify-threads`、`--candidate-threads`、`--block-verify-threads` 和 `--query-threads` 设置。VDF 生产节点另有一个计算线程，每个启用 VDF 的节点有一个证明验证线程；当前服务没有 CPU 亲和性或配额参数。完整说明见 [Ansible 文档](ansible/README.md#vdf-新链的源码构建与独立部署)。
 

@@ -221,7 +221,7 @@ nlohmann::json GetVdfStats() {
     bool eligible=PrepareVdfBlock(height,DBReadCurrentBlock(),proposed);
     const auto scheduled=VdfConsensus::config.producerRotation&&epoch>=2?
         VdfConsensus::ScheduledProducer(VdfConsensus::CurrentSlot(),active):nullopt;
-    return {{"enabled",true},{"public_key",vdfIdentityReady?U32ToHex(vdfPublicKey):string{}},
+    nlohmann::json result={{"enabled",true},{"public_key",vdfIdentityReady?U32ToHex(vdfPublicKey):string{}},
         {"producer_rotation",VdfConsensus::config.producerRotation},
         {"bootstrap_produce",vdfBootstrapProduce},
         {"scheduled_producer",scheduled?U32ToHex(*scheduled):string{}},
@@ -231,6 +231,8 @@ nlohmann::json GetVdfStats() {
         {"proof_checks",VdfConsensus::proofChecks.load()},{"proof_cache_hits",VdfConsensus::proofCacheHits.load()},
         {"invalid_proofs",VdfConsensus::invalidProofs.load()},{"skipped_proofs",vdfSkippedProofs.load()},
         {"pending_proofs",vdfPendingProofs.load()}};
+    result.update(GetVdfPeerStats());
+    return result;
 }
 
 void RunVdfBlockLoop() {

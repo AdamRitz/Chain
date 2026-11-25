@@ -1,6 +1,7 @@
 #ifndef CHAIN_MESSAGE_H
 #define CHAIN_MESSAGE_H
 #include <span>
+#include "../Network/VdfPeerProtocol.h"
 #include "../DB/DB.h"
 #include "../Time/Time.h"
 using namespace std;
@@ -54,6 +55,9 @@ bool VerifyMessageSize(uint8_t type,uint32_t size) {
         case 52:return size>=128&&size<=8+120+(maxProtocolTx+7)/8+maxProtocolTx*6+2408+64*8+65536;
         case 53:case 54:return size>0&&size%33==0&&size<=1024*33;
         case 55:return size>17&&size<=17+65536;
+        case 56:return size==chain::vdf_peer::kChallengeBytes;
+        case 57:return size==chain::vdf_peer::kIdentityBytes;
+        case 58:return size>0&&size%chain::vdf_peer::kHintBytes==0&&size<=chain::vdf_peer::kHintBytes*chain::vdf_peer::kMaxHints;
         case 45:return size>0&&size<=maxProtocolTx;
         default:return false;
     }

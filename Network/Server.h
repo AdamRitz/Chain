@@ -377,6 +377,9 @@ awaitable<void> session(uint64_t key,shared_ptr<Peer> peer) {
             if (result==chain::fragment::Result::Pending) continue;
             data=std::move(complete);
         }
+        // Extra slots only admit authenticated selected producers. Until the
+        // challenge completes, process negotiation and identity frames only.
+        if (IsPendingVdfPeer(peer)&&type!=13&&type!=14&&type!=56&&type!=57) continue;
         if (type==1||type==10||type==44||type==2||type==7||type==17||type==18||type==22) {
             co_await ProcessMessage(peer,type,std::move(data));
         } else if ((type==39||type==51||type==52)&&peer->port) {
@@ -403,6 +406,12 @@ awaitable<void> session(uint64_t key,shared_ptr<Peer> peer) {
             }
         } else if (type==50&&VdfConsensus::config.enabled) {
             SendVdfCandidates(peer);
+        } else if (type==56&&VdfProducerMeshEnabled()&&peer->port) {
+            ReceiveVdfPeerChallenge(peer,data);
+        } else if (type==57&&VdfProducerMeshEnabled()&&peer->port) {
+            ReceiveVdfPeerIdentity(peer,data);
+        } else if (type==58&&VdfProducerMeshEnabled()&&peer->port) {
+            ReceiveVdfPeerHints(peer,data);
         } else if (type==27) {
             auto received=GetLogicalTimeUs();
             array<uint8_t,24> response;
@@ -428,8 +437,23 @@ awaitable<void> session(uint64_t key,shared_ptr<Peer> peer) {
                 peer->prefillCompact=peer->shortCompact&&compactPrefill&&enabled("compact_prefill");
                 peer->txInventory=txInventory&&enabled("tx_inventory");
                 peer->fragments=fragmentMessages&&enabled("message_fragments");
+                auto mesh=capabilities.find("vdf_peer_protocol");
+                peer->vdfPeerProtocol|=mesh!=capabilities.end()&&mesh->is_number_unsigned()&&mesh->get<uint64_t>()==1;
                 auto instance=capabilities.find("relay_instance");
-                if (instance!=capabilities.end()&&instance->is_string()) DeduplicatePeer(peer,instance->get<string>());
+                if (instance!=capabilities.end()&&instance->is_string()) {
+                    auto remoteVdf=capabilities.find("vdf");bool producer=false;
+                    if (remoteVdf!=capabilities.end()&&remoteVdf->is_object()) {
+                        auto key=remoteVdf->find("public_key");
+                        producer=key!=remoteVdf->end()&&key->is_string()&&key->get_ref<const string&>().size()==64;
+                    }
+                    // Producer connections deduplicate after identity checking,
+                    // using public-key order at both ends. Observers and old
+                    // nodes keep the existing relay-instance ordering.
+                    if (peer->vdfPeerProtocol&&vdfIdentityReady&&producer) {
+                        lock_guard lock(peerMutex);peer->remoteInstance=instance->get<string>();
+                    } else DeduplicatePeer(peer,instance->get<string>());
+                }
+                if (peer->vdfPeerProtocol) BeginVdfPeerAuthentication(peer);
             }
         } else if (type==4) {
             SendData(peer,GenerateHeightMessage(5));
@@ -449,6 +473,7 @@ awaitable<void> session(uint64_t key,shared_ptr<Peer> peer) {
             ProcessTxTimeACKMessage(data,system_clock::now(),peer);
         } else if (type==20&&peer->port) {
             if (memcmp(data.data(),genesisRoot.data(),32)) { ClosePeer(peer); co_return; }
+            if (!peer->vdfChainMatched) {peer->vdfChainMatched=true;SendVdfPeerHints(peer);}
             array<uint8_t,32> remote; memcpy(remote.data(),data.data()+32,32);
             peer->remoteHeight=ReadU64(data.data()+64);
             auto localHead=ReadChainHead(); auto height=localHead.height; auto local=localHead.hash;
@@ -483,7 +508,7 @@ awaitable<void> AcceptPeer(shared_ptr<Peer> peer) {
         peer->address=CanonicalAddress(endpoint.address());
         {
             lock_guard lock(peerMutex);
-            if (peerPool.size()>=maxPeers||peerPool.count(peer->key)) { peer->key=0; co_return; }
+            if (!AdmitVdfPeerLocked(peer)||peerPool.count(peer->key)) { peer->key=0; co_return; }
             peerPool.emplace(peer->key,peer);
         }
         QueryHeight(peer);
@@ -511,7 +536,7 @@ awaitable<void> Listen(unsigned short port,const string& address) {
             if (!nodeRunning) co_return;
             throw boost::system::system_error(ec);
         }
-        if (connectionCount>=maxConnections) { socket.close(ec); continue; }
+        if (connectionCount>=VdfConnectionLimit()) { socket.close(ec); continue; }
         socket.set_option(tcp::no_delay(true),ec);
         auto peer=make_shared<Peer>(std::move(socket));
         co_spawn(peer->strand,AcceptPeer(peer),[peer](exception_ptr error){PeerError(peer,error);});

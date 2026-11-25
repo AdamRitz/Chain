@@ -7,7 +7,7 @@
     chain_vdf_release_root: "{{ chain_release_root }}/vdf"
     chain_vdf_tools_root: "{{ chain_tools_root }}/vdf"
     chain_vdf_build_python: /usr/bin/python3.11
-    chain_vdf_required_tests: [ChainCorrectness, ForkStateCorrectness, ForkNetwork, EvmNetwork, IPv6Network, VdfCorrectness, VdfElectionCorrectness, VdfRulesCorrectness, VdfBlockCorrectness, VdfStateCorrectness, VdfNetwork]
+    chain_vdf_required_tests: [ChainCorrectness, ForkStateCorrectness, ForkNetwork, EvmNetwork, IPv6Network, VdfCorrectness, VdfElectionCorrectness, VdfPeerProtocolCorrectness, VdfRulesCorrectness, VdfBlockCorrectness, VdfStateCorrectness, VdfNetwork, VdfRotationNetwork, VdfProducerPeersNetwork]
   tasks:
     - name: Validate explicit source identity and isolated release names
       ansible.builtin.assert:

@@ -1,0 +1,131 @@
+{
+  "date": "2026-11-25",
+  "base_commit": "43f15aa3de6b637240317dfd870555c7a285d82f",
+  "tests": {
+    "ipv4": {
+      "status": "passed",
+      "processes": 7,
+      "elapsed_seconds": 18.9690000000046,
+      "ordinary_peer_limit": 2,
+      "epoch_blocks": 16,
+      "slot_ms": 250,
+      "checks": [
+        "five producers maintain all ten authenticated connections over a sparse ordinary ring",
+        "new producers connect before their election takes effect, despite max-peers=2",
+        "producer public keys match their signed listening endpoints",
+        "at least five producers send a generated block to the next producer before the other three",
+        "a challenge sent before capabilities receives a signed reply and a separate fresh challenge",
+        "invalid signatures, wrong ports, wrong chains and replayed challenges cannot take producer connections",
+        "all seven replicas agree on the canonical chain, balances and nonces after restart"
+      ],
+      "current_epoch": 2,
+      "current_edges": 10,
+      "preconnected_next_epoch": 3,
+      "changed_epoch": 3,
+      "changed_edges": 10,
+      "priority_producers_checked": 5,
+      "identity_rejections": {
+        "authentication_failures": 4,
+        "different_chain": true,
+        "different_port": true,
+        "honest_producer_links_retained": true,
+        "invalid_signature": true,
+        "pending_after": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "replayed_challenge": true
+      },
+      "early_identity_challenge": {
+        "challenge_before_capabilities": true,
+        "server_challenge_received": true,
+        "server_signature_verified": true
+      },
+      "state": {
+        "accounts": 7,
+        "burned": 1,
+        "transactions": 1
+      }
+    },
+    "ipv6": {
+      "status": "passed",
+      "processes": 7,
+      "elapsed_seconds": 17.06300000000192,
+      "ordinary_peer_limit": 2,
+      "epoch_blocks": 16,
+      "slot_ms": 250,
+      "checks": [
+        "five producers maintain all ten authenticated connections over a sparse ordinary ring",
+        "new producers connect before their election takes effect, despite max-peers=2",
+        "producer public keys match their signed listening endpoints",
+        "at least five producers send a generated block to the next producer before the other three",
+        "a challenge sent before capabilities receives a signed reply and a separate fresh challenge",
+        "invalid signatures, wrong ports, wrong chains and replayed challenges cannot take producer connections",
+        "all seven replicas agree on the canonical chain, balances and nonces after restart"
+      ],
+      "current_epoch": 2,
+      "current_edges": 10,
+      "preconnected_next_epoch": 3,
+      "changed_epoch": 3,
+      "changed_edges": 10,
+      "priority_producers_checked": 5,
+      "identity_rejections": {
+        "authentication_failures": 4,
+        "different_chain": true,
+        "different_port": true,
+        "honest_producer_links_retained": true,
+        "invalid_signature": true,
+        "pending_after": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "replayed_challenge": true
+      },
+      "early_identity_challenge": {
+        "challenge_before_capabilities": true,
+        "server_challenge_received": true,
+        "server_signature_verified": true
+      },
+      "state": {
+        "accounts": 7,
+        "burned": 1,
+        "transactions": 1
+      }
+    }
+  },
+  "build": {
+    "status": "passed",
+    "platform": "Windows x86-64",
+    "configuration": "Release",
+    "classroom": true,
+    "node_sha256": "58a3780692f36e54c3aa78870bb1583da7caae72426a0f3fed04267888fa6c7c"
+  },
+  "regression": {
+    "runner": "CTest",
+    "tests": 41,
+    "failures": 0,
+    "disabled": 0,
+    "elapsed_seconds": 446.33,
+    "producer_peers_seconds": 19.58,
+    "xml_elapsed_seconds": 446.0,
+    "skipped": 0
+  },
+  "cleanup": {
+    "processes_stopped": true,
+    "databases_removed": 138,
+    "sqlite_indexes_removed": 21,
+    "bytes_removed": 156102528,
+    "remaining_databases": 0,
+    "remaining_node_processes": 0
+  }
+}

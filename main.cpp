@@ -212,6 +212,7 @@ int main(int argc,char* argv[]) {
         co_spawn(make_strand(io),OpenDiscoveryMode(),onError);
         co_spawn(make_strand(io),MaintainCompactBlocks(),onError);
         co_spawn(make_strand(io),MaintainTransactionRelay(),onError);
+        if (VdfProducerMeshEnabled()) co_spawn(make_strand(io),MaintainVdfProducerPeers(),onError);
         if (observeClock) co_spawn(make_strand(io),SynchronizeClock(),onError);
         spdlog::info("Node ready. IO:{}, Verify:{}, BlockMs:{}, BlockTxStep:{}, Produce:{}",ioNum,verifyNum,blockInterval,blockTxStep,produceBlocks);
         thread blockThread(MainLoop);
