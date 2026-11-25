@@ -153,7 +153,10 @@ awaitable<void> WriteLoop(shared_ptr<Peer> peer) {
     while (!peer->closed&&!peer->messageQueue.Empty()) {
         // Keep the reservation alive until async_write has completed, even if
         // ClosePeer clears the queue while the write is being cancelled.
-        auto [priority,message]=peer->messageQueue.Pop(); auto data=message.data;
+        auto queued=peer->messageQueue.Pop();
+        auto priority=queued.first;
+        auto message=std::move(queued.second);
+        auto data=message.data;
         vector<uint8_t> chunk;
         if (message.fragmentId||(peer->fragments&&chain::fragment::Allowed(data->front())&&data->size()>5+chain::fragment::kChunkBytes)) {
             if (!message.fragmentId) message.fragmentId=peer->nextFragmentId++;

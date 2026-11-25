@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { FirewallSummary, NetworkWarnings } from "../src/network.ts";
-test("saved rule never claims external reachability", () => {
+test("firewall status distinguishes configured, missing and invalid rules", () => {
   assert.match(
     FirewallSummary({
       rules: [
@@ -13,7 +13,7 @@ test("saved rule never claims external reachability", () => {
         },
       ],
     }),
-    /待验证/,
+    /已配置入站规则/,
   );
   assert.match(FirewallSummary({ rules: [] }), /尚未配置/);
   assert.match(FirewallSummary({ error: "denied", rules: [] }), /失败/);
@@ -41,7 +41,7 @@ test("current network and managed-policy limitations are surfaced", () => {
   assert.deepEqual(NetworkWarnings({ error: "unavailable" }), []);
 });
 
-test("all-network rules cover Public and Domain without claiming reachability", () => {
+test("all-network rules cover Public and Domain", () => {
   for (const profile of ["Any", "Domain, Private, Public"]) {
     const firewall = {
       rules: [
@@ -59,6 +59,6 @@ test("all-network rules cover Public and Domain without claiming reachability", 
       policy: [],
     };
     assert.deepEqual(NetworkWarnings(firewall), []);
-    assert.match(FirewallSummary(firewall), /所有地址.*待验证/);
+    assert.match(FirewallSummary(firewall), /已允许所有地址连接/);
   }
 });

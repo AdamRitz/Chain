@@ -506,6 +506,7 @@ class ClassroomApp {
         cache["contract_ready"] = false;
         cache["recent_tps"] = 0;
         cache["recent_block_ms"] = nullptr;
+        if (cache.contains("stats")) cache["stats"].erase("vdf");
         if (cache.contains("nodes"))
             for (auto &node : cache["nodes"]) {
                 node["online"] = false;
@@ -574,7 +575,11 @@ class ClassroomApp {
                                        "--round-ms",
                                        "50",
                                        "--candidate-ms",
-                                       "12"};
+                                       "12",
+                                       "--max-block-txs",
+                                       "6000",
+                                       "--block-tx-step",
+                                       "2000"};
                 args.push_back("--seeds-file"); args.push_back(PathUtf8(node / "seeds.json"));
                 args.push_back("--network-info"); args.push_back(PathUtf8(directory / "network-info.json"));
                 if (ipv6) {
@@ -675,6 +680,11 @@ class ClassroomApp {
                     {{"public_key", U32ToHex(anchor.public_key)}, {"balance", 0}}})}};
                 sodium_memzero(key.private_key.data(), key.private_key.size());
                 sodium_memzero(anchor.private_key.data(), anchor.private_key.size());
+                constexpr uint64_t slotMs = 200;
+                next["genesis"]["vdf"] = {{"enabled", true}, {"producer_rotation", true},
+                    {"epoch_blocks", 32}, {"iterations", 65536}, {"slot_ms", slotMs},
+                    {"start_time_ms", uint64_t(NowMs()) / slotMs * slotMs},
+                    {"fallback_slots", 20}, {"future_slots", 2}, {"producers", 5}};
                 SetGenesisUsers(next["genesis"]);
                 next["genesis_root"] = U32ToHex(genesisRoot);
             }
@@ -1254,6 +1264,25 @@ class ClassroomApp {
                           "DESC,json_extract(data,'$.tx_index') DESC,json_extract(data,'$.log_index') DESC LIMIT " +
                           to_string(limit) + " OFFSET " + to_string(offset));
     }
+    Json VdfStatus() const {
+        if (!profile.is_object() || !profile.at("genesis").contains("vdf")) return {{"enabled", false}};
+        const auto &settings = profile.at("genesis").at("vdf");
+        if (!settings.value("enabled", true)) return {{"enabled", false}};
+        const chain::vdf_consensus::Config defaults;
+        auto number = [&](const char *name, uint64_t fallback) {
+            return settings.contains(name) ? ReadUserNumber(settings.at(name)) : fallback;
+        };
+        Json result = {{"enabled", true}, {"producer_rotation", settings.value("producer_rotation", false)},
+            {"epoch_blocks", number("epoch_blocks", defaults.epochBlocks)},
+            {"iterations", number("iterations", defaults.iterations)},
+            {"slot_ms", number("slot_ms", defaults.slotMs)},
+            {"start_time_ms", ReadUserNumber(settings.at("start_time_ms"))},
+            {"fallback_slots", number("fallback_slots", defaults.fallbackSlots)},
+            {"future_slots", number("future_slots", defaults.futureSlots)}, {"producer_limit", 5}};
+        if (cache.value("running", false) && cache.contains("stats") && cache.at("stats").contains("vdf"))
+            result.update(cache.at("stats").at("vdf"));
+        return result;
+    }
     Json Status() {
         PollPreview();
         auto inbox = root / "incoming-invites";
@@ -1274,6 +1303,8 @@ class ClassroomApp {
             }
         }
         auto result = cache;
+        if (!result.value("running", false) && result.contains("stats")) result["stats"].erase("vdf");
+        result["vdf"] = VdfStatus();
         result["networks"] = Networks();
         result["incoming_invitation"] = incomingInvitation;
         result["invite_preview"] = invitePreview;

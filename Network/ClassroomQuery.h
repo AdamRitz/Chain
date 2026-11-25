@@ -50,7 +50,7 @@ inline void QueueChatFundingRequest(const nlohmann::json &request) {
     if (bytes.size() > ChatFundingMaxRequestBytes) throw invalid_argument("Funding request exceeds the size limit");
     array<unsigned char, 16> random{}; randombytes_buf(random.data(), random.size());
     array<char, 33> suffix{}; sodium_bin2hex(suffix.data(), suffix.size(), random.data(), random.size());
-    auto temporary = directory / ("." + publicKey + "." + suffix.data() + ".tmp");
+    auto temporary = directory / (string(".") + suffix.data() + ".tmp");
     try {
         ofstream output(temporary, ios::binary | ios::trunc);
         if (!output) throw runtime_error("Cannot create funding request");

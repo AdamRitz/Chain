@@ -65,7 +65,10 @@ def Main(args):
                 response,size=struct.unpack('<BI',ReadAll(sock,5));assert response==kind+1
                 return ReadAll(sock,size)
         if status['ipv6_available']:
-            assert json.loads(Node('::1',13))['height']==json.loads(Node('127.0.0.1',13))['height']
+            ipv6_height = json.loads(Node('::1',13))['height']
+            assert json.loads(Node('127.0.0.1',13))['height'] >= ipv6_height
+            request = json.dumps({'method':'block','height':max(1, ipv6_height-2)}).encode()
+            assert json.loads(Node('::1',46,request))['hash']==json.loads(Node('127.0.0.1',46,request))['hash']
             checks.append('IPv6 ::1 and IPv4 share one canonical ledger')
         try:
             urllib.request.urlopen(urllib.request.Request(origin+'/api',b'{"action":"status"}',headers={'Authorization':'Bearer '+token,'Origin':'https://invalid.example'}));raise AssertionError('Foreign origin accepted')

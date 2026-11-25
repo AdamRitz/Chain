@@ -12,7 +12,7 @@ import {
 import { number, short, type Row } from "./api";
 const stateText: Row = {
   submitted: "等待入块",
-  included: "本机已上链",
+  included: "已上链",
   reorganized: "退出主链，待重新入块",
 };
 export function PanelTitle({
@@ -76,7 +76,7 @@ export function BlockTable({
   ) : (
     <div className="empty">
       <Box size={28} />
-      <p>节点启动后，区块记录会出现在这里。</p>
+      <p>暂无区块</p>
     </div>
   );
 }
@@ -133,7 +133,7 @@ export function Outbox({
   ) : (
     <div className="empty">
       <Activity size={27} />
-      <p>提交交易后，这里会显示它的状态。</p>
+      <p>暂无交易</p>
     </div>
   );
 }
@@ -204,7 +204,7 @@ export function Topology({ nodes }: { nodes: Row[] }) {
         ))}
         {!points.length && (
           <text x="250" y="105" textAnchor="middle" fill="#8c9ba4">
-            启动网络后显示真实节点
+            暂无节点
           </text>
         )}
       </svg>
@@ -228,7 +228,7 @@ export function Sparkline({
       className="sparkline"
       viewBox="0 0 500 180"
       role="img"
-      aria-label="近期观测交易速率"
+      aria-label="近期交易速率"
     >
       <defs>
         <linearGradient id="area" x1="0" y1="0" x2="0" y2="1">
@@ -271,13 +271,11 @@ export function Metric({
   title,
   value,
   unit,
-  foot,
 }: {
   icon: typeof Box;
   title: string;
   value: string;
   unit?: string;
-  foot: string;
 }) {
   return (
     <section className="metric">
@@ -289,7 +287,6 @@ export function Metric({
         {value}
         <small>{unit}</small>
       </strong>
-      <p>{foot}</p>
     </section>
   );
 }

@@ -1,0 +1,292 @@
+{
+  "date": "2026-11-25",
+  "platform": "Windows x64",
+  "compiler": "GCC 15.2 UCRT64",
+  "boost": "1.90",
+  "frontend": {
+    "tests": 32,
+    "passed": 32,
+    "typescript": true,
+    "production_build": true,
+    "assets": [
+      "index-DpNI9TWR.js",
+      "index-DNTRLtwD.css"
+    ]
+  },
+  "ctest": {
+    "tests": 39,
+    "passed": 39,
+    "initial_failed": [
+      "FlowCorrectness",
+      "TxStepNetwork",
+      "InviteNetwork",
+      "ClassroomFundingNetwork",
+      "ClassroomRotation"
+    ],
+    "repeated": 27,
+    "latest_results": [
+      {
+        "name": "ChainCorrectness",
+        "seconds": 0.696022,
+        "passed": true,
+        "run": "after_fixes"
+      },
+      {
+        "name": "AccountCorrectness",
+        "seconds": 0.648933,
+        "passed": true,
+        "run": "after_fixes"
+      },
+      {
+        "name": "ForkStateCorrectness",
+        "seconds": 14.2351,
+        "passed": true,
+        "run": "initial"
+      },
+      {
+        "name": "ThroughputCorrectness",
+        "seconds": 0.402078,
+        "passed": true,
+        "run": "after_fixes"
+      },
+      {
+        "name": "FlowCorrectness",
+        "seconds": 0.596585,
+        "passed": true,
+        "run": "after_fixes"
+      },
+      {
+        "name": "SendBudgetCorrectness",
+        "seconds": 0.0552866,
+        "passed": true,
+        "run": "initial"
+      },
+      {
+        "name": "CompactRelayCorrectness",
+        "seconds": 0.436338,
+        "passed": true,
+        "run": "after_fixes"
+      },
+      {
+        "name": "TransactionRelayCorrectness",
+        "seconds": 0.459333,
+        "passed": true,
+        "run": "after_fixes"
+      },
+      {
+        "name": "ExecutionReuseCorrectness",
+        "seconds": 0.553356,
+        "passed": true,
+        "run": "initial"
+      },
+      {
+        "name": "RelayTransportCorrectness",
+        "seconds": 0.0622137,
+        "passed": true,
+        "run": "initial"
+      },
+      {
+        "name": "TxStepCorrectness",
+        "seconds": 0.97846,
+        "passed": true,
+        "run": "after_fixes"
+      },
+      {
+        "name": "VdfCorrectness",
+        "seconds": 0.531037,
+        "passed": true,
+        "run": "initial"
+      },
+      {
+        "name": "VdfElectionCorrectness",
+        "seconds": 1.85505,
+        "passed": true,
+        "run": "initial"
+      },
+      {
+        "name": "VdfRulesCorrectness",
+        "seconds": 0.964505,
+        "passed": true,
+        "run": "initial"
+      },
+      {
+        "name": "VdfBlockCorrectness",
+        "seconds": 1.05497,
+        "passed": true,
+        "run": "after_fixes"
+      },
+      {
+        "name": "VdfStateCorrectness",
+        "seconds": 1.33973,
+        "passed": true,
+        "run": "initial"
+      },
+      {
+        "name": "RelayOptimizationNetwork",
+        "seconds": 11.122,
+        "passed": true,
+        "run": "after_fixes"
+      },
+      {
+        "name": "PropagationNetwork",
+        "seconds": 6.37581,
+        "passed": true,
+        "run": "after_fixes"
+      },
+      {
+        "name": "PropagationTopology",
+        "seconds": 7.89964,
+        "passed": true,
+        "run": "after_fixes"
+      },
+      {
+        "name": "VdfNetwork",
+        "seconds": 50.4928,
+        "passed": true,
+        "run": "after_fixes"
+      },
+      {
+        "name": "VdfRotationNetwork",
+        "seconds": 33.7179,
+        "passed": true,
+        "run": "after_fixes"
+      },
+      {
+        "name": "TxStepNetwork",
+        "seconds": 44.9385,
+        "passed": true,
+        "run": "after_fixes"
+      },
+      {
+        "name": "ChainNetwork",
+        "seconds": 33.0007,
+        "passed": true,
+        "run": "after_fixes"
+      },
+      {
+        "name": "AccountNetwork",
+        "seconds": 2.75698,
+        "passed": true,
+        "run": "after_fixes"
+      },
+      {
+        "name": "ForkNetwork",
+        "seconds": 3.18912,
+        "passed": true,
+        "run": "after_fixes"
+      },
+      {
+        "name": "EvmNetwork",
+        "seconds": 5.24185,
+        "passed": true,
+        "run": "after_fixes"
+      },
+      {
+        "name": "ExperimentNetwork",
+        "seconds": 6.23164,
+        "passed": true,
+        "run": "after_fixes"
+      },
+      {
+        "name": "AdmissionNetwork",
+        "seconds": 6.82383,
+        "passed": true,
+        "run": "after_fixes"
+      },
+      {
+        "name": "InviteCorrectness",
+        "seconds": 0.372395,
+        "passed": true,
+        "run": "initial"
+      },
+      {
+        "name": "ChatFunding",
+        "seconds": 0.0560712,
+        "passed": true,
+        "run": "initial"
+      },
+      {
+        "name": "ClassroomIndex",
+        "seconds": 0.539925,
+        "passed": true,
+        "run": "initial"
+      },
+      {
+        "name": "ClassroomNetwork",
+        "seconds": 8.06133,
+        "passed": true,
+        "run": "after_fixes"
+      },
+      {
+        "name": "ClassroomJoin",
+        "seconds": 10.0582,
+        "passed": true,
+        "run": "initial"
+      },
+      {
+        "name": "InviteNetwork",
+        "seconds": 15.8503,
+        "passed": true,
+        "run": "after_fixes"
+      },
+      {
+        "name": "ClassroomFundingNetwork",
+        "seconds": 23.6401,
+        "passed": true,
+        "run": "after_fixes"
+      },
+      {
+        "name": "ClassroomChains",
+        "seconds": 17.4085,
+        "passed": true,
+        "run": "after_fixes"
+      },
+      {
+        "name": "ClassroomWallets",
+        "seconds": 14.1615,
+        "passed": true,
+        "run": "after_fixes"
+      },
+      {
+        "name": "ClassroomRotation",
+        "seconds": 26.2297,
+        "passed": true,
+        "run": "after_fixes"
+      },
+      {
+        "name": "IPv6Network",
+        "seconds": 2.32054,
+        "passed": true,
+        "run": "after_fixes"
+      }
+    ]
+  },
+  "browser": {
+    "real_gateway": true,
+    "isolated_test_chain": true,
+    "pages": [
+      "chat",
+      "wallet",
+      "invite",
+      "create",
+      "node"
+    ],
+    "node_stop_clears_live_producer": true,
+    "node_restart": true,
+    "console_errors": []
+  },
+  "package_smoke": {
+    "passed": true,
+    "path": "C:\\Windows\\System32;C:\\Windows",
+    "boost_loader": {
+      "exit_code": 1,
+      "application_message": "Node failed: Missing value for --help"
+    },
+    "gateway_status_api": true,
+    "wallet_created": false,
+    "node_started": false,
+    "gateway_exit_code": 0,
+    "boost_sha256": "4a0ccf68a767805731be8a814d5959f0108059e0d3fae9c562eff3768f4840b6",
+    "gateway_sha256": "3a8b0567be6513342003e48cccacfaf74f5b3dca3028b866acc113c3f43f719b"
+  }
+}

@@ -590,7 +590,7 @@ chain::vdf_election::Context DBVdfContext(uint64_t targetEpoch) {
     auto genesis=DBReadBlockByHeight("1");
     if (genesis.size()<112) throw runtime_error("Missing VDF genesis block");
     Digest genesisHash{}; memcpy(genesisHash.data(),genesis.data()+80,32);
-    return ContextForEpoch(config,genesisRoot,genesisHash,targetEpoch,[](uint64_t height)->optional<Digest> {
+    return ContextForEpoch(chain::vdf_consensus::config,genesisRoot,genesisHash,targetEpoch,[](uint64_t height)->optional<Digest> {
         string encoded;
         if (!DBGet("height/"+to_string(height),encoded)) return nullopt;
         if (encoded.size()!=32) throw runtime_error("Invalid VDF anchor height index");
@@ -607,7 +607,7 @@ uint64_t DBVdfParentSlot() {
 }
 vector<chain::vdf_election::Candidate> DBVdfActiveCandidates(uint64_t height) {
     using namespace chain::vdf_consensus;
-    if (!config.enabled||height<2) return {};
+    if (!chain::vdf_consensus::config.enabled||height<2) return {};
     const auto epoch=Epoch(height);
     if (epoch<2) return {};
     const auto end=EpochStart(epoch)-1;
@@ -619,7 +619,7 @@ vector<chain::vdf_election::Candidate> DBVdfActiveCandidates(uint64_t height) {
 vector<chain::vdf_election::Candidate> DBVdfCandidatesForNextBlock() {
     using namespace chain::vdf_consensus;
     const auto height=DBReadBlockHeight();
-    if (!config.enabled||height<2) return {};
+    if (!chain::vdf_consensus::config.enabled||height<2) return {};
     if (height==UINT64_MAX) throw runtime_error("VDF next block height overflow");
     if (Epoch(height)!=Epoch(height+1)) return {};
     const auto parent=DBReadBlockByHash(DBReadCurrentBlock());
@@ -629,7 +629,7 @@ vector<chain::vdf_election::Candidate> DBVdfCandidatesForNextBlock() {
 }
 optional<chain::vdf_election::Context> DBVdfNextContext(uint64_t height) {
     using namespace chain::vdf_consensus;
-    if (!config.enabled||height<2) return nullopt;
+    if (!chain::vdf_consensus::config.enabled||height<2) return nullopt;
     const auto epoch=Epoch(height);
     if (!epoch) return nullopt;
     if (epoch==UINT64_MAX) throw runtime_error("VDF target epoch overflow");
@@ -644,9 +644,9 @@ bool DBValidateVdfBlock(const vector<uint8_t>& data,bool committing) {
     optional<Extension> extension;
     if (!ReadVdfExtension(data,extension)) return false;
     const auto height=ReadU64(data.data()+64);
-    if (!config.enabled||height==1) return !extension;
+    if (!chain::vdf_consensus::config.enabled||height==1) return !extension;
     if (!extension) return false;
-    if (committing&&config.producerRotation&&extension->slot>CurrentSlot()) return false;
+    if (committing&&chain::vdf_consensus::config.producerRotation&&extension->slot>CurrentSlot()) return false;
     const auto parentHeight=DBReadBlockHeight();
     const auto parentHash=DBReadCurrentBlock();
     if (parentHeight==UINT64_MAX||height!=parentHeight+1||memcmp(data.data(),parentHash.data(),32)) return false;

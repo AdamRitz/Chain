@@ -1,0 +1,140 @@
+{
+  "product": "NornV2",
+  "package": "2026-11-25-gui-rotation",
+  "wrapper": {
+    "version": "0.4.4",
+    "source_tag": "v0.4.4",
+    "unchanged_sources": [
+      "Classroom/src-tauri/src",
+      "Classroom/src-tauri/Cargo.toml",
+      "Classroom/src-tauri/Cargo.lock",
+      "Classroom/src-tauri/build.rs",
+      "Classroom/src-tauri/tauri.conf.json",
+      "Classroom/scripts/NetworkRules.ps1"
+    ],
+    "archive": "NornV2-0.4.4-verified-runtime.zip",
+    "archive_sha256": "85630cd70517997f16805cccc5671f1206a933626ec2772ade6539058b5e3d85"
+  },
+  "files": [
+    {
+      "name": "chain-classroom.exe",
+      "sha256": "cd6714f3cc9e546a911ba5135042d2c4113faebd08f786daa46e1c7a0cb981ea",
+      "bytes": 7950336
+    },
+    {
+      "name": "norn-network.exe",
+      "sha256": "20aeef06d962e331e018a443f1c40267afd672123c9a4bbe8d25a6dbe394df13",
+      "bytes": 447488
+    },
+    {
+      "name": "runtime/boost.exe",
+      "sha256": "4a0ccf68a767805731be8a814d5959f0108059e0d3fae9c562eff3768f4840b6",
+      "bytes": 16805922
+    },
+    {
+      "name": "runtime/chain_classroom.exe",
+      "sha256": "3a8b0567be6513342003e48cccacfaf74f5b3dca3028b866acc113c3f43f719b",
+      "bytes": 16790493
+    },
+    {
+      "name": "runtime/ClassroomChat.compiled.json",
+      "sha256": "faee0d17c8bfd385e2c1530736eb736b2a5101fd212823c6f2ec4d9a67e4b4c2",
+      "bytes": 20144
+    },
+    {
+      "name": "runtime/ClassroomChat.legacy-v1.compiled.json",
+      "sha256": "676511d9fa1299795c3f22288fba8b3ca9fee54157c6cf666c9f234a5c5c6cf9",
+      "bytes": 23634
+    },
+    {
+      "name": "runtime/ClassroomChat.legacy-v2.compiled.json",
+      "sha256": "f2a10fc64c1752fe0e6499aa7f0b276bcc97a3eb808d3a9b1a7d14ea6f5e88c4",
+      "bytes": 15597
+    },
+    {
+      "name": "runtime/Configure-Network.ps1",
+      "sha256": "d28bd43001bb61c5db6eba5d8961a55b533490f74a2dadaaf38b3bf5b8eeaca9",
+      "bytes": 621
+    },
+    {
+      "name": "runtime/libbz2-1.dll",
+      "sha256": "669a4bf9266d5f020e843aa5fd75b93ce8ebde27014d5ac466a8b3cf39d8aba7",
+      "bytes": 78774
+    },
+    {
+      "name": "runtime/libgcc_s_seh-1.dll",
+      "sha256": "a955ab07e75e8773d20821fb94774267f2f5a8773641646c809024b2e298ef31",
+      "bytes": 150852
+    },
+    {
+      "name": "runtime/libgmp-10.dll",
+      "sha256": "c2567ccf3f410c3411ba7cd4b7ba14f393a0e70a1d0c0593297df6706b5fba96",
+      "bytes": 681231
+    },
+    {
+      "name": "runtime/liblz4.dll",
+      "sha256": "5e83fd34144fa033c12e22718317ec2123f8a3460903932b0bfddb8aad379cfd",
+      "bytes": 161286
+    },
+    {
+      "name": "runtime/libsodium-26.dll",
+      "sha256": "fe80e06f5844fe01229b6a6767a288ab5daa0a511480958a2ba61fdc68a1de5f",
+      "bytes": 353412
+    },
+    {
+      "name": "runtime/libspdlog-1.15.dll",
+      "sha256": "9b41bc3179c79cb70e9979c5c6261fa039a58c16a0c07954a948cfbbde26570e",
+      "bytes": 510571
+    },
+    {
+      "name": "runtime/libsqlite3-0.dll",
+      "sha256": "4b1943ace15d9c1aa32ae00a7276518c7393c243d7eedb0b1695fee6439f90a7",
+      "bytes": 1563421
+    },
+    {
+      "name": "runtime/libstdc++-6.dll",
+      "sha256": "81836382ea9c84175fbec2a67dcace716bf3db30706a604c7a7f55ee58cb5b4a",
+      "bytes": 2464009
+    },
+    {
+      "name": "runtime/libwinpthread-1.dll",
+      "sha256": "6372a2613b3ac725e24e8a08ac7b081886d53c01728e732f56cefc6551c8409f",
+      "bytes": 63765
+    },
+    {
+      "name": "runtime/libyaml-cpp.dll",
+      "sha256": "79dd0f9b2532b9b7017641257a450388db7759230745f199b8e465e15132a0dc",
+      "bytes": 340684
+    },
+    {
+      "name": "runtime/libzstd.dll",
+      "sha256": "a25427164f8775046eb8ce488d7d08842c3b33224c5817d4c0c3628b5b588129",
+      "bytes": 1196420
+    },
+    {
+      "name": "runtime/norn-network.exe",
+      "sha256": "53f98d191b01aa93b47b8b8f7ec97677706b4c7be49d9fb61f96f2cb98c4f5c3",
+      "bytes": 447488
+    },
+    {
+      "name": "runtime/web/assets/index-DNTRLtwD.css",
+      "sha256": "d96701a6f6db5afdfd09f31f73ddf744d46d41aa3f679de24136771b1c69e728",
+      "bytes": 28383
+    },
+    {
+      "name": "runtime/web/assets/index-DpNI9TWR.js",
+      "sha256": "9270c82e3638b14979c35ce26c6ef8c82ee0193fe66884aafa54f24a54eab262",
+      "bytes": 278929
+    },
+    {
+      "name": "runtime/web/index.html",
+      "sha256": "b95ae210b27d71332aac6ad4d593eefb72d753e142c011fd8925bc3ecce8f900",
+      "bytes": 411
+    },
+    {
+      "name": "runtime/zlib1.dll",
+      "sha256": "1dc85208162ee57fe97e892bb5160fe9588903992995f90adc3a3a358dac6fc6",
+      "bytes": 100279
+    }
+  ]
+}

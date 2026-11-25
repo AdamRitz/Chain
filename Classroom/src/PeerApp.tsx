@@ -39,38 +39,33 @@ const views = [
     id: "chat",
     title: "聊天室",
     icon: MessageCircle,
-    caption: "与当前链上的成员交流。",
   },
   {
     id: "wallet",
     title: "我的账户",
     icon: Wallet,
-    caption: "查看余额、收款地址和转账记录。",
   },
   {
     id: "blocks",
     title: "链上记录",
     icon: Layers3,
-    caption: "查看当前链的区块和交易。",
   },
   {
     id: "network",
     title: "节点与连接",
     icon: Network,
-    caption: "本机运行一个节点，与其他成员共同维护链。",
   },
   {
     id: "home",
     title: "链状态",
     icon: Activity,
-    caption: "当前节点观测到的账本状态。",
   },
 ] as const;
 function TxText(tx: Row) {
   if ((tx.receipt?.status ?? tx.execution_status ?? 0) !== 0)
     return "合约执行失败";
   return tx.state === "included"
-    ? "本机已上链"
+    ? "已上链"
     : tx.state === "reorganized"
       ? "退出主链，等待重新入块"
       : "等待入块";
@@ -178,7 +173,7 @@ export function PeerApp() {
     if (!id || id === state.network?.id || moving.current) return;
     const target = (state.networks || []).find((entry: Row) => entry.id === id);
     if (!target) return;
-    void request("network_switch", { id }, `正在停止当前链并启动「${target.title}」`)
+    void request("network_switch", { id }, `正在切换到「${target.title}」`)
       .catch(failure => { if (!(failure instanceof StaleViewError)) setError(failure.message); });
   };
   return <ChainView key={`${state.network?.id || ""}:${revision}`} s={state} request={request} drafts={drafts}
@@ -313,14 +308,14 @@ function ChainView({ s, request, drafts, transition, externalError, clearExterna
       await request(
         joining ? "join" : "create",
         joining ? { preview_id: joinPreview!.id } : { title },
-        network ? joining ? "正在停止当前链并加入目标链" : "正在停止当前链并创建新链" : joining ? "正在连接链与聊天室" : "正在创建链并部署聊天室",
+        joining ? "正在加入链" : "正在创建链",
       );
       setModal("");
       setPassword("");
       setNotice(
         joining
-          ? "正在连接聊天室，请查看同步进度。"
-          : "链和聊天室已就绪，可以分享邀请。",
+          ? "正在连接"
+          : "创建成功",
       );
     } catch (failure) {
       if (!(failure instanceof StaleViewError)) setError((failure as Error).message);
@@ -330,7 +325,7 @@ function ChainView({ s, request, drafts, transition, externalError, clearExterna
     try {
       await action("message", { room: target, body: text }, "正在签名发送");
       setBody(drafts.Sent(chainId, text));
-      setNotice("消息已提交，正在等待入块。");
+      setNotice("消息已提交");
     } catch {}
   };
   const openBlock = async (at: number, start = 0) => {
@@ -386,7 +381,6 @@ function ChainView({ s, request, drafts, transition, externalError, clearExterna
         <div className="sidebar-foot">
           <span className="tiny-dot" />
           NornV2 {version}
-          <span>本地签名 · 链上聊天</span>
         </div>
       </aside>
       <main>
@@ -430,12 +424,10 @@ function ChainView({ s, request, drafts, transition, externalError, clearExterna
                 <button className="icon-button" aria-label="复制链指纹" title="复制完整链指纹" disabled={!network.genesis_root} onClick={() => copy(network.genesis_root)}><Copy size={16} /></button>
               </span>
             </label>}
-            <p className="small muted">切换时停止当前链节点，再启动所选链。已保存链的账本和余额分别保留。</p>
           </section>}
           <div className="page-title">
             <div>
               <h1>{currentView.title}</h1>
-              <p>{currentView.caption}</p>
             </div>
             {network && view === "network" && (
               <div className="page-actions">
@@ -477,30 +469,19 @@ function ChainView({ s, request, drafts, transition, externalError, clearExterna
                 </div>
               </div>
               <span className="pill teal">NornV2</span>
-              <h2>创建聊天室，开始讨论。</h2>
-              <p>
-                创建链并分享邀请，或加入其他成员的链和聊天室。每台电脑运行一个节点。
-              </p>
+              <h2>加入或创建聊天室</h2>
               <div className="welcome-options peer-options">
                 <button onClick={() => setModal("create")}>
                   <span className="option-icon">
                     <Globe2 />
                   </span>
-                  <b>创建聊天室</b>
-                  <p>初始化链和公共讨论，随后邀请其他成员加入。</p>
-                  <span>
-                    创建聊天室 <ArrowRight size={17} />
-                  </span>
+                  <b>创建聊天室 <ArrowRight size={17} /></b>
                 </button>
                 <button onClick={openJoin}>
                   <span className="option-icon blue">
                     <Users />
                   </span>
-                  <b>加入聊天室</b>
-                  <p>粘贴成员的 IP 和端口，自动获取链配置并同步。</p>
-                  <span>
-                    加入聊天室 <ArrowRight size={17} />
-                  </span>
+                  <b>加入聊天室 <ArrowRight size={17} /></b>
                 </button>
               </div>
             </section>
@@ -555,9 +536,6 @@ function ChainView({ s, request, drafts, transition, externalError, clearExterna
                     </button>
                   </div>
                 )}
-                <p className="small muted peer-room-note">
-                  昵称用于显示，身份以钱包地址为准。消息公开记录在当前链上。
-                </p>
               </aside>
               <section className="chat-main">
                 <div className="chat-top">
@@ -566,10 +544,6 @@ function ChainView({ s, request, drafts, transition, externalError, clearExterna
                       <Hash size={19} />
                       {currentRoom?.name || "正在同步讨论分组"}
                     </h3>
-                    <span>
-                      {network.title} ·{" "}
-                      {ConnectionText(s)}
-                    </span>
                   </div>
                   <button
                     className="text-button"
@@ -624,7 +598,7 @@ function ChainView({ s, request, drafts, transition, externalError, clearExterna
                         </button>
                         <div className="message-status">
                           <CheckCircle2 size={12} />
-                          本机已上链 · 区块 #{message.height}
+                          已上链 · 区块 #{message.height}
                           <button
                             onClick={() => {
                               setSelected(message);
@@ -678,7 +652,7 @@ function ChainView({ s, request, drafts, transition, externalError, clearExterna
                       className="button secondary"
                       onClick={() => setModal("wallet")}
                     >
-                      登录本机账户后发送消息
+                      登录钱包
                     </button>
                   ) : null}
                   {!!s.unlocked && fundingText && <div className="composer-funding" role={fundingFailed ? "alert" : "status"}>
@@ -774,7 +748,6 @@ function ChainView({ s, request, drafts, transition, externalError, clearExterna
                   </button>
                   <div className="wallet-bottom">
                     <span>已确认序号 {wallet?.nonce || "0"}</span>
-                    <span>当前链的账户余额</span>
                   </div>
                   <div className="wallet-manager-actions">
                     <button className="button secondary compact" aria-label="管理钱包" disabled={!!busy} onClick={() => setModal("wallets")}><Wallet size={15} />{s.unlocked ? "管理与切换钱包" : "登录或切换钱包"}</button>
@@ -783,9 +756,6 @@ function ChainView({ s, request, drafts, transition, externalError, clearExterna
                 </section>
                 <section className="panel padded">
                   <PanelTitle icon={Send} title="普通转账" />
-                  <p className="small muted">
-                    任何有余额的成员都可以转账，帮助其他成员支付链上消息费用。
-                  </p>
                   <label className="field">
                     收款人公钥
                     <input
@@ -921,25 +891,21 @@ function ChainView({ s, request, drafts, transition, externalError, clearExterna
                   icon={Layers3}
                   title="当前区块高度"
                   value={number(s.stats?.height || 0)}
-                  foot="本机节点的规范链"
                 />
                 <Metric
                   icon={Activity}
                   title="累计链上交易"
                   value={number(s.stats?.chain_transactions || 0)}
-                  foot="按当前主链计数"
                 />
                 <Metric
                   icon={Network}
                   title="对等连接"
                   value={String(peers)}
-                  foot="连接条数，不代表成员人数"
                 />
                 <Metric
                   icon={Box}
                   title="本机节点"
                   value={s.running ? "1 / 1" : "0 / 1"}
-                  foot="每台电脑运行一个节点"
                 />
               </div>
               <section className="panel">
@@ -953,6 +919,17 @@ function ChainView({ s, request, drafts, transition, externalError, clearExterna
           )}
           {network && view === "network" && (
             <>
+              <section className="panel padded">
+                <PanelTitle icon={Layers3} title="出块状态" />
+                <dl className="consensus-status">
+                  <div><dt>出块方式</dt><dd>{s.vdf?.enabled === undefined ? "—" : s.vdf.enabled ? s.vdf.producer_rotation ? "VDF 轮流出块" : "VDF 竞争出块" : "竞争出块"}</dd></div>
+                  {s.vdf?.enabled && <>
+                    <div><dt>时间片</dt><dd>{s.vdf.slot_ms} ms</dd></div>
+                    <div><dt>已选成员</dt><dd>{s.running && !s.connection_error && Array.isArray(s.vdf.producers) ? `${s.vdf.producers.length} / ${s.vdf.producer_limit}` : "—"}</dd></div>
+                    {s.vdf.producer_rotation && <div><dt>当前生产者</dt><dd className="mono" title={s.running && !s.connection_error ? s.vdf.scheduled_producer || "" : ""}>{s.running && !s.connection_error && s.vdf.scheduled_producer ? short(s.vdf.scheduled_producer, 12) : "—"}</dd></div>}
+                  </>}
+                </dl>
+              </section>
               <NetworkPanel key={network.id} status={s} action={action} />
               <section className="panel">
                 <PanelTitle icon={Network} title="本机节点" />
@@ -991,7 +968,7 @@ function ChainView({ s, request, drafts, transition, externalError, clearExterna
                       <span className="pill">
                         {peer.ipv6 ? "IPv6" : "IPv4"}
                       </span>
-                      <span>观测高度 {peer.height}</span>
+                      <span>区块高度 {peer.height}</span>
                     </div>
                   ))}
                 </section>
@@ -1013,10 +990,6 @@ function ChainView({ s, request, drafts, transition, externalError, clearExterna
             </>
           )}
         </div>
-        <footer>
-          <span>NornV2 学术聊天室</span>
-          <span>消息公开写入当前链</span>
-        </footer>
       </main>
       {notice && (
         <div className="toast" role="status">
@@ -1067,11 +1040,6 @@ function ChainView({ s, request, drafts, transition, externalError, clearExterna
                 <h2>
                   {modal === "join" ? "加入链" : "创建链"}
                 </h2>
-                <p>
-                  {modal === "join"
-                    ? "粘贴对方节点的 IP 和端口，软件自动获取链配置并同步聊天记录。已有链会保留，当前节点将停止。"
-                    : "创建一条独立的新链并部署公共聊天室。已有链会保留，当前节点将停止。"}
-                </p>
                 {modal === "join" ? (
                   <InviteInput text={invite} setText={value => { setInvite(value); setJoinPreview(null); }} status={s} onPreview={setJoinPreview} />
                 ) : (
@@ -1170,7 +1138,7 @@ function ChainView({ s, request, drafts, transition, externalError, clearExterna
                   <dt>区块高度</dt>
                   <dd>#{inspected.height}</dd>
                   <dt>状态</dt>
-                  <dd>本机已上链，仍可能随链重组变化</dd>
+                  <dd>已上链</dd>
                 </dl>
                 <button
                   className="button primary full"

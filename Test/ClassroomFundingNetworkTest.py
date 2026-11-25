@@ -78,6 +78,7 @@ def Main(args):
             'genesis_root': state['network']['genesis_root'],
             'contract': state['network']['contract'],
             'head': state['stats']['head'],
+            'height': state['stats']['height'],
             'transactions': state['stats']['chain_transactions'],
             'outbox_hashes': sorted(row['hash'] for row in state.get('outbox', [])),
             'reserve': str(View(app, 'Reserve()')),
@@ -148,10 +149,13 @@ def Main(args):
             Wait(other, lambda state: any(row['tx_hash'] == sent['hash'] and row['body'] == body
                                         for row in state.get('messages', [])))
         common = Snapshot(peer)
-        Wait(member, lambda state: state['stats']['head'] == common['head'])
+        Wait(member, lambda state: state['stats']['height'] >= common['height'])
+        assert member.Api('block', height=common['height'])['hash'] == peer.Api('block', height=common['height'])['hash']
         checks.append('both automatically-funded members exchange successful contract messages on the same canonical chain')
 
         before_restart = Snapshot(member)
+        anchor_height = max(1, before_restart['height'] - 2)
+        anchor_hash = member.Api('block', height=anchor_height)['hash']
         old_pid = member.process.pid
         member.Api('shutdown')
         member.process.wait(timeout=12)
@@ -162,8 +166,10 @@ def Main(args):
              state.get('funding_state', {}).get('phase') == 'ready')
         resumed = RepeatClaim(member)
         assert member.process.pid != old_pid
-        for key in ('public_key', 'balance', 'nonce', 'genesis_root', 'contract', 'head', 'outbox_hashes', 'reserve'):
+        for key in ('public_key', 'balance', 'nonce', 'genesis_root', 'contract', 'outbox_hashes', 'reserve'):
             assert resumed[key] == before_restart[key], (key, before_restart[key], resumed[key])
+        assert resumed['height'] >= before_restart['height']
+        assert member.Api('block', height=anchor_height)['hash'] == anchor_hash
         evidence['restart'] = resumed
         checks.append('full gateway restart resumes the encrypted identity and original ledger without a second claim or sponsorship')
 

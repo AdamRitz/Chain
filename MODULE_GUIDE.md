@@ -2,6 +2,8 @@
 
 ## 2026-11-25 轮流出块与五分钟测试
 
+`Classroom/Gateway/App.h` 新建 GUI 链时写入 VDF 轮值参数（200 ms、32 块、65536 次迭代），邀请加入和已保存链保留原有创世参数。`status.vdf` 将当前链配置与节点返回的 VDF 统计合并；节点停止后只返回配置。前端创建窗口保留链名输入，节点页显示出块方式、时间片和生产者。`ClassroomRotation` 回归覆盖创建、邀请、消息、停止重启和无 VDF 的旧链切换。
+
 新链通过创世 `vdf.producer_rotation: true` 启用轮值，旧链摘要和规则保持。`Consensus/VdfRules.h` 的 `ScheduledProducer` 和 `CanProduce` 共用于本地产块和收到区块的验证，名单位置为 `(slot - StartSlot) % active.size()`。非成员恢复规则保留，已选成员不能绕过自己的时间片。未来块在有界分叉缓存等待，到对应时间片后再采用，数据库提交再次检查时间。
 
 `Network/Vdf.h` 对正常轮值块立即提交；最初两组、空名单和非成员恢复块保留比较等待。`--vdf-bootstrap-produce 0` 仅关闭最初两组本地产块，仍计算和发布 VDF，用于大集群首次启动。新增 `VdfRotationNetwork` 覆盖七节点轮值、离线跳过、重启同步、越权区块和未来区块。

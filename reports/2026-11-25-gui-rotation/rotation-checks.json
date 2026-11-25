@@ -1,0 +1,12 @@
+{
+  "passed": true,
+  "checks": [
+    "GUI creates a 200 ms rotation chain with 32-block epochs and 6000/2000 block parameters",
+    "Invitation, address discovery and joining preserve every genesis consensus parameter",
+    "Displayed epoch, selected members and current producer come from the running node",
+    "A joined wallet receives funds and sends a message on the rotation chain",
+    "Stopped GUI shows only saved settings; restarting preserves the chain and producer identity",
+    "Saved chains without VDF keep their genesis, production rules, balance and nonce across switches"
+  ],
+  "genesis_root": "c20a1a7c333adf99fdfb7da323133d3b9bed9c0732daee27c0b8a52900d0e9ac"
+}

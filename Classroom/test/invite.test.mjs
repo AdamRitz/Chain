@@ -15,13 +15,13 @@ test('sharing requires an explicit candidate and never falls back to a different
   assert.equal(ShareAddress(null),'');
 });
 
-test('share candidates retain custom endpoints and label network scope without claiming reachability',()=>{
+test('share candidates retain custom endpoints and label network scope',()=>{
   const prepared={invite:{seeds:['[240e::1]:8787','192.168.1.2:8787','[240e::1]:8787']},connectivity:{addresses:[
     {endpoint:'[240e::1]:8787',scope:'internet_candidate',interface:'Ethernet'},
     {endpoint:'192.168.1.2:8787',scope:'lan',interface:'Wi-Fi'},
   ]}};
   assert.deepEqual(ShareAddresses(prepared),['[240e::1]:8787','192.168.1.2:8787']);
-  assert.equal(ShareAddressLabel(prepared,'[240e::1]:8787'),'[240e::1]:8787 · 公网候选 · Ethernet');
+  assert.equal(ShareAddressLabel(prepared,'[240e::1]:8787'),'[240e::1]:8787 · 公网地址 · Ethernet');
   assert.equal(ShareAddressLabel(prepared,'192.168.1.2:8787'),'192.168.1.2:8787 · 局域网 · Wi-Fi');
   const manual={invite:{scope:'custom',seeds:['chat.example:8787']}};
   assert.equal(ShareAddress(manual,'chat.example:8787'),'chat.example:8787');
@@ -42,14 +42,14 @@ test('opening join prefills the last connection while preserving a draft or rece
 test('link-local IPv6 and a missing default route are distinct from IPv6 Internet access',()=>{
   assert.match(IPv6Summary({ipv6:{global_addresses:0,link_local_addresses:1,default_route:false,route_checked:true}}),/链路本地/);
   assert.match(IPv6Summary({ipv6:{global_addresses:1,link_local_addresses:1,default_route:false,route_checked:true}}),/没有.*默认路由/);
-  assert.match(IPv6Summary({ipv6:{global_addresses:1,default_route:true,route_checked:true}}),/待验证/);
+  assert.match(IPv6Summary({ipv6:{global_addresses:1,default_route:true,route_checked:true}}),/全局地址与默认路由已配置/);
   assert.equal(InviteEndpointText({code:'refused'}),'端口拒绝连接');
   assert.equal(InviteEndpointText({code:'no_route'}),'无可用路由');
 });
 test('node startup is not reported as a connected and ready chat', () => {
-  assert.equal(ConnectionText({running:true,connection_state:{phase:'connecting'}}),'正在连接聊天室');
-  assert.equal(ConnectionText({running:true,connection_state:{phase:'syncing'}}),'正在同步聊天记录');
-  assert.equal(ConnectionText({connection_state:{phase:'ready'}}),'聊天室已就绪');
+  assert.equal(ConnectionText({running:true,connection_state:{phase:'connecting'}}),'连接中');
+  assert.equal(ConnectionText({running:true,connection_state:{phase:'syncing'}}),'同步中');
+  assert.equal(ConnectionText({connection_state:{phase:'ready'}}),'已连接');
 });
 test('a preview from another input or stale preflight cannot enable joining', () => {
   const preview={id:'fresh',phase:'ready',checked_ms:Date.now()};

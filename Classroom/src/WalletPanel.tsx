@@ -40,7 +40,6 @@ export function WalletPanel({ status: s, busy, action, onNickname }: Props) {
   return <div className="wallet-manager">
     <span className="modal-icon"><Wallet size={26} /></span>
     <h2>钱包与登录</h2>
-    <p>钱包可以在不同链上使用，余额按链分别计算。</p>
     <label className="field">已保存钱包
       <select aria-label="已保存钱包" value={s.has_wallet ? s.selected_wallet_id : ""} disabled={busy || wallets.length === 0}
         onChange={event => void action("wallet_select", { id: event.target.value }, "正在切换钱包").catch(() => {})}>
@@ -61,7 +60,6 @@ export function WalletPanel({ status: s, busy, action, onNickname }: Props) {
     {s.unlocked && mode === "login" && <>
       <button className="button secondary full" disabled={busy} onClick={onNickname}>修改显示昵称</button>
       <button className="button full wallet-logout" aria-label="退出登录" disabled={busy} onClick={() => void action("logout", {}, "正在退出钱包").catch(() => {})}><LogOut size={16} />退出登录</button>
-      <p className="small muted">退出后停止签名，当前节点继续同步。</p>
     </>}
     {(!s.unlocked || mode !== "login") && (mode !== "login" || s.has_wallet) && <form onSubmit={submit}>
       {mode !== "login" && <h3>{mode === "create" ? "新建钱包" : mode === "import" ? "导入加密钱包" : "导出加密备份"}</h3>}
@@ -85,7 +83,7 @@ export function WalletPanel({ status: s, busy, action, onNickname }: Props) {
         {fileName && <small>{fileName}</small>}
       </label>}
       <label className="field">{mode === "import" ? "备份密码" : mode === "backup" ? "设置备份密码" : mode === "create" ? "设置钱包密码" : "钱包密码"}
-        <input aria-label="钱包密码" type="password" value={password} autoComplete={["create", "backup"].includes(mode) ? "new-password" : "current-password"} onChange={event => setPassword(event.target.value)} />
+        <input aria-label="钱包密码" type="password" value={password} placeholder={["create", "backup"].includes(mode) ? "至少 8 个字节" : undefined} autoComplete={["create", "backup"].includes(mode) ? "new-password" : "current-password"} onChange={event => setPassword(event.target.value)} />
       </label>
       {["create", "backup"].includes(mode) && <label className="field">确认密码
         <input aria-label="确认钱包密码" type="password" autoComplete="new-password" value={confirm} onChange={event => setConfirm(event.target.value)} />
@@ -99,6 +97,5 @@ export function WalletPanel({ status: s, busy, action, onNickname }: Props) {
       </button>
       {mode !== "login" && <button type="button" className="text-button" disabled={busy} onClick={() => changeMode("login")}>返回钱包登录</button>}
     </form>}
-    {!s.unlocked && !s.has_wallet && mode === "login" && <p>新建钱包，或导入已有的加密备份。</p>}
   </div>;
 }
