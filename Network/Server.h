@@ -91,7 +91,7 @@ awaitable<void> ProcessMessage(shared_ptr<Peer> peer,uint8_t type,vector<uint8_t
             offset+=length;
         }
     }
-    bool metadata=type==39||type==41;
+    bool metadata=type==39||type==41||type==51;
     if (metadata) num=1;
     bool blockMessage=type!=1&&type!=10&&type!=17&&type!=18&&type!=44;
     auto& byteCounter=blockMessage?pendingBlockBytes:pendingTxBytes;
@@ -149,9 +149,17 @@ awaitable<void> ProcessMessage(shared_ptr<Peer> peer,uint8_t type,vector<uint8_t
         try {
             if (type==1||type==10||type==44) {
                 vector<uint8_t> results;
-                auto added=ProcessTxPackage(data,type==44?&results:nullptr);
+                const bool relay=!produceBlocks||relayTransactions;
+                auto added=ProcessTxPackage(data,(type==44||relay)?&results:nullptr);
+                if (relay&&added) {
+                    vector<uint8_t> accepted; accepted.reserve(added*176);
+                    for (size_t i=0;i<results.size();i++) if (results[i]==TxAccepted)
+                        accepted.insert(accepted.end(),data.begin()+i*176,data.begin()+(i+1)*176);
+                    relayedTransactions+=added;
+                    BroadcastData(GenerateMessage(10,accepted),PeerId(peer));
+                }
+                if (relay) skippedRelayTransactions+=data.size()/176-added;
                 if (type==44) SendAdmission(peer,admissionOrder,std::move(results));
-                if (added&&(!produceBlocks||relayTransactions)) BroadcastData(GenerateMessage(10,data),PeerId(peer));
             } else if (type==17) {
                 if (ProcessEvmTx(data)&&(!produceBlocks||relayTransactions)) BroadcastData(GenerateMessage(17,data),PeerId(peer));
             } else if (type==18) {
@@ -164,28 +172,36 @@ awaitable<void> ProcessMessage(shared_ptr<Peer> peer,uint8_t type,vector<uint8_t
                     offset+=size;
                 }
             } else if (type==39) ReceiveCompactBlock(peer,data);
+            else if (type==51) ReceiveShortCompactBlock(peer,data);
             else if (type==41) ReceiveMissingTransactions(peer,data);
             else {
                 if (type!=43) blocks.push_back(std::move(data));
                 bool queuedBatch=false;
                 for (auto& block:blocks) {
                     array<uint8_t,32> hash; memcpy(hash.data(),block.data()+80,32);
-                    bool accepted=false;
+                    bool accepted=false,relayReady=false,invalidEncoding=false;
                     if (type==43) {
                         Block parsed; auto height=ReadU64(block.data()+64);
                         uint64_t current; bool known;
                         { shared_lock lock(dbCommitMutex);current=DBReadBlockHeight();known=DBReadBlockByHeight(to_string(height))==block; }
-                        if (!known&&!HasForkBlock(hash,block)&&height>=2&&height<=current+256&&current<=height+256&&
-                            VerifyBlock(block,&parsed)&&CheckReceivedBlockTime(parsed)) {
-                            accepted=QueueForkBlock(std::move(parsed),std::move(block),false); queuedBatch|=accepted;
+                        if (!known&&!HasForkBlock(hash,block)&&height>=2&&height<=current+256&&current<=height+256) {
+                            if (!VerifyBlock(block,&parsed)) invalidEncoding=true;
+                            else if (CheckReceivedBlockTime(parsed)) {
+                                accepted=QueueForkBlock(std::move(parsed),std::move(block),false); queuedBatch|=accepted;
+                            }
                         }
-                    } else accepted=ProcessBlock(std::move(block));
-                    CompleteBlockReceive(hash);
+                    } else accepted=ProcessBlock(std::move(block),&relayReady,&invalidEncoding);
+                    CompleteBlockReceive(hash,accepted||KnowsForkBlock(hash),invalidEncoding);
                     if (peer->port&&(accepted||KnowsForkBlock(hash))) {
                         RememberBlockSource(hash,PeerId(peer));
                         if (type==43) syncBlocks++;
                         auto missing=FindMissingParent(hash);
                         if (missing!=array<uint8_t,32>{}) SendData(peer,GenerateMessage(21,missing));
+                    }
+                    if (earlyBlockRelay&&relayReady) {
+                        if (auto verified=ReadRelayBlock(hash)) {
+                            AnnounceBlock(*verified); earlyRelayedBlocks++;
+                        }
                     }
                 }
                 if (queuedBatch) { forkReady=true; WakeMainLoop(); }
@@ -346,7 +362,7 @@ awaitable<void> session(uint64_t key,shared_ptr<Peer> peer) {
         networkBytes+=size+5;
         if (type==1||type==10||type==44||type==2||type==7||type==17||type==18||type==22) {
             co_await ProcessMessage(peer,type,std::move(data));
-        } else if (type==39&&peer->port) {
+        } else if ((type==39||type==51)&&peer->port) {
             co_await ProcessMessage(peer,type,std::move(data));
         } else if (type==40&&peer->port) {
             co_await SendBlockReply(peer,type,std::move(data));
@@ -379,6 +395,15 @@ awaitable<void> session(uint64_t key,shared_ptr<Peer> peer) {
             peer->clockToken=0;
         } else if (type==46||type==13||type==15||type==19||type==23||type==25||type==29||type==31||type==33||type==35||type==37) {
             co_await ProcessQuery(peer,type,std::move(data));
+        } else if (type==14&&peer->port&&peer->compact) {
+            // Old nodes already understand stats requests. Until a peer reports
+            // support, keep sending the existing type 39 compact format.
+            const auto capabilities=nlohmann::json::parse(data.begin(),data.end(),nullptr,false);
+            if (capabilities.is_object()) {
+                auto version=capabilities.find("relay_protocol");
+                if (version!=capabilities.end()&&version->is_number_unsigned())
+                    peer->shortCompact=shortIds&&version->get<uint64_t>()>=2;
+            }
         } else if (type==4) {
             SendData(peer,GenerateHeightMessage(5));
         } else if (type==5||type==12) {
@@ -392,7 +417,7 @@ awaitable<void> session(uint64_t key,shared_ptr<Peer> peer) {
             SendData(peer,GenerateDiscoverMessage(peer->discoveryV2));
         } else if (type==9||type==48) {
             if (type==48&&!peer->discoveryV2) { ClosePeer(peer);co_return; }
-            co_await ProcessDiscoverMessage(std::move(data),type==48);
+            if (peerDiscovery) co_await ProcessDiscoverMessage(std::move(data),type==48);
         } else if (type==11) {
             ProcessTxTimeACKMessage(data,system_clock::now(),peer);
         } else if (type==20&&peer->port) {
@@ -435,6 +460,7 @@ awaitable<void> AcceptPeer(shared_ptr<Peer> peer) {
             peerPool.emplace(peer->key,peer);
         }
         QueryHeight(peer);
+        if (peer->compact) SendData(peer,GenerateMessage(13,{}));
         if (VdfConsensus::config.enabled) SendData(peer,GenerateMessage(50,{}));
     }
     co_await session(peer->key,peer);

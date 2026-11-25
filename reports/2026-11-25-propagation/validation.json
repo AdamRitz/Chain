@@ -1,0 +1,270 @@
+{
+  "release": "prop-007",
+  "build": {
+    "ok": true,
+    "complete": true,
+    "run_id": "full-001",
+    "settings": {
+      "build_type": "RelWithDebInfo",
+      "classroom": true,
+      "python": "/opt/chain-vdf/releases/vdf/prop-007/venv/bin/python",
+      "cc": "/opt/rh/gcc-toolset-13/root/usr/bin/gcc",
+      "cxx": "/opt/rh/gcc-toolset-13/root/usr/bin/g++",
+      "required_tests": [
+        "ChainCorrectness",
+        "ClassroomNetwork",
+        "ClassroomWallets",
+        "CompactRelayCorrectness",
+        "EvmNetwork",
+        "ForkNetwork",
+        "ForkStateCorrectness",
+        "IPv6Network",
+        "PropagationNetwork",
+        "PropagationTopology",
+        "VdfBlockCorrectness",
+        "VdfCorrectness",
+        "VdfElectionCorrectness",
+        "VdfNetwork",
+        "VdfRulesCorrectness",
+        "VdfStateCorrectness"
+      ],
+      "rocksdb_dir": "/opt/chain-vdf/releases/vdf/prop-007/cmake/RocksDB",
+      "rocksdb_config_sha256": "fdaf178f5689deac3783426b99c8e2200571079dbceb41aa568e3ea70aaa7fd4",
+      "boost_dir": "/usr/include",
+      "boost_version_sha256": "df8dda39f54411c1c1e6e19a5ddd9e64a2b667220f44a553c7cf5b2accbaab77",
+      "library_path": ""
+    },
+    "source_manifest_sha256": "ddb41d5b20a9087bd8cd91490cfee409f61c3a89ebea881e18dd97d58ec73d27",
+    "started_unix": 1795573129.3793266,
+    "test_data_root": "/opt/chain-vdf/releases/vdf/prop-007/build-attempts/full-001/test-data",
+    "evidence": "/opt/chain-vdf/releases/vdf/prop-007/build-attempts/full-001",
+    "test_regex": "",
+    "targets": [],
+    "changed": true,
+    "binary_sha256": "f9b4e2409f2c7f97ae89e945ba9fdda5a53e68e79a371910c2791083ff19bca1",
+    "test_count": 33,
+    "tests": [
+      "AccountCorrectness",
+      "AccountNetwork",
+      "AdmissionNetwork",
+      "ChainCorrectness",
+      "ChainNetwork",
+      "ChatFunding",
+      "ClassroomChains",
+      "ClassroomFundingNetwork",
+      "ClassroomIndex",
+      "ClassroomJoin",
+      "ClassroomNetwork",
+      "ClassroomWallets",
+      "CompactRelayCorrectness",
+      "EvmNetwork",
+      "ExperimentNetwork",
+      "FlowCorrectness",
+      "ForkNetwork",
+      "ForkStateCorrectness",
+      "IPv6Network",
+      "InviteCorrectness",
+      "InviteNetwork",
+      "PropagationNetwork",
+      "PropagationTopology",
+      "SendBudgetCorrectness",
+      "ThroughputCorrectness",
+      "TxStepCorrectness",
+      "TxStepNetwork",
+      "VdfBlockCorrectness",
+      "VdfCorrectness",
+      "VdfElectionCorrectness",
+      "VdfNetwork",
+      "VdfRulesCorrectness",
+      "VdfStateCorrectness"
+    ],
+    "finished_unix": 1795574234.2219315
+  },
+  "package": {
+    "package": "/opt/chain-vdf/controller/propagation/smoke-007/runtime-prop-007.tar.gz",
+    "sha256": "9f6e38efeb3955ff18f241bd66b070fecfc43712ae7344e12746ea2168007ad9",
+    "source_commit": "919fcd45e8f26ead5bcca355fc45a9113e9c756c",
+    "binary_sha256": "f9b4e2409f2c7f97ae89e945ba9fdda5a53e68e79a371910c2791083ff19bca1",
+    "files": 804
+  },
+  "python_tests": 88,
+  "ansible_lifecycle": {
+    "release": "prop-007",
+    "started_unix": 1795574256.8861485,
+    "operations": [
+      {
+        "name": "deploy",
+        "exit_code": 0
+      },
+      {
+        "name": "status-after-deploy",
+        "exit_code": 0
+      },
+      {
+        "name": "stop",
+        "exit_code": 0
+      },
+      {
+        "name": "status-after-stop",
+        "exit_code": 0
+      },
+      {
+        "name": "start",
+        "exit_code": 0
+      },
+      {
+        "name": "collect-running",
+        "exit_code": 0
+      },
+      {
+        "name": "benchmark",
+        "exit_code": 0
+      },
+      {
+        "name": "final-stop",
+        "exit_code": 0
+      },
+      {
+        "name": "collect-stopped",
+        "exit_code": 0
+      }
+    ],
+    "ok": true,
+    "finished_unix": 1795574353.9600143
+  },
+  "benchmark": {
+    "ok": true,
+    "nodes": 2,
+    "injectors": [
+      "node0",
+      "node1"
+    ],
+    "graph": {
+      "nodes": 2,
+      "edges": 1,
+      "min_degree": 1,
+      "max_degree": 1,
+      "max_distance_from_first_node": 1,
+      "connected": true
+    },
+    "metrics": {
+      "offered_tps": 500,
+      "achieved_send_tps": 482.88640762738385,
+      "common_commit_tps": 526.785171957146,
+      "sent_unique": 2000,
+      "sent_wire_copies": 2000,
+      "p50_ms": 193.38749299981828,
+      "p95_ms": 303.74056599998767,
+      "p99_ms": 319.96616899982655,
+      "p99_after_send_ms": 70.2019499999551,
+      "samples": 60,
+      "unresolved_samples": 0,
+      "deadline_ms": 1000,
+      "deadline_success_fraction": 1.0,
+      "send_lateness_p99_ms": 5.266639999945255,
+      "backlog_growth_per_second": -25.849101213129273,
+      "tx_backlog_growth_per_second": -25.849101213129273,
+      "logical_backlog_growth_per_second": -1.8456282082396214,
+      "candidate_backlog_growth_per_second": 0.0,
+      "metadata_queue_growth_per_second": 0.0,
+      "logical_backlog_end": 0,
+      "max_backlog_sum": 256,
+      "reorganizations_sum": 0,
+      "max_reorg_depth": 0,
+      "invalid_or_rejected_sum": 0,
+      "drained": true,
+      "recovery_seconds": null,
+      "checks": {
+        "accounts_checked_per_node": 16,
+        "state": {
+          "burned": 0,
+          "head": "dbad96def370a1abce22e6fcb8be8342f8a92ff47344b33ab40a8f76e1c3e445",
+          "state_hash": "958ef0296ff492c979cbd9a620f76a65cefcbe16cbd7466ff4b2e2bbbd651ff7",
+          "supply": 16000000000,
+          "transactions": 2000
+        }
+      },
+      "events": [],
+      "sample_poll_seconds": 0.05,
+      "measurement_seconds": 2.9157996120000007,
+      "measurement_samples": 58,
+      "parallel_ingress": true,
+      "resources": [
+        {
+          "node": "node0",
+          "cpu_core_equivalents": 0.04049318050324234,
+          "peak_resident_bytes": 25055232,
+          "received_bytes_per_second": 89631.33094758088,
+          "sent_bytes_per_second": 74395.37309328647,
+          "process_write_bytes_per_second": 165761.73410918194,
+          "db_write_ms_per_second": 18.159087058689128
+        },
+        {
+          "node": "node1",
+          "cpu_core_equivalents": 0.04170897049971895,
+          "peak_resident_bytes": 25260032,
+          "received_bytes_per_second": 113827.43815249535,
+          "sent_bytes_per_second": 92694.29863687078,
+          "process_write_bytes_per_second": 165761.73410918194,
+          "db_write_ms_per_second": 19.33963903689551
+        }
+      ],
+      "controller_cpu_core_equivalents": 0.014759282685726046,
+      "sustainable": true,
+      "tx_sustainable": true
+    },
+    "query_sweep_seconds": {
+      "count": 196,
+      "p50": 0.00024615200004518556,
+      "p95": 0.001701191999927687,
+      "max": 0.005344945999922857
+    },
+    "metrics_period_seconds": 0.2
+  },
+  "service": {
+    "active": true,
+    "binary": "/opt/chain-propagation/releases/prop-007/bin/boost",
+    "binary_sha256": "f9b4e2409f2c7f97ae89e945ba9fdda5a53e68e79a371910c2791083ff19bca1",
+    "data": "/var/lib/chain-vdf/vdf-20261124-002/data",
+    "genesis": "809f24d8c63b770694d5b4e013f15be1bca335d7c994191bda11228e375eb577",
+    "height": 422014
+  },
+  "previous_height": 421848,
+  "batch_repair": {
+    "test_sha256": "5cab67d8e5815f9a00936b1301072b49f15351657360649874cbfad67b7086ff",
+    "new_server_sha256": "55a5aaf49d7477a0441e19dd4a597237430a910c9238112bf7fe742ddc9a543c",
+    "old_server_sha256": "ea65ff24cc90779d0489a52dfba79ac9a65423dfdf9f9843afec95a70126f36f",
+    "old_assertion_found": true,
+    "old_exit_code": -6,
+    "new_exit_code": 0,
+    "source_unchanged": true,
+    "libraries_unchanged": true
+  },
+  "physical_hosts": 1,
+  "benchmark_node_processes": 2,
+  "tested_1000_host_tps": false,
+  "cleanup": {
+    "applied": true,
+    "database_count": 102,
+    "bytes": 140280461,
+    "created_unix": 1795574792.322324,
+    "preserved": "Node logs, RocksDB LOG files, configurations, genesis, identities, wallets, SQLite and test results"
+  },
+  "test_services": {
+    "services": [
+      {
+        "service": "chain-vdf-prop-control-007-node0.service",
+        "MainPID": "0",
+        "ActiveState": "inactive",
+        "UnitFileState": "disabled"
+      },
+      {
+        "service": "chain-vdf-prop-control-007-node1.service",
+        "MainPID": "0",
+        "ActiveState": "inactive",
+        "UnitFileState": "disabled"
+      }
+    ],
+    "checked_unix": 1795574743.7805634
+  }
+}

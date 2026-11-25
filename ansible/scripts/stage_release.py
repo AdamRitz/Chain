@@ -6,6 +6,7 @@ import os
 from pathlib import Path, PurePosixPath
 import re
 import shutil
+import stat
 import tarfile
 import tempfile
 
@@ -62,6 +63,21 @@ def Validate(directory):
     return manifest
 
 
+def DirectoryPermissions(directory):
+    """Allow service users to traverse a verified release, preserving its parent."""
+    directory = Path(directory)
+    # Set the staging root last so extraction stays private until validation and
+    # all child directories are ready. mkdtemp creates this root with mode 0700.
+    directories = [path for path in directory.rglob('*') if path.is_dir()] + [directory]
+    changed = False
+    for path in directories:
+        before = stat.S_IMODE(path.stat().st_mode)
+        if before != 0o755:
+            os.chmod(path, 0o755)
+            changed |= stat.S_IMODE(path.stat().st_mode) != before
+    return changed
+
+
 def Stage(archive, release_root, release_id, expected):
     if not re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9_.-]{0,79}', release_id):
         raise ValueError('Unsafe release identifier')
@@ -79,7 +95,8 @@ def Stage(archive, release_root, release_id, expected):
         if marker.get('package_sha256') != expected:
             raise ValueError('Release ID already identifies another package')
         manifest = Validate(destination)
-        return {'changed': False, 'directory': str(destination), 'source_commit': manifest['source_commit'],
+        changed = DirectoryPermissions(destination)
+        return {'changed': changed, 'directory': str(destination), 'source_commit': manifest['source_commit'],
                 'binary_sha256': Digest(destination / 'bin' / 'boost'), 'package_sha256': expected}
     temporary = Path(tempfile.mkdtemp(prefix=f'.stage-{release_id}-', dir=root))
     try:
@@ -107,6 +124,7 @@ def Stage(archive, release_root, release_id, expected):
         (temporary / '.chain-release.json').write_text(json.dumps({
             'schema': 1, 'release_id': release_id, 'package_sha256': expected,
             'source_commit': manifest['source_commit']}, indent=2) + '\n')
+        DirectoryPermissions(temporary)
         temporary.rename(destination)
         return {'changed': True, 'directory': str(destination), 'source_commit': manifest['source_commit'],
                 'binary_sha256': Digest(destination / 'bin' / 'boost'), 'package_sha256': expected}

@@ -325,7 +325,9 @@ bool CheckReceivedBlockTime(const Block& block) {
         return false;
     }
 }
-bool ProcessBlock(vector<uint8_t> data) {
+bool ProcessBlock(vector<uint8_t> data,bool* relayReady=nullptr,bool* invalidEncoding=nullptr) {
+    if (relayReady) *relayReady=false;
+    if (invalidEncoding) *invalidEncoding=false;
     if (data.size()<112) return false;
     auto height=ReadU64(data.data()+64);
     uint64_t current;
@@ -345,7 +347,10 @@ bool ProcessBlock(vector<uint8_t> data) {
     array<uint8_t,32> hash;memcpy(hash.data(),data.data()+80,32);
     if (HasForkBlock(hash,data)) { duplicateBlocks++; return false; }
     Block block;
-    if (!VerifyBlock(data,&block)) return false;
+    if (!VerifyBlock(data,&block)) {
+        if (invalidEncoding) *invalidEncoding=true;
+        return false;
+    }
     if (!CheckReceivedBlockTime(block)) return false;
     if (height!=current+1||block.previousHash!=head) {
         auto canonical=DBReadBlockByHeight(to_string(height));
@@ -361,7 +366,8 @@ bool ProcessBlock(vector<uint8_t> data) {
                 (block.txNum<slot.first.txNum||(block.txNum==slot.first.txNum&&block.hash>=slot.first.hash))) rankedWinner=slot.second;
         }
     }
-    auto checked=DBPrepareBlockUsers(data,rankedWinner.empty()?nullptr:&rankedWinner);
+    bool fullyChecked=false;
+    auto checked=DBPrepareBlockUsers(data,rankedWinner.empty()?nullptr:&rankedWinner,&fullyChecked);
     if (checked==CandidateCheckResult::Invalid) { invalidUserBlocks++; return false; }
     if (checked==CandidateCheckResult::Superseded) return false;
     {
@@ -372,6 +378,9 @@ bool ProcessBlock(vector<uint8_t> data) {
         slot={std::move(block),std::move(data)};
         blockReady=!BlockBuffer[0].second.empty();
     }
+    // Future blocks can be cached before their parent state exists. Only relay
+    // here after signatures, producer rules and account execution all passed.
+    if (relayReady) *relayReady=fullyChecked;
     WakeMainLoop();
     return true;
 }

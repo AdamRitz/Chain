@@ -1,0 +1,70 @@
+- name: Require the complete benchmark inventory before staging or starting nodes
+  hosts: chain
+  gather_facts: false
+  tasks:
+    - name: Reject a partial host limit for a complete graph benchmark
+      ansible.builtin.assert:
+        that:
+          - ansible_play_hosts_all | sort == groups['chain'] | sort
+        fail_msg: A benchmark requires the complete generated graph; generate a smaller plan and inventory instead of using --limit.
+      run_once: true
+
+- ansible.builtin.import_playbook: stage.yml
+
+- name: Benchmark a fixed-degree cluster and recover every owned test database
+  hosts: chain
+  gather_facts: false
+  become: true
+  vars:
+    chain_run_group: "{{ chain_run_id }}"
+  tasks:
+    - name: Require an explicit fresh test run
+      ansible.builtin.assert:
+        that:
+          - chain_run_id is match('^[A-Za-z0-9_-]{1,60}$')
+          - chain_result_dir is match('^/.+')
+          - chain_cluster_plan is match('^/.+')
+          - chain_dataset is match('^/.+')
+          - chain_genesis_file is match('^/.+')
+      run_once: true
+    - name: Create a shared ownership token
+      ansible.builtin.command:
+        argv: ["{{ chain_controller_python }}", -c, "import uuid; print(uuid.uuid4().hex)"]
+      delegate_to: localhost
+      become: false
+      run_once: true
+      register: chain_cluster_owner
+      changed_when: false
+      when: chain_run_owner is not defined
+    - name: Keep the token available to recovery on every host
+      ansible.builtin.set_fact:
+        chain_run_owner: "{{ chain_cluster_owner.stdout }}"
+      when: chain_run_owner is not defined
+    - name: Create the controller evidence directory
+      ansible.builtin.file:
+        path: "{{ chain_result_dir }}"
+        state: directory
+        mode: '0755'
+      delegate_to: localhost
+      become: false
+      run_once: true
+    - name: Run the test with unconditional owned-data cleanup
+      block:
+        - name: Retain the exact test request
+          ansible.builtin.template:
+            src: cluster-benchmark.json.j2
+            dest: "{{ chain_result_dir }}/cluster-context.json"
+            mode: '0600'
+          delegate_to: localhost
+          become: false
+          run_once: true
+        - name: Start nodes and measure through the published test interfaces
+          ansible.builtin.command:
+            argv: ["{{ chain_controller_python }}", -B, "{{ playbook_dir }}/scripts/cluster_benchmark.py", --context, "{{ chain_result_dir }}/cluster-context.json"]
+          delegate_to: localhost
+          become: false
+          run_once: true
+          register: chain_cluster_benchmark
+          changed_when: true
+      always:
+        - ansible.builtin.include_tasks: tasks/cleanup_group.yml

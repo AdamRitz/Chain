@@ -1,0 +1,24 @@
+{
+  "filtered_batch": {
+    "relayed": 2,
+    "duplicates_or_invalid_skipped": 2
+  },
+  "early_relay": {
+    "relay_seconds": 0.0007555729998784955,
+    "height_when_relayed": 1
+  },
+  "short_ids": {
+    "short_ids": 1,
+    "head": "da2c3f64e8b777869414c795409c77661724c6a658d7b92857370da691bd042a",
+    "missing_transactions": 16
+  },
+  "legacy": {
+    "short_ids": 0,
+    "head": "0fdd124f11ebf9d1e1ed298fd62956384f2f63d5ec52a396028ff36ea760df91",
+    "missing_transactions": 16
+  },
+  "alternate_repair": {
+    "repair_response_type": 40,
+    "head": "de9291d0b99803fc19fe26429da243871f7e4e2b1b9d549764c3254b29dd3bb9"
+  }
+}

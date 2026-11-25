@@ -1,0 +1,40 @@
+- name: Control only services recorded by cluster_deploy
+  hosts: chain
+  gather_facts: false
+  become: true
+  serial: "{{ chain_serial | default(32) }}"
+  tasks:
+    - name: Validate the requested operation
+      ansible.builtin.assert:
+        that:
+          - chain_cluster_id is match('^[A-Za-z0-9_-]{1,60}$')
+          - chain_node_id is match('^[A-Za-z0-9_-]{1,60}$')
+          - chain_cluster_action in ['start', 'status', 'stop', 'collect']
+          - chain_cluster_results is defined
+    - name: Execute the operation after deployment and process checks
+      ansible.builtin.command:
+        argv: ["{{ chain_python }}", "{{ chain_tools_root }}/cluster_control.py", --request, "{{ chain_tools_root }}/cluster-requests/{{ chain_cluster_id }}-{{ chain_node_id }}.json", --action, "{{ chain_cluster_action }}"]
+      register: chain_cluster_control
+      changed_when: (chain_cluster_control.stdout | from_json).changed | default(false)
+      failed_when: false
+      environment:
+        PYTHONDONTWRITEBYTECODE: '1'
+    - name: Create the controller result directory
+      ansible.builtin.file:
+        path: "{{ chain_cluster_results }}"
+        state: directory
+        mode: '0755'
+      delegate_to: localhost
+      become: false
+    - name: Retain each operation result
+      ansible.builtin.copy:
+        content: "{{ chain_cluster_control.stdout }}\n"
+        dest: "{{ chain_cluster_results }}/{{ chain_node_id }}.json"
+        mode: '0644'
+      delegate_to: localhost
+      become: false
+    - name: Report operation failure after collecting the result
+      ansible.builtin.assert:
+        that:
+          - chain_cluster_control.rc == 0
+          - (chain_cluster_control.stdout | from_json).ok

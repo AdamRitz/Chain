@@ -1,0 +1,21 @@
+{
+  "checked_at": "2026-11-25T10:46:42.157253+08:00",
+  "host": "118.122.75.11",
+  "port": 18089,
+  "timeout_seconds": 5,
+  "server": {
+    "checked_unix": 1795574746.0128129,
+    "service": "chain-vdf-vdf-20261124-002.service",
+    "listeners": [
+      {
+        "address": "0.0.0.0",
+        "port": 18089,
+        "pid": 15669
+      }
+    ],
+    "listening_on_all_ipv4": true,
+    "firewall_allows_port": true,
+    "firewall_output": "yes"
+  },
+  "result": "timeout"
+}

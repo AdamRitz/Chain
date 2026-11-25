@@ -1,0 +1,80 @@
+- ansible.builtin.import_playbook: stage.yml
+
+- name: Create persistent nodes from one tested binary package
+  hosts: chain
+  gather_facts: false
+  become: true
+  serial: "{{ chain_serial | default(32) }}"
+  any_errors_fatal: true
+  vars:
+    chain_cluster_user: chain-vdf
+    chain_cluster_root: "/var/lib/chain-clusters/{{ chain_cluster_id }}/{{ chain_node_id }}"
+    chain_cluster_request: "{{ chain_tools_root }}/cluster-requests/{{ chain_cluster_id }}-{{ chain_node_id }}.json"
+  tasks:
+    - name: Validate explicit fleet configuration
+      ansible.builtin.assert:
+        that:
+          - chain_cluster_id is match('^[A-Za-z0-9_-]{1,60}$')
+          - chain_node_id is match('^[A-Za-z0-9_-]{1,60}$')
+          - (chain_cluster_id | length) + (chain_node_id | length) <= 99
+          - chain_cluster_genesis is mapping
+          - chain_cluster_peers is sequence
+          - chain_cluster_peers is not string
+          - chain_cluster_degree | int <= 64
+          - chain_cluster_port | int >= 1024
+          - chain_cluster_port | int <= 65535
+          - chain_cluster_arguments | default([]) is sequence
+    - name: Create the dedicated node group
+      ansible.builtin.group:
+        name: "{{ chain_cluster_user }}"
+        system: true
+    - name: Create an unprivileged persistent node account
+      ansible.builtin.user:
+        name: "{{ chain_cluster_user }}"
+        group: "{{ chain_cluster_user }}"
+        system: true
+        create_home: false
+        shell: /sbin/nologin
+    - name: Reject linked tool and request paths
+      ansible.builtin.command:
+        argv: ["{{ chain_python }}", -c, "import pathlib,sys; p=pathlib.Path(sys.argv[1]); assert p.is_absolute() and '..' not in p.parts and not any(q.is_symlink() for q in (p,*p.parents))", "{{ chain_cluster_request }}"]
+      changed_when: false
+    - name: Create the request directory
+      ansible.builtin.file:
+        path: "{{ chain_tools_root }}/cluster-requests"
+        state: directory
+        mode: '0700'
+    - name: Install checked service creation and control tools
+      ansible.builtin.copy:
+        src: "scripts/{{ item }}"
+        dest: "{{ chain_tools_root }}/{{ item }}"
+        mode: '0755'
+      loop: [vdf_build.py, vdf_instance.py, cluster_control.py]
+    - name: Construct the immutable per-node deployment request
+      ansible.builtin.set_fact:
+        chain_cluster_request_text: "{{ {'instance_id': chain_cluster_id, 'node_id': chain_node_id, 'release_format': 'prebuilt', 'release_dir': chain_release_root + '/' + chain_release_id, 'instance_dir': chain_cluster_root, 'service': 'chain-vdf-' + chain_cluster_id + '-' + chain_node_id + '.service', 'user': chain_cluster_user, 'port': chain_cluster_port | int, 'arguments': chain_cluster_arguments | default([]), 'data_dir': chain_cluster_root + '/data', 'config_path': chain_cluster_root + '/node.yaml', 'genesis_path': chain_cluster_root + '/genesis.json', 'metrics_path': chain_cluster_root + '/logs/metrics.json', 'config_text': {'node': {'bind': chain_cluster_bind, 'peers': chain_cluster_peers, 'peer_discovery': false, 'max_peers': (chain_cluster_degree | int) + 4, 'max_connections': (chain_cluster_degree | int) + 36, 'relay_transactions': true, 'block_relay_peers': 0, 'tx_relay_peers': 0}} | to_nice_yaml, 'genesis': chain_cluster_genesis, 'health_host': ('::1' if chain_cluster_bind == '::' else '127.0.0.1') if chain_cluster_bind in ['::', '0.0.0.0'] else chain_cluster_bind, 'health_timeout': 45, 'expected_genesis': chain_cluster_expected_genesis | default('')} | to_nice_json }}\n"
+    - name: Check an existing deployment request before any replacement
+      ansible.builtin.stat:
+        path: "{{ chain_cluster_request }}"
+        checksum_algorithm: sha256
+        follow: false
+      register: chain_cluster_existing_request
+    - name: Keep existing chain identity and configuration unchanged
+      ansible.builtin.assert:
+        that:
+          - not chain_cluster_existing_request.stat.exists or (chain_cluster_existing_request.stat.isreg | default(false) and chain_cluster_existing_request.stat.checksum == (chain_cluster_request_text | hash('sha256')))
+        fail_msg: Existing request differs; use deploy.yml for a binary upgrade or a new cluster ID for a new chain.
+    - name: Save a new deployment request without replacing existing records
+      ansible.builtin.copy:
+        content: "{{ chain_cluster_request_text }}"
+        dest: "{{ chain_cluster_request }}"
+        mode: '0600'
+        force: false
+    - name: Create the service with a stable identity and database
+      ansible.builtin.command:
+        argv: ["{{ chain_python }}", "{{ chain_tools_root }}/vdf_instance.py", --request, "{{ chain_cluster_request }}"]
+      register: chain_cluster_deploy
+      changed_when: (chain_cluster_deploy.stdout | from_json).changed | default(false)
+      failed_when: chain_cluster_deploy.rc != 0 or not (chain_cluster_deploy.stdout | from_json).ok
+      environment:
+        PYTHONDONTWRITEBYTECODE: '1'

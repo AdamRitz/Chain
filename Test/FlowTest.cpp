@@ -34,7 +34,11 @@ int main(int argc,char** argv) {
         Require(ProcessTxPackage(first,&results)==1&&results==vector<uint8_t>{TxAccepted}&&readyPoolTx==10,"missing nonce uses reserved capacity");
         Require(ProcessTxPackage(first,&results)==0&&results==vector<uint8_t>{TxKnown},"duplicate admission status");
         auto bytes=GenerateBlock(); auto block=UnSerializeBlock(bytes);
-        Require(ProcessBlock(bytes)&&CommitBlock(block,bytes),"gap-filled block commits");
+        bool relayReady=false;
+        Require(ProcessBlock(bytes,&relayReady)&&relayReady,"account-checked candidate is ready to relay before commit");
+        Require(DBReadBlockHeight()==1,"relay eligibility does not wait for database commit");
+        Require(!ProcessBlock(bytes,&relayReady)&&!relayReady,"duplicate candidate is not relayed again");
+        Require(CommitBlock(block,bytes),"gap-filled block commits");
         string position; auto hash=GetTransactionHash(first); array<uint8_t,176> loaded{};
         Require(DBGet(DBHashKey("tx/",hash),position)&&position.size()==12&&ReadU64(reinterpret_cast<const uint8_t*>(position.data()))==2&&ReadU32(reinterpret_cast<const uint8_t*>(position.data()+8))==0,"height transaction position");
         string extra; Require(!DBGet(DBHashKey("txheight/",hash),extra),"inclusion queries reuse the transaction position");
@@ -58,6 +62,9 @@ int main(int argc,char** argv) {
         Require(!evmState.get_accounts().count(created),"new account and slots removed on failed branch");
         auto before=users; auto burned=userBurned; auto backed=forkBackupKeys.load();
         auto invalid=Candidate(wallet,receiver,genesis,13,3,true); vector<vector<uint8_t>> detached;
+        relayReady=true;
+        Require(DBPrepareBlockUsers(invalid.second,nullptr,&relayReady)==CandidateCheckResult::Invalid&&!relayReady,
+                "wrong-parent block cannot report completed account checks");
         Require(AdoptFork(invalid,detached)==-1,"invalid branch rejected");
         Require(users==before&&poolUsers==before&&userBurned==burned&&detached.empty(),"changed-key rollback preserves published state");
         Require(evmState.get(unrelated).storage.size()==10000&&evmState.ReadStorage(unrelated,slot)==word,"unrelated large contract state preserved");
@@ -111,6 +118,10 @@ int main(int argc,char** argv) {
         auto absentBytes=SerializeBlockALL(absent); QueueForkBlock(absent,absentBytes); ProcessForks(); attempts=forkAttempts.load();
         forkReady=true; ProcessForks();
         Require(forkAttempts==attempts&&forkParentSkips>0,"missing ancestors retry after parent or head changes");
+        auto futureBytes=absentBytes; WriteU64(futureBytes.data()+64,DBReadBlockHeight()+2);
+        relayReady=true;
+        Require(DBPrepareBlockUsers(futureBytes,nullptr,&relayReady)==CandidateCheckResult::Valid&&!relayReady,
+                "future block caching never claims completed account checks");
         // 高度较高的分支有 3 笔，较短分支有 4 笔；最高的 5 笔候选序号无效。
         db.reset(); InitDB((root/"ranked").string()); GenerateGenesisBlock(); genesis=DBReadCurrentBlock();
         forkBlocks.clear(); forkChecks.clear(); forkBytes=0;
@@ -172,9 +183,13 @@ int main(int argc,char** argv) {
             "destroying pending executor work releases its send reservation");
         {
             boost::asio::io_context io; auto peer=make_shared<Peer>(tcp::socket(io));
-            auto maximum=make_shared<const vector<uint8_t>>(maxSendBytes,0);
-            SendData(peer,maximum); SendData(peer,GenerateMessage(19,{})); SendData(peer,maximum);
-            Require(peer->closePosted&&sendQueueBudget.Snapshot().tasks==sendBaseline.tasks+1,
+            vector<uint8_t> payload(maxSendBytes,0); payload.front()=2;
+            auto maximum=make_shared<const vector<uint8_t>>(std::move(payload));
+            SendData(peer,maximum); SendData(peer,GenerateMessage(19,{}));
+            Require(!peer->closePosted&&sendQueueBudget.Snapshot().tasks==sendBaseline.tasks+2,
+                "full block queue retains room for a control message");
+            SendData(peer,maximum);
+            Require(peer->closePosted&&sendQueueBudget.Snapshot().tasks==sendBaseline.tasks+2,
                 "peer overload is bounded before post and schedules one close");
             io.run();
         }

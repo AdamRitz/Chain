@@ -1,5 +1,7 @@
 # Ansible 多节点部署与对照测试
 
+1000 个以上节点使用 [固定连接数量、单次构建分发、集群启停和自动测试](CLUSTER.md)。入口为 `cluster_deploy.yml`、`cluster_control.yml` 和 `cluster_benchmark.yml`；原有十/二十节点对照脚本保持不变。
+
 控制端为 Linux、Python 3.11+，本轮固定 Ansible Core 2.19.15；目标为有 systemd 的 x86-64 Linux。inventory 的 `chain` 组包含全部机器，每台设置唯一的 `chain_node_id`、SSH 地址 `ansible_host`、节点之间可达的 `chain_p2p_address`。内网主机可使用 `ProxyJump`。示例只含文档保留地址，不含实际机器或密码。
 
 ```bash

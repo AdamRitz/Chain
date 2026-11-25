@@ -24,10 +24,47 @@ vector<uint8_t> MakeBlock(const vector<array<uint8_t,176>>& txs,uint64_t height=
     block.merkleRoot=MerkleCompute(hashes);
     return SerializeBlockALL(block);
 }
+void CheckBroadcastSelection() {
+    io_context io;
+    for (size_t i=1;i<=11;i++) {
+        auto peer=make_shared<Peer>(tcp::socket(io));peer->key=i;
+        peer->address=ip::make_address("127.0.0."+to_string(i==9?1:i));
+        peer->port=uint16_t(19000+(i==9?1:i));
+        if (i==10) peer->closePosted=true;
+        if (i==11) peer->port=0;
+        peerPool.emplace(peer->key,std::move(peer));
+    }
+    array<uint8_t,32> hash{};
+    Require(SelectBroadcastPeers(0,hash,0).size()==8,"default broadcast covers every distinct active node endpoint");
+    auto all=SelectBroadcastPeers(1,hash,0);
+    Require(all.size()==7,"source endpoint is excluded across duplicate connections");
+    auto selected=SelectBroadcastPeers(1,hash,3);
+    auto again=SelectBroadcastPeers(1,hash,3);
+    Require(selected.size()==3&&selected==again,"fanout is bounded and stable for the same message");
+    set<pair<ip::address,uint16_t>> endpoints;
+    set<uint64_t> observed;
+    for (const auto& peer:selected) {
+        Require(peer->port!=19001&&endpoints.emplace(peer->address,peer->port).second,
+            "limited fanout excludes source and duplicate endpoints");
+    }
+    for (size_t i=0;i<32;i++) {
+        hash[0]=uint8_t(i);
+        for (const auto& peer:SelectBroadcastPeers(1,hash,3)) observed.insert(peer->key);
+    }
+    Require(observed.size()>3,"different messages spread work across neighbors");
+    auto held=sendQueueBudget.TryReserve(make_shared<SendPeerBudget>(),124*1024*1024,128*1024*1024);
+    Require(bool(held),"test reserves ordinary global send capacity");
+    auto peer=peerPool.at(2);auto drops=gossipDropped.load();
+    auto frame=make_shared<const vector<uint8_t>>(GenerateMessage(10,vector<uint8_t>(176)));
+    Require(!TrySendGossip(peer,frame)&&!peer->closePosted&&gossipDropped==drops+1,
+        "optional gossip drops under load without disconnecting a healthy peer");
+    held.reset();peerPool.clear();
+}
 int main(int argc,char* argv[]) {
     try {
         if (sodium_init()<0) return 1;
         spdlog::set_level(spdlog::level::off);
+        CheckBroadcastSelection();
         string root=argc>1?argv[1]:"test-data";
         auto path=(filesystem::path(root)/to_string(GetSteadyTime())).string();
         filesystem::create_directories(path);

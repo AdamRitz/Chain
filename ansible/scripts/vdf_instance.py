@@ -110,7 +110,17 @@ def Validate(request):
     if type(request.get('health_timeout', 45)) is not int or not 1 <= request.get('health_timeout', 45) <= 300:
         raise ValueError('Health timeout must be between 1 and 300 seconds')
     proof = json.loads(SafePath(release / 'build-proof.json').read_text(encoding='utf-8'))
-    binary = SafePath(release / 'build' / 'boost')
+    if request.get('release_format', 'source') == 'prebuilt':
+        from stage_release import Validate as ValidateRelease
+        marker = json.loads(SafePath(release / '.chain-release.json').read_text(encoding='utf-8'))
+        manifest = ValidateRelease(release)
+        if marker.get('source_commit') != manifest['source_commit']:
+            raise ValueError('Staged package and manifest source identities differ')
+        binary = SafePath(release / 'bin' / 'boost')
+    elif request.get('release_format', 'source') == 'source':
+        binary = SafePath(release / 'build' / 'boost')
+    else:
+        raise ValueError('Unknown release format')
     if (proof.get('ok') is not True or proof.get('complete') is not True or proof.get('binary_sha256') != Hash(binary) or
             proof.get('source_manifest_sha256') != Sources(release)):
         raise ValueError('Release no longer matches its successful build/test proof')
@@ -119,7 +129,7 @@ def Validate(request):
             '--port', str(port), *arguments]
     contents = {str(paths['config_path']): request['config_text'].encode('utf-8'),
                 str(paths['genesis_path']): (json.dumps(request['genesis'], sort_keys=True, indent=2) + '\n').encode('utf-8')}
-    library_path = proof['settings'].get('library_path', '')
+    library_path = str(release / 'lib') if request.get('release_format') == 'prebuilt' else proof['settings'].get('library_path', '')
     unit = ('[Unit]\nDescription=Chain VDF ' + request['instance_id'] + '\n'
             'After=network-online.target\nWants=network-online.target\n\n[Service]\nType=simple\n'
             'User=' + request['user'] + '\nGroup=' + request['user'] + '\n'

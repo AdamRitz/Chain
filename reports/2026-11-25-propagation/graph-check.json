@@ -1,0 +1,62 @@
+[
+  {
+    "nodes": 1000,
+    "edges": 3000,
+    "min_degree": 6,
+    "max_degree": 6,
+    "max_distance_from_first_node": 16,
+    "connected": true,
+    "seed": 1,
+    "requested_degree": 6
+  },
+  {
+    "nodes": 1000,
+    "edges": 4000,
+    "min_degree": 8,
+    "max_degree": 8,
+    "max_distance_from_first_node": 10,
+    "connected": true,
+    "seed": 1,
+    "requested_degree": 8
+  },
+  {
+    "nodes": 1000,
+    "edges": 6000,
+    "min_degree": 12,
+    "max_degree": 12,
+    "max_distance_from_first_node": 6,
+    "connected": true,
+    "seed": 1,
+    "requested_degree": 12
+  },
+  {
+    "nodes": 1024,
+    "edges": 3072,
+    "min_degree": 6,
+    "max_degree": 6,
+    "max_distance_from_first_node": 15,
+    "connected": true,
+    "seed": 1,
+    "requested_degree": 6
+  },
+  {
+    "nodes": 1024,
+    "edges": 4096,
+    "min_degree": 8,
+    "max_degree": 8,
+    "max_distance_from_first_node": 8,
+    "connected": true,
+    "seed": 1,
+    "requested_degree": 8
+  },
+  {
+    "nodes": 1024,
+    "edges": 6144,
+    "min_degree": 12,
+    "max_degree": 12,
+    "max_distance_from_first_node": 6,
+    "connected": true,
+    "seed": 1,
+    "requested_degree": 12
+  }
+]

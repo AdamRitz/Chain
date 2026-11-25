@@ -541,7 +541,8 @@ enum class CandidateCheckResult { Invalid,Valid,Superseded };
 // The caller has already checked the complete block's encoding, signatures and Merkle root.
 // A ranked winner can avoid execution only while its complete successful execution
 // is still cached for this exact parent state. Cache eviction only loses the shortcut.
-CandidateCheckResult DBPrepareBlockUsers(const vector<uint8_t>& data,const vector<uint8_t>* rankedWinner=nullptr) {
+CandidateCheckResult DBPrepareBlockUsers(const vector<uint8_t>& data,const vector<uint8_t>* rankedWinner=nullptr,bool* fullyChecked=nullptr) {
+    if (fullyChecked) *fullyChecked=false;
     if (data.size()<112) return CandidateCheckResult::Invalid;
     auto waitStart=GetSteadyTime();
     shared_lock lock(dbCommitMutex);
@@ -559,6 +560,7 @@ CandidateCheckResult DBPrepareBlockUsers(const vector<uint8_t>& data,const vecto
             if (cached->version!=dbStateVersion||cached->parent!=previous||cached->height!=height) continue;
             if (cached->data==data) {
                 candidateExecutionCacheHits++;
+                if (fullyChecked) *fullyChecked=true;
                 return CandidateCheckResult::Valid;
             }
         }
@@ -593,6 +595,7 @@ CandidateCheckResult DBPrepareBlockUsers(const vector<uint8_t>& data,const vecto
         }
         executionBytes+=result->bytes; executionCache.push_back(std::move(result));
     }
+    if (fullyChecked) *fullyChecked=true;
     return CandidateCheckResult::Valid;
 }
 bool DBCheckBlockUsers(const vector<uint8_t>& data) {

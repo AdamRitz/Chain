@@ -60,6 +60,15 @@ int main(int argc,char* argv[]) {
             if (node["candidate_ms"]) nodeClock.candidateMs=int(ParseNumber(node["candidate_ms"].as<string>(),0,5000));
             if (node["sync"]) sync=node["sync"].as<bool>();
             if (node["produce"]) produceBlocks=node["produce"].as<bool>();
+            if (node["max_peers"]) maxPeers=ParseNumber(node["max_peers"].as<string>(),1,1024);
+            if (node["max_connections"]) maxConnections=ParseNumber(node["max_connections"].as<string>(),2,4096);
+            if (node["peer_discovery"]) peerDiscovery=node["peer_discovery"].as<bool>();
+            if (node["relay_transactions"]) relayTransactions=node["relay_transactions"].as<bool>();
+            if (node["block_relay_peers"]) blockRelayPeers=ParseNumber(node["block_relay_peers"].as<string>(),0,1024);
+            if (node["tx_relay_peers"]) txRelayPeers=ParseNumber(node["tx_relay_peers"].as<string>(),0,1024);
+            if (node["short_ids"]) shortIds=node["short_ids"].as<bool>();
+            if (node["early_block_relay"]) earlyBlockRelay=node["early_block_relay"].as<bool>();
+            if (node["compact_repair_ms"]) compactRepairMs=ParseNumber(node["compact_repair_ms"].as<string>(),20,10000);
             if (node["peers"]) for (const auto& peer:node["peers"]) AddConfiguredPeer(peer.as<string>());
         }
         for (int i=1;i<argc;i++) {
@@ -103,6 +112,12 @@ int main(int argc,char* argv[]) {
             else if (name=="--max-peers") maxPeers=ParseNumber(value,1,1024);
             else if (name=="--max-connections") maxConnections=ParseNumber(value,2,4096);
             else if (name=="--relay-transactions") relayTransactions=ParseNumber(value,0,1)!=0;
+            else if (name=="--peer-discovery") peerDiscovery=ParseNumber(value,0,1)!=0;
+            else if (name=="--block-relay-peers") blockRelayPeers=ParseNumber(value,0,1024);
+            else if (name=="--tx-relay-peers") txRelayPeers=ParseNumber(value,0,1024);
+            else if (name=="--short-ids") shortIds=ParseNumber(value,0,1)!=0;
+            else if (name=="--early-block-relay") earlyBlockRelay=ParseNumber(value,0,1)!=0;
+            else if (name=="--compact-repair-ms") compactRepairMs=ParseNumber(value,20,10000);
             else if (name=="--experiment-index") experimentIndex=ParseNumber(value,0,1)!=0;
             else if (name=="--clock-observe") observeClock=ParseNumber(value,0,1)!=0;
             else if (name=="--clock-sync") { nodeClock.enabled=ParseNumber(value,0,1)!=0; observeClock=true; }
@@ -165,6 +180,7 @@ int main(int argc,char* argv[]) {
         co_spawn(io,Listen(listenPort,listenAddress),onError);
         if (!listenAddressV6.empty()) co_spawn(io,Listen(listenPort,listenAddressV6),onError);
         co_spawn(make_strand(io),OpenDiscoveryMode(),onError);
+        co_spawn(make_strand(io),MaintainCompactBlocks(),onError);
         if (observeClock) co_spawn(make_strand(io),SynchronizeClock(),onError);
         spdlog::info("Node ready. IO:{}, Verify:{}, BlockMs:{}, BlockTxStep:{}, Produce:{}",ioNum,verifyNum,blockInterval,blockTxStep,produceBlocks);
         thread blockThread(MainLoop);

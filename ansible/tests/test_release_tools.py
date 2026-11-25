@@ -4,7 +4,9 @@ import hashlib
 import importlib.util
 import io
 import json
+import os
 from pathlib import Path
+import stat
 import sys
 import tarfile
 import tempfile
@@ -65,6 +67,55 @@ class ReleaseTests(unittest.TestCase):
         (releases / 'r1/bin/boost').write_bytes(b'tampered')
         with self.assertRaisesRegex(ValueError, 'checksum'):
             stage.Stage(archive, releases, 'r1', digest)
+
+    @unittest.skipUnless(os.name == 'posix', 'Unix directory permissions')
+    def test_publish_directory_permissions_with_restrictive_umask(self):
+        archive, digest = self.Package()
+        releases = self.root / 'releases'
+        releases.mkdir(mode=0o750)
+        os.chmod(releases, 0o750)
+        validate = stage.Validate
+        staging_modes = []
+        def ValidatePrivate(directory):
+            staging_modes.append(stat.S_IMODE(Path(directory).stat().st_mode))
+            return validate(directory)
+        previous = os.umask(0o077)
+        try:
+            with patch.object(stage, 'Validate', side_effect=ValidatePrivate):
+                result = stage.Stage(archive, releases, 'r1', digest)
+        finally:
+            os.umask(previous)
+        release = Path(result['directory'])
+        self.assertEqual(staging_modes, [0o700])
+        self.assertTrue(result['changed'])
+        for path in [release, *(path for path in release.rglob('*') if path.is_dir())]:
+            self.assertEqual(stat.S_IMODE(path.stat().st_mode), 0o755, str(path))
+        for entry in validate(release)['files']:
+            self.assertEqual(stat.S_IMODE((release / entry['path']).stat().st_mode), int(entry['mode'], 8))
+        self.assertEqual(stat.S_IMODE(releases.stat().st_mode), 0o750)
+        self.assertFalse(stage.Stage(archive, releases, 'r1', digest)['changed'])
+
+    @unittest.skipUnless(os.name == 'posix', 'Unix directory permissions')
+    def test_existing_release_permissions_are_repaired_only_after_validation(self):
+        archive, digest = self.Package()
+        releases = self.root / 'releases'
+        release = Path(stage.Stage(archive, releases, 'r1', digest)['directory'])
+        os.chmod(releases, 0o750)
+        os.chmod(release, 0o700)
+        os.chmod(release / 'bin', 0o700)
+        self.assertTrue(stage.Stage(archive, releases, 'r1', digest)['changed'])
+        self.assertEqual(stat.S_IMODE(release.stat().st_mode), 0o755)
+        self.assertEqual(stat.S_IMODE((release / 'bin').stat().st_mode), 0o755)
+        self.assertEqual(stat.S_IMODE(releases.stat().st_mode), 0o750)
+        self.assertFalse(stage.Stage(archive, releases, 'r1', digest)['changed'])
+        os.chmod(release, 0o700)
+        os.chmod(release / 'bin', 0o700)
+        (release / 'bin/boost').write_bytes(b'tampered')
+        with self.assertRaisesRegex(ValueError, 'checksum'):
+            stage.Stage(archive, releases, 'r1', digest)
+        self.assertEqual(stat.S_IMODE(release.stat().st_mode), 0o700)
+        self.assertEqual(stat.S_IMODE((release / 'bin').stat().st_mode), 0o700)
+        self.assertEqual(stat.S_IMODE(releases.stat().st_mode), 0o750)
 
     def test_worker_and_transitive_imports_leave_immutable_release_unchanged(self):
         self.files['source/Test/ClusterWorker.py'] = b'import Netem\nVALUE = Netem.MARKER\n'

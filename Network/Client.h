@@ -12,6 +12,7 @@
 #include "../Tool/Resource.h"
 #include "Address.h"
 #include "SendBudget.h"
+#include "SendPriority.h"
 using namespace std;
 using namespace std::chrono;
 using namespace boost::asio;
@@ -36,6 +37,10 @@ atomic<uint64_t> queueWaitNs{0},networkBytes{0};
 size_t maxPendingVerify=32768;
 size_t maxConnections=128;
 size_t maxPeers=64;
+size_t blockRelayPeers=0,txRelayPeers=0;
+bool peerDiscovery=true;
+bool shortIds=true,earlyBlockRelay=true;
+atomic<uint64_t> earlyRelayedBlocks{0},relayedTransactions{0},skippedRelayTransactions{0};
 vector<pair<string,uint16_t>> configuredPeers;
 string configuredPeerFile;
 mutex seedAttemptMutex;
@@ -43,9 +48,11 @@ set<pair<string,uint16_t>> seedAttempts;
 set<pair<string,uint16_t>> addressAttempts; // protected by peerMutex, like peerPool
 bool relayTransactions=false;
 atomic<uint64_t> networkSentBytes{0},localProposals{0};
+array<atomic<uint64_t>,3> prioritySentMessages{},prioritySentBytes{};
+atomic<uint64_t> gossipDropped{0},broadcastSelected{0},broadcastExcluded{0};
 atomic<uint64_t> blockStepWaitNs{0},blockStepProposals{0},blockTailProposals{0};
 size_t maxSendBytes=8*1024*1024;
-SendQueueBudget sendQueueBudget(128*1024*1024,8192,1024);
+SendQueueBudget sendQueueBudget(128*1024*1024,8192,1024,4*1024*1024,128,256*1024,16);
 unsigned short listenPort=8089;
 string listenAddress="127.0.0.1",listenAddressV6;
 bool peerProtocolV2=false;
@@ -61,9 +68,10 @@ struct Peer:enable_shared_from_this<Peer> {
     tcp::socket socket;
     boost::asio::strand<any_io_executor> strand;
     steady_timer deadline;
-    deque<PendingSend> messageQueue;
+    PrioritySendQueue<PendingSend> messageQueue;
     shared_ptr<SendPeerBudget> sendBudget=make_shared<SendPeerBudget>();
     atomic<bool> closePosted{false}; // safe to read before posting to the strand
+    atomic<bool> shortCompact{false};
     size_t queuedBytes=0;
     uint64_t key=0;
     atomic<uint64_t> remoteHeight{0};
@@ -112,7 +120,7 @@ void ClosePeer(const shared_ptr<Peer>& peer) {
     boost::system::error_code ignored;
     peer->deadline.cancel();
     peer->socket.close(ignored);
-    peer->messageQueue.clear();
+    peer->messageQueue.Clear();
     peer->admissionReplies.clear();
     peer->queuedBytes=0;
     if (peer->key) RemovePeer(peer->key);
@@ -125,23 +133,25 @@ void PeerError(const shared_ptr<Peer>& peer,exception_ptr error) {
     ClosePeer(peer);
 }
 awaitable<void> WriteLoop(shared_ptr<Peer> peer) {
-    while (!peer->closed&&!peer->messageQueue.empty()) {
+    while (!peer->closed&&!peer->messageQueue.Empty()) {
         // Keep the reservation alive until async_write has completed, even if
         // ClosePeer clears the queue while the write is being cancelled.
-        auto message=peer->messageQueue.front(); auto data=message.data;
+        auto [priority,message]=peer->messageQueue.Pop(); auto data=message.data;
         boost::system::error_code ec;
         co_await async_write(peer->socket,buffer(*data),redirect_error(use_awaitable,ec));
         if (ec||peer->closed) { ClosePeer(peer); co_return; }
         networkSentBytes+=data->size();
+        prioritySentMessages[size_t(priority)]++;
+        prioritySentBytes[size_t(priority)]+=data->size();
         peer->queuedBytes-=data->size();
-        peer->messageQueue.pop_front();
     }
     peer->writing=false;
 }
 void QueueData(const shared_ptr<Peer>& peer,PendingSend message) {
         if (peer->closed) return;
         auto size=message.data->size();
-        peer->messageQueue.push_back(std::move(message));
+        auto priority=MessageSendPriority(message.data->front());
+        peer->messageQueue.Push(priority,std::move(message));
         peer->queuedBytes+=size;
         if (!peer->writing) {
             peer->writing=true;
@@ -155,13 +165,15 @@ void RejectSend(const shared_ptr<Peer>& peer) {
 }
 void QueueData(const shared_ptr<Peer>& peer,shared_ptr<const vector<uint8_t>> data) {
     if (peer->closed||!data||data->empty()) return;
-    auto reservation=sendQueueBudget.TryReserve(peer->sendBudget,data->size(),maxSendBytes);
+    auto reservation=sendQueueBudget.TryReserve(peer->sendBudget,data->size(),maxSendBytes,true,
+        MessageSendPriority(data->front())==SendPriority::Urgent);
     if (!reservation) { ClosePeer(peer); return; }
     QueueData(peer,PendingSend{std::move(data),std::move(reservation)});
 }
 void SendData(const shared_ptr<Peer>& peer,shared_ptr<const vector<uint8_t>> data) {
     if (!peer||!data||data->empty()||peer->closePosted) return;
-    auto reservation=sendQueueBudget.TryReserve(peer->sendBudget,data->size(),maxSendBytes);
+    auto reservation=sendQueueBudget.TryReserve(peer->sendBudget,data->size(),maxSendBytes,true,
+        MessageSendPriority(data->front())==SendPriority::Urgent);
     if (!reservation) { RejectSend(peer); return; }
     post(peer->strand,[peer,message=PendingSend{std::move(data),std::move(reservation)}]() mutable {
         QueueData(peer,std::move(message));
@@ -170,10 +182,20 @@ void SendData(const shared_ptr<Peer>& peer,shared_ptr<const vector<uint8_t>> dat
 void SendData(const shared_ptr<Peer>& peer,vector<uint8_t> data) {
     SendData(peer,make_shared<const vector<uint8_t>>(std::move(data)));
 }
+bool TrySendGossip(const shared_ptr<Peer>& peer,shared_ptr<const vector<uint8_t>> data) {
+    if (!peer||!data||data->empty()||peer->closePosted) return false;
+    auto reservation=sendQueueBudget.TryReserve(peer->sendBudget,data->size(),maxSendBytes,false,
+        MessageSendPriority(data->front())==SendPriority::Urgent);
+    if (!reservation) { gossipDropped++; return false; }
+    post(peer->strand,[peer,message=PendingSend{std::move(data),std::move(reservation)}]() mutable {
+        QueueData(peer,std::move(message));
+    });
+    return true;
+}
 void SendAdmission(const shared_ptr<Peer>& peer,uint64_t order,vector<uint8_t> results) {
     if (peer->closePosted) return;
     auto data=make_shared<const vector<uint8_t>>(GenerateMessage(45,results));
-    auto reservation=sendQueueBudget.TryReserve(peer->sendBudget,data->size(),maxSendBytes);
+    auto reservation=sendQueueBudget.TryReserve(peer->sendBudget,data->size(),maxSendBytes,true,true);
     if (!reservation) { RejectSend(peer); return; }
     post(peer->strand,[peer,order,message=PendingSend{std::move(data),std::move(reservation)}]() mutable {
         if (peer->closed) return;
@@ -188,19 +210,52 @@ void SendAdmission(const shared_ptr<Peer>& peer,uint64_t order,vector<uint8_t> r
         }
     });
 }
-// 普通函数只负责投递，调用它就会安排广播；大缓冲区在节点间共享。
-void BroadcastData(vector<uint8_t> data,uint64_t source=0) {
-    auto shared=make_shared<const vector<uint8_t>>(std::move(data));
+vector<shared_ptr<Peer>> SelectBroadcastPeers(uint64_t source,const array<uint8_t,32>& payloadHash,size_t limit) {
+    // Every process has its own salt. Hashing the payload also changes the
+    // selected neighbors between messages, without depending on map order.
+    static const array<uint8_t,32> salt=[] { array<uint8_t,32> value{}; randombytes_buf(value.data(),value.size()); return value; }();
     vector<shared_ptr<Peer>> peers;optional<pair<ip::address,uint16_t>> sourceEndpoint;
     {
         lock_guard lock(peerMutex);
         for (const auto& [key,peer]:peerPool) {peers.push_back(peer);if (key==source) sourceEndpoint=make_pair(peer->address,peer->port);}
     }
     set<pair<ip::address,uint16_t>> sent;
+    vector<pair<array<uint8_t,16>,shared_ptr<Peer>>> ranked;
     for (const auto& peer:peers) {
         auto id=make_pair(peer->address,peer->port);
-        if ((!sourceEndpoint||id!=*sourceEndpoint)&&sent.insert(id).second) SendData(peer,shared);
+        if (peer->closePosted||!peer->port||peer->key==source||(sourceEndpoint&&id==*sourceEndpoint)||!sent.insert(id).second) continue;
+        array<uint8_t,16> score{};
+        if (limit) {
+            auto endpoint=FormatEndpoint(peer->address.to_string(),peer->port);
+            crypto_generichash_state state;
+            crypto_generichash_init(&state,salt.data(),salt.size(),score.size());
+            crypto_generichash_update(&state,payloadHash.data(),payloadHash.size());
+            crypto_generichash_update(&state,reinterpret_cast<const uint8_t*>(endpoint.data()),endpoint.size());
+            crypto_generichash_final(&state,score.data(),score.size());
+        }
+        ranked.emplace_back(score,peer);
     }
+    if (limit&&ranked.size()>limit) {
+        auto compare=[](const auto& first,const auto& second) { return first.first<second.first; };
+        partial_sort(ranked.begin(),ranked.begin()+limit,ranked.end(),compare);
+        broadcastExcluded+=ranked.size()-limit;
+        ranked.resize(limit);
+    }
+    peers.clear();peers.reserve(ranked.size());
+    for (auto& item:ranked) peers.push_back(std::move(item.second));
+    broadcastSelected+=peers.size();
+    return peers;
+}
+// Ordinary gossip shares its bytes across recipients. A full optional queue
+// drops this copy; block queries and missing-transaction replies remain active.
+void BroadcastData(vector<uint8_t> data,uint64_t source=0) {
+    if (data.empty()) return;
+    auto limit=MessageSendPriority(data.front())==SendPriority::Transaction?txRelayPeers:0;
+    array<uint8_t,32> hash{};
+    if (limit) crypto_generichash(hash.data(),hash.size(),data.data(),data.size(),nullptr,0);
+    auto peers=SelectBroadcastPeers(source,hash,limit);
+    auto shared=make_shared<const vector<uint8_t>>(std::move(data));
+    for (const auto& peer:peers) TrySendGossip(peer,shared);
 }
 awaitable<void> ProcessMessage(shared_ptr<Peer> peer,uint8_t type,vector<uint8_t> data);
 #include "Blocks.h"
@@ -249,6 +304,7 @@ awaitable<void> Connect(ip::address address,uint16_t port,unsigned delayMs=0) {
     }
     co_spawn(peer->strand,session(peer->key,peer),[peer](exception_ptr error){PeerError(peer,error);});
     QueryHeight(peer);
+    SendData(peer,GenerateMessage(13,{}));
     if (VdfConsensus::config.enabled) SendData(peer,GenerateMessage(50,{}));
 }
 awaitable<void> ConnectSeed(const string& host="127.0.0.1",uint16_t port=8089) {
@@ -273,9 +329,9 @@ awaitable<void> ConnectSeed(const string& host="127.0.0.1",uint16_t port=8089) {
 void ReloadConfiguredPeers() {
     if (configuredPeerFile.empty()) return;
     try {
-        if (std::filesystem::file_size(configuredPeerFile)>8192) return;
+        if (std::filesystem::file_size(configuredPeerFile)>65536) return;
         ifstream input(configuredPeerFile); auto values=nlohmann::json::parse(input);
-        if (!values.is_array()||values.size()>8) return;
+        if (!values.is_array()||values.size()>1024) return;
         vector<pair<string,uint16_t>> peers;
         for (const auto& value:values) {
             auto endpoint=ParseEndpoint(value.get<string>());
@@ -302,7 +358,7 @@ vector<uint8_t> GenerateDiscoverMessage(bool extended=false) {
     return GenerateMessage(extended?48:9,data);
 }
 awaitable<void> ProcessDiscoverMessage(vector<uint8_t> data,bool extended=false) {
-    if (data.size()>1024*19||(!extended&&data.size()%6)) co_return;
+    if (!peerDiscovery||data.size()>1024*19||(!extended&&data.size()%6)) co_return;
     vector<pair<ip::address,uint16_t>> entries;
     for (size_t offset=0;offset<data.size();) {
         auto family=extended?data[offset++]:4;size_t length=family==4?4:family==6?16:0;
@@ -363,6 +419,7 @@ void StartSync(const shared_ptr<Peer>& peer) {
 }
 awaitable<void> OpenDiscoveryMode() {
     steady_timer timer(co_await this_coro::executor);
+    size_t seedCursor=0;
     while (nodeRunning) {
         PruneCompactBlocks();
         vector<shared_ptr<Peer>> peers;
@@ -374,9 +431,13 @@ awaitable<void> OpenDiscoveryMode() {
         // Bound concurrent seed attempts so an unreachable first address does
         // not hold back a reachable IPv4/IPv6 fallback or the discovery loop.
         ReloadConfiguredPeers(); unsigned delay=0;
-        for (const auto& endpoint:configuredPeers) {
+        if (!configuredPeers.empty()) seedCursor%=configuredPeers.size();
+        for (size_t visited=0;visited<configuredPeers.size();++visited) {
+            const auto endpoint=configuredPeers[seedCursor];
             { lock_guard lock(seedAttemptMutex);
-              if (seedAttempts.size()>=8||!seedAttempts.insert(endpoint).second) continue; }
+              if (seedAttempts.size()>=8) break;
+              seedCursor=(seedCursor+1)%configuredPeers.size();
+              if (!seedAttempts.insert(endpoint).second) continue; }
             co_spawn(timer.get_executor(),[endpoint,wait=delay]() -> awaitable<void> {
                 struct Release { pair<string,uint16_t> endpoint; ~Release() { lock_guard lock(seedAttemptMutex);seedAttempts.erase(endpoint); } } release{endpoint};
                 steady_timer stagger(co_await this_coro::executor); stagger.expires_after(milliseconds(wait));
@@ -568,6 +629,7 @@ nlohmann::json GetNodeStats() {
     size_t poolSize;
     size_t readySize;
     size_t peers;
+    size_t shortCompactPeers=0;
     {
         lock_guard lock(txpoolMutex);
         poolSize=txpool.size();
@@ -576,6 +638,7 @@ nlohmann::json GetNodeStats() {
     {
         lock_guard lock(peerMutex);
         peers=peerPool.size();
+        for (const auto& [key,peer]:peerPool) shortCompactPeers+=shortIds&&peer->shortCompact.load();
     }
     auto first=firstTxTime.load();
     auto last=lastCommitTime.load();
@@ -584,7 +647,7 @@ nlohmann::json GetNodeStats() {
     auto height=snapshot.height,chainTx=snapshot.transactions,burned=snapshot.burned;
     auto userCount=snapshot.users,evmCount=snapshot.contracts; auto head=snapshot.hash;
     auto sends=sendQueueBudget.Snapshot();
-    nlohmann::json stats={{"vdf",GetVdfStats()},{"received",receivedTx.load()},{"valid",validTx.load()},{"invalid",invalidTx.load()},
+    nlohmann::json stats={{"relay_protocol",shortIds?2:1},{"vdf",GetVdfStats()},{"received",receivedTx.load()},{"valid",validTx.load()},{"invalid",invalidTx.load()},
         {"duplicate",duplicateTx.load()},{"rejected",rejectedTx.load()},{"committed",committedTx.load()},
         {"pool",poolSize},{"ready_pool",readySize},{"pending",pendingVerify.load()},{"peak_pending",peakPendingVerify.load()},
         {"blocks",blockCount.load()},{"height",height},{"head",U32ToHex(head)},
@@ -607,7 +670,7 @@ nlohmann::json GetNodeStats() {
         {"conflict_tx",conflictTx.load()},{"invalid_user_blocks",invalidUserBlocks.load()},
         {"user_check_ms",userCheckNs.load()/1e6},{"user_writes",userWriteCount.load()},
         {"chain_transactions",chainTx},{"reorganizations",reorgCount.load()},{"max_reorg_depth",maxReorgDepth.load()},
-        {"evm_accounts",evmCount}, {"peers",peers},{"failed",nodeFailed.load()},
+        {"evm_accounts",evmCount}, {"peers",peers},{"short_compact_peers",shortCompactPeers},{"failed",nodeFailed.load()},
         {"network_sent_bytes",networkSentBytes.load()},{"local_proposals",localProposals.load()},
         {"block_tx_step",blockTxStep},{"block_step_wait_ms",blockStepWaitNs.load()/1e6},
         {"block_step_proposals",blockStepProposals.load()},{"block_tail_proposals",blockTailProposals.load()},
@@ -615,7 +678,19 @@ nlohmann::json GetNodeStats() {
         {"send_peak_bytes",sends.peakBytes},{"send_peak_tasks",sends.peakTasks},
         {"send_byte_limit",sends.byteLimit},{"send_task_limit",sends.taskLimit},
         {"send_peer_task_limit",sends.peerTaskLimit},{"send_rejected",sends.rejected},
+        {"send_control_byte_reserve",sends.controlByteReserve},{"send_control_task_reserve",sends.controlTaskReserve},
+        {"send_peer_control_byte_reserve",sends.peerControlByteReserve},{"send_peer_control_task_reserve",sends.peerControlTaskReserve},
+        {"send_urgent_messages",prioritySentMessages[0].load()},{"send_transaction_messages",prioritySentMessages[1].load()},
+        {"send_bulk_messages",prioritySentMessages[2].load()},{"send_urgent_bytes",prioritySentBytes[0].load()},
+        {"send_transaction_bytes",prioritySentBytes[1].load()},{"send_bulk_bytes",prioritySentBytes[2].load()},
+        {"gossip_dropped",gossipDropped.load()},{"broadcast_selected",broadcastSelected.load()},{"broadcast_excluded",broadcastExcluded.load()},
+        {"block_relay_peers",blockRelayPeers},{"tx_relay_peers",txRelayPeers},{"peer_discovery",peerDiscovery},
+        {"early_block_relay",earlyBlockRelay},{"early_relayed_blocks",earlyRelayedBlocks.load()},
+        {"relayed_transactions",relayedTransactions.load()},{"skipped_relay_transactions",skippedRelayTransactions.load()},
         {"compact_announcements",compactAnnouncements.load()},{"compact_reconstructed",compactReconstructed.load()},
+        {"compact_short_announcements",compactShortAnnouncements.load()},{"compact_repair_retries",compactRepairRetries.load()},
+        {"compact_full_fallbacks",compactFullFallbacks.load()},{"compact_root_failures",compactRootFailures.load()},
+        {"compact_repair_ms",compactRepairMs},
         {"missing_transactions",missingTransactions.load()},{"relay_suppressed",relaySuppressed.load()},
         {"sync_requests",syncRequests.load()},{"sync_retries",syncRetries.load()},{"sync_blocks",syncBlocks.load()},
         {"recent_transaction_hits",recentTransactionHits.load()},

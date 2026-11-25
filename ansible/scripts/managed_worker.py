@@ -125,6 +125,27 @@ def StopGuard(ledger):
         pass
 
 
+def PreserveIdentity(case):
+    source, target = case / 'db' / 'vdf-identity.seed', case / 'vdf-identity.seed'
+    if not source.exists() and not source.is_symlink():
+        return
+    if source.parent.is_symlink() or source.is_symlink() or not source.is_file() or source.stat().st_size > 128 or target.is_symlink():
+        raise ValueError('Unsafe VDF identity path; database retained')
+    data = source.read_bytes()
+    if not re.fullmatch(rb'[0-9a-fA-F]{64}\s*', data):
+        raise ValueError('Invalid VDF identity; database retained')
+    if target.exists():
+        if not target.is_file() or target.read_bytes() != data:
+            raise ValueError('Retained VDF identity differs; database retained')
+        target.chmod(0o600)
+        return
+    descriptor = os.open(target, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+    with os.fdopen(descriptor, 'wb') as output:
+        output.write(data)
+        output.flush()
+        os.fsync(output.fileno())
+
+
 def Expire(path, seconds, pid, created):
     time.sleep(seconds)
     ledger = json.loads(Path(path).read_text())
@@ -230,6 +251,10 @@ def One(request):
         reader = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(reader)
         return reader.Export({**work, 'library': str(library)}, worker=worker)
+    if action == 'delete-db':
+        if worker.FindProcess(RecordedProcess(ledger, case)) is not None:
+            raise RuntimeError('Stop the experiment node before preserving its identity')
+        PreserveIdentity(case)
     return worker.Handle(work)
 
 
