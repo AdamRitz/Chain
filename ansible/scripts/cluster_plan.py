@@ -39,6 +39,30 @@ def Graph(count, degree=8, seed=1):
     return graph
 
 
+def BackupNeighbors(graph, seed=1):
+    """Bounded distinct alternatives; the normal graph keeps its original edges."""
+    count = len(graph)
+    result = []
+    for index, neighbors in enumerate(graph):
+        available = count - 1 - len(neighbors)
+        wanted = min(len(neighbors), available)
+        generator = random.Random(f'{seed}:backup:{index}')
+        if available <= wanted * 2:
+            candidates = [peer for peer in range(count) if peer != index and peer not in neighbors]
+            result.append(generator.sample(candidates, wanted))
+            continue
+        # Avoid building an O(node_count) complement for every sparse node.
+        selected = set()
+        ordered = []
+        while len(ordered) < wanted:
+            peer = generator.randrange(count)
+            if peer != index and peer not in neighbors and peer not in selected:
+                selected.add(peer)
+                ordered.append(peer)
+        result.append(ordered)
+    return result
+
+
 def ValidateNodes(rows):
     if not isinstance(rows, list) or not 2 <= len(rows) <= 16384:
         raise ValueError('nodes must contain 2..16384 machines')
@@ -74,11 +98,14 @@ def MakePlan(rows, cluster, degree=8, seed=1, injectors=4):
     if type(injectors) is not int or not 1 <= injectors <= min(64, len(nodes)):
         raise ValueError('Use 1..64 injectors, no more than the node count')
     graph = Graph(len(nodes), degree, seed)
+    backups = BackupNeighbors(graph, seed)
     # A single endpoint initiates each TCP edge; incoming peers complete the degree.
     for index, node in enumerate(nodes):
         node['neighbors'] = [nodes[peer]['id'] for peer in sorted(graph[index])]
         node['seeds'] = [Endpoint(nodes[peer]['host'], nodes[peer]['port'])
                          for peer in sorted(graph[index]) if peer > index]
+        node['backup_neighbors'] = [nodes[peer]['id'] for peer in backups[index]]
+        node['backup_seeds'] = [Endpoint(nodes[peer]['host'], nodes[peer]['port']) for peer in backups[index]]
     distances, pending = {0: 0}, collections.deque([0])
     while pending:
         node = pending.popleft()
@@ -104,6 +131,7 @@ def Inventory(plan):
                                 chain_cluster_port=node['port'], chain_test_port=node['port'],
                                 chain_service_name=f"chain-vdf-{plan['cluster']}-{node['id']}.service",
                                 chain_live_port=node['port'], chain_cluster_peers=node['seeds'],
+                                chain_cluster_backup_peers=node['backup_seeds'],
                                 chain_cluster_degree=len(node['neighbors']))
     return {'all': {'children': {'chain': {'hosts': hosts, 'vars': {
         'chain_cluster_id': plan['cluster'], 'chain_serial': 32,

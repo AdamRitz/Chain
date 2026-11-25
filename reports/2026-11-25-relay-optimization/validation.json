@@ -1,0 +1,981 @@
+{
+  "ok": true,
+  "release": "prop-009",
+  "build": {
+    "ok": true,
+    "complete": true,
+    "run_id": "full-001",
+    "settings": {
+      "build_type": "RelWithDebInfo",
+      "classroom": true,
+      "python": "/opt/chain-vdf/releases/vdf/prop-009/venv/bin/python",
+      "cc": "/opt/rh/gcc-toolset-13/root/usr/bin/gcc",
+      "cxx": "/opt/rh/gcc-toolset-13/root/usr/bin/g++",
+      "required_tests": [
+        "ChainCorrectness",
+        "ClassroomNetwork",
+        "ClassroomWallets",
+        "CompactRelayCorrectness",
+        "EvmNetwork",
+        "ExecutionReuseCorrectness",
+        "ForkNetwork",
+        "ForkStateCorrectness",
+        "IPv6Network",
+        "PropagationNetwork",
+        "PropagationTopology",
+        "RelayOptimizationNetwork",
+        "RelayTransportCorrectness",
+        "TransactionRelayCorrectness",
+        "VdfBlockCorrectness",
+        "VdfCorrectness",
+        "VdfElectionCorrectness",
+        "VdfNetwork",
+        "VdfRulesCorrectness",
+        "VdfStateCorrectness"
+      ],
+      "rocksdb_dir": "/opt/chain-vdf/releases/vdf/prop-009/cmake/RocksDB",
+      "rocksdb_config_sha256": "fdaf178f5689deac3783426b99c8e2200571079dbceb41aa568e3ea70aaa7fd4",
+      "boost_dir": "/usr/include",
+      "boost_version_sha256": "df8dda39f54411c1c1e6e19a5ddd9e64a2b667220f44a553c7cf5b2accbaab77",
+      "library_path": ""
+    },
+    "source_manifest_sha256": "55983486c54ceff5a1b362e9bc58119a184ca5cd05472080a24921fb5c55518c",
+    "started_unix": 1795583536.1028757,
+    "test_data_root": "/opt/chain-vdf/releases/vdf/prop-009/build-attempts/full-001/test-data",
+    "evidence": "/opt/chain-vdf/releases/vdf/prop-009/build-attempts/full-001",
+    "test_regex": "",
+    "targets": [],
+    "changed": true,
+    "binary_sha256": "73ac73e8091e82832078cabffdaa629faaf0874c97a8574436ebd990d3914ac0",
+    "test_count": 37,
+    "tests": [
+      "AccountCorrectness",
+      "AccountNetwork",
+      "AdmissionNetwork",
+      "ChainCorrectness",
+      "ChainNetwork",
+      "ChatFunding",
+      "ClassroomChains",
+      "ClassroomFundingNetwork",
+      "ClassroomIndex",
+      "ClassroomJoin",
+      "ClassroomNetwork",
+      "ClassroomWallets",
+      "CompactRelayCorrectness",
+      "EvmNetwork",
+      "ExecutionReuseCorrectness",
+      "ExperimentNetwork",
+      "FlowCorrectness",
+      "ForkNetwork",
+      "ForkStateCorrectness",
+      "IPv6Network",
+      "InviteCorrectness",
+      "InviteNetwork",
+      "PropagationNetwork",
+      "PropagationTopology",
+      "RelayOptimizationNetwork",
+      "RelayTransportCorrectness",
+      "SendBudgetCorrectness",
+      "ThroughputCorrectness",
+      "TransactionRelayCorrectness",
+      "TxStepCorrectness",
+      "TxStepNetwork",
+      "VdfBlockCorrectness",
+      "VdfCorrectness",
+      "VdfElectionCorrectness",
+      "VdfNetwork",
+      "VdfRulesCorrectness",
+      "VdfStateCorrectness"
+    ],
+    "finished_unix": 1795584889.2797961
+  },
+  "ctest": {
+    "count": 37,
+    "seconds": 208.66690422000005,
+    "tests": [
+      {
+        "name": "ChainCorrectness",
+        "seconds": 1.24883
+      },
+      {
+        "name": "AccountCorrectness",
+        "seconds": 0.232432
+      },
+      {
+        "name": "ForkStateCorrectness",
+        "seconds": 36.5236
+      },
+      {
+        "name": "ThroughputCorrectness",
+        "seconds": 0.0435678
+      },
+      {
+        "name": "FlowCorrectness",
+        "seconds": 0.187531
+      },
+      {
+        "name": "SendBudgetCorrectness",
+        "seconds": 0.0172965
+      },
+      {
+        "name": "CompactRelayCorrectness",
+        "seconds": 0.0541541
+      },
+      {
+        "name": "TransactionRelayCorrectness",
+        "seconds": 0.0477287
+      },
+      {
+        "name": "ExecutionReuseCorrectness",
+        "seconds": 0.254501
+      },
+      {
+        "name": "RelayTransportCorrectness",
+        "seconds": 0.039114
+      },
+      {
+        "name": "TxStepCorrectness",
+        "seconds": 0.914492
+      },
+      {
+        "name": "VdfCorrectness",
+        "seconds": 0.979198
+      },
+      {
+        "name": "VdfElectionCorrectness",
+        "seconds": 2.96861
+      },
+      {
+        "name": "VdfRulesCorrectness",
+        "seconds": 1.53568
+      },
+      {
+        "name": "VdfBlockCorrectness",
+        "seconds": 1.07912
+      },
+      {
+        "name": "VdfStateCorrectness",
+        "seconds": 1.52398
+      },
+      {
+        "name": "RelayOptimizationNetwork",
+        "seconds": 6.22844
+      },
+      {
+        "name": "PropagationNetwork",
+        "seconds": 1.93809
+      },
+      {
+        "name": "PropagationTopology",
+        "seconds": 1.8499
+      },
+      {
+        "name": "VdfNetwork",
+        "seconds": 51.4985
+      },
+      {
+        "name": "TxStepNetwork",
+        "seconds": 25.7893
+      },
+      {
+        "name": "ChainNetwork",
+        "seconds": 3.61286
+      },
+      {
+        "name": "AccountNetwork",
+        "seconds": 0.323166
+      },
+      {
+        "name": "ForkNetwork",
+        "seconds": 0.479298
+      },
+      {
+        "name": "EvmNetwork",
+        "seconds": 0.772645
+      },
+      {
+        "name": "ExperimentNetwork",
+        "seconds": 4.59554
+      },
+      {
+        "name": "AdmissionNetwork",
+        "seconds": 7.45966
+      },
+      {
+        "name": "InviteCorrectness",
+        "seconds": 0.00827829
+      },
+      {
+        "name": "ChatFunding",
+        "seconds": 0.00529663
+      },
+      {
+        "name": "ClassroomIndex",
+        "seconds": 0.0901692
+      },
+      {
+        "name": "ClassroomNetwork",
+        "seconds": 4.27887
+      },
+      {
+        "name": "ClassroomJoin",
+        "seconds": 6.38216
+      },
+      {
+        "name": "InviteNetwork",
+        "seconds": 10.2338
+      },
+      {
+        "name": "ClassroomFundingNetwork",
+        "seconds": 19.9384
+      },
+      {
+        "name": "ClassroomChains",
+        "seconds": 7.66047
+      },
+      {
+        "name": "ClassroomWallets",
+        "seconds": 7.20451
+      },
+      {
+        "name": "IPv6Network",
+        "seconds": 0.667716
+      }
+    ]
+  },
+  "python_tools": {
+    "count": 91,
+    "ok": true
+  },
+  "ansible_syntax": {
+    "python-tools": {
+      "exit_code": 0,
+      "log": "/opt/chain-vdf/controller/propagation-009/tools-prop-009/python-tools.log"
+    },
+    "cluster_deploy": {
+      "exit_code": 0,
+      "log": "/opt/chain-vdf/controller/propagation-009/tools-prop-009/cluster_deploy.log"
+    },
+    "cluster_control": {
+      "exit_code": 0,
+      "log": "/opt/chain-vdf/controller/propagation-009/tools-prop-009/cluster_control.log"
+    },
+    "cluster_benchmark": {
+      "exit_code": 0,
+      "log": "/opt/chain-vdf/controller/propagation-009/tools-prop-009/cluster_benchmark.log"
+    }
+  },
+  "ansible_lifecycle": {
+    "release": "prop-009",
+    "started_unix": 1795584919.032071,
+    "operations": [
+      {
+        "name": "deploy",
+        "exit_code": 0
+      },
+      {
+        "name": "status-after-deploy",
+        "exit_code": 0
+      },
+      {
+        "name": "stop",
+        "exit_code": 0
+      },
+      {
+        "name": "status-after-stop",
+        "exit_code": 0
+      },
+      {
+        "name": "start",
+        "exit_code": 0
+      },
+      {
+        "name": "collect-running",
+        "exit_code": 0
+      },
+      {
+        "name": "benchmark",
+        "exit_code": 0
+      },
+      {
+        "name": "final-stop",
+        "exit_code": 0
+      },
+      {
+        "name": "collect-stopped",
+        "exit_code": 0
+      }
+    ],
+    "ok": true,
+    "finished_unix": 1795585014.945536
+  },
+  "comparison": {
+    "ok": true,
+    "release": "prop-009",
+    "started_unix": 1795585019.7882264,
+    "operations": [
+      {
+        "name": "execution-microbenchmark",
+        "command": [
+          "/opt/chain-vdf/releases/vdf/prop-009/build/execution_reuse_test",
+          "/opt/chain-vdf/controller/propagation-009/comparison-001/execution-benchmark-data",
+          "--benchmark"
+        ],
+        "started_unix": 1795585020.5824697,
+        "exit_code": 0,
+        "finished_unix": 1795585021.4471087,
+        "elapsed_seconds": 0.8646390438079834
+      },
+      {
+        "name": "ansible-before",
+        "command": [
+          "/opt/chain-vdf/setup/venv/bin/ansible-playbook",
+          "-i",
+          "/opt/chain-vdf/controller/propagation-009/comparison-001/before-inventory.json",
+          "/opt/chain-vdf/releases/vdf/prop-007/source/ansible/cluster_benchmark.yml",
+          "-e",
+          "@/opt/chain-vdf/controller/propagation-009/comparison-001/before-vars.json",
+          "--forks",
+          "1"
+        ],
+        "started_unix": 1795585021.447776,
+        "exit_code": 0,
+        "finished_unix": 1795585055.7757847,
+        "elapsed_seconds": 34.3280086517334
+      },
+      {
+        "name": "ansible-after",
+        "command": [
+          "/opt/chain-vdf/setup/venv/bin/ansible-playbook",
+          "-i",
+          "/opt/chain-vdf/controller/propagation-009/comparison-001/after-inventory.json",
+          "/opt/chain-vdf/releases/vdf/prop-009/source/ansible/cluster_benchmark.yml",
+          "-e",
+          "@/opt/chain-vdf/controller/propagation-009/comparison-001/after-vars.json",
+          "--forks",
+          "1"
+        ],
+        "started_unix": 1795585055.7894692,
+        "exit_code": 0,
+        "finished_unix": 1795585088.2156343,
+        "elapsed_seconds": 32.42616510391235
+      }
+    ],
+    "modes": {
+      "before": {
+        "release": "prop-007",
+        "binary_sha256": "f9b4e2409f2c7f97ae89e945ba9fdda5a53e68e79a371910c2791083ff19bca1",
+        "tps": 525.261871075717,
+        "achieved_send_tps": 481.49004848607393,
+        "confirmation_p50_ms": 191.48413000039,
+        "confirmation_p95_ms": 305.91166200065345,
+        "reorganizations": 0,
+        "network_sent_bytes": 420884,
+        "network_sent_bytes_per_second": 143928.5920220261,
+        "network_sent_bytes_per_confirmed_transaction": 274.0130208333333,
+        "measurement_seconds": 2.924255660998824,
+        "measurement_confirmed_transactions": 1536,
+        "measurement_first_second": 1.035339448000741,
+        "measurement_last_second": 3.959595108999565,
+        "sent_unique": 2000,
+        "state": {
+          "burned": 0,
+          "head": "43b4e75b1e5c84c6f3df5e6fd9a02721d979ac00685b0967d53cc73d36472cd7",
+          "state_hash": "ba32ff32d4ea0730be0ff875bf4e16e3ae29ae58d799cc974bb8b816122b95d7",
+          "supply": 16000000000,
+          "transactions": 2000
+        },
+        "accounts_checked_per_node": 16,
+        "account_state_agrees": true,
+        "fees_agree": true,
+        "nodes": [
+          {
+            "node": "node0",
+            "network_sent_bytes": 210901,
+            "final_counters": {
+              "tx_inventory_body_sent": null,
+              "tx_inventory_hash_sent": null,
+              "tx_inventory_requests": null,
+              "tx_inventory_retries": null,
+              "compact_prefilled_transactions": null,
+              "missing_transactions": 0,
+              "pre_execution_relay_attempts": null,
+              "fragment_sent": null,
+              "execution_prefix_transactions": null,
+              "native_parallel_blocks": null,
+              "network_sent_bytes": 308264,
+              "network_bytes": 377924,
+              "reorganizations": 0
+            }
+          },
+          {
+            "node": "node1",
+            "network_sent_bytes": 209983,
+            "final_counters": {
+              "tx_inventory_body_sent": null,
+              "tx_inventory_hash_sent": null,
+              "tx_inventory_requests": null,
+              "tx_inventory_retries": null,
+              "compact_prefilled_transactions": null,
+              "missing_transactions": 0,
+              "pre_execution_relay_attempts": null,
+              "fragment_sent": null,
+              "execution_prefix_transactions": null,
+              "native_parallel_blocks": null,
+              "network_sent_bytes": 307682,
+              "network_bytes": 378914,
+              "reorganizations": 0
+            }
+          }
+        ],
+        "vdf_enabled": false,
+        "pre_execution_relay_exercised": false,
+        "message_fragments_exercised": false,
+        "cleanup_ok": true
+      },
+      "after": {
+        "release": "prop-009",
+        "binary_sha256": "73ac73e8091e82832078cabffdaa629faaf0874c97a8574436ebd990d3914ac0",
+        "tps": 525.0256174560742,
+        "achieved_send_tps": 481.273482668068,
+        "confirmation_p50_ms": 195.97683699976187,
+        "confirmation_p95_ms": 310.2077660005307,
+        "reorganizations": 0,
+        "network_sent_bytes": 450399,
+        "network_sent_bytes_per_second": 153952.48247174374,
+        "network_sent_bytes_per_confirmed_transaction": 293.228515625,
+        "measurement_seconds": 2.9255715319995943,
+        "measurement_confirmed_transactions": 1536,
+        "measurement_first_second": 1.0323567800005549,
+        "measurement_last_second": 3.957928312000149,
+        "sent_unique": 2000,
+        "state": {
+          "burned": 0,
+          "head": "43b4e75b1e5c84c6f3df5e6fd9a02721d979ac00685b0967d53cc73d36472cd7",
+          "state_hash": "ba32ff32d4ea0730be0ff875bf4e16e3ae29ae58d799cc974bb8b816122b95d7",
+          "supply": 16000000000,
+          "transactions": 2000
+        },
+        "accounts_checked_per_node": 16,
+        "account_state_agrees": true,
+        "fees_agree": true,
+        "nodes": [
+          {
+            "node": "node0",
+            "network_sent_bytes": 225426,
+            "final_counters": {
+              "tx_inventory_body_sent": 1000,
+              "tx_inventory_hash_sent": 0,
+              "tx_inventory_requests": 0,
+              "tx_inventory_retries": 0,
+              "compact_prefilled_transactions": 0,
+              "missing_transactions": 0,
+              "pre_execution_relay_attempts": 0,
+              "fragment_sent": 0,
+              "execution_prefix_transactions": 0,
+              "native_parallel_blocks": 0,
+              "network_sent_bytes": 330678,
+              "network_bytes": 378833,
+              "reorganizations": 0
+            }
+          },
+          {
+            "node": "node1",
+            "network_sent_bytes": 224973,
+            "final_counters": {
+              "tx_inventory_body_sent": 1000,
+              "tx_inventory_hash_sent": 0,
+              "tx_inventory_requests": 0,
+              "tx_inventory_retries": 0,
+              "compact_prefilled_transactions": 0,
+              "missing_transactions": 0,
+              "pre_execution_relay_attempts": 0,
+              "fragment_sent": 0,
+              "execution_prefix_transactions": 0,
+              "native_parallel_blocks": 0,
+              "network_sent_bytes": 329246,
+              "network_bytes": 379826,
+              "reorganizations": 0
+            }
+          }
+        ],
+        "vdf_enabled": false,
+        "pre_execution_relay_exercised": false,
+        "message_fragments_exercised": false,
+        "cleanup_ok": true
+      }
+    },
+    "physical_machines": 1,
+    "node_processes": 2,
+    "degree": 1,
+    "requested_degree": 4,
+    "purpose": "fixed-load regression comparison",
+    "offered_tps": 500,
+    "warmup_seconds": 1,
+    "duration_seconds": 3,
+    "drain_seconds": 5,
+    "binary_sha256": {
+      "after": "73ac73e8091e82832078cabffdaa629faaf0874c97a8574436ebd990d3914ac0",
+      "before": "f9b4e2409f2c7f97ae89e945ba9fdda5a53e68e79a371910c2791083ff19bca1"
+    },
+    "dataset_sha256": "8432c30292723c5fc6ea439dae7676f25a0f0c71ee1d1cbc23f735db28e923e0",
+    "genesis_sha256": "5042b39cf8fe917ff6f13657ad0924dc2cbb6b25fa61492c9b9e658d6dd3c33f",
+    "cpu_affinity": [
+      0,
+      1
+    ],
+    "mode_order": [
+      "before",
+      "after"
+    ],
+    "repetitions_per_mode": 1,
+    "microbenchmark_database_root": "/opt/chain-vdf/controller/propagation-009/comparison-001/execution-benchmark-data",
+    "same_initial_graph": true,
+    "execution_microbenchmark": {
+      "benchmark": {
+        "account_components": 8,
+        "candidate_transactions": [
+          2000,
+          4000,
+          6000
+        ],
+        "native_threads_1": {
+          "candidate_execution_ns": 9740577,
+          "mean_round_ns": 490735,
+          "parallel_blocks": 0,
+          "reused_transactions": 0,
+          "state_valid": true,
+          "total_prepare_ns": 9814713
+        },
+        "native_threads_2": {
+          "candidate_execution_ns": 19987931,
+          "mean_round_ns": 1005179,
+          "parallel_blocks": 20,
+          "reused_transactions": 0,
+          "state_valid": true,
+          "total_prepare_ns": 20103593
+        },
+        "prefix_disabled": {
+          "candidate_execution_ns": 20263655,
+          "mean_round_ns": 1024375,
+          "parallel_blocks": 0,
+          "reused_transactions": 0,
+          "state_valid": true,
+          "total_prepare_ns": 20487511
+        },
+        "prefix_enabled": {
+          "candidate_execution_ns": 20061573,
+          "mean_round_ns": 1014097,
+          "parallel_blocks": 0,
+          "reused_transactions": 120000,
+          "state_valid": true,
+          "total_prepare_ns": 20281953
+        },
+        "repetitions": 20
+      },
+      "checks": 598,
+      "parallel_blocks": 21,
+      "parallel_transactions": 121024,
+      "prefix_hits": 56,
+      "prefix_transactions": 122464
+    },
+    "same_final_account_state": true,
+    "change_percent": {
+      "tps": -0.04497825421040252,
+      "confirmation_p50_ms": 2.3462555353087096,
+      "confirmation_p95_ms": 1.4043609752504485,
+      "network_sent_bytes": 7.012621054732421,
+      "network_sent_bytes_per_second": 6.964488645997201,
+      "network_sent_bytes_per_confirmed_transaction": 7.012621054732428
+    },
+    "finished_unix": 1795585088.438863,
+    "started_at": "2026-11-25T13:36:59+08:00",
+    "finished_at": "2026-11-25T13:38:08+08:00",
+    "elapsed_seconds": 68.65063667297363
+  },
+  "network_protocol_tests": {
+    "fragments": {
+      "transactions": 800,
+      "bytes": 140800,
+      "fragments": 3,
+      "control_message_between_fragments": true,
+      "legacy_body_equal": true,
+      "replay_unnegotiated_bad_offset_closed": true
+    },
+    "inventory": {
+      "accepted": 1,
+      "invalid": 1,
+      "requests": 2,
+      "retries": 1
+    },
+    "prefill": {
+      "head": "1519250d0407e091b556588dd747579aad0850cee324d3940aea285d1c15b2bd",
+      "prefilled": 16,
+      "missing_transactions": 0
+    },
+    "backup": {
+      "started_nodes": 4,
+      "remaining_nodes": 3,
+      "transactions": 16,
+      "recovery_seconds": 4.998860401999991,
+      "backup_attempts": 1,
+      "head": "4fd15ca0c7d5db015628b4056101e09e3aa78fc846d95a40df64e79241c39f46"
+    }
+  },
+  "topology": {
+    "status": "passed",
+    "nodes": 8,
+    "degree": 4,
+    "edges": [
+      [
+        0,
+        1
+      ],
+      [
+        0,
+        3
+      ],
+      [
+        0,
+        5
+      ],
+      [
+        0,
+        7
+      ],
+      [
+        1,
+        2
+      ],
+      [
+        1,
+        4
+      ],
+      [
+        1,
+        6
+      ],
+      [
+        2,
+        3
+      ],
+      [
+        2,
+        5
+      ],
+      [
+        2,
+        7
+      ],
+      [
+        3,
+        4
+      ],
+      [
+        3,
+        6
+      ],
+      [
+        4,
+        5
+      ],
+      [
+        4,
+        7
+      ],
+      [
+        5,
+        6
+      ],
+      [
+        6,
+        7
+      ]
+    ],
+    "legacy_node": 7,
+    "transactions": 240,
+    "head": "6dbe69b087db761f43ff96891f3fbd0d210e3398cc6fc1c3a8671fbdbdd813c2",
+    "state": {
+      "burned": 0,
+      "head": "6dbe69b087db761f43ff96891f3fbd0d210e3398cc6fc1c3a8671fbdbdd813c2",
+      "state_hash": "bb0d4abbaa8ef087f197f593f4e8342d5a5084598a7b0ac2f9543d009b710c00",
+      "supply": 240000000000,
+      "transactions": 240
+    },
+    "checks": [
+      "fixed degree and one TCP connection per edge",
+      "transactions reach one producer through multiple entry nodes",
+      "short IDs and legacy compact blocks coexist",
+      "compact blocks cross at least two connections",
+      "all chain heads and account states match",
+      "confirmed duplicate transactions are not forwarded"
+    ]
+  },
+  "topology_counters": {
+    "tx_inventory_body_sent": [
+      720,
+      720,
+      720,
+      720,
+      720,
+      720,
+      720,
+      720
+    ],
+    "tx_inventory_hash_sent": [
+      0,
+      60,
+      60,
+      0,
+      60,
+      0,
+      60,
+      0
+    ],
+    "tx_inventory_requests": [
+      0,
+      60,
+      0,
+      60,
+      60,
+      60,
+      0,
+      0
+    ],
+    "compact_prefilled_transactions": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "compact_reconstructed": [
+      0,
+      1,
+      2,
+      2,
+      2,
+      1,
+      1,
+      2
+    ]
+  },
+  "vdf_network": {
+    "budget_seconds": 480,
+    "cases": [
+      {
+        "case": "election",
+        "result": "election/result.json",
+        "status": "passed"
+      },
+      {
+        "case": "rejection",
+        "result": "rejection/result.json",
+        "status": "passed"
+      },
+      {
+        "case": "restart",
+        "result": "restart/result.json",
+        "status": "passed"
+      },
+      {
+        "case": "partition",
+        "result": "partition/result.json",
+        "status": "passed"
+      },
+      {
+        "case": "fallback",
+        "result": "fallback/result.json",
+        "status": "passed"
+      }
+    ],
+    "elapsed_seconds": 51.38578932400014,
+    "scope": "seven-process VDF protocol correctness",
+    "status": "passed"
+  },
+  "vdf_relay_activity": {
+    "election": {
+      "status": "passed",
+      "counter_values": [
+        74,
+        65,
+        75,
+        76,
+        77,
+        72,
+        69,
+        0
+      ]
+    },
+    "rejection": {
+      "status": "passed",
+      "counter_values": [
+        44,
+        40,
+        47,
+        43,
+        40,
+        45,
+        42,
+        1
+      ]
+    },
+    "restart": {
+      "status": "passed",
+      "counter_values": [
+        31,
+        24,
+        34,
+        26,
+        34,
+        33,
+        24,
+        1,
+        1,
+        1,
+        2,
+        1,
+        2,
+        1
+      ]
+    },
+    "partition": {
+      "status": "passed",
+      "counter_values": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        32,
+        31,
+        30,
+        30,
+        36,
+        40,
+        34
+      ]
+    },
+    "fallback": {
+      "status": "passed",
+      "counter_values": [
+        49,
+        37,
+        0
+      ]
+    }
+  },
+  "graphs": [
+    {
+      "nodes": 1000,
+      "edges": 3000,
+      "min_degree": 6,
+      "max_degree": 6,
+      "max_distance_from_first_node": 16,
+      "connected": true,
+      "requested_degree": 6,
+      "backup_addresses_per_node": [
+        6
+      ]
+    },
+    {
+      "nodes": 1000,
+      "edges": 4000,
+      "min_degree": 8,
+      "max_degree": 8,
+      "max_distance_from_first_node": 10,
+      "connected": true,
+      "requested_degree": 8,
+      "backup_addresses_per_node": [
+        8
+      ]
+    },
+    {
+      "nodes": 1000,
+      "edges": 6000,
+      "min_degree": 12,
+      "max_degree": 12,
+      "max_distance_from_first_node": 6,
+      "connected": true,
+      "requested_degree": 12,
+      "backup_addresses_per_node": [
+        12
+      ]
+    },
+    {
+      "nodes": 1024,
+      "edges": 3072,
+      "min_degree": 6,
+      "max_degree": 6,
+      "max_distance_from_first_node": 15,
+      "connected": true,
+      "requested_degree": 6,
+      "backup_addresses_per_node": [
+        6
+      ]
+    },
+    {
+      "nodes": 1024,
+      "edges": 4096,
+      "min_degree": 8,
+      "max_degree": 8,
+      "max_distance_from_first_node": 8,
+      "connected": true,
+      "requested_degree": 8,
+      "backup_addresses_per_node": [
+        8
+      ]
+    },
+    {
+      "nodes": 1024,
+      "edges": 6144,
+      "min_degree": 12,
+      "max_degree": 12,
+      "max_distance_from_first_node": 6,
+      "connected": true,
+      "requested_degree": 12,
+      "backup_addresses_per_node": [
+        12
+      ]
+    }
+  ],
+  "production": {
+    "before": {
+      "active": true,
+      "binary": "/opt/chain-propagation/releases/prop-007/bin/boost",
+      "binary_sha256": "f9b4e2409f2c7f97ae89e945ba9fdda5a53e68e79a371910c2791083ff19bca1",
+      "data": "/var/lib/chain-vdf/vdf-20261124-002/data",
+      "genesis": "809f24d8c63b770694d5b4e013f15be1bca335d7c994191bda11228e375eb577",
+      "head": "2245482e8a4c8799f3bf20334d72f95eba6c413e3d1c93d1150cd5e684b00cf2",
+      "height": 632199
+    },
+    "after": {
+      "active": true,
+      "binary": "/opt/chain-propagation/releases/prop-009/bin/boost",
+      "binary_sha256": "73ac73e8091e82832078cabffdaa629faaf0874c97a8574436ebd990d3914ac0",
+      "data": "/var/lib/chain-vdf/vdf-20261124-002/data",
+      "genesis": "809f24d8c63b770694d5b4e013f15be1bca335d7c994191bda11228e375eb577",
+      "head": "1de70bdc6a77c1fd72dad878afbea760dd6444ab5e1107013d12d90a7ccbb22c",
+      "height": 632365
+    }
+  },
+  "package": {
+    "package": "/opt/chain-vdf/controller/propagation-009/smoke-009/runtime-prop-009.tar.gz",
+    "sha256": "1cb00cdc256f57aea61a0c58da1776a283abfcf61e9169badaf24e05cafd39bb",
+    "source_commit": "2088b3cf1e7cb7d9dbcfe94559e30f91a460251f",
+    "binary_sha256": "73ac73e8091e82832078cabffdaa629faaf0874c97a8574436ebd990d3914ac0",
+    "files": 818
+  },
+  "cleanup": {
+    "ok": true,
+    "applied": true,
+    "deleted_file_count": 532,
+    "deleted_bytes": 140765330,
+    "production_excluded": "/var/lib/chain-vdf/vdf-20261124-002/data"
+  }
+}

@@ -91,7 +91,7 @@ def TestEvm(binary,work):
         assert modexp['status']==0 and modexp['output']=='05'
         checks.append('modular exponentiation precompile')
         head=GetStats(a['port'])['head']
-        b=StartNode(binary,work,'follower',genesis=genesis,produce=0,seed=f"127.0.0.1:{a['port']}"); nodes.append(b)
+        b=StartNode(binary,work,'follower',genesis=genesis,produce=0,seed=f"127.0.0.1:{a['port']}",**{'compact-prefill':0}); nodes.append(b)
         WaitStats(b['port'],lambda s:s['head']==head)
         assert Contract(a['port'],address)==Contract(b['port'],address)
         assert Receipt(a['port'],callHash)==Receipt(b['port'],callHash)

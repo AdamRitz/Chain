@@ -23,6 +23,7 @@ struct Block {
 // both locks have been released.
 std::function<bool(uint64_t,const array<uint8_t,32>&,chain::vdf_consensus::Extension&)> prepareVdfBlock;
 std::function<bool(const array<uint8_t,32>&,chain::vdf_consensus::Signature&)> signVdfBlock;
+std::function<void(const vector<uint8_t>&,const Block&,uint64_t)> relayBeforeExecution;
 uint64_t epoch=2;
 pair<Block,vector<uint8_t>> BlockBuffer[3];
 mutex blockBufferLock;
@@ -325,7 +326,7 @@ bool CheckReceivedBlockTime(const Block& block) {
         return false;
     }
 }
-bool ProcessBlock(vector<uint8_t> data,bool* relayReady=nullptr,bool* invalidEncoding=nullptr) {
+bool ProcessBlock(vector<uint8_t> data,bool* relayReady=nullptr,bool* invalidEncoding=nullptr,uint64_t source=0) {
     if (relayReady) *relayReady=false;
     if (invalidEncoding) *invalidEncoding=false;
     if (data.size()<112) return false;
@@ -366,6 +367,7 @@ bool ProcessBlock(vector<uint8_t> data,bool* relayReady=nullptr,bool* invalidEnc
                 (block.txNum<slot.first.txNum||(block.txNum==slot.first.txNum&&block.hash>=slot.first.hash))) rankedWinner=slot.second;
         }
     }
+    if (rankedWinner.empty()&&relayBeforeExecution) relayBeforeExecution(data,block,source);
     bool fullyChecked=false;
     auto checked=DBPrepareBlockUsers(data,rankedWinner.empty()?nullptr:&rankedWinner,&fullyChecked);
     if (checked==CandidateCheckResult::Invalid) { invalidUserBlocks++; return false; }

@@ -1,6 +1,7 @@
 #ifndef CHAIN_DB_H
 #define CHAIN_DB_H
 #include <atomic>
+#include <algorithm>
 #include <charconv>
 #include <memory>
 #include <mutex>
@@ -8,6 +9,7 @@
 #include <vector>
 #include <deque>
 #include <unordered_set>
+#include <thread>
 #include <rocksdb/db.h>
 #include <rocksdb/version.h>
 #include <rocksdb/options.h>
@@ -66,12 +68,23 @@ thread_local rocksdb::WriteBatchWithIndex* branchBatch=nullptr;
 atomic<uint64_t> reorgCount{0};
 atomic<uint64_t> maxReorgDepth{0};
 uint64_t dbStateVersion=0;
+// Set before node threads start. Native execution has no block timestamp or
+// contract environment; all account changes still belong to the locked parent.
+bool executionPrefixReuse=true;
+unsigned nativeExecutionThreads=1;
+struct NativeExecutionUndo {
+    User sender,receiver;
+    bool hadSender=false,hadReceiver=false;
+};
 struct CachedExecution {
     vector<uint8_t> data;
     array<uint8_t,32> parent{};
     uint64_t version=0,height=0;
     UserMap users;
     EvmExecution evm;
+    vector<NativeExecutionUndo> nativeUndo;
+    array<uint8_t,32> genesis{};
+    uint64_t fee=0,supply=0,burned=0;
     size_t bytes=0;
 };
 mutex executionMutex;
@@ -80,6 +93,8 @@ size_t executionBytes=0;
 constexpr size_t maxExecutionBytes=32*1024*1024;
 atomic<uint64_t> executionCacheHits{0},executionCacheMisses{0},candidateExecuteNs{0},commitExecuteNs{0};
 atomic<uint64_t> candidateRankSkips{0},candidateExecutionCacheHits{0},candidateExecutions{0};
+atomic<uint64_t> executionPrefixHits{0},executionPrefixTransactions{0};
+atomic<uint64_t> nativeParallelBlocks{0},nativeParallelTransactions{0};
 atomic<uint64_t> evmAccountWrites{0},evmSlotWrites{0},evmPersistNs{0};
 atomic<uint64_t> commitLockWaitNs{0},candidateLockWaitNs{0};
 void InvalidateExecutionCache() {
@@ -318,12 +333,129 @@ void SaveBranchMemory(rocksdb::WriteBatch& batch) {
 }
 
 bool DBValidateVdfBlock(const vector<uint8_t>& data);
-bool DBApplyBlockUsers(const vector<uint8_t>& data,UserMap& changed,EvmExecution* output=nullptr) {
+NativeExecutionUndo DBNativeUndo(const UserMap& changed,span<const uint8_t,176> tx) {
+    array<uint8_t,32> sender,receiver;
+    memcpy(sender.data(),tx.data(),32); memcpy(receiver.data(),tx.data()+32,32);
+    return {GetUser(users,changed,sender),GetUser(users,changed,receiver),
+        changed.contains(sender),changed.contains(receiver)};
+}
+void DBRewindNativeExecution(const vector<uint8_t>& data,const vector<NativeExecutionUndo>& undo,
+                             size_t keep,UserMap& changed) {
+    for (size_t i=undo.size();i>keep;) {
+        --i;
+        array<uint8_t,32> sender,receiver;
+        memcpy(sender.data(),data.data()+112+i*176,32);
+        memcpy(receiver.data(),data.data()+144+i*176,32);
+        if (undo[i].hadSender) changed[sender]=undo[i].sender; else changed.erase(sender);
+        if (undo[i].hadReceiver) changed[receiver]=undo[i].receiver; else changed.erase(receiver);
+    }
+}
+// Every connected component of sender/receiver accounts is executed in its
+// original order. Components cannot read or write one another's native state.
+// Workers never publish partial changes, including when a later transfer fails.
+bool DBApplyNativeTransactions(const vector<uint8_t>& data,size_t begin,size_t count,UserMap& changed,
+                               vector<NativeExecutionUndo>* undo=nullptr) {
+    if (undo) undo->resize(count);
+    const auto remaining=count-begin;
+    const auto requested=min(unsigned(16),nativeExecutionThreads);
+    vector<vector<size_t>> lanes;
+    if (requested>1&&remaining>=512) {
+        unordered_map<array<uint8_t,32>,size_t,GetMapHash> accounts;
+        accounts.reserve(remaining*2);
+        vector<size_t> parent,weight;
+        auto index=[&](const uint8_t* key) {
+            array<uint8_t,32> account; memcpy(account.data(),key,32);
+            auto [entry,inserted]=accounts.try_emplace(account,accounts.size());
+            if (inserted) { parent.push_back(entry->second); weight.push_back(1); }
+            return entry->second;
+        };
+        auto root=[&](size_t n) {
+            while (n!=parent[n]) { parent[n]=parent[parent[n]]; n=parent[n]; }
+            return n;
+        };
+        vector<size_t> senders; senders.reserve(remaining);
+        for (size_t i=begin;i<count;i++) {
+            const auto* tx=data.data()+112+i*176;
+            auto sender=index(tx),receiver=index(tx+32); senders.push_back(sender);
+            sender=root(sender); receiver=root(receiver);
+            if (sender!=receiver) {
+                if (weight[sender]<weight[receiver]) swap(sender,receiver);
+                parent[receiver]=sender; weight[sender]+=weight[receiver];
+            }
+        }
+        vector<vector<size_t>> components(parent.size());
+        for (size_t i=0;i<senders.size();i++) components[root(senders[i])].push_back(begin+i);
+        vector<size_t> order;
+        for (size_t i=0;i<components.size();i++) if (!components[i].empty()) order.push_back(i);
+        if (order.size()>1) {
+            stable_sort(order.begin(),order.end(),[&](size_t a,size_t b) { return components[a].size()>components[b].size(); });
+            lanes.resize(min(size_t(requested),order.size()));
+            for (const auto component:order) {
+                auto target=min_element(lanes.begin(),lanes.end(),[](const auto& a,const auto& b) { return a.size()<b.size(); });
+                target->insert(target->end(),components[component].begin(),components[component].end());
+            }
+        }
+    }
+    if (lanes.empty()) {
+        for (size_t i=begin;i<count;i++) {
+            auto tx=span<const uint8_t,176>(data.data()+112+i*176,176);
+            if (undo) (*undo)[i]=DBNativeUndo(changed,tx);
+            if (!ApplyUserTx(users,changed,tx)) return false;
+        }
+        return true;
+    }
+    vector<UserMap> results(lanes.size());
+    atomic<bool> accepted{true}; exception_ptr failure; mutex failureMutex;
+    auto execute=[&](size_t part) {
+        try {
+            auto& result=results[part]; result.reserve(lanes[part].size()*2);
+            for (const auto i:lanes[part]) {
+                if (!accepted.load(memory_order_relaxed)) break;
+                auto tx=span<const uint8_t,176>(data.data()+112+i*176,176);
+                array<uint8_t,32> sender,receiver;
+                memcpy(sender.data(),tx.data(),32); memcpy(receiver.data(),tx.data()+32,32);
+                const bool hadSender=result.contains(sender)||changed.contains(sender);
+                const bool hadReceiver=result.contains(receiver)||changed.contains(receiver);
+                if (!result.contains(sender)) result.emplace(sender,GetUser(users,changed,sender));
+                if (!result.contains(receiver)) result.emplace(receiver,GetUser(users,changed,receiver));
+                if (undo) (*undo)[i]={result.at(sender),result.at(receiver),hadSender,hadReceiver};
+                if (!ApplyUserTx(users,result,tx)) { accepted=false; break; }
+            }
+        } catch (...) { lock_guard lock(failureMutex); failure=current_exception(); accepted=false; }
+    };
+    {
+        vector<jthread> workers; workers.reserve(lanes.size()-1);
+        for (size_t part=1;part<lanes.size();part++) {
+            try { workers.emplace_back(execute,part); }
+            catch (const system_error&) { execute(part); }
+        }
+        execute(0);
+    }
+    if (failure) rethrow_exception(failure);
+    if (!accepted.load()) return false;
+    for (auto& result:results) for (auto& [key,user]:result) changed[key]=user;
+    nativeParallelBlocks++; nativeParallelTransactions+=remaining;
+    return true;
+}
+bool DBApplyBlockUsers(const vector<uint8_t>& data,UserMap& changed,EvmExecution* output=nullptr,
+                       size_t nativeBegin=0,vector<NativeExecutionUndo>* nativeUndo=nullptr) {
     if (data.size()<112) return false;
     if (!DBValidateVdfBlock(data)) return false;
     auto num=ReadU64(data.data()+72);
     EvmPayloads payloads;
     if (!ReadEvmPayloads(data,payloads)) return false;
+    if (nativeBegin>num||(!payloads.empty()&&nativeBegin)) return false;
+    if (nativeUndo) {
+        if (payloads.empty()) nativeUndo->resize(size_t(num));
+        else nativeUndo->clear();
+    }
+    if (payloads.empty()) {
+        changed.reserve(min(size_t(num*2),users.size()+size_t(num)));
+        auto start=GetSteadyTime();
+        const auto valid=DBApplyNativeTransactions(data,nativeBegin,size_t(num),changed,nativeUndo);
+        userCheckNs+=GetSteadyTime()-start;
+        return valid;
+    }
     EvmExecution local;
     thread_local uint64_t knownVersion=UINT64_MAX;
     thread_local decltype(evmone::state::BlockInfo{}.known_block_hashes) knownHashes;
@@ -538,6 +670,10 @@ void DBWriteCurrentBlock(const array<uint8_t,32>& hash) {
     CheckDBStatus(db->Put(rocksdb::WriteOptions(),"CurrentBlock",rocksdb::Slice(reinterpret_cast<const char*>(hash.data()),32)));
 }
 enum class CandidateCheckResult { Invalid,Valid,Superseded };
+bool DBCachedExecutionMatches(const CachedExecution& cached,const array<uint8_t,32>& parent,uint64_t height) {
+    return cached.version==dbStateVersion&&cached.parent==parent&&cached.height==height&&
+        cached.genesis==genesisRoot&&cached.fee==baseFee&&cached.supply==genesisSupply&&cached.burned==userBurned;
+}
 // The caller has already checked the complete block's encoding, signatures and Merkle root.
 // A ranked winner can avoid execution only while its complete successful execution
 // is still cached for this exact parent state. Cache eviction only loses the shortcut.
@@ -554,10 +690,15 @@ CandidateCheckResult DBPrepareBlockUsers(const vector<uint8_t>& data,const vecto
     auto previous=DBReadCurrentBlock();
     if (current==UINT64_MAX||height!=current+1||memcmp(data.data(),previous.data(),32)!=0) return CandidateCheckResult::Invalid;
     if (!DBValidateVdfBlock(data)) return CandidateCheckResult::Invalid;
+    EvmPayloads payloads;
+    if (!ReadEvmPayloads(data,payloads)) return CandidateCheckResult::Invalid;
+    auto result=make_unique<CachedExecution>();
+    size_t prefix=0;
+    auto start=GetSteadyTime();
     {
         lock_guard cacheLock(executionMutex);
         for (const auto& cached:executionCache) {
-            if (cached->version!=dbStateVersion||cached->parent!=previous||cached->height!=height) continue;
+            if (!DBCachedExecutionMatches(*cached,previous,height)) continue;
             if (cached->data==data) {
                 candidateExecutionCacheHits++;
                 if (fullyChecked) *fullyChecked=true;
@@ -569,20 +710,40 @@ CandidateCheckResult DBPrepareBlockUsers(const vector<uint8_t>& data,const vecto
             auto winnerCount=ReadU64(rankedWinner->data()+72),count=ReadU64(data.data()+72);
             bool loses=count<winnerCount||(count==winnerCount&&memcmp(data.data()+80,rankedWinner->data()+80,32)>=0);
             if (loses) for (const auto& cached:executionCache) {
-                if (cached->version==dbStateVersion&&cached->parent==previous&&cached->height==height&&cached->data==*rankedWinner) {
+                if (DBCachedExecutionMatches(*cached,previous,height)&&cached->data==*rankedWinner) {
                     candidateRankSkips++;
                     return CandidateCheckResult::Superseded;
                 }
             }
         }
+        if (executionPrefixReuse&&payloads.empty()) {
+            const CachedExecution* source=nullptr;
+            for (const auto& cached:executionCache) {
+                if (!DBCachedExecutionMatches(*cached,previous,height)||cached->data.size()<112||cached->evm.active) continue;
+                const auto oldCount=size_t(ReadU64(cached->data.data()+72));
+                if (!oldCount||cached->nativeUndo.size()!=oldCount) continue;
+                const auto limit=min(oldCount,size_t(ReadU64(data.data()+72)));
+                size_t common=0;
+                while (common<limit&&!memcmp(data.data()+112+common*176,cached->data.data()+112+common*176,176)) common++;
+                // Copying and rewinding a long divergent suffix costs more than
+                // executing a short prefix. Reuse only the larger shared part.
+                if (common>prefix&&common>=oldCount-common) { prefix=common; source=cached.get(); }
+            }
+            if (source) {
+                result->users=source->users;
+                DBRewindNativeExecution(source->data,source->nativeUndo,prefix,result->users);
+                result->nativeUndo.assign(source->nativeUndo.begin(),source->nativeUndo.begin()+prefix);
+            }
+        }
     }
-    auto result=make_unique<CachedExecution>(); result->data=data; result->parent=previous;
+    result->data=data; result->parent=previous;
     result->version=dbStateVersion; result->height=height;
-    auto start=GetSteadyTime();
+    result->genesis=genesisRoot; result->fee=baseFee; result->supply=genesisSupply; result->burned=userBurned;
     candidateExecutions++;
-    if (!DBApplyBlockUsers(data,result->users,&result->evm)) return CandidateCheckResult::Invalid;
+    if (!DBApplyBlockUsers(data,result->users,&result->evm,prefix,executionPrefixReuse?&result->nativeUndo:nullptr)) return CandidateCheckResult::Invalid;
+    if (prefix) { executionPrefixHits++; executionPrefixTransactions+=prefix; }
     candidateExecuteNs+=GetSteadyTime()-start;
-    result->bytes=data.size()+result->users.size()*96;
+    result->bytes=data.size()+result->users.size()*96+result->nativeUndo.capacity()*sizeof(NativeExecutionUndo);
     for (const auto& [address,account]:result->evm.state.get_accounts()) result->bytes+=256+account.code.size()+account.storage.size()*128;
     for (const auto& [hash,receipt]:result->evm.receipts) result->bytes+=96+receipt.size();
     if (result->bytes<=maxExecutionBytes) {
@@ -618,7 +779,7 @@ bool DBCommitBlockLocked(const array<uint8_t,32>& hash,const vector<uint8_t>& da
     {
         lock_guard cacheLock(executionMutex);
         for (auto it=executionCache.begin();it!=executionCache.end();++it) {
-            if ((*it)->version==dbStateVersion&&(*it)->parent==previousHash&&(*it)->height==height&&(*it)->data==data) {
+            if (DBCachedExecutionMatches(**it,previousHash,height)&&(*it)->data==data) {
                 executionBytes-=(*it)->bytes; cached=std::move(*it); executionCache.erase(it); break;
             }
         }

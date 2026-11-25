@@ -14,6 +14,7 @@ namespace chain::compact {
 using Hash=std::array<uint8_t,32>;
 using Key=std::array<uint8_t,crypto_shorthash_siphash24_KEYBYTES>;
 constexpr size_t kHeaderBytes=112,kNonceBytes=8,kShortIdBytes=6;
+constexpr size_t kMaxPrefilledTransactions=64,kMaxPrefilledBytes=65536;
 inline uint64_t ReadLittle(std::span<const uint8_t> data) {
     uint64_t result=0;
     for (size_t i=0;i<data.size();++i) result|=uint64_t(data[i])<<(i*8);
@@ -75,6 +76,64 @@ inline std::vector<uint8_t> Encode(std::span<const uint8_t> header,std::span<con
         if (contracts[i]>1) throw std::invalid_argument("Invalid compact transaction type");
         result[bitmap+i/8]|=uint8_t(contracts[i]<<(i%8));
         AppendLittle(result,ShortId(key,hashes[i]),kShortIdBytes);
+    }
+    return result;
+}
+struct PrefilledTransaction {
+    uint32_t index=0;
+    std::vector<uint8_t> transaction;
+};
+struct PrefilledDecoded {
+    std::span<const uint8_t> compact;
+    Decoded decoded;
+    std::vector<PrefilledTransaction> transactions;
+};
+// Type 52 encloses the unchanged type 51 payload. Increasing indices give one
+// canonical encoding and let validation reject duplicates before allocation.
+inline bool DecodePrefilled(std::span<const uint8_t> data,size_t maxTransactions,size_t maxExtension,
+        size_t maxTransactionBytes,PrefilledDecoded& result) {
+    if (data.size()<8+kHeaderBytes+kNonceBytes) return false;
+    const auto length=ReadLittle(data.first(4));
+    if (length>data.size()-8) return false;
+    PrefilledDecoded decoded;
+    decoded.compact=data.subspan(4,size_t(length));
+    if (!Decode(decoded.compact,maxTransactions,maxExtension,decoded.decoded)) return false;
+    size_t offset=4+size_t(length);
+    const auto count=ReadLittle(data.subspan(offset,4)); offset+=4;
+    if (count>kMaxPrefilledTransactions||count>decoded.decoded.ids.size()) return false;
+    std::unordered_map<uint64_t,size_t> idCounts;
+    for (const auto id:decoded.decoded.ids) ++idCounts[id];
+    size_t bytes=0; uint64_t previous=0;
+    for (size_t i=0;i<count;++i) {
+        if (data.size()-offset<8) return false;
+        const auto index=ReadLittle(data.subspan(offset,4)),size=ReadLittle(data.subspan(offset+4,4)); offset+=8;
+        if (index>=decoded.decoded.ids.size()||(i&&index<=previous)||size<176||size>maxTransactionBytes||
+                size>data.size()-offset||size>kMaxPrefilledBytes-bytes) return false;
+        if (idCounts[decoded.decoded.ids[index]]!=1) return false;
+        Hash hash{}; std::copy_n(data.begin()+offset+80,32,hash.begin());
+        if (ShortId(decoded.decoded.key,hash)!=decoded.decoded.ids[index]) return false;
+        if (decoded.decoded.contracts[index]?(size<221):size!=176) return false;
+        decoded.transactions.push_back({uint32_t(index),{data.begin()+offset,data.begin()+offset+size}});
+        offset+=size; bytes+=size; previous=index;
+    }
+    if (offset!=data.size()) return false;
+    result=std::move(decoded); return true;
+}
+inline std::vector<uint8_t> EncodePrefilled(std::span<const uint8_t> compact,
+        std::span<const PrefilledTransaction> transactions) {
+    if (compact.size()>UINT32_MAX||transactions.size()>kMaxPrefilledTransactions)
+        throw std::invalid_argument("Too many prefilled transactions");
+    std::vector<uint8_t> result; result.reserve(8+compact.size());
+    AppendLittle(result,compact.size(),4); result.insert(result.end(),compact.begin(),compact.end());
+    AppendLittle(result,transactions.size(),4);
+    size_t bytes=0; uint32_t previous=0;
+    for (size_t i=0;i<transactions.size();++i) {
+        const auto& entry=transactions[i];
+        if ((i&&entry.index<=previous)||entry.transaction.size()>kMaxPrefilledBytes-bytes)
+            throw std::invalid_argument("Invalid prefilled transaction order or bytes");
+        AppendLittle(result,entry.index,4); AppendLittle(result,entry.transaction.size(),4);
+        result.insert(result.end(),entry.transaction.begin(),entry.transaction.end());
+        bytes+=entry.transaction.size(); previous=entry.index;
     }
     return result;
 }

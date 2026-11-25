@@ -58,6 +58,38 @@ class TopologyTests(unittest.TestCase):
             plan = planner.MakePlan(Nodes(count), 'small', injectors=1)
             self.assertTrue(plan['graph']['connected'])
             self.assertEqual(plan['graph']['max_degree'], min(8, count - 1))
+            self.assertTrue(all(not node['backup_neighbors'] and not node['backup_seeds'] for node in plan['nodes']))
+
+    def test_backup_neighbors_are_bounded_reproducible_and_survive_missing_nodes(self):
+        for count in (1000, 1024):
+            plan = planner.MakePlan(Nodes(count), 'backups', 8, seed=42)
+            self.assertEqual(plan, planner.MakePlan(Nodes(count), 'backups', 8, seed=42))
+            self.assertNotEqual([node['backup_neighbors'] for node in plan['nodes']],
+                                [node['backup_neighbors'] for node in planner.MakePlan(Nodes(count), 'backups', 8, seed=43)['nodes']])
+            nodes = {node['id']: node for node in plan['nodes']}
+            inventory = planner.Inventory(plan)['all']['children']['chain']['hosts']
+            missing = {node['id'] for node in plan['nodes'][:count // 10]}
+            replacements = 0
+            for node in plan['nodes']:
+                backups = node['backup_neighbors']
+                self.assertEqual(len(backups), 8)
+                self.assertEqual(len(backups), len(set(backups)))
+                self.assertNotIn(node['id'], backups)
+                self.assertFalse(set(backups) & set(node['neighbors']))
+                self.assertEqual(node['backup_seeds'],
+                                 [planner.Endpoint(nodes[name]['host'], nodes[name]['port']) for name in backups])
+                self.assertEqual(inventory[node['id']]['chain_cluster_backup_peers'], node['backup_seeds'])
+                if node['id'] not in missing and set(node['neighbors']) & missing:
+                    self.assertTrue(set(backups) - missing)
+                    replacements += 1
+            self.assertGreater(replacements, 0)
+            self.assertEqual(plan['graph']['edges'], count * 8 // 2)
+
+    def test_dense_graph_uses_only_available_backup_neighbors(self):
+        plan = planner.MakePlan(Nodes(10), 'dense', degree=8)
+        for node in plan['nodes']:
+            self.assertEqual(len(node['backup_neighbors']), 1)
+            self.assertNotIn(node['backup_neighbors'][0], node['neighbors'])
 
     def test_ipv6_keeps_management_and_peer_addresses(self):
         rows = [{'id': 'a', 'host': '2001:db8::1', 'ansible_host': '192.0.2.1'},
@@ -311,9 +343,20 @@ class BenchmarkTests(unittest.TestCase):
             self.assertEqual(args[args.index('--block-tx-step') + 1], '1000')
             self.assertEqual(args[args.index('--peer-discovery') + 1], '0')
             self.assertEqual(args[args.index('--max-peers') + 1], '12')
+            self.assertEqual(args[args.index('--target-peers') + 1], '8')
             self.assertEqual(args.count('--seed'), len(node['seeds']))
+            self.assertEqual(args.count('--backup-seed'), len(node['backup_seeds']))
+            self.assertEqual([args[index+1] for index, value in enumerate(args) if value == '--backup-seed'], node['backup_seeds'])
             self.assertNotIn('--data', args)
         self.assertEqual(sum(args.count('--seed') for args in arguments.values()), 80)
+
+    def test_node_settings_cannot_replace_backup_topology(self):
+        import cluster_benchmark as benchmark
+        plan = planner.MakePlan(Nodes(2), 'locked', injectors=1)
+        for settings in ({'target-peers': 1000}, {'backup-seed': '192.0.2.1:18089'},
+                         {'seed': '192.0.2.1:18089'}, {1: 5}):
+            with self.subTest(settings=settings), self.assertRaisesRegex(ValueError, 'topology'):
+                benchmark.Arguments(plan, settings)
 
 
 class EntryPointTests(unittest.TestCase):

@@ -77,6 +77,17 @@ def AnsibleErrors(stdout, stderr):
     return [message for pattern, message in patterns if pattern.lower() in text.lower()]
 
 
+def ValidateSettings(settings):
+    if not isinstance(settings, dict):
+        raise ValueError('node_settings must be an object')
+    forbidden = {'data', 'genesis', 'metrics', 'config', 'port', 'bind', 'seed', 'seeds-file',
+                 'peer-discovery', 'max-peers', 'max-connections', 'target-peers', 'backup-seed',
+                 'relay-transactions', 'run-seconds', 'stop-file', 'vdf-key'}
+    if any(not isinstance(key, str) or not re.fullmatch(r'[a-z][a-z0-9-]+', key) or key in forbidden or
+           not isinstance(value, (str, int, float, bool)) for key, value in settings.items()):
+        raise ValueError('Node settings cannot replace lifecycle, topology or identity arguments')
+
+
 def Validate(context):
     for key in ('inventory', 'plan', 'dataset', 'genesis', 'output', 'ansible_dir', 'ansible_playbook'):
         if not isinstance(context.get(key), str) or not Path(context[key]).is_absolute():
@@ -121,30 +132,26 @@ def Validate(context):
     genesis = json.loads(Path(context['genesis']).read_text(encoding='utf-8'))
     if len(genesis.get('accounts', [])) != context['wallets'] or type(genesis.get('base_fee')) is not int:
         raise ValueError('Use a sender --prepare genesis with the declared wallet count')
-    settings = context.get('node_settings', {})
-    if not isinstance(settings, dict):
-        raise ValueError('node_settings must be an object')
-    forbidden = {'data', 'genesis', 'metrics', 'config', 'port', 'bind', 'seed', 'seeds-file',
-                 'peer-discovery', 'max-peers', 'max-connections', 'relay-transactions', 'run-seconds', 'stop-file', 'vdf-key'}
-    if any(not re.fullmatch(r'[a-z][a-z0-9-]+', key) or key in forbidden or
-           not isinstance(value, (str, int, float, bool)) for key, value in settings.items()):
-        raise ValueError('Node settings cannot replace lifecycle, topology or identity arguments')
+    ValidateSettings(context.get('node_settings', {}))
     return plan, genesis
 
 
 def Arguments(plan, settings):
+    ValidateSettings(settings)
     result = {}
     for node in plan['nodes']:
         values = {'io-threads': 1, 'verify-threads': 1, 'candidate-threads': 1,
                   'block-verify-threads': 1, 'query-threads': 1, 'sync': 1, 'produce': 1,
                   'experiment-index': 1, 'block-ms': 50, 'max-block-txs': 6000,
                   'block-tx-step': 2000, **settings, 'port': node['port'], 'bind': node['bind'],
-                  'peer-discovery': 0, 'max-peers': len(node['neighbors']) + 4,
+                  'peer-discovery': 0, 'max-peers': len(node['neighbors']) + 4, 'target-peers': len(node['neighbors']),
                   'max-connections': len(node['neighbors']) + 36, 'relay-transactions': 1}
         arguments = [part for key, value in values.items() for part in
                      ('--' + key, str(int(value) if isinstance(value, bool) else value))]
         for peer in node['seeds']:
             arguments += ['--seed', peer]
+        for peer in node['backup_seeds']:
+            arguments += ['--backup-seed', peer]
         result[node['id']] = arguments
     return result
 

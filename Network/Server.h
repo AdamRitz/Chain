@@ -91,7 +91,7 @@ awaitable<void> ProcessMessage(shared_ptr<Peer> peer,uint8_t type,vector<uint8_t
             offset+=length;
         }
     }
-    bool metadata=type==39||type==41||type==51;
+    bool metadata=type==39||type==41||type==51||type==52;
     if (metadata) num=1;
     bool blockMessage=type!=1&&type!=10&&type!=17&&type!=18&&type!=44;
     auto& byteCounter=blockMessage?pendingBlockBytes:pendingTxBytes;
@@ -150,29 +150,37 @@ awaitable<void> ProcessMessage(shared_ptr<Peer> peer,uint8_t type,vector<uint8_t
             if (type==1||type==10||type==44) {
                 vector<uint8_t> results;
                 const bool relay=!produceBlocks||relayTransactions;
-                auto added=ProcessTxPackage(data,(type==44||relay)?&results:nullptr);
+                auto added=ProcessTxPackage(data,&results);
+                RecordVerifiedNativeTransactions(peer,data,results);
                 if (relay&&added) {
                     vector<uint8_t> accepted; accepted.reserve(added*176);
                     for (size_t i=0;i<results.size();i++) if (results[i]==TxAccepted)
                         accepted.insert(accepted.end(),data.begin()+i*176,data.begin()+(i+1)*176);
                     relayedTransactions+=added;
-                    BroadcastData(GenerateMessage(10,accepted),PeerId(peer));
+                    RelayAcceptedTransactions(peer,accepted,false);
                 }
                 if (relay) skippedRelayTransactions+=data.size()/176-added;
                 if (type==44) SendAdmission(peer,admissionOrder,std::move(results));
             } else if (type==17) {
-                if (ProcessEvmTx(data)&&(!produceBlocks||relayTransactions)) BroadcastData(GenerateMessage(17,data),PeerId(peer));
+                if (ProcessEvmTx(data)) {
+                    RecordVerifiedEvmTransaction(peer,data);
+                    if (!produceBlocks||relayTransactions) RelayAcceptedTransactions(peer,data,true);
+                } else ObserveKnownEvmTransaction(peer,data);
             } else if (type==18) {
                 size_t offset=0;
                 while (data.size()-offset>=4) {
                     auto size=ReadU32(data.data()+offset); offset+=4;
                     if (size<221||size>176+45+maxEvmInput||size>data.size()-offset) break;
                     auto tx=span<const uint8_t>(data).subspan(offset,size);
-                    if (ProcessEvmTx(tx)&&(!produceBlocks||relayTransactions)) BroadcastData(GenerateMessage(17,tx),PeerId(peer));
+                    if (ProcessEvmTx(tx)) {
+                        RecordVerifiedEvmTransaction(peer,tx);
+                        if (!produceBlocks||relayTransactions) RelayAcceptedTransactions(peer,tx,true);
+                    } else ObserveKnownEvmTransaction(peer,tx);
                     offset+=size;
                 }
             } else if (type==39) ReceiveCompactBlock(peer,data);
             else if (type==51) ReceiveShortCompactBlock(peer,data);
+            else if (type==52) ReceivePrefilledCompactBlock(peer,data);
             else if (type==41) ReceiveMissingTransactions(peer,data);
             else {
                 if (type!=43) blocks.push_back(std::move(data));
@@ -190,7 +198,7 @@ awaitable<void> ProcessMessage(shared_ptr<Peer> peer,uint8_t type,vector<uint8_t
                                 accepted=QueueForkBlock(std::move(parsed),std::move(block),false); queuedBatch|=accepted;
                             }
                         }
-                    } else accepted=ProcessBlock(std::move(block),&relayReady,&invalidEncoding);
+                    } else accepted=ProcessBlock(std::move(block),&relayReady,&invalidEncoding,PeerId(peer));
                     CompleteBlockReceive(hash,accepted||KnowsForkBlock(hash),invalidEncoding);
                     if (peer->port&&(accepted||KnowsForkBlock(hash))) {
                         RememberBlockSource(hash,PeerId(peer));
@@ -360,10 +368,23 @@ awaitable<void> session(uint64_t key,shared_ptr<Peer> peer) {
         vector<uint8_t> data(size);
         if (size&&!co_await ReadData(peer,buffer(data))) co_return;
         networkBytes+=size+5;
+        if (peer->fragmentReceiver.Expired(GetSteadyTime())) { ClosePeer(peer);co_return; }
+        if (type==55) {
+            if (!fragmentMessages||!peer->port||!peer->relayCapabilitiesSent) { ClosePeer(peer);co_return; }
+            vector<uint8_t> complete;
+            auto result=peer->fragmentReceiver.Accept(data,GetSteadyTime(),type,complete,VerifyMessageSize);
+            if (result==chain::fragment::Result::Invalid) { ClosePeer(peer);co_return; }
+            if (result==chain::fragment::Result::Pending) continue;
+            data=std::move(complete);
+        }
         if (type==1||type==10||type==44||type==2||type==7||type==17||type==18||type==22) {
             co_await ProcessMessage(peer,type,std::move(data));
-        } else if ((type==39||type==51)&&peer->port) {
+        } else if ((type==39||type==51||type==52)&&peer->port) {
             co_await ProcessMessage(peer,type,std::move(data));
+        } else if (type==53&&peer->port&&txInventory) {
+            if (!ReceiveTxInventory(peer,data)) { ClosePeer(peer);co_return; }
+        } else if (type==54&&peer->port&&txInventory) {
+            if (!ServeTxRequests(peer,data)) { ClosePeer(peer);co_return; }
         } else if (type==40&&peer->port) {
             co_await SendBlockReply(peer,type,std::move(data));
         } else if (type==41&&peer->port) {
@@ -403,6 +424,12 @@ awaitable<void> session(uint64_t key,shared_ptr<Peer> peer) {
                 auto version=capabilities.find("relay_protocol");
                 if (version!=capabilities.end()&&version->is_number_unsigned())
                     peer->shortCompact=shortIds&&version->get<uint64_t>()>=2;
+                auto enabled=[&](const char* name) {auto item=capabilities.find(name);return item!=capabilities.end()&&item->is_boolean()&&item->get<bool>();};
+                peer->prefillCompact=peer->shortCompact&&compactPrefill&&enabled("compact_prefill");
+                peer->txInventory=txInventory&&enabled("tx_inventory");
+                peer->fragments=fragmentMessages&&enabled("message_fragments");
+                auto instance=capabilities.find("relay_instance");
+                if (instance!=capabilities.end()&&instance->is_string()) DeduplicatePeer(peer,instance->get<string>());
             }
         } else if (type==4) {
             SendData(peer,GenerateHeightMessage(5));

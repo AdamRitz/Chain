@@ -51,6 +51,9 @@ bool VerifyMessageSize(uint8_t type,uint32_t size) {
         case 49:return size==chain::vdf_election::kEncodedBytes;
         case 50:return size==0;
         case 51:return size>=120&&size<=120+(maxProtocolTx+7)/8+maxProtocolTx*6+2408;
+        case 52:return size>=128&&size<=8+120+(maxProtocolTx+7)/8+maxProtocolTx*6+2408+64*8+65536;
+        case 53:case 54:return size>0&&size%33==0&&size<=1024*33;
+        case 55:return size>17&&size<=17+65536;
         case 45:return size>0&&size<=maxProtocolTx;
         default:return false;
     }

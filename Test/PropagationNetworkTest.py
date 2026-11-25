@@ -104,10 +104,11 @@ def CompactReplication(binary, work, short_ids):
     dataset, txs, config = Prepare(binary, work)
     nodes = []
     try:
-        source = StartNode(binary, work, 'source', **Settings(config))
+        source = StartNode(binary, work, 'source', **Settings(config, **{'compact-prefill': 0}))
         nodes.append(source)
         target = StartNode(binary, work, 'target', **Settings(config, **{
-            'seed': f"127.0.0.1:{source['port']}", 'short-ids': short_ids}))
+            'seed': f"127.0.0.1:{source['port']}", 'short-ids': short_ids,
+            'compact-prefill': 0}))
         nodes.append(target)
         WaitStats(source['port'], lambda s: s['peers'] >= 1)
         if short_ids:

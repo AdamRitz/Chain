@@ -68,6 +68,20 @@ int main(int argc,char* argv[]) {
             if (node["tx_relay_peers"]) txRelayPeers=ParseNumber(node["tx_relay_peers"].as<string>(),0,1024);
             if (node["short_ids"]) shortIds=node["short_ids"].as<bool>();
             if (node["early_block_relay"]) earlyBlockRelay=node["early_block_relay"].as<bool>();
+            if (node["pre_execution_relay"]) preExecutionRelay=node["pre_execution_relay"].as<bool>();
+            if (node["message_fragments"]) fragmentMessages=node["message_fragments"].as<bool>();
+            if (node["tx_inventory"]) txInventory=node["tx_inventory"].as<bool>();
+            if (node["tx_push_peers"]) txPushPeers=ParseNumber(node["tx_push_peers"].as<string>(),0,1024);
+            if (node["compact_prefill"]) compactPrefill=node["compact_prefill"].as<bool>();
+            if (node["compact_prefill_max"]) compactPrefillMax=ParseNumber(node["compact_prefill_max"].as<string>(),0,64);
+            if (node["compact_prefill_bytes"]) compactPrefillBytes=ParseNumber(node["compact_prefill_bytes"].as<string>(),0,65536);
+            if (node["execution_prefix_reuse"]) executionPrefixReuse=node["execution_prefix_reuse"].as<bool>();
+            if (node["native_execution_threads"]) nativeExecutionThreads=unsigned(ParseNumber(node["native_execution_threads"].as<string>(),1,16));
+            if (node["target_peers"]) targetPeers=ParseNumber(node["target_peers"].as<string>(),0,1024);
+            if (node["backup_peers"]) {
+                if (!node["backup_peers"].IsSequence()) throw invalid_argument("backup_peers must be a sequence");
+                for (const auto& peer:node["backup_peers"]) backupPeers.push_back(ParseEndpoint(peer.as<string>()));
+            }
             if (node["compact_repair_ms"]) compactRepairMs=ParseNumber(node["compact_repair_ms"].as<string>(),20,10000);
             if (node["peers"]) for (const auto& peer:node["peers"]) AddConfiguredPeer(peer.as<string>());
         }
@@ -117,6 +131,17 @@ int main(int argc,char* argv[]) {
             else if (name=="--tx-relay-peers") txRelayPeers=ParseNumber(value,0,1024);
             else if (name=="--short-ids") shortIds=ParseNumber(value,0,1)!=0;
             else if (name=="--early-block-relay") earlyBlockRelay=ParseNumber(value,0,1)!=0;
+            else if (name=="--pre-execution-relay") preExecutionRelay=ParseNumber(value,0,1)!=0;
+            else if (name=="--message-fragments") fragmentMessages=ParseNumber(value,0,1)!=0;
+            else if (name=="--tx-inventory") txInventory=ParseNumber(value,0,1)!=0;
+            else if (name=="--tx-push-peers") txPushPeers=ParseNumber(value,0,1024);
+            else if (name=="--compact-prefill") compactPrefill=ParseNumber(value,0,1)!=0;
+            else if (name=="--compact-prefill-max") compactPrefillMax=ParseNumber(value,0,64);
+            else if (name=="--compact-prefill-bytes") compactPrefillBytes=ParseNumber(value,0,65536);
+            else if (name=="--execution-prefix-reuse") executionPrefixReuse=ParseNumber(value,0,1)!=0;
+            else if (name=="--native-execution-threads") nativeExecutionThreads=unsigned(ParseNumber(value,1,16));
+            else if (name=="--target-peers") targetPeers=ParseNumber(value,0,1024);
+            else if (name=="--backup-seed") backupPeers.push_back(ParseEndpoint(value));
             else if (name=="--compact-repair-ms") compactRepairMs=ParseNumber(value,20,10000);
             else if (name=="--experiment-index") experimentIndex=ParseNumber(value,0,1)!=0;
             else if (name=="--clock-observe") observeClock=ParseNumber(value,0,1)!=0;
@@ -130,6 +155,7 @@ int main(int argc,char* argv[]) {
             else throw invalid_argument("Unknown argument: "+name);
         }
         if (ioNum<1||ioNum>64||verifyNum<1||verifyNum>64||blockInterval<1||blockInterval>5000||listenPort==0) throw invalid_argument("Invalid node configuration");
+        if (targetPeers>maxPeers||backupPeers.size()>1024) throw invalid_argument("Invalid backup peer configuration");
         if (!candidateNum) candidateNum=min(4,verifyNum);
         if (!blockVerifyCount) blockVerifyCount=min(4,verifyNum);
         if (candidateNum<1||candidateNum>64||blockVerifyCount<1||blockVerifyCount>64||queryNum<1||queryNum>4) throw invalid_argument("Invalid worker configuration");
@@ -147,6 +173,8 @@ int main(int argc,char* argv[]) {
         io_context io;
         nodeIO=&io;
         InitializeVdfRuntime(dataPath,vdfKeyPath);
+        compactPeerKnowsTransaction=TxPeerKnowsTransaction;
+        relayBeforeExecution=RelayBeforeExecution;
         verifyThreads=make_unique<thread_pool>(verifyNum);
         candidateThreads=make_unique<thread_pool>(candidateNum);
         queryThreads=make_unique<thread_pool>(queryNum);
@@ -181,6 +209,7 @@ int main(int argc,char* argv[]) {
         if (!listenAddressV6.empty()) co_spawn(io,Listen(listenPort,listenAddressV6),onError);
         co_spawn(make_strand(io),OpenDiscoveryMode(),onError);
         co_spawn(make_strand(io),MaintainCompactBlocks(),onError);
+        co_spawn(make_strand(io),MaintainTransactionRelay(),onError);
         if (observeClock) co_spawn(make_strand(io),SynchronizeClock(),onError);
         spdlog::info("Node ready. IO:{}, Verify:{}, BlockMs:{}, BlockTxStep:{}, Produce:{}",ioNum,verifyNum,blockInterval,blockTxStep,produceBlocks);
         thread blockThread(MainLoop);

@@ -1,8 +1,21 @@
 #include <filesystem>
 #include <iostream>
 #include "../Network/Server.h"
+#include "../EVM/BuildTransaction.h"
 using namespace std;
 void Require(bool condition,const char* message) { if (!condition) throw runtime_error(message); }
+unordered_set<array<uint8_t,32>,GetMapHash> prefillTestKnown;
+bool PrefillTestPeerKnows(const shared_ptr<Peer>&,const array<uint8_t,32>& hash) { return prefillTestKnown.count(hash)!=0; }
+vector<chain::compact::PrefilledTransaction> PrefillEntries(const vector<uint8_t>& block,initializer_list<uint32_t> positions) {
+    EvmPayloads payloads; Require(ReadEvmPayloads(block,payloads),"source prefill payload parsed");
+    vector<chain::compact::PrefilledTransaction> entries;
+    for (const auto index:positions) {
+        vector<uint8_t> tx(block.begin()+112+size_t(index)*176,block.begin()+112+size_t(index+1)*176);
+        if (auto input=payloads.find(index);input!=payloads.end()) tx.insert(tx.end(),input->second.begin(),input->second.end());
+        entries.push_back({index,std::move(tx)});
+    }
+    return entries;
+}
 
 vector<uint8_t> RepairResponse(const array<uint8_t,32>& hash,const vector<uint8_t>& block,initializer_list<uint32_t> positions) {
     vector<uint8_t> result(hash.begin(),hash.end());
@@ -80,6 +93,151 @@ int main(int argc,char** argv) {
         boost::asio::io_context io;
         auto first=make_shared<Peer>(tcp::socket(io)),second=make_shared<Peer>(tcp::socket(io)),unknown=make_shared<Peer>(tcp::socket(io));
         for (auto peer:{first,second,unknown}) { peer->key=NewPeerKey(); peer->port=uint16_t(5000+peer->key); peer->compact=true; }
+        {
+            lock_guard lock(peerMutex);
+            Require(peerPool.empty()&&addressAttempts.empty(),"peer count fixture starts empty");
+            struct RestorePeerCount {
+                shared_ptr<Peer> first,second,unknown; uint16_t secondPort;
+                ~RestorePeerCount() {
+                    peerPool.clear(); addressAttempts.clear(); second->port=secondPort;
+                    first->closePosted=false; second->closePosted=false; unknown->closePosted=false;
+                }
+            } restore{first,second,unknown,second->port};
+            second->port=first->port;
+            for (const auto& peer:{first,second,unknown}) peerPool.emplace(peer->key,peer);
+            Require(ConnectedPeerCountLocked()==2,"two connections to one endpoint count as one neighbor");
+            unknown->closePosted=true;
+            Require(ConnectedPeerCountLocked()==1,"closed endpoint is excluded from neighbor count");
+            first->closePosted=true;
+            Require(ConnectedPeerCountLocked()==1,"remaining open duplicate still counts as one neighbor");
+            second->closePosted=true;
+            Require(ConnectedPeerCountLocked()==0,"all closed connections count as no neighbors");
+            first->closePosted=false; second->closePosted=false; unknown->closePosted=false;
+            addressAttempts.emplace(first->address.to_string(),first->port);
+            addressAttempts.emplace(unknown->address.to_string(),unknown->port);
+            Require(ConnectedPeerCountLocked(true)==2,"connection attempts overlapping connected endpoints are deduplicated");
+            addressAttempts.emplace("127.0.0.2",first->port);
+            Require(ConnectedPeerCountLocked(true)==3&&ConnectedPeerCountLocked()==2,
+                "independent endpoint attempt adds one only when attempts are requested");
+        }
+        Require(peerPool.empty()&&addressAttempts.empty()&&first->port!=second->port,
+            "peer count fixture restores connection and attempt state");
+        auto allEntries=PrefillEntries(full,{0,1,2});
+        auto prefilled=chain::compact::EncodePrefilled(compact,allEntries);
+        chain::compact::PrefilledDecoded prefilledDecoded;
+        Require(chain::compact::DecodePrefilled(prefilled,maxProtocolTx,2408,221+maxEvmInput,prefilledDecoded)&&
+            prefilledDecoded.transactions.size()==3,"prefilled native frame decodes in order");
+        for (size_t length=0;length<prefilled.size();++length)
+            Require(!chain::compact::DecodePrefilled(span<const uint8_t>(prefilled).first(length),maxProtocolTx,2408,
+                221+maxEvmInput,prefilledDecoded),"truncated prefilled frame rejected");
+        compactPrefill=false;
+        ReceivePrefilledCompactBlock(first,prefilled);
+        Require(!compactBlocks.count(blockHash),"locally disabled prefill is not accepted");
+        compactPrefill=true; shortIds=false;
+        ReceivePrefilledCompactBlock(first,prefilled);
+        Require(!compactBlocks.count(blockHash),"locally disabled short IDs also disable prefill");
+        shortIds=true;
+        const auto firstPort=first->port; first->port=0;
+        ReceivePrefilledCompactBlock(first,prefilled);
+        Require(!compactBlocks.count(blockHash),"query-only connection cannot provide a prefilled compact block");
+        first->port=firstPort; first->closePosted=true;
+        ReceivePrefilledCompactBlock(first,prefilled);
+        Require(!compactBlocks.count(blockHash),"closed connection cannot provide a prefilled compact block");
+        first->closePosted=false;
+        Require(!first->shortCompact&&!first->prefillCompact,"remote capability reply has not arrived");
+        ReceivePrefilledCompactBlock(first,prefilled);
+        Require(compactBlocks.count(blockHash)&&compactBlocks.at(blockHash)->missing==0&&
+            compactBlocks.at(blockHash)->awaitingVerification&&CompactRootMatches(*compactBlocks.at(blockHash)),
+            "first prefilled block is accepted before the remote capability reply arrives");
+        Require(!first->shortCompact&&!first->prefillCompact,"receiving prefill does not enable sending before remote negotiation");
+        CompleteBlockReceive(blockHash);
+        first->prefillCompact=true; second->prefillCompact=true;
+        auto malformedPrefill=prefilled;
+        auto recordOffset=8+compact.size();
+        WriteU32(malformedPrefill.data()+recordOffset+184,0);
+        Require(!chain::compact::DecodePrefilled(malformedPrefill,maxProtocolTx,2408,221+maxEvmInput,prefilledDecoded),
+            "duplicate prefilled index rejected");
+        malformedPrefill=prefilled;
+        swap_ranges(malformedPrefill.begin()+recordOffset,malformedPrefill.begin()+recordOffset+184,
+            malformedPrefill.begin()+recordOffset+184);
+        Require(!chain::compact::DecodePrefilled(malformedPrefill,maxProtocolTx,2408,221+maxEvmInput,prefilledDecoded),
+            "out-of-order prefilled records rejected");
+        malformedPrefill=prefilled; WriteU32(malformedPrefill.data()+4+compact.size(),65);
+        Require(!chain::compact::DecodePrefilled(malformedPrefill,maxProtocolTx,2408,221+maxEvmInput,prefilledDecoded),
+            "prefilled count bounded before allocating entries");
+        malformedPrefill=prefilled; WriteU32(malformedPrefill.data()+recordOffset,3);
+        ReceivePrefilledCompactBlock(first,malformedPrefill);
+        Require(compactBlocks.empty()&&compactBuilding.empty(),"out-of-range prefill does not reserve pending state");
+        malformedPrefill=prefilled; malformedPrefill[recordOffset+8+80]^=1;
+        ReceivePrefilledCompactBlock(first,malformedPrefill);
+        Require(compactBlocks.empty(),"prefilled hash must match advertised short ID");
+        malformedPrefill=prefilled; malformedPrefill[recordOffset+8]^=1;
+        ReceivePrefilledCompactBlock(first,malformedPrefill);
+        Require(compactBlocks.empty(),"prefilled native content hash is verified");
+        malformedPrefill=prefilled; malformedPrefill[recordOffset+8+112]^=1;
+        ReceivePrefilledCompactBlock(first,malformedPrefill);
+        Require(compactBlocks.empty(),"prefilled native signature is verified");
+        malformedPrefill=prefilled; malformedPrefill.push_back(0);
+        ReceivePrefilledCompactBlock(first,malformedPrefill);
+        Require(compactBlocks.empty(),"malformed prefill tail does not cache valid prefix");
+        auto repeatedCompact=compact;
+        copy_n(repeatedCompact.begin()+121,6,repeatedCompact.begin()+127);
+        auto repeatedPrefill=chain::compact::EncodePrefilled(repeatedCompact,allEntries);
+        Require(!chain::compact::DecodePrefilled(repeatedPrefill,maxProtocolTx,2408,221+maxEvmInput,prefilledDecoded),
+            "prefilled index with repeated short ID rejected");
+        auto partialPrefill=chain::compact::EncodePrefilled(compact,PrefillEntries(full,{0,2}));
+        ReceivePrefilledCompactBlock(first,partialPrefill);
+        Require(compactBlocks.at(blockHash)->missing==1&&compactBlocks.at(blockHash)->transactions[1].empty()&&
+            compactBlocks.at(blockHash)->transactions[0]==allEntries[0].transaction,"prefill requests only missing positions");
+        auto prefillPending=compactBlocks.at(blockHash); auto prefillBytes=compactBytes;
+        ReceivePrefilledCompactBlock(second,malformedPrefill);
+        Require(compactBlocks.at(blockHash)==prefillPending&&prefillPending->sources.size()==1&&compactBytes==prefillBytes,
+            "malformed prefill leaves existing pending block and sources unchanged");
+        CompleteBlockReceive(blockHash);
+        ReceivePrefilledCompactBlock(first,prefilled);
+        Require(compactBlocks.at(blockHash)->missing==0&&compactBlocks.at(blockHash)->awaitingVerification&&
+            CompactRootMatches(*compactBlocks.at(blockHash)),"complete prefill reconstructs committed Merkle root");
+        CompleteBlockReceive(blockHash);
+        auto wrongRoot=full; wrongRoot[32]^=1; crypto_generichash(wrongRoot.data()+80,32,wrongRoot.data(),80,nullptr,0);
+        auto wrongRootCompact=chain::compact::Encode(span<const uint8_t>(wrongRoot).first(112),hashes,contracts,42);
+        ReceivePrefilledCompactBlock(first,chain::compact::EncodePrefilled(wrongRootCompact,allEntries));
+        Require(compactBlocks.empty()&&relayBlocks.empty(),"complete prefill with wrong Merkle root never caches block");
+        compactPeerKnowsTransaction=PrefillTestPeerKnows; prefillTestKnown.insert(hashes[2]);
+        auto oldPrefillMax=compactPrefillMax,oldPrefillBytes=compactPrefillBytes;
+        compactPrefillMax=1; compactPrefillBytes=176;
+        Require(chain::compact::Decode(compact,maxProtocolTx,2408,decoded),"selection compact parsed");
+        auto selected=SelectCompactPrefilled(first,full,EvmPayloads{},hashes,decoded);
+        Require(selected.size()==1&&selected[0].index==1,"prefill prioritizes later unknown transaction and skips known hash");
+        compactPrefillBytes=175;
+        Require(SelectCompactPrefilled(first,full,EvmPayloads{},hashes,decoded).empty(),"prefill byte limit includes transaction bytes");
+        compactPrefillMax=oldPrefillMax; compactPrefillBytes=oldPrefillBytes;
+        compactPeerKnowsTransaction=nullptr; prefillTestKnown.clear();
+
+        auto evmTx=MakeEvmTx(wallet,{},vector<uint8_t>{0},1,0,100000,true);
+        Block evmBlock; evmBlock.height=2; evmBlock.previousHash=block.previousHash;
+        array<uint8_t,176> evmEnvelope; memcpy(evmEnvelope.data(),evmTx.data(),176);
+        evmBlock.txs.push_back(evmEnvelope); evmBlock.evm[0]={evmTx.begin()+176,evmTx.end()};
+        vector<array<uint8_t,32>> evmHashes{GetTransactionHash(evmEnvelope)};
+        evmBlock.merkleRoot=MerkleCompute(evmHashes); auto evmFull=SerializeBlockALL(evmBlock);
+        auto evmCompact=chain::compact::Encode(span<const uint8_t>(evmFull).first(112),evmHashes,vector<uint8_t>{1},43);
+        auto evmPrefill=chain::compact::EncodePrefilled(evmCompact,PrefillEntries(evmFull,{0}));
+        auto badEvmPrefill=evmPrefill; badEvmPrefill.back()^=1;
+        ReceivePrefilledCompactBlock(first,badEvmPrefill);
+        Require(compactBlocks.empty(),"prefilled EVM payload hash is verified");
+        ReceivePrefilledCompactBlock(first,evmPrefill);
+        Require(compactBlocks.count(evmBlock.hash)&&compactBlocks.at(evmBlock.hash)->missing==0&&
+            compactBlocks.at(evmBlock.hash)->encodedBytes==evmFull.size(),"prefilled EVM payload preserved and encoded size exact");
+        CompleteBlockReceive(evmBlock.hash);
+
+        { lock_guard lock(txpoolMutex); txpool.emplace(hashes[0],block.txs[0]); }
+        ResetCompactHashSnapshot();
+        auto snapshot=ReadCompactHashSnapshot(); auto reusedSnapshot=ReadCompactHashSnapshot();
+        Require(snapshot==reusedSnapshot&&snapshot->hashes.size()==1&&snapshot->hashes[0]==hashes[0],
+            "concurrent compact candidates reuse one transaction hash snapshot");
+        { lock_guard lock(txpoolMutex); txpool.clear(); }
+        ReceiveShortCompactBlock(first,compact);
+        Require(compactBlocks.at(blockHash)->missing==3,"removed snapshot transaction is fetched by index");
+        CompleteBlockReceive(blockHash); snapshot.reset(); reusedSnapshot.reset(); ResetCompactHashSnapshot();
         ReceiveShortCompactBlock(first,compact);
         Require(compactBlocks.count(blockHash)&&compactBlocks.at(blockHash)->missing==3,"unknown transactions requested by index");
         auto pending=compactBlocks.at(blockHash);
@@ -216,6 +374,7 @@ int main(int argc,char** argv) {
         peerPool.clear();
         auto historical=ReadBlockReplies(21,vector<uint8_t>(block.previousHash.begin(),block.previousHash.end()));
         Require(historical.size()==1&&historical[0][0]==22&&!memcmp(historical[0].data()+5+80,block.previousHash.data(),32),"historical hash request reads database after relay cache cleared");
+        ResetCompactHashSnapshot();
         Require(compactScanBytes==0,"pool snapshot reservations released");
         Require(compactBuilding.empty(),"compact construction reservations released");
 

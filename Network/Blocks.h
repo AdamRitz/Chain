@@ -34,8 +34,13 @@ atomic<uint64_t> compactAnnouncements{0},compactReconstructed{0},missingTransact
 atomic<uint64_t> syncRequests{0},syncRetries{0},syncBlocks{0};
 atomic<uint64_t> recentTransactionHits{0};
 atomic<uint64_t> compactShortAnnouncements{0},compactRepairRetries{0},compactFullFallbacks{0},compactRootFailures{0};
+bool compactPrefill=true;
+size_t compactPrefillMax=20,compactPrefillBytes=16384;
+bool (*compactPeerKnowsTransaction)(const shared_ptr<Peer>&,const array<uint8_t,32>&)=nullptr;
+atomic<uint64_t> compactPrefilledAnnouncements{0},compactPrefilledTransactions{0},compactPrefilledReceived{0};
 unsigned compactRepairMs=200;
 atomic<size_t> compactScanBytes{0};
+atomic<uint64_t> compactScanSnapshots{0},compactScanSnapshotHits{0};
 constexpr size_t maxCompactScanBytes=16*1024*1024,maxCompactScanTransactions=262144;
 struct CompactScanReservation {
     size_t bytes=0;
@@ -48,6 +53,39 @@ struct CompactScanReservation {
     }
     ~CompactScanReservation() { compactScanBytes.fetch_sub(bytes); }
 };
+struct CompactHashSnapshot {
+    CompactScanReservation reservation;
+    vector<array<uint8_t,32>> hashes;
+    uint64_t created=0;
+};
+mutex compactSnapshotMutex;
+shared_ptr<const CompactHashSnapshot> compactHashSnapshot;
+shared_ptr<const CompactHashSnapshot> ReadCompactHashSnapshot() {
+    // Competing candidates usually inspect the same pool. Share the copied
+    // hashes for 20 ms, but derive every block's SipHash IDs independently.
+    unique_lock snapshotLock(compactSnapshotMutex);
+    auto now=GetSteadyTime();
+    if (compactHashSnapshot&&now>=compactHashSnapshot->created&&now-compactHashSnapshot->created<20000000ULL) {
+        compactScanSnapshotHits++; return compactHashSnapshot;
+    }
+    size_t count=0;
+    { lock_guard lock(txpoolMutex); count=min(maxCompactScanTransactions,txpool.size()); }
+    { lock_guard lock(relayMutex); count+=min(maxCompactScanTransactions-count,recentBlockTransactions.size()); }
+    auto snapshot=make_shared<CompactHashSnapshot>();
+    if (!snapshot->reservation.Reserve(count*sizeof(array<uint8_t,32>))) return {};
+    snapshot->hashes.reserve(count);
+    { lock_guard lock(txpoolMutex); for (const auto& [hash,tx]:txpool) {
+        if (snapshot->hashes.size()==count) break;
+        snapshot->hashes.push_back(hash);
+    } }
+    { lock_guard lock(relayMutex); for (const auto& [hash,tx]:recentBlockTransactions) {
+        if (snapshot->hashes.size()==count) break;
+        snapshot->hashes.push_back(hash);
+    } }
+    snapshot->created=GetSteadyTime(); compactScanSnapshots++;
+    compactHashSnapshot=snapshot; return snapshot;
+}
+void ResetCompactHashSnapshot() { lock_guard lock(compactSnapshotMutex); compactHashSnapshot.reset(); }
 struct CompactBuildReservation {
     array<uint8_t,32> hash{};
     bool active=false;
@@ -173,6 +211,30 @@ shared_ptr<const vector<uint8_t>> ReadRelayBlock(const array<uint8_t,32>& hash) 
     }
     return data.empty()?nullptr:make_shared<const vector<uint8_t>>(std::move(data));
 }
+vector<chain::compact::PrefilledTransaction> SelectCompactPrefilled(const shared_ptr<Peer>& peer,
+        const vector<uint8_t>& block,const EvmPayloads& payloads,const vector<array<uint8_t,32>>& hashes,
+        const chain::compact::Decoded& compact) {
+    vector<chain::compact::PrefilledTransaction> result;
+    if (!compactPeerKnowsTransaction) return result;
+    const auto limit=min(compactPrefillMax,chain::compact::kMaxPrefilledTransactions);
+    const auto byteLimit=min(compactPrefillBytes,chain::compact::kMaxPrefilledBytes);
+    unordered_map<uint64_t,size_t> idCounts;
+    for (const auto id:compact.ids) ++idCounts[id];
+    size_t bytes=0;
+    // Later transactions in each sender's nonce sequence are the most likely
+    // to have arrived recently. Skip every hash already reported by this peer.
+    for (size_t i=hashes.size();i>0&&result.size()<limit;--i) {
+        const auto position=i-1;
+        if (idCounts[compact.ids[position]]!=1||compactPeerKnowsTransaction(peer,hashes[position])) continue;
+        const auto payload=payloads.find(position);
+        const auto size=176+(payload==payloads.end()?size_t(0):payload->second.size());
+        if (size>byteLimit-bytes) continue;
+        vector<uint8_t> tx(block.begin()+112+position*176,block.begin()+112+(position+1)*176);
+        if (payload!=payloads.end()) tx.insert(tx.end(),payload->second.begin(),payload->second.end());
+        result.push_back({uint32_t(position),std::move(tx)}); bytes+=size;
+    }
+    reverse(result.begin(),result.end()); return result;
+}
 void AnnounceBlock(const vector<uint8_t>& data) {
     if (data.size()<112) return;
     vector<shared_ptr<Peer>> peers;
@@ -224,6 +286,9 @@ void AnnounceBlock(const vector<uint8_t>& data) {
     }
     auto summary=make_shared<const vector<uint8_t>>(GenerateMessage(39,compact));
     shared_ptr<const vector<uint8_t>> full,shortSummary;
+    vector<uint8_t> shortPayload;
+    vector<array<uint8_t,32>> shortHashes;
+    chain::compact::Decoded shortDecoded;
     peers=SelectBroadcastPeers(source,hash,blockRelayPeers);
     unordered_set<uint64_t> sent;
     for (const auto& peer:peers) {
@@ -231,14 +296,23 @@ void AnnounceBlock(const vector<uint8_t>& data) {
         if (!sent.insert(PeerId(peer)).second) { relaySuppressed++; continue; }
         if (shortIds&&peer->shortCompact.load()) {
             if (!shortSummary) {
-                vector<array<uint8_t,32>> hashes(num); vector<uint8_t> contracts(num);
+                shortHashes.resize(num); vector<uint8_t> contracts(num);
                 for (size_t i=0;i<num;++i) {
-                    memcpy(hashes[i].data(),data.data()+112+i*176+80,32); contracts[i]=payloads.count(i)?1:0;
+                    memcpy(shortHashes[i].data(),data.data()+112+i*176+80,32); contracts[i]=payloads.count(i)?1:0;
                 }
                 uint64_t nonce=0; randombytes_buf(&nonce,sizeof(nonce));
-                auto encoded=chain::compact::Encode(span<const uint8_t>(data).first(112),hashes,contracts,nonce);
-                encoded.insert(encoded.end(),compact.begin()+112+num*33,compact.end());
-                shortSummary=make_shared<const vector<uint8_t>>(GenerateMessage(51,encoded)); compactShortAnnouncements++;
+                shortPayload=chain::compact::Encode(span<const uint8_t>(data).first(112),shortHashes,contracts,nonce);
+                shortPayload.insert(shortPayload.end(),compact.begin()+112+num*33,compact.end());
+                chain::compact::Decode(shortPayload,maxProtocolTx,chain::vdf_consensus::kMaxEncodedBytes,shortDecoded);
+                shortSummary=make_shared<const vector<uint8_t>>(GenerateMessage(51,shortPayload)); compactShortAnnouncements++;
+            }
+            if (compactPrefill&&peer->prefillCompact.load()) {
+                auto entries=SelectCompactPrefilled(peer,data,payloads,shortHashes,shortDecoded);
+                if (!entries.empty()) {
+                    auto message=make_shared<const vector<uint8_t>>(GenerateMessage(52,chain::compact::EncodePrefilled(shortPayload,entries)));
+                    if (TrySendGossip(peer,message)) { compactPrefilledAnnouncements++; compactPrefilledTransactions+=entries.size(); }
+                    continue;
+                }
             }
             TrySendGossip(peer,shortSummary);
         }
@@ -314,7 +388,8 @@ void SubmitCompactBlock(const array<uint8_t,32>& hash,const shared_ptr<CompactBl
     compactReconstructed++;
     co_spawn(peer->strand,ProcessMessage(peer,2,std::move(data)),[peer](exception_ptr error){if (error) PeerError(peer,error);});
 }
-void ReceiveCompactBlockEncoding(const shared_ptr<Peer>& peer,const vector<uint8_t>& data,bool shortEncoding) {
+void ReceiveCompactBlockEncoding(const shared_ptr<Peer>& peer,const vector<uint8_t>& data,bool shortEncoding,
+        const vector<chain::compact::PrefilledTransaction>& prefilled={}) {
     if (!peer->compact||data.size()<112) return;
     auto num=ReadU64(data.data()+72),height=ReadU64(data.data()+64);
     if (num>maxProtocolTx||height<2) return;
@@ -374,35 +449,32 @@ void ReceiveCompactBlockEncoding(const shared_ptr<Peer>& peer,const vector<uint8
     block->encodedBytes=CompactEncodedBase(*block);
     const size_t minimumInputs=size_t(count(block->contracts.begin(),block->contracts.end(),uint8_t(1)))*45;
     if (block->encodedBytes>maxBlockBytes||minimumInputs>maxBlockBytes-block->encodedBytes) return;
+    for (const auto& entry:prefilled) {
+        const auto extra=entry.transaction.size()-176;
+        if (extra>maxBlockBytes-block->encodedBytes||entry.transaction.size()>maxCompactBytes-block->bytes) return;
+        block->transactions[entry.index]=entry.transaction;
+        memcpy(block->hashes[entry.index].data(),entry.transaction.data()+80,32);
+        block->bytes+=entry.transaction.size(); block->encodedBytes+=extra;
+    }
+    if (!prefilled.empty()&&prefilled.size()==num&&!CompactRootMatches(*block)) return;
     vector<uint8_t> request(hash.begin(),hash.end());
     chain::compact::ShortIdIndex index(block->shortIds);
-    if (shortEncoding) {
-        size_t count=0;
-        { lock_guard lock(txpoolMutex); count=min(maxCompactScanTransactions,txpool.size()); }
-        { lock_guard lock(relayMutex); count+=min(maxCompactScanTransactions-count,recentBlockTransactions.size()); }
-        CompactScanReservation reservation;
-        if (reservation.Reserve(count*sizeof(array<uint8_t,32>))) {
-            vector<array<uint8_t,32>> candidates; candidates.reserve(count);
-            { lock_guard lock(txpoolMutex); for (const auto& [txHash,tx]:txpool) {
-                if (candidates.size()==count) break;
-                candidates.push_back(txHash);
-            } }
-            { lock_guard lock(relayMutex); for (const auto& [txHash,tx]:recentBlockTransactions) {
-                if (candidates.size()==count) break;
-                candidates.push_back(txHash);
-            } }
+    if (shortEncoding&&prefilled.size()!=num) {
+        if (auto snapshot=ReadCompactHashSnapshot()) {
             // Hashing the pool snapshot never holds the transaction or relay
             // mutex. A transaction removed before the lookup is fetched by index.
-            for (const auto& txHash:candidates) {
+            for (const auto& txHash:snapshot->hashes) {
                 auto position=index.Find(chain::compact::ShortId(block->shortKey,txHash));
                 if (position) index.Observe(*position,txHash);
             }
-            for (size_t i=0;i<num;++i) if (index.MatchedHash(i)) block->hashes[i]=*index.MatchedHash(i);
+            for (size_t i=0;i<num;++i)
+                if (block->transactions[i].empty()&&index.MatchedHash(i)) block->hashes[i]=*index.MatchedHash(i);
         }
     }
     {
         lock_guard lock(txpoolMutex);
         for (size_t i=0;i<num;i++) {
+            if (!block->transactions[i].empty()) continue;
             if (shortEncoding&&!index.MatchedHash(i)) continue;
             auto tx=txpool.find(block->hashes[i]); auto input=evmPool.find(block->hashes[i]);
             if (tx!=txpool.end()&&bool(input!=evmPool.end())==bool(block->contracts[i])) {
@@ -443,6 +515,23 @@ void ReceiveCompactBlockEncoding(const shared_ptr<Peer>& peer,const vector<uint8
 }
 void ReceiveCompactBlock(const shared_ptr<Peer>& peer,const vector<uint8_t>& data) { ReceiveCompactBlockEncoding(peer,data,false); }
 void ReceiveShortCompactBlock(const shared_ptr<Peer>& peer,const vector<uint8_t>& data) { ReceiveCompactBlockEncoding(peer,data,true); }
+void ReceivePrefilledCompactBlock(const shared_ptr<Peer>& peer,const vector<uint8_t>& data) {
+    // The sender may already have our capability reply while its reply is
+    // still in flight. Remote capability flags gate sending, not decoding.
+    if (!shortIds||!compactPrefill||!peer||!peer->compact||!peer->port||peer->closePosted.load()) return;
+    chain::compact::PrefilledDecoded decoded;
+    if (!chain::compact::DecodePrefilled(data,maxProtocolTx,chain::vdf_consensus::kMaxEncodedBytes,
+            221+maxEvmInput,decoded)) return;
+    // Check every transaction before touching compactBlocks, source lists or
+    // recent transactions. A valid prefix cannot make a malformed frame stick.
+    for (const auto& entry:decoded.transactions) {
+        array<uint8_t,176> tx; memcpy(tx.data(),entry.transaction.data(),tx.size());
+        if (!VerifyTransaction(tx,span<const uint8_t>(entry.transaction).subspan(176))) return;
+    }
+    vector<uint8_t> compact(decoded.compact.begin(),decoded.compact.end());
+    ReceiveCompactBlockEncoding(peer,compact,true,decoded.transactions);
+    compactPrefilledReceived+=decoded.transactions.size();
+}
 awaitable<void> SendBounded(const shared_ptr<Peer>& peer,vector<uint8_t> data) {
     if (data.size()>maxSendBytes) co_return;
     steady_timer timer(peer->strand);

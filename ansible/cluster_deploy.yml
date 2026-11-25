@@ -20,6 +20,10 @@
           - chain_cluster_genesis is mapping
           - chain_cluster_peers is sequence
           - chain_cluster_peers is not string
+          - chain_cluster_backup_peers | default([]) is sequence
+          - chain_cluster_backup_peers | default([]) is not string
+          - chain_cluster_backup_peers | default([]) | length <= chain_cluster_degree | int
+          - chain_cluster_degree | int >= 1
           - chain_cluster_degree | int <= 64
           - chain_cluster_port | int >= 1024
           - chain_cluster_port | int <= 65535
@@ -52,7 +56,7 @@
       loop: [vdf_build.py, vdf_instance.py, cluster_control.py]
     - name: Construct the immutable per-node deployment request
       ansible.builtin.set_fact:
-        chain_cluster_request_text: "{{ {'instance_id': chain_cluster_id, 'node_id': chain_node_id, 'release_format': 'prebuilt', 'release_dir': chain_release_root + '/' + chain_release_id, 'instance_dir': chain_cluster_root, 'service': 'chain-vdf-' + chain_cluster_id + '-' + chain_node_id + '.service', 'user': chain_cluster_user, 'port': chain_cluster_port | int, 'arguments': chain_cluster_arguments | default([]), 'data_dir': chain_cluster_root + '/data', 'config_path': chain_cluster_root + '/node.yaml', 'genesis_path': chain_cluster_root + '/genesis.json', 'metrics_path': chain_cluster_root + '/logs/metrics.json', 'config_text': {'node': {'bind': chain_cluster_bind, 'peers': chain_cluster_peers, 'peer_discovery': false, 'max_peers': (chain_cluster_degree | int) + 4, 'max_connections': (chain_cluster_degree | int) + 36, 'relay_transactions': true, 'block_relay_peers': 0, 'tx_relay_peers': 0}} | to_nice_yaml, 'genesis': chain_cluster_genesis, 'health_host': ('::1' if chain_cluster_bind == '::' else '127.0.0.1') if chain_cluster_bind in ['::', '0.0.0.0'] else chain_cluster_bind, 'health_timeout': 45, 'expected_genesis': chain_cluster_expected_genesis | default('')} | to_nice_json }}\n"
+        chain_cluster_request_text: "{{ {'instance_id': chain_cluster_id, 'node_id': chain_node_id, 'release_format': 'prebuilt', 'release_dir': chain_release_root + '/' + chain_release_id, 'instance_dir': chain_cluster_root, 'service': 'chain-vdf-' + chain_cluster_id + '-' + chain_node_id + '.service', 'user': chain_cluster_user, 'port': chain_cluster_port | int, 'arguments': chain_cluster_arguments | default([]), 'data_dir': chain_cluster_root + '/data', 'config_path': chain_cluster_root + '/node.yaml', 'genesis_path': chain_cluster_root + '/genesis.json', 'metrics_path': chain_cluster_root + '/logs/metrics.json', 'config_text': {'node': {'bind': chain_cluster_bind, 'peers': chain_cluster_peers, 'backup_peers': chain_cluster_backup_peers | default([]), 'target_peers': chain_cluster_degree | int, 'peer_discovery': false, 'max_peers': (chain_cluster_degree | int) + 4, 'max_connections': (chain_cluster_degree | int) + 36, 'relay_transactions': true, 'block_relay_peers': 0, 'tx_relay_peers': 0}} | to_nice_yaml, 'genesis': chain_cluster_genesis, 'health_host': ('::1' if chain_cluster_bind == '::' else '127.0.0.1') if chain_cluster_bind in ['::', '0.0.0.0'] else chain_cluster_bind, 'health_timeout': 45, 'expected_genesis': chain_cluster_expected_genesis | default('')} | to_nice_json }}\n"
     - name: Check an existing deployment request before any replacement
       ansible.builtin.stat:
         path: "{{ chain_cluster_request }}"
