@@ -36,6 +36,7 @@ nlohmann::json GetGenesisConfig() {
     if (vdf.enabled) result["vdf"]={{"enabled",true},{"epoch_blocks",vdf.epochBlocks},{"iterations",vdf.iterations},
         {"slot_ms",vdf.slotMs},{"start_time_ms",vdf.startTimeMs},{"fallback_slots",vdf.fallbackSlots},
         {"future_slots",vdf.futureSlots},{"producers",5}};
+    if (vdf.enabled&&vdf.producerRotation) result["vdf"]["producer_rotation"]=true;
     return result;
 }
 void SetGenesisUsers(const nlohmann::json& config) {
@@ -50,9 +51,13 @@ void SetGenesisUsers(const nlohmann::json& config) {
         if (!settings.is_object()) throw invalid_argument("Genesis vdf must be an object");
         for (const auto& [name,value]:settings.items()) {
             if (name!="enabled"&&name!="epoch_blocks"&&name!="iterations"&&name!="slot_ms"&&name!="start_time_ms"&&
-                name!="fallback_slots"&&name!="future_slots"&&name!="producers") throw invalid_argument("Unknown genesis vdf parameter: "+name);
+                name!="fallback_slots"&&name!="future_slots"&&name!="producers"&&name!="producer_rotation") throw invalid_argument("Unknown genesis vdf parameter: "+name);
         }
         vdf.enabled=settings.value("enabled",true);
+        if (settings.contains("producer_rotation")) {
+            if (!settings.at("producer_rotation").is_boolean()) throw invalid_argument("VDF producer_rotation must be a boolean");
+            vdf.producerRotation=settings.at("producer_rotation").get<bool>();
+        }
         if (settings.contains("epoch_blocks")) vdf.epochBlocks=ReadUserNumber(settings.at("epoch_blocks"));
         if (settings.contains("iterations")) vdf.iterations=ReadUserNumber(settings.at("iterations"));
         if (settings.contains("slot_ms")) vdf.slotMs=ReadUserNumber(settings.at("slot_ms"));

@@ -23,6 +23,7 @@ using vdf_election::Signature;
 
 struct Config {
     bool enabled = false;
+    bool producerRotation = false;
     std::uint64_t epochBlocks = 32;
     std::uint64_t iterations = 65536;
     std::uint64_t slotMs = 50;
@@ -62,7 +63,8 @@ inline void ValidateConfig(const Config& value) {
         value.slotMs == 0 || value.slotMs > 5000 ||
         (value.enabled && (value.startTimeMs == 0 || value.startTimeMs % value.slotMs != 0)) ||
         value.futureSlots > 2 ||
-        value.fallbackSlots <= value.futureSlots || value.fallbackSlots > 65536) {
+        value.fallbackSlots <= value.futureSlots || value.fallbackSlots > 65536 ||
+        (value.producerRotation && !value.enabled)) {
         throw std::invalid_argument("Invalid VDF consensus configuration");
     }
 }
@@ -92,13 +94,16 @@ inline constexpr std::size_t kProofCacheLimit = 4096;
 
 } // namespace detail
 
-[[nodiscard]] inline std::array<std::uint8_t, 72> EncodeConfig(const Config& value) {
+[[nodiscard]] inline std::vector<std::uint8_t> EncodeConfig(const Config& value) {
     ValidateConfig(value);
-    std::array<std::uint8_t, 72> bytes{};
-    const std::array<std::uint64_t, 9> fields{kVersion, value.enabled ? 1ULL : 0ULL,
+    // Keep the original 72 bytes exactly for every existing VDF genesis.
+    // Rotation is a new consensus rule, committed by configuration version 2.
+    std::vector<std::uint8_t> bytes(value.producerRotation ? 80 : 72, 0);
+    const std::array<std::uint64_t, 9> fields{value.producerRotation ? 2ULL : kVersion, value.enabled ? 1ULL : 0ULL,
         value.epochBlocks, value.iterations, value.slotMs, value.fallbackSlots, value.futureSlots,
         kMaxCandidates, value.startTimeMs};
     for (std::size_t i = 0; i < fields.size(); ++i) detail::Write64(bytes.data() + i * 8, fields[i]);
+    if (value.producerRotation) detail::Write64(bytes.data() + 72, 1);
     return bytes;
 }
 
@@ -111,6 +116,41 @@ inline constexpr std::size_t kProofCacheLimit = 4096;
     ValidateConfig(value);
     if (!value.enabled) throw std::invalid_argument("VDF consensus is disabled");
     return value.startTimeMs / value.slotMs;
+}
+
+// The active list is already committed in score order by its branch. The
+// schedule advances with absolute slots, including slots with no block, and
+// does not restart when a new epoch supplies a different list.
+[[nodiscard]] inline std::optional<PublicKey> ScheduledProducer(std::uint64_t slot,
+    std::span<const Candidate> activeCandidates, const Config& value = config) noexcept {
+    try {
+        const auto start = StartSlot(value);
+        if (slot < start || activeCandidates.empty() || activeCandidates.size() > kMaxCandidates) return std::nullopt;
+        return activeCandidates[(slot - start) % activeCandidates.size()].publicKey;
+    } catch (...) {
+        return std::nullopt;
+    }
+}
+
+// This checks producer timing only. Callers must separately check the block
+// height, current time and proofs. The first two epochs and an empty list keep
+// the existing open production rule; outsiders retain the recovery slot gap.
+[[nodiscard]] inline bool CanProduce(const PublicKey& producer, std::uint64_t slot,
+    std::uint64_t parentSlot, std::uint64_t epoch, std::span<const Candidate> activeCandidates,
+    const Config& value = config) noexcept {
+    try {
+        const auto start = StartSlot(value);
+        if (slot < start || slot <= parentSlot || activeCandidates.size() > kMaxCandidates) return false;
+        if (epoch < 2 || activeCandidates.empty()) return true;
+        const bool member = std::any_of(activeCandidates.begin(), activeCandidates.end(),
+            [&](const Candidate& record) { return record.publicKey == producer; });
+        if (!member) return slot - parentSlot >= value.fallbackSlots;
+        if (!value.producerRotation) return true;
+        const auto scheduled = ScheduledProducer(slot, activeCandidates, value);
+        return scheduled && *scheduled == producer;
+    } catch (...) {
+        return false;
+    }
 }
 
 [[nodiscard]] inline std::uint64_t MinimumSlot(std::uint64_t height, const Config& value = config) {
@@ -303,12 +343,16 @@ inline void ClearProofCache() {
         const auto now = CurrentSlot(value);
         if (extension.slot > now && extension.slot - now > value.futureSlots) return false;
         bool member = false;
-        for (const auto& record : activeCandidates) {
+        for (std::size_t i = 0; i < activeCandidates.size(); ++i) {
+            const auto& record = activeCandidates[i];
             if (!VerifyProof(record, currentContext)) return false;
+            if (value.producerRotation && ((i && !CandidateLess(activeCandidates[i - 1], record)) ||
+                std::any_of(activeCandidates.begin(), activeCandidates.begin() + i,
+                    [&](const Candidate& other) { return record.publicKey == other.publicKey; }))) return false;
             if (record.publicKey == extension.producer) member = true;
         }
         const bool open = currentContext.targetEpoch < 2 || activeCandidates.empty();
-        if (!open && !member && extension.slot - parentSlot < value.fallbackSlots) return false;
+        if (!CanProduce(extension.producer, extension.slot, parentSlot, currentContext.targetEpoch, activeCandidates, value)) return false;
         if (open || !member || extension.producerProof) {
             if (!extension.producerProof || extension.producerProof->publicKey != extension.producer ||
                 !VerifyProof(*extension.producerProof, currentContext)) return false;

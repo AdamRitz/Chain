@@ -2,6 +2,39 @@
 
 新入口使用一个已经通过完整测试的 Linux 构建包。控制机分发相同二进制和源码；目标节点不用安装 C++ 编译器。编译和 GDB 调试仍在构建机进行。生产数据库、节点身份、隔离测试数据库分别由部署记录管理。
 
+## 快速入口：部署和五分钟测试
+
+准备下面说明的构建包和 `nodes.json` 后，可以直接使用 `cluster_quick.py`。`deploy` 只创建持久服务，`test` 只运行独立测试，`stage` 只分发包。三个动作都复用现有 Ansible playbook，每台节点不重新编译。目标机缓存的包 SHA256 相同时跳过复制；已经发布的构建继续校验文件内容。控制机每次只计算一次包 SHA256。
+
+```bash
+# 部署：原样使用这份创世配置，重复执行不会改写数据库、身份或链参数。
+python3 -B ansible/scripts/cluster_quick.py deploy \
+  --nodes /srv/chain/nodes.json --cluster rotation01 \
+  --release-id rotation01 --package /srv/chain/rotation01.tar.gz \
+  --package-sha256 PACKAGE_SHA256 --genesis /srv/chain/rotation-genesis.json \
+  --output /srv/chain/deploy-rotation01 --python /usr/bin/python3.11 --forks 32
+
+# 测试：正式测量默认 300 秒，另加预热 2 秒、等待剩余交易 5 秒。
+python3 -B ansible/scripts/cluster_quick.py test \
+  --nodes /srv/chain/nodes.json --cluster rotation-test --port 28089 \
+  --release-id rotation01 --package /srv/chain/rotation01.tar.gz \
+  --package-sha256 PACKAGE_SHA256 --sender /opt/chain/releases/rotation01/bin/sender \
+  --rate 10000 --output /srv/chain/results/rotation-test01 \
+  --cache /srv/chain/datasets --python /usr/bin/python3.11 --forks 32
+```
+
+将 `PACKAGE_SHA256` 替换为打包结果。控制机的 `sender` 必须与包中 `bin/sender` 的 SHA256 相同。可以将 `--nodes` 换成已有的 `--plan /absolute/plan.json`；已有计划的端口不会被改写。额外 SSH inventory 用重复的 `--inventory`，连接参数文件用 `--extra-vars-file`；密码不写入生成的节点计划和实验变量。
+
+测试数据按 `ceil(rate × (warmup + duration))` 自动生成。例如 20,000 TPS、预热 2 秒、正式测量 300 秒，需要 **6,040,000 笔，1,063,040,000 字节**原生交易正文。数据仅保存在控制机，按 `sender` 摘要、账户数和交易数缓存；重复测试校验缓存后直接复用，不再次签名，不向每个节点分发交易文件。各轮只生成新的创世文件和结果目录。
+
+新测试创世参数明确设置 `vdf.producer_rotation=true`、`epoch_blocks=32`、`slot_ms=200`、`iterations=65536`，时间起点以 200 ms 对齐。`deploy --genesis` 从不添加或修改这些字段；新建持久轮值链时，应在提供的创世配置中明确设置它们。既有链升级二进制仍沿用原共识参数。
+
+`--duration`、`--warmup`、`--drain-seconds` 分别设置正式测量、预热和停止发送后的等待时间。启动连接、形成五人名单、最后账户核对和清理时间单独计入命令运行时间。默认 `--query-workers 32`、`--forks 32`，允许范围 1..128。1000 节点使用同一入口，先根据控制机查询耗时调整并发，不能只提高线程数而不记录查询开销。
+
+新轮值链默认只让第一台节点在前两个选举周期出块，其他节点带 `--vdf-bootstrap-produce 0` 启动，但保持 `--produce 1`，正常创建身份、计算和传播 VDF。第三个周期起自动按照名单轮值，无需停止或重启节点。`--bootstrap-producers` 可以调整最初出块的节点数，设为 0 则保留所有节点一起启动的方式。
+
+测试只有在所有节点完成前两个选举周期、五人名单可用、同一周期名单一致且具有共同链时才开始发送；少于五个节点的功能测试要求所有节点均进入名单。跨周期采样分别检查各周期名单，避免正常换届被当作启动失败。每轮输出必须使用新目录，数据和日志保存、进程停止与测试数据库清理沿用下文流程。
+
 ## 1. 固定连接数量
 
 准备 `nodes.json`，每条记录对应一台真实机器：
@@ -85,7 +118,7 @@ ansible-playbook -i /srv/chain/plan01/inventory.json ansible/cluster_control.yml
 
 ```bash
 /opt/chain/releases/propagation01/bin/sender --prepare /srv/chain/transactions.bin \
-  --count 240000 --wallets 1024
+  --count 6040000 --wallets 1024
 sha256sum /srv/chain/transactions.bin /srv/chain/transactions.bin.genesis.json
 ```
 
@@ -107,13 +140,15 @@ sha256sum /srv/chain/transactions.bin /srv/chain/transactions.bin.genesis.json
   "chain_cluster_rate":20000,
   "chain_cluster_wallets":1024,
   "chain_cluster_warmup":2,
-  "chain_cluster_duration":10,
+  "chain_cluster_duration":300,
   "chain_cluster_drain_seconds":5,
   "chain_cluster_poll_seconds":0.1,
   "chain_cluster_metrics_period":1.0,
   "chain_cluster_sample_hz":20,
   "chain_cluster_query_workers":32,
   "chain_cluster_forks":32,
+  "chain_cluster_readiness_timeout":300,
+  "chain_cluster_bootstrap_producers":1,
   "chain_cluster_node_settings":{"block-tx-step":2000}
 }
 ```

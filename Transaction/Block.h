@@ -326,6 +326,10 @@ bool CheckReceivedBlockTime(const Block& block) {
         return false;
     }
 }
+bool FutureRotationBlock(const Block& block) {
+    return chain::vdf_consensus::config.enabled&&chain::vdf_consensus::config.producerRotation&&
+        block.vdf&&block.vdf->slot>chain::vdf_consensus::CurrentSlot();
+}
 bool ProcessBlock(vector<uint8_t> data,bool* relayReady=nullptr,bool* invalidEncoding=nullptr,uint64_t source=0) {
     if (relayReady) *relayReady=false;
     if (invalidEncoding) *invalidEncoding=false;
@@ -353,6 +357,9 @@ bool ProcessBlock(vector<uint8_t> data,bool* relayReady=nullptr,bool* invalidEnc
         return false;
     }
     if (!CheckReceivedBlockTime(block)) return false;
+    // Keep tolerated future blocks in the bounded fork cache. They must not
+    // replace a current-slot candidate or be committed before their own slot.
+    if (FutureRotationBlock(block)) return QueueForkBlock(std::move(block),std::move(data),true);
     if (height!=current+1||block.previousHash!=head) {
         auto canonical=DBReadBlockByHeight(to_string(height));
         if (canonical==data) return false;

@@ -1,0 +1,66 @@
+{
+  "status": "passed",
+  "checks": [
+    "five elected identities rotate by absolute slot and on-chain score order",
+    "one producer stopped; its slots skipped and native transfer committed before outsider fallback",
+    "seven persistent replicas converge after the stopped producer restarts; balances and nonces agree",
+    "rotation continues after restart and across an election boundary",
+    "wrong-slot member rejected; identical parent, slot and transaction accepted from the scheduled member",
+    "future extension and better fork remain unapplied until their slots, then apply without retransmission"
+  ],
+  "offline": {
+    "epoch": 3,
+    "producer_index": 0,
+    "recovery_slot_gap": 1,
+    "skipped_slots": [
+      {
+        "height": 52,
+        "parent_slot": 7182391001,
+        "slot": 7182391003
+      },
+      {
+        "height": 55,
+        "parent_slot": 7182391006,
+        "slot": 7182391008
+      }
+    ],
+    "stopped_slot": 7182391001
+  },
+  "rotation_before_restart": {
+    "blocks": 23,
+    "epochs": [
+      2,
+      3
+    ]
+  },
+  "rotation_after_restart": {
+    "blocks": 39,
+    "epochs": [
+      2,
+      3,
+      4
+    ]
+  },
+  "future_blocks": [
+    {
+      "automatically_adopted": true,
+      "case": "future-extension",
+      "height": 74,
+      "pre_slot_checks": 45,
+      "slot": 7182391047
+    },
+    {
+      "automatically_adopted": true,
+      "case": "future-better-fork",
+      "height": 74,
+      "pre_slot_checks": 44,
+      "slot": 7182391049
+    }
+  ],
+  "state": {
+    "accounts": 7,
+    "burned": 10,
+    "transactions": 10
+  },
+  "elapsed_seconds": 24.59228606700026
+}

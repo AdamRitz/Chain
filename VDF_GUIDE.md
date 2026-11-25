@@ -10,7 +10,8 @@
 - 对 `e >= 2`，目标组 `G_e` 的输入绑定链标识、公钥、目标组编号、迭代数和 `G_(e-2)` 的完整区块哈希序列。节点在 `G_(e-1)` 计算并传播目标为 `G_e` 的记录。
 - 排序值为带协议域的 `BLAKE2b-256(challenge || Y)`；排序值相同再比较公钥。签名和证明见证本身不参与排序。同一公钥只保留一份记录。
 - `G_(e-1)` 每个块携带当时已验证的前五份记录；新块合并父块记录后重新排序，不能移除仍应进入前五的旧记录。该组最后一块的名单用于 `G_e`。它反映已写入这条分支的记录，传播未完成的记录不自动进入名单。
-- 名单中的身份可以正常出块。名单为空时，任意身份持本组有效证明可以出块。名单非空时，其他身份只有满足 `block.slot - parent.slot >= fallback_slots` 并携带本组有效证明才能出块。此条件检查槽间隔，不判断其他节点是否实际离线。
+- `producer_rotation: true` 时，按名单中的顺序轮流出块。当前生产者为 `producers[(slot - start_time_ms / slot_ms) % producers.size()]`，名单按 VDF 排序值、公钥排序。每个时间片只允许对应成员出块；离线成员的时间片跳过，下一成员继续。旧链未启用此参数时，名单中的成员均可出块。
+- 名单为空时，任意身份持本组有效证明可以出块。名单非空时，其他身份只有满足 `block.slot - parent.slot >= fallback_slots` 并携带本组有效证明才能出块。名单中的成员不能利用这个条件越过轮流出块的顺序。
 
 `slot = floor(逻辑 Unix 毫秒 / slot_ms)`。区块槽必须大于父槽，不能超过本地当前槽加 `future_slots`，且必须满足：
 
@@ -19,6 +20,8 @@ slot >= start_time_ms / slot_ms + (height - 2)
 ```
 
 `start_time_ms` 是创世承诺的统一起点，用于限制高度相对于时间的推进速度。所有节点共用同一个值；重启继续读取原创世文件。
+
+轮流出块时，允许接收的未来区块先进入现有有界分叉缓存，到对应时间片才执行采用。正常轮值区块验证后立即提交；最初两组、空名单和非成员恢复出块仍保留原有比较等待。已在合法时间片生成的区块允许迟到，仍按现有分支规则处理。
 
 节点每槽最多发布一个本地候选。达到交易上限时可以提前构造，否则在槽末构造；VDF 链允许空块，使低负载时的选举继续推进。普通交易的整数倍打包仍由 `--block-tx-step` 控制。分支仍按累计有效交易数、高度、链头哈希选择；本地写入和后续重组沿用原来的账户状态规则。`slot_ms` 是调度参数，亚秒最终确认及千节点吞吐需要对应的网络与规模测试结果。
 
@@ -29,7 +32,7 @@ slot >= start_time_ms / slot_ms + (height - 2)
 ```bash
 python3 - <<'PY'
 import json, time
-slot_ms = 50
+slot_ms = 200
 genesis = {
     'base_fee': 1, 'accounts': [],
     'vdf': {
@@ -37,6 +40,7 @@ genesis = {
         'slot_ms': slot_ms,
         'start_time_ms': int(time.time() * 1000) // slot_ms * slot_ms,
         'fallback_slots': 20, 'future_slots': 2, 'producers': 5,
+        'producer_rotation': True,
     },
 }
 with open('/srv/chain-vdf/genesis.json', 'x') as output:
@@ -54,12 +58,17 @@ PY
 | `fallback_slots` | 20；大于 `future_slots` 且不超过 65536 | 非名单身份出块要求的父子槽间隔 |
 | `future_slots` | 2；范围 0–2 | 接收节点允许的未来槽偏差 |
 | `producers` | 固定为 5 | 当前协议允许名单的最大人数 |
+| `producer_rotation` | 默认 `false`；新建轮值链设为 `true` | 启用按时间片轮流出块，绑定新的创世摘要 |
 
 这些参数都绑定创世摘要，修改后属于另一条链。默认 `50 ms × 20 = 1 s` 是恢复出块的最小父子槽间隔；正常有资格节点不需要等这个间隔。
 
 生产节点使用独立 Ed25519 身份。可通过 `--vdf-key /path/identity.seed` 或 YAML `node.vdf_key` 指定包含 64 个十六进制字符的 32 字节种子文件，按 `0600` 权限保存。未指定时在本节点数据目录创建并保留 `vdf-identity.seed`。每个生产节点使用自己的种子；不要把测试代码中的确定性种子用于实际链。`--produce 0` 只同步和验证，不加载生产身份、不计算或发布自己的候选。
 
 ## 计算、存储与网络开销
+
+`--vdf-bootstrap-produce 0`（YAML `node.vdf_bootstrap_produce: false`）只关闭本节点在最初两组的出块，保留 VDF 计算和传播。默认值为 `1`。大集群首次启动只让一个节点设为 `1`；从第三组开始所有生产节点自动执行正常轮值，无需重启。这个开关只控制本机生成区块，不改变收到区块的验证规则。
+
+旧链省略 `producer_rotation` 或设为 `false` 时，创世参数编码和摘要保持不变。启用轮值需要创建新链、使用新数据目录；原有创世文件不能直接修改。
 
 当前类群判别式参数为 1024 位。输出 `Y` 占 100 字节，证明见证占 100 字节；完整候选记录加上上下文、公钥和签名共 **382 字节**。区块扩展固定部分 **116 字节**，通常携带五份下一组记录时共 **2026 字节**；再携带一份本组生产证明时为 **2408 字节**。当前每块保存完整的滚动名单，尚未实现跨块记录去重。
 
@@ -74,6 +83,8 @@ PY
 | `epoch`、`next_epoch` | 下一个区块所属组、再下一组 |
 | `producers`、`candidates` | 下一个区块的有效名单、当前分支已写入的下一组记录 |
 | `public_key`、`eligible` | 本地生产身份、当前是否能构造符合时间与资格条件的候选 |
+| `producer_rotation`、`scheduled_producer` | 是否启用轮流出块、当前时间片对应的公钥 |
+| `bootstrap_produce` | 本节点是否在最初两组生成区块 |
 | `computed`、`generation_ms` | 本进程生成的记录数、累计生成耗时；重启清零 |
 | `proof_checks`、`proof_cache_hits` | 实际证明校验次数、已验证记录缓存命中次数 |
 | `invalid_proofs`、`skipped_proofs`、`pending_proofs` | 无效记录、重复或较差记录跳过次数、待验证任务数 |
@@ -81,6 +92,8 @@ PY
 可用 `generation_ms / computed` 观察本机平均候选生成开销。`vdf_test` 输出一次真实 `T=4096` 的 `prove_ms` 和 `verify_ms`；这两个数是该机器、该输入的原语测量，不包含网络传播和区块执行。
 
 ## 一键构建、测试和部署
+
+多服务器快速操作使用 [cluster_quick.py](ansible/scripts/cluster_quick.py) 的 `stage`、`deploy`、`test`，完整命令见 [集群文档](ansible/CLUSTER.md)。程序只编译一次；发布包按 SHA256 复用。`test` 默认正式测量 **300 秒**，预热和结束后的等待单独计算；签名交易按发送速率与总发送时长生成并缓存。
 
 使用 [ansible/vdf_prepare.yml](ansible/vdf_prepare.yml) 构建和测试，[ansible/vdf_deploy.yml](ansible/vdf_deploy.yml) 在全量通过后创建独立服务。完整清单、源码包和变量说明见 [Ansible 文档](ansible/README.md#vdf-新链的源码构建与独立部署)。目标为 EL9 x86-64，安装 GCC 13、CMake、Ninja、GMP、GDB 及项目依赖，构建 `RelWithDebInfo`，保留源码和调试段。
 

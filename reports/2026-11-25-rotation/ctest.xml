@@ -1,0 +1,253 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="(empty)"
+	tests="38"
+	failures="0"
+	disabled="0"
+	skipped="0"
+	hostname=""
+	time="211"
+	timestamp="2026-11-25T17:07:24"
+	>
+	<testcase name="ChainCorrectness" classname="ChainCorrectness" time="2.18467" status="run">
+		<properties/>
+		<system-out>PASS 2277 assertions. Database: /opt/chain-vdf/releases/vdf/rotation-001/build-attempts/full-002/test-data/test-data/2442845809286
+</system-out>
+	</testcase>
+	<testcase name="AccountCorrectness" classname="AccountCorrectness" time="0.168401" status="run">
+		<properties/>
+		<system-out>PASS 54 account checks. Database: /opt/chain-vdf/releases/vdf/rotation-001/build-attempts/full-002/test-data/user-test-data/2444142344464/chain
+</system-out>
+	</testcase>
+	<testcase name="ForkStateCorrectness" classname="ForkStateCorrectness" time="30.6341" status="run">
+		<properties/>
+		<system-out>[2026-11-25 17:07:27.189] [info] RocksDB Started. Path:/opt/chain-vdf/releases/vdf/rotation-001/build-attempts/full-002/test-data/fork-state-data/2444310795470, Sync:true
+[2026-11-25 17:07:27.194] [info] Genesis Block Generated. Height:1
+[2026-11-25 17:07:27.228] [info] RocksDB Started. Path:/opt/chain-vdf/releases/vdf/rotation-001/build-attempts/full-002/test-data/fork-state-data/2444310795470, Sync:true
+[2026-11-25 17:07:27.266] [info] RocksDB Started. Path:/opt/chain-vdf/releases/vdf/rotation-001/build-attempts/full-002/test-data/fork-state-data/2444310795470, Sync:true
+[2026-11-25 17:07:27.266] [info] Existing chain restored. Height:2
+[2026-11-25 17:07:27.297] [info] RocksDB Started. Path:/opt/chain-vdf/releases/vdf/rotation-001/build-attempts/full-002/test-data/fork-state-data/2444310795470/large-fork, Sync:true
+[2026-11-25 17:07:27.308] [info] Genesis Block Generated. Height:1
+[2026-11-25 17:07:57.719] [info] RocksDB Started. Path:/opt/chain-vdf/releases/vdf/rotation-001/build-attempts/full-002/test-dat...
+[This part of the test output was removed since it exceeds the threshold of 1024 bytes.]
+</system-out>
+	</testcase>
+	<testcase name="ThroughputCorrectness" classname="ThroughputCorrectness" time="0.0431842" status="run">
+		<properties/>
+		<system-out>Overlay, execution bounds and batch checks passed
+</system-out>
+	</testcase>
+	<testcase name="FlowCorrectness" classname="FlowCorrectness" time="0.967447" status="run">
+		<properties/>
+		<system-out>[2026-11-25 17:07:57.873] [info] RocksDB Started. Path:/opt/chain-vdf/releases/vdf/rotation-001/build-attempts/full-002/test-data/flow-test-data/2474988246404, Sync:true
+[2026-11-25 17:07:57.877] [info] Genesis Block Generated. Height:1
+[2026-11-25 17:07:58.712] [info] RocksDB Started. Path:/opt/chain-vdf/releases/vdf/rotation-001/build-attempts/full-002/test-data/flow-test-data/2474988246404, Sync:true
+[2026-11-25 17:07:58.712] [info] Existing chain restored. Height:2
+[2026-11-25 17:07:58.742] [info] RocksDB Started. Path:/opt/chain-vdf/releases/vdf/rotation-001/build-attempts/full-002/test-data/flow-test-data/2474988246404/deterministic, Sync:true
+[2026-11-25 17:07:58.746] [info] Genesis Block Generated. Height:1
+[2026-11-25 17:07:58.781] [info] RocksDB Started. Path:/opt/chain-vdf/releases/vdf/rotation-001/build-attempts/full-002/test-data/flow-test-data/2474988246404/ranked, Sync:true
+[2026-11-25 17:07:58.786] [info] Genesis Block Generated. Height:1
+Admission, compact indexes and changed-state fork check...
+[This part of the test output was removed since it exceeds the threshold of 1024 bytes.]
+</system-out>
+	</testcase>
+	<testcase name="SendBudgetCorrectness" classname="SendBudgetCorrectness" time="0.018443" status="run">
+		<properties/>
+		<system-out>Send budget limits, cancellation and concurrent ownership checks passed
+</system-out>
+	</testcase>
+	<testcase name="CompactRelayCorrectness" classname="CompactRelayCorrectness" time="0.0482399" status="run">
+		<properties/>
+		<system-out>[2026-11-25 17:07:58.852] [info] RocksDB Started. Path:/opt/chain-vdf/releases/vdf/rotation-001/build-attempts/full-002/test-data/compact-relay-data/2475974571055, Sync:true
+[2026-11-25 17:07:58.855] [info] Genesis Block Generated. Height:1
+Short IDs, collisions, malformed frames, legacy repair, alternate sources and full fallback passed
+</system-out>
+	</testcase>
+	<testcase name="TransactionRelayCorrectness" classname="TransactionRelayCorrectness" time="0.0479758" status="run">
+		<properties/>
+		<system-out>[2026-11-25 17:07:58.900] [info] RocksDB Started. Path:/opt/chain-vdf/releases/vdf/rotation-001/build-attempts/full-002/test-data/transaction-relay-data/2476022961437, Sync:true
+[2026-11-25 17:07:58.906] [info] Genesis Block Generated. Height:1
+Transaction inventory codec, retries, malformed signatures, EVM bodies, legacy relay, cache and request limits passed
+</system-out>
+	</testcase>
+	<testcase name="ExecutionReuseCorrectness" classname="ExecutionReuseCorrectness" time="0.264733" status="run">
+		<properties/>
+		<system-out>{"checks":112,"parallel_blocks":1,"parallel_transactions":1024,"prefix_hits":16,"prefix_transactions":2464}
+</system-out>
+	</testcase>
+	<testcase name="RelayTransportCorrectness" classname="RelayTransportCorrectness" time="0.0370459" status="run">
+		<properties/>
+		<system-out>Relay transport, bounds, scheduling and retry tests passed
+</system-out>
+	</testcase>
+	<testcase name="TxStepCorrectness" classname="TxStepCorrectness" time="0.918001" status="run">
+		<properties/>
+		<system-out>PASS 169 transaction step checks. Database: /opt/chain-vdf/releases/vdf/rotation-001/build-attempts/full-002/test-data/tx-step-data/2476373508895
+</system-out>
+	</testcase>
+	<testcase name="VdfCorrectness" classname="VdfCorrectness" time="0.84802" status="run">
+		<properties/>
+		<system-out>VDF correctness passed; iterations=4096 prove_ms=61.4334 verify_ms=16.4555
+</system-out>
+	</testcase>
+	<testcase name="VdfElectionCorrectness" classname="VdfElectionCorrectness" time="2.90211" status="run">
+		<properties/>
+		<system-out>VdfElectionTest passed
+</system-out>
+	</testcase>
+	<testcase name="VdfRulesCorrectness" classname="VdfRulesCorrectness" time="1.47605" status="run">
+		<properties/>
+		<system-out>VdfRulesTest passed
+</system-out>
+	</testcase>
+	<testcase name="VdfBlockCorrectness" classname="VdfBlockCorrectness" time="1.07264" status="run">
+		<properties/>
+		<system-out>PASS 178 VDF block checks. Database: /opt/chain-vdf/releases/vdf/rotation-001/build-attempts/full-002/test-data/vdf-block-data/2483035087203
+</system-out>
+	</testcase>
+	<testcase name="VdfStateCorrectness" classname="VdfStateCorrectness" time="1.50951" status="run">
+		<properties/>
+		<system-out>PASS 104 VDF state checks. Database: /opt/chain-vdf/releases/vdf/rotation-001/build-attempts/full-002/test-data/vdf-state-data/2483591053158
+</system-out>
+	</testcase>
+	<testcase name="RelayOptimizationNetwork" classname="RelayOptimizationNetwork" time="6.13223" status="run">
+		<properties/>
+		<system-out>{"fragments": {"transactions": 800, "bytes": 140800, "fragments": 3, "control_message_between_fragments": true, "legacy_body_equal": true, "replay_unnegotiated_bad_offset_closed": true}, "inventory": {"accepted": 1, "invalid": 1, "requests": 2, "retries": 1}, "prefill": {"head": "857ee7b7d5e315e6531c389aae0947769dde206d76bc29540a6db2189150e6a0", "prefilled": 16, "missing_transactions": 0}, "backup": {"started_nodes": 4, "remaining_nodes": 3, "transactions": 16, "recovery_seconds": 4.993909196000004, "backup_attempts": 1, "head": "9b85a347bc58ec7e7e7c356ef47d175427b3ef150125828f5094bbab2802ff1b"}}
+</system-out>
+	</testcase>
+	<testcase name="PropagationNetwork" classname="PropagationNetwork" time="2.27449" status="run">
+		<properties/>
+		<system-out>{"filtered_batch": {"relayed": 2, "duplicates_or_invalid_skipped": 2}, "early_relay": {"relay_seconds": 0.0008456629998363496, "height_when_relayed": 1}, "short_ids": {"short_ids": 1, "head": "d617d2f739a9dba4df1e67a8457f1ae3ea36623a4360063c5be00d25e7776df2", "missing_transactions": 16}, "legacy": {"short_ids": 0, "head": "2563f3a48f91d3ec4db228a8fa208878cf445fde9f63bce0cb3e113d46dd0fd1", "missing_transactions": 16}, "alternate_repair": {"repair_response_type": 40, "head": "091bfd53a09615c679e07751f36701d092eee2e8d92e541afee03d1d870ad932"}}
+</system-out>
+	</testcase>
+	<testcase name="PropagationTopology" classname="PropagationTopology" time="1.84801" status="run">
+		<properties/>
+		<system-out>{"status": "passed", "nodes": 8, "degree": 4, "transactions": 240, "head": "b9fd95cf832be5da5cc592f3d320bb349ae594b07d6f4266bf466fad38a57e53", "checks": ["fixed degree and one TCP connection per edge", "transactions reach one producer through multiple entry nodes", "short IDs and legacy compact blocks coexist", "compact blocks cross at least two connections", "all chain heads and account states match", "confirmed duplicate transactions are not forwarded"]}
+</system-out>
+	</testcase>
+	<testcase name="VdfNetwork" classname="VdfNetwork" time="39.4887" status="run">
+		<properties/>
+		<system-out>{"case": "election", "status": "passed"}
+{"case": "rejection", "status": "passed"}
+{"case": "restart", "status": "passed"}
+{"case": "partition", "status": "passed"}
+{"case": "fallback", "status": "passed"}
+</system-out>
+	</testcase>
+	<testcase name="VdfRotationNetwork" classname="VdfRotationNetwork" time="24.6746" status="run">
+		<properties/>
+		<system-out>{"status":"passed","scope":"seven-process producer rotation"}
+</system-out>
+	</testcase>
+	<testcase name="TxStepNetwork" classname="TxStepNetwork" time="24.0906" status="run">
+		<properties/>
+		<system-out>{"configuration": "CLI, YAML, override and invalid values passed", "cases": [{"full_block_trigger_round_ms": 0, "max_block_txs": 6, "block_tx_step": 2, "block_counts": [6], "elapsed_seconds": 0.1943459620001704}, {"full_block_trigger_round_ms": 0, "max_block_txs": 7, "block_tx_step": 3, "block_counts": [6], "elapsed_seconds": 0.10277246399982687}, {"full_block_trigger_round_ms": 3000, "max_block_txs": 6, "block_tx_step": 2, "block_counts": [6], "elapsed_seconds": 0.23683377399993333}, {"full_block_trigger_round_ms": 3000, "max_block_txs": 7, "block_tx_step": 3, "block_counts": [6], "elapsed_seconds": 0.14500030799990782}, {"step": 500, "round_ms": 0, "block_counts": [3, 500, 7], "low_load_seconds": 0.2096681399998488, "head": "5223167e383cd1046d724975e8e9b2245d7d48c1f7cef7da1e4325e1a0a9f615"}, {"step": 1000, "round_ms": 0, "block_counts": [3, 1000, 7], "low_load_seconds": 0.20956508600011148, "head": "5ec769911976118b53cc8c636019283cdb731d0c5ef4e4fe8c6dfe4475b82c7f"}, {"step": 2000, "round_ms": 0, "block_coun...
+[This part of the test output was removed since it exceeds the threshold of 1024 bytes.]
+</system-out>
+	</testcase>
+	<testcase name="ChainNetwork" classname="ChainNetwork" time="3.49892" status="run">
+		<properties/>
+		<system-out>{
+  "passed": 10,
+  "checks": [
+    "slow handshake does not block accept loop",
+    "bad type, oversized and malformed length rejected before payload allocation",
+    "invalid signatures rejected in transaction and sync block paths",
+    "fragmented frame and complete batch handled; replay does not commit twice",
+    "4096 unique network transactions committed without loss",
+    "late follower verifies history and reaches same height/head",
+    "live block broadcast and bidirectional peer connection remain active",
+    "producer and follower balances and nonces match independent execution",
+    "process termination/restart restores committed head and rejects replay",
+    "timed graceful shutdown with an active peer exits cleanly and writes metrics"
+  ],
+  "work": "/opt/chain-vdf/releases/vdf/rotation-001/build-attempts/full-002/test-data/network-test-data/1795597786491307116"
+}
+</system-out>
+	</testcase>
+	<testcase name="AccountNetwork" classname="AccountNetwork" time="0.30952" status="run">
+		<properties/>
+		<system-out>{
+  "passed": 7,
+  "checks": [
+    "explicit genesis funding and zero balance for a new public key",
+    "out-of-order transfers execute in nonce order with exact balances and fees",
+    "account query CLI returns committed state",
+    "self transfer charges one nonrecoverable base fee",
+    "insufficient balance transaction is rejected over the network",
+    "historical synchronization replays balances, nonces and burned fees",
+    "restart restores genesis policy and account state without the external genesis file argument"
+  ]
+}
+</system-out>
+	</testcase>
+	<testcase name="ForkNetwork" classname="ForkNetwork" time="0.532211" status="run">
+		<properties/>
+		<system-out>{"checks": ["equal height chooses branch with more valid transactions; native state rolled back", "multi-block branch replay and parent-by-hash retrieval", "restart preserves selected head and rollback state", "invalid larger future candidate preserves valid alternative"]}
+</system-out>
+	</testcase>
+	<testcase name="EvmNetwork" classname="EvmNetwork" time="0.729289" status="run">
+		<properties/>
+		<system-out>{"checks": ["deploy and execute persistent storage with return value", "REVERT restores storage and consumes nonce and actual gas", "out of gas restores contract state", "SHA256 precompile returns the expected digest", "signature binds full contract input", "Solidity 0.8.28 Shanghai bytecode events nested CALL and revert", "modular exponentiation precompile", "follower independently replays code storage fees and receipts", "compact announcement fetches missing EVM transactions and replays consecutive calls", "restart recovers contract state and supply", "same height tie converges by hash; EVM storage receipts native balances and fees follow selected branch"]}
+</system-out>
+	</testcase>
+	<testcase name="ExperimentNetwork" classname="ExperimentNetwork" time="4.52407" status="run">
+		<properties/>
+		<system-out>{"checks": ["parallel directories", "network impairment scope/cleanup retry", "dynamic inventory", "canonical transaction index rollback/restart", "synchronized round execution"]}
+</system-out>
+	</testcase>
+	<testcase name="AdmissionNetwork" classname="AdmissionNetwork" time="6.30114" status="run">
+		<properties/>
+		<system-out>{"checks": ["gap capacity", "known/busy/invalid feedback", "malformed batch releases the connection", "four full blocks across bounded synchronization frames", "reliable sender", "complete balances and nonces"]}
+</system-out>
+	</testcase>
+	<testcase name="InviteCorrectness" classname="InviteCorrectness" time="0.00638996" status="run">
+		<properties/>
+		<system-out>Invite scope, native adapters, envelope, legacy and bounds passed
+</system-out>
+	</testcase>
+	<testcase name="ChatFunding" classname="ChatFunding" time="0.00534407" status="run">
+		<properties/>
+		<system-out>PASS 60 chat funding checks
+</system-out>
+	</testcase>
+	<testcase name="ClassroomIndex" classname="ClassroomIndex" time="0.0862106" status="run">
+		<properties/>
+		<system-out>Classroom canonical index checks passed
+</system-out>
+	</testcase>
+	<testcase name="ClassroomNetwork" classname="ClassroomNetwork" time="4.263" status="run">
+		<properties/>
+		<system-out>{"checks": ["encrypted wallet create lock unlock and backup; wrong password rejected", "one real node, idempotent deployment and a signed native transfer", "UTF-8 chat event and receipt, bounded body, read-only call and duplicate-ID contract revert", "IPv6 ::1 and IPv4 share one canonical ledger", "gateway rejects foreign origins and missing token; diagnostics exclude raw outbox and seeds", "index rebuild and full node restart preserve contract and canonical chat", "desktop restart recovers deployment metadata from the signed outbox without unlocking or redeploying"]}
+</system-out>
+	</testcase>
+	<testcase name="ClassroomJoin" classname="ClassroomJoin" time="6.36182" status="run">
+		<properties/>
+		<system-out>{"checks": ["one identity and one node per app; ordinary transfer funds joining member; noncreator creates a group and chats without approval", "creator has no funding, membership approval or room shutdown API", "importing an invitation for the connected chain reuses the current identity, node and ledger", "joined member exports a valid invite, transfers funds and receives peer chat while creator is offline", "invalid invitations are rejected without stopping or replacing the active chain"], "passed": 5}
+</system-out>
+	</testcase>
+	<testcase name="InviteNetwork" classname="InviteNetwork" time="9.21876" status="run">
+		<properties/>
+		<system-out>{"passed": 6, "checks": ["one share address; bounded public configuration fetch; IPv6 address-only join; legacy token fallback; asynchronous preflight; real ready state", "IPv4 and IPv6 address-only joins automatically fund members, remember the connected address and exchange contract messages", "same-chain invitation merges entry without PID change; peer connection and chat survive original creator stopping", "wrong-chain endpoint and invalid preview cannot replace the running chain", "mismatched downloaded genesis is rejected before switching; oversized descriptor is bounded; service recovers after repair", "native-file inbox previews content once and never automatically switches chains"]}
+</system-out>
+	</testcase>
+	<testcase name="ClassroomFundingNetwork" classname="ClassroomFundingNetwork" time="18.9217" status="run">
+		<properties/>
+		<system-out>{"passed": 5, "checks": ["zero-balance member joins by address, receives one automatic grant and repeated claims add no transaction or balance", "with creator node stopped, an already-funded member sponsors a third zero-balance member and its independent claim succeeds", "both automatically-funded members exchange successful contract messages on the same canonical chain", "full gateway restart resumes the encrypted identity and original ledger without a second claim or sponsorship", "an already-claimed member that spends its balance gets the precise insufficient-token error and cannot refill by claiming again"], "elapsed_seconds": 18.3}
+</system-out>
+	</testcase>
+	<testcase name="ClassroomChains" classname="ClassroomChains" time="7.41819" status="run">
+		<properties/>
+		<system-out>{"passed": true, "checks": ["Same-title chains remain distinct by profile ID and genesis; the old node exits before its replacement starts", "Switching restores A balance, nonce, index, outbox and connection state; stale mutations are rejected", "Joining a saved chain reuses its existing directory and history; joining the current chain keeps its PID", "Explicit stop survives gateway restart; selecting and starting the saved chain remains possible", "Old sessions without the running flag resume their original 24-hex profile and canonical history", "Corrupt profiles are rejected before stopping; occupied ports and mismatched databases roll back to running A"]}
+</system-out>
+	</testcase>
+	<testcase name="ClassroomWallets" classname="ClassroomWallets" time="7.11806" status="run">
+		<properties/>
+		<system-out>{"passed": true, "checks": ["Logout keeps the node running, invalidates old requests and prevents new signing; bad passwords leave no account cache", "Invalid creation/import retains the selected unlocked account and never overwrites the legacy encrypted file", "Named creation, saved-wallet selection and old-format backup import use independent stable IDs without restarting the node", "Persistence failure restores the unlocked identity and balance; real legacy three-account backup retains bob across container switches", "Each saved chain restores its bound wallet; cross-wallet chain switches and desktop restarts require login; legacy bindings import unchanged", "A held funding discovery is discarded after logout and login of the same key; async workers never authorize the new session"]}
+</system-out>
+	</testcase>
+	<testcase name="IPv6Network" classname="IPv6Network" time="0.620006" status="run">
+		<properties/>
+		<system-out>{"checks": ["experiment inventory accepts IPv6 endpoints and SSH destinations", "IPv6-only sender propagates one signed transaction through dual-stack and legacy IPv4 peers", "sender CLI resolves and queries IPv6", "version-2 discovery contains IPv4 and IPv6; legacy discovery keeps six-byte records", "invalid teaching query returns an error without stopping the node"]}
+</system-out>
+	</testcase>
+</testsuite>

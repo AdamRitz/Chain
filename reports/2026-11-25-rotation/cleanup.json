@@ -1,0 +1,12 @@
+{
+  "ok": true,
+  "applied": true,
+  "deleted_database_count": 117,
+  "deleted_file_count": 564,
+  "deleted_bytes": 141130776,
+  "roots_checked_absolute": [
+    "/opt/chain-vdf/releases/vdf/rotation-001/build-attempts/full-001/test-data",
+    "/opt/chain-vdf/releases/vdf/rotation-001/build-attempts/full-002/test-data"
+  ],
+  "preserved": "Logs, configuration, genesis, wallets, node identities, RocksDB IDENTITY/LOCK, SQLite and test results"
+}

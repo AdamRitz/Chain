@@ -11,16 +11,25 @@
   delegate_to: localhost
   become: false
   register: chain_local_package
+  run_once: true
 - name: Require the declared controller package hash
   ansible.builtin.assert:
     that:
       - chain_local_package.stat.isreg | default(false)
       - chain_local_package.stat.checksum == chain_stage_release.sha256
+  run_once: true
+- name: Check the cached target package before copying its contents
+  ansible.builtin.stat:
+    path: "{{ chain_tools_root }}/packages/{{ chain_stage_release.id }}.tar.gz"
+    checksum_algorithm: sha256
+    follow: false
+  register: chain_cached_package
 - name: Copy the verified compressed package
   ansible.builtin.copy:
     src: "{{ chain_stage_release.package }}"
     dest: "{{ chain_tools_root }}/packages/{{ chain_stage_release.id }}.tar.gz"
     mode: '0644'
+  when: not (chain_cached_package.stat.isreg | default(false)) or chain_cached_package.stat.checksum | default('') != chain_stage_release.sha256
 - name: Validate members and manifest before atomic release publication
   ansible.builtin.command:
     argv:

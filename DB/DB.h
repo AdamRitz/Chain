@@ -332,7 +332,7 @@ void SaveBranchMemory(rocksdb::WriteBatch& batch) {
     CheckDBStatus(batch.Iterate(&save));
 }
 
-bool DBValidateVdfBlock(const vector<uint8_t>& data);
+bool DBValidateVdfBlock(const vector<uint8_t>& data,bool committing=false);
 NativeExecutionUndo DBNativeUndo(const UserMap& changed,span<const uint8_t,176> tx) {
     array<uint8_t,32> sender,receiver;
     memcpy(sender.data(),tx.data(),32); memcpy(receiver.data(),tx.data()+32,32);
@@ -638,7 +638,7 @@ optional<chain::vdf_election::Context> DBVdfNextContext(uint64_t height) {
 // Generic block encoding, transaction signatures and the bound Merkle root are
 // checked before this function. Eligibility is checked again for this parent
 // before either a cached execution or fork replay can commit the block.
-bool DBValidateVdfBlock(const vector<uint8_t>& data) {
+bool DBValidateVdfBlock(const vector<uint8_t>& data,bool committing) {
     using namespace chain::vdf_consensus;
     if (data.size()<112) return false;
     optional<Extension> extension;
@@ -646,6 +646,7 @@ bool DBValidateVdfBlock(const vector<uint8_t>& data) {
     const auto height=ReadU64(data.data()+64);
     if (!config.enabled||height==1) return !extension;
     if (!extension) return false;
+    if (committing&&config.producerRotation&&extension->slot>CurrentSlot()) return false;
     const auto parentHeight=DBReadBlockHeight();
     const auto parentHash=DBReadCurrentBlock();
     if (parentHeight==UINT64_MAX||height!=parentHeight+1||memcmp(data.data(),parentHash.data(),32)) return false;
@@ -772,7 +773,7 @@ bool DBCommitBlockLocked(const array<uint8_t,32>& hash,const vector<uint8_t>& da
     auto currentHeight=DBReadBlockHeight();
     auto previousHash=DBReadCurrentBlock();
     if (currentHeight==UINT64_MAX||height!=currentHeight+1||memcmp(data.data(),previousHash.data(),32)!=0) return false;
-    if (!DBValidateVdfBlock(data)) return false;
+    if (!DBValidateVdfBlock(data,true)) return false;
     UserMap changed;
     EvmExecution execution;
     unique_ptr<CachedExecution> cached;

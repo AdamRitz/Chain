@@ -50,6 +50,7 @@ class Load:
         self.pattern, self.ingress, self.batch = pattern, ingress, batch
         self.every = max(1, int(rate/sample_hz))
         self.samples, self.sent, self.wire_transactions = [], 0, 0
+        self.sample_cursor = 0
         self.lock, self.stop = threading.Lock(), threading.Event()
         self.error, self.late_ms = None, []
         self.started = 0
@@ -126,24 +127,125 @@ class Load:
                 connection.close()
 
 
-def CheckSamples(cluster, load):
+def CheckSamples(cluster, load, flush=False):
     if cluster.offline:
         return 0
     with load.lock:
-        pending = [sample for sample in load.samples if sample['included_at'] is None][:128]
+        size = len(load.samples)
+        cursor = load.sample_cursor % size if size else 0
+        pending = []
+        for offset in range(size):
+            index = (cursor + offset) % size
+            sample = load.samples[index]
+            if sample['included_at'] is None:
+                pending.append(sample)
+                load.sample_cursor = (index + 1) % size
+                if not flush and len(pending) == 128:
+                    break
     if not pending:
         return 0
-    payload = b''.join(bytes.fromhex(sample['hash']) for sample in pending)
-    rows = cluster.All(lambda index: cluster.clients[index].Query(31, payload))
-    now = time.monotonic()
     confirmed = 0
-    for column, sample in enumerate(pending):
-        values = [row[column] for row in rows]
-        if values[0] is not None and all(value == values[0] for value in values):
-            sample['included_at'] = now
-            sample['block'] = values[0]
-            confirmed += 1
+    # A final pass checks every pending sample once, including later samples
+    # behind an unresolved first page. RPC 31 accepts at most 128 hashes.
+    for begin in range(0, len(pending), 128):
+        batch = pending[begin:begin + 128]
+        payload = b''.join(bytes.fromhex(sample['hash']) for sample in batch)
+        rows = cluster.All(lambda index: cluster.clients[index].Query(31, payload))
+        now = time.monotonic()
+        for column, sample in enumerate(batch):
+            values = [row[column] for row in rows]
+            if values[0] is not None and all(value == values[0] for value in values):
+                sample['included_at'] = now
+                sample['block'] = values[0]
+                confirmed += 1
     return confirmed
+
+
+RESOURCE_COUNTERS = ('process_cpu_seconds', 'network_bytes', 'network_sent_bytes',
+                     'process_write_bytes', 'db_write_ms')
+
+
+class NodeResources:
+    """Accumulate counter differences without retaining complete node stats."""
+    def __init__(self):
+        self.previous = None
+        self.seconds = {key: 0.0 for key in RESOURCE_COUNTERS}
+        self.deltas = {key: 0.0 for key in RESOURCE_COUNTERS}
+        self.peak_resident_bytes = None
+        self.reorganizations = 0
+        self.intervals = 0
+        self.resets = 0
+        self.clock_sources = set()
+
+    def Add(self, controller_seconds, row):
+        resident = row.get('resident_bytes')
+        if resident is not None:
+            self.peak_resident_bytes = max(self.peak_resident_bytes or 0, resident)
+        raw_us = row.get('clock', {}).get('raw_us')
+        source = 'node_raw_us' if isinstance(raw_us, (int, float)) and math.isfinite(raw_us) else 'controller'
+        timestamp = raw_us / 1e6 if source == 'node_raw_us' else controller_seconds
+        current = {key: row.get(key) for key in RESOURCE_COUNTERS}
+        current.update(timestamp=timestamp, source=source, reorganizations=row.get('reorganizations', 0))
+        previous = self.previous
+        if previous is not None:
+            seconds = timestamp - previous['timestamp']
+            cpu, before_cpu = current['process_cpu_seconds'], previous['process_cpu_seconds']
+            restarted = cpu is not None and before_cpu is not None and cpu < before_cpu
+            if restarted or current['reorganizations'] < previous['reorganizations']:
+                self.resets += 1
+            if not restarted and source == previous['source'] and seconds > 0:
+                self.clock_sources.add(source)
+                self.intervals += 1
+                self.reorganizations += max(0, current['reorganizations'] - previous['reorganizations'])
+                for key in RESOURCE_COUNTERS:
+                    value, before = current[key], previous[key]
+                    if value is not None and before is not None and value >= before:
+                        self.seconds[key] += seconds
+                        self.deltas[key] += value - before
+            elif not restarted and source == previous['source'] and seconds == 0:
+                # Cluster.Stats reuses a snapshot between refreshes. Keep the
+                # original counters and timestamp, not the later poll time.
+                return
+        self.previous = current
+
+    def Summary(self, name):
+        def Rate(key):
+            return self.deltas[key] / self.seconds[key] if self.seconds[key] else None
+        return {'node': name, 'cpu_core_equivalents': Rate('process_cpu_seconds'),
+                'peak_resident_bytes': self.peak_resident_bytes,
+                'received_bytes_per_second': Rate('network_bytes'),
+                'sent_bytes_per_second': Rate('network_sent_bytes'),
+                'process_write_bytes_per_second': Rate('process_write_bytes'),
+                'db_write_ms_per_second': Rate('db_write_ms'),
+                'measurement_reorganizations': self.reorganizations,
+                'statistics_seconds': self.seconds['process_cpu_seconds'],
+                'statistics_intervals': self.intervals, 'statistics_resets': self.resets,
+                'statistics_time_sources': sorted(self.clock_sources)}
+
+
+class LoadMetrics:
+    """Keep per-poll totals and per-node accumulators; full records stay on disk."""
+    def __init__(self, warmup, duration, nodes):
+        self.warmup, self.end = warmup, warmup + duration
+        self.measured = []
+        self.nodes = [NodeResources() for _ in nodes]
+        self.reorganizations_sum = self.invalid_or_rejected_sum = self.max_reorg_depth = 0
+
+    def Add(self, point):
+        rows = [node for node in point['nodes'] if node]
+        self.reorganizations_sum = max(self.reorganizations_sum, sum(node['reorganizations'] for node in rows))
+        self.invalid_or_rejected_sum = max(self.invalid_or_rejected_sum, sum(node['invalid'] + node['rejected'] for node in rows))
+        self.max_reorg_depth = max([self.max_reorg_depth] + [node['max_reorg_depth'] for node in rows])
+        if not self.warmup <= point['seconds'] <= self.end or not point['common']:
+            return
+        self.measured.append({'seconds': point['seconds'], 'sent': point['sent'], 'common': point['common'],
+                              'backlog': sum(node['pool'] + node['pending'] for node in rows),
+                              'tx_backlog': sum(node['pool'] + node.get('pending_tx_verify', 0) for node in rows),
+                              'pending_block_verify': sum(node.get('pending_block_verify', 0) for node in rows),
+                              'pending_metadata': sum(node.get('pending_metadata', 0) for node in rows)})
+        for resources, row in zip(self.nodes, point['nodes']):
+            if row:
+                resources.Add(point['seconds'], row)
 
 
 def VerifyNativeState(cluster, dataset, genesis, count, wallets):
@@ -247,7 +349,7 @@ def LoadCase(cluster, case, plan, dataset, genesis, output):
                 'shard' if case.get('fault', {}).get('kind') == 'partition' else plan['ingress'],
                 plan['sample_hz'], plan.get('latency_batch', plan['batch']) if case['suite'] in ['latency', 'fault'] else plan['batch'], plan.get('parallel_ingress', False))
     thread = threading.Thread(target=load.Run, daemon=True)
-    points, events = [], []
+    metrics, events = LoadMetrics(warmup, duration, cluster.nodes), []
     applied = recovered = False
     fault = case.get('fault')
     recovery_started, recovery_seconds = None, None
@@ -278,7 +380,7 @@ def LoadCase(cluster, case, plan, dataset, genesis, output):
                 common = cluster.Common(stats)
                 point = {'seconds': time.monotonic()-load.started, 'sent': load.sent,
                          'common': common, 'nodes': stats}
-                points.append(point); timeline.write(json.dumps(point)+'\n'); timeline.flush()
+                metrics.Add(point); timeline.write(json.dumps(point)+'\n'); timeline.flush()
                 CheckSamples(cluster, load)
                 if recovery_started and recovery_seconds is None:
                     if all(stats) and len({row['head'] for row in stats}) == 1:
@@ -298,29 +400,27 @@ def LoadCase(cluster, case, plan, dataset, genesis, output):
         if fault and applied and not recovered:
             RecoverFault(cluster, fault); recovered = True
         common = cluster.Common()
+        CheckSamples(cluster, load, flush=True)
         checks = VerifyNativeState(cluster, dataset, genesis, load.sent, plan['wallets']) if common and common['transactions'] == load.sent else None
-        if checks:
-            while CheckSamples(cluster, load):
-                pass
         samples = [row for row in load.samples if warmup <= row['scheduled']-load.started < warmup+duration]
         completed = [row for row in samples if row['included_at'] is not None]
         latency = [(row['included_at']-row['scheduled'])*1000 for row in completed]
         sent_latency = [(row['included_at']-row['sent_at'])*1000 for row in completed]
-        measured = [row for row in points if warmup <= row['seconds'] <= warmup+duration and row['common']]
+        measured = metrics.measured
         first, last = (measured[0], measured[-1]) if len(measured) >= 2 else (None, None)
         throughput = (last['common']['transactions']-first['common']['transactions'])/(last['seconds']-first['seconds']) if first else None
         achieved = (last['sent']-first['sent'])/(last['seconds']-first['seconds']) if first else None
-        backlogs = [sum(node['pool']+node['pending'] for node in row['nodes'] if node) for row in measured]
+        backlogs = [row['backlog'] for row in measured]
         slope = statistics.linear_regression([row['seconds'] for row in measured], backlogs).slope if first else None
         def QueueGrowth(key):
             return statistics.linear_regression([row['seconds'] for row in measured],
-                [sum(node.get(key, 0) for node in row['nodes'] if node) for row in measured]).slope if first else None
-        tx_backlogs = [sum(node['pool']+node.get('pending_tx_verify', 0) for node in row['nodes'] if node) for row in measured]
+                [row[key] for row in measured]).slope if first else None
+        tx_backlogs = [row['tx_backlog'] for row in measured]
         tx_slope = statistics.linear_regression([row['seconds'] for row in measured], tx_backlogs).slope if first else None
         logical_backlogs = [row['sent']-row['common']['transactions'] for row in measured]
         logical_slope = statistics.linear_regression([row['seconds'] for row in measured], logical_backlogs).slope if first else None
-        reorgs = max((sum(node['reorganizations'] for node in row['nodes'] if node) for row in points), default=0)
-        invalid = max((sum(node['invalid']+node['rejected'] for node in row['nodes'] if node) for row in points), default=0)
+        reorgs = metrics.reorganizations_sum
+        invalid = metrics.invalid_or_rejected_sum
         within = sum(value <= plan['deadline_ms'] for value in latency)
         summary = {'offered_tps': case['rate'], 'achieved_send_tps': achieved, 'common_commit_tps': throughput,
                    'sent_unique': load.sent, 'sent_wire_copies': load.wire_transactions,
@@ -334,22 +434,13 @@ def LoadCase(cluster, case, plan, dataset, genesis, output):
                    'metadata_queue_growth_per_second': QueueGrowth('pending_metadata'),
                    'logical_backlog_end': logical_backlogs[-1] if first else None,
                    'max_backlog_sum': max(backlogs, default=0), 'reorganizations_sum': reorgs,
-                   'max_reorg_depth': max((node['max_reorg_depth'] for row in points for node in row['nodes'] if node), default=0),
+                   'measurement_reorganizations_sum': sum(node.reorganizations for node in metrics.nodes),
+                   'max_reorg_depth': metrics.max_reorg_depth,
                    'invalid_or_rejected_sum': invalid, 'drained': checks is not None,
                    'recovery_seconds': recovery_seconds, 'checks': checks, 'events': events,
                    'sample_poll_seconds': plan['poll_seconds'], 'measurement_seconds': last['seconds']-first['seconds'] if first else 0,
                    'measurement_samples': len(measured), 'parallel_ingress': load.parallel_ingress}
-        resources = []
-        for index, node in enumerate(cluster.nodes):
-            rows = [(point['seconds'], point['nodes'][index]) for point in measured if point['nodes'][index]]
-            seconds = sum(b[0]-a[0] for a, b in zip(rows, rows[1:]) if b[1].get('process_cpu_seconds', 0) >= a[1].get('process_cpu_seconds', 0))
-            def Rate(key):
-                return sum(max(0, b[1].get(key, 0)-a[1].get(key, 0)) for a, b in zip(rows, rows[1:]))/seconds if seconds else None
-            resources.append({'node': node['id'], 'cpu_core_equivalents': Rate('process_cpu_seconds'),
-                              'peak_resident_bytes': max((row['resident_bytes'] for _, row in rows if 'resident_bytes' in row), default=None),
-                              'received_bytes_per_second': Rate('network_bytes'), 'sent_bytes_per_second': Rate('network_sent_bytes'),
-                              'process_write_bytes_per_second': Rate('process_write_bytes'), 'db_write_ms_per_second': Rate('db_write_ms')})
-        summary['resources'] = resources
+        summary['resources'] = [resource.Summary(node['id']) for resource, node in zip(metrics.nodes, cluster.nodes)]
         cpu_end = controller.cpu_times()
         summary['controller_cpu_core_equivalents'] = (cpu_end.user+cpu_end.system-cpu_start.user-cpu_start.system)/(time.monotonic()-controller_start)
         summary['sustainable'] = bool(not fault and checks and throughput is not None and achieved is not None and
@@ -536,7 +627,8 @@ def Main(args):
     fields = ['suite', 'mode', 'nodes', 'rate', 'repeat', 'status', 'common_commit_tps', 'p50_ms', 'p99_ms',
               'deadline_success_fraction', 'sustainable', 'tx_sustainable', 'drained', 'recovery_seconds', 'final_spread_ms',
               'measurement_seconds', 'measurement_samples', 'parallel_ingress', 'tx_backlog_growth_per_second',
-              'logical_backlog_growth_per_second', 'logical_backlog_end']
+              'logical_backlog_growth_per_second', 'logical_backlog_end', 'measurement_reorganizations_sum',
+              'reorganizations_sum']
     with (args.work/'summary.csv').open('w', newline='', encoding='utf-8-sig') as output:
         writer = csv.DictWriter(output, fields, extrasaction='ignore'); writer.writeheader(); writer.writerows(rows)
     if failed:

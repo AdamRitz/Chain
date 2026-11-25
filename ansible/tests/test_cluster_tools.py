@@ -20,6 +20,7 @@ import vdf_build as build
 import vdf_instance as instance
 import stage_release as stage
 import managed_worker as worker
+import cluster_quick as quick
 
 
 def Nodes(count):
@@ -256,6 +257,33 @@ class ControlTests(unittest.TestCase):
 
 
 class BenchmarkTests(unittest.TestCase):
+    def test_ready_requires_committed_producers_and_allows_epoch_boundary(self):
+        import cluster_benchmark as benchmark
+        keys = [str(index) * 64 for index in range(5)]
+        genesis = {'vdf': {'enabled': True, 'producer_rotation': True, 'epoch_blocks': 32}}
+        rows = [{'vdf': {'enabled': True, 'producer_rotation': True, 'epoch': 2,
+                         'public_key': key, 'producers': keys}} for key in keys]
+        self.assertTrue(benchmark.ConsensusReady(rows, genesis))
+        rows[-1]['vdf']['epoch'] = 3
+        rows[-1]['vdf']['producers'] = list(reversed(keys))
+        self.assertTrue(benchmark.ConsensusReady(rows, genesis))
+        rows[0]['vdf']['epoch'] = 1
+        self.assertFalse(benchmark.ConsensusReady(rows, genesis))
+        rows[0]['vdf']['epoch'] = 2
+        rows[1]['vdf']['producers'] = list(reversed(keys))
+        self.assertFalse(benchmark.ConsensusReady(rows, genesis))
+        rows[1]['vdf']['producers'] = keys
+        rows[0]['vdf']['producer_rotation'] = False
+        self.assertFalse(benchmark.ConsensusReady(rows, genesis))
+
+    def test_ready_rejects_missing_or_foreign_producer(self):
+        import cluster_benchmark as benchmark
+        rows = [{'vdf': {'enabled': True, 'epoch': 2, 'public_key': str(index),
+                         'producers': ['0', '1']}} for index in range(2)]
+        self.assertTrue(benchmark.ConsensusReady(rows, {'vdf': {'enabled': True}}))
+        rows[0]['vdf']['producers'] = ['0', 'missing']
+        self.assertFalse(benchmark.ConsensusReady(rows, {'vdf': {'enabled': True}}))
+
     def test_worker_uses_plan_port_instead_of_global_default(self):
         import cluster_benchmark as benchmark
         plan = planner.MakePlan([{**node, 'port': 29189} for node in Nodes(2)], 'custom', injectors=1)
@@ -350,6 +378,14 @@ class BenchmarkTests(unittest.TestCase):
             self.assertNotIn('--data', args)
         self.assertEqual(sum(args.count('--seed') for args in arguments.values()), 80)
 
+    def test_initial_producer_limit_does_not_disable_vdf_computation(self):
+        import cluster_benchmark as benchmark
+        plan = planner.MakePlan(Nodes(20), 'bootstrap')
+        arguments = benchmark.Arguments(plan, {}, {'n0000'})
+        for name, args in arguments.items():
+            self.assertEqual(args[args.index('--produce') + 1], '1')
+            self.assertEqual(args[args.index('--vdf-bootstrap-produce') + 1], '1' if name == 'n0000' else '0')
+
     def test_node_settings_cannot_replace_backup_topology(self):
         import cluster_benchmark as benchmark
         plan = planner.MakePlan(Nodes(2), 'locked', injectors=1)
@@ -368,7 +404,7 @@ class EntryPointTests(unittest.TestCase):
             destination = root / 'ansible/scripts'
             destination.mkdir(parents=True)
             for name in ('cluster_release.py', 'cluster_control.py', 'cluster_benchmark.py',
-                         'cluster_plan.py', 'vdf_build.py', 'vdf_instance.py', 'stage_release.py'):
+                         'cluster_plan.py', 'cluster_quick.py', 'vdf_build.py', 'vdf_instance.py', 'stage_release.py'):
                 shutil.copyfile(scripts / name, destination / name)
             (root / 'Test').mkdir()
             for name in ('Cluster.py', 'ClusterWorker.py', 'Netem.py', 'NetworkTest.py', 'Experiments.py'):
@@ -378,13 +414,135 @@ class EntryPointTests(unittest.TestCase):
             environment = dict(os.environ)
             environment.pop('PYTHONDONTWRITEBYTECODE', None)
             environment.pop('PYTHONPYCACHEPREFIX', None)
-            for name in ('cluster_release.py', 'cluster_control.py', 'cluster_benchmark.py'):
+            for name in ('cluster_release.py', 'cluster_control.py', 'cluster_benchmark.py', 'cluster_quick.py'):
                 result = subprocess.run([sys.executable, str(destination / name), '--help'],
                                         env=environment, capture_output=True, text=True, timeout=30)
                 self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
             after = {path.relative_to(root).as_posix(): build.Hash(path)
                      for path in root.rglob('*') if path.is_file()}
             self.assertEqual(after, before)
+
+
+class QuickTests(unittest.TestCase):
+    def test_persistent_deployment_bootstrap_arguments_preserve_legacy_genesis(self):
+        import ast
+        import jinja2
+        import yaml
+        playbook = Path(__file__).resolve().parents[1] / 'cluster_deploy.yml'
+        tasks = yaml.safe_load(playbook.read_text(encoding='utf-8'))[-1]['tasks']
+        task = next(task for task in tasks if task['name'].startswith('Limit initial'))
+        expression = task['ansible.builtin.set_fact']['chain_cluster_node_arguments']
+        environment = jinja2.Environment(undefined=jinja2.ChainableUndefined)
+        # Ansible provides bool; a minimal equivalent is enough for these booleans.
+        environment.filters['bool'] = bool
+        template = environment.from_string(expression)
+        base = {'chain_cluster_arguments': ['--produce', '1'], 'groups': {'chain': ['first', 'second']},
+                'inventory_hostname': 'second'}
+        for genesis, expected in (({'accounts': []}, ['--produce', '1']),
+                                  ({'vdf': {'producer_rotation': True}}, ['--produce', '1', '--vdf-bootstrap-produce', '0'])):
+            rendered = template.render(**base, chain_cluster_genesis=genesis)
+            self.assertEqual(ast.literal_eval(rendered), expected)
+
+    def test_five_minute_count_does_not_keep_old_dataset_limit(self):
+        self.assertEqual(quick.RequiredTransactions(20000, 2, 300), 6040000)
+        self.assertEqual(quick.RequiredTransactions(3, .1, .1), 1)
+        self.assertEqual(quick.Parser().parse_args([
+            'test', '--nodes', '/nodes.json', '--release-id', 'r', '--package', '/r.tar.gz',
+            '--package-sha256', 'a' * 64, '--output', '/results']).duration, 300)
+        for rate, warmup, duration in ((0, 2, 300), (10, 2, float('nan')), (10000000, 2, 300)):
+            with self.assertRaises(ValueError):
+                quick.RequiredTransactions(rate, warmup, duration)
+
+    def test_new_test_genesis_enables_rotation_without_modifying_source(self):
+        original = {'base_fee': 1, 'accounts': [{'public_key': 'a', 'balance': 1000}]}
+        result = quick.RotationGenesis(original, now_ms=1000999)
+        self.assertNotIn('vdf', original)
+        self.assertTrue(result['vdf']['producer_rotation'])
+        self.assertEqual(result['vdf']['slot_ms'], 200)
+        self.assertEqual(result['vdf']['start_time_ms'], 1000800)
+        with self.assertRaisesRegex(ValueError, 'existing VDF genesis'):
+            quick.RotationGenesis(result)
+
+    def test_dataset_cache_is_reused_and_tampering_rejected(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            sender = root / 'sender'
+            sender.write_bytes(b'fixture sender')
+            calls = []
+            def Prepare(command, **kwargs):
+                calls.append(command)
+                data = Path(command[command.index('--prepare') + 1])
+                data.write_bytes(b't' * (3 * 176))
+                Path(str(data) + '.genesis.json').write_text(json.dumps({'accounts': [{}, {}]}))
+            first = quick.PrepareDataset(sender, root / 'cache', 3, 2, invoke=Prepare)
+            second = quick.PrepareDataset(sender, root / 'cache', 3, 2, invoke=Prepare)
+            self.assertEqual(first, second)
+            self.assertEqual(len(calls), 1)
+            Path(first['dataset']).write_bytes(b'x' * (3 * 176))
+            with self.assertRaisesRegex(ValueError, 'checksum'):
+                quick.PrepareDataset(sender, root / 'cache', 3, 2, invoke=Prepare)
+
+    def test_failed_dataset_prepare_removes_only_its_temporary_directory(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            sender = root / 'sender'
+            sender.write_bytes(b'fixture sender')
+            cache = root / 'cache'
+            cache.mkdir()
+            retained = cache / 'retained.bin'
+            retained.write_bytes(b'keep')
+            with self.assertRaises(RuntimeError):
+                quick.PrepareDataset(sender, cache, 3, 2, invoke=mock.Mock(side_effect=RuntimeError('fixture')))
+            self.assertEqual(list(cache.iterdir()), [retained])
+
+    def test_deploy_preserves_existing_genesis_and_runs_only_deploy_playbook(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            package, nodes, genesis = root / 'package.tar.gz', root / 'nodes.json', root / 'genesis.json'
+            package.write_bytes(b'fixture package')
+            quick.Save(nodes, Nodes(2))
+            original = {'base_fee': 1, 'accounts': [], 'vdf': {'producer_rotation': False}}
+            quick.Save(genesis, original)
+            args = quick.Parser().parse_args(['deploy', '--nodes', str(nodes), '--release-id', 'r',
+                '--package', str(package), '--package-sha256', build.Hash(package),
+                '--genesis', str(genesis), '--output', str(root / 'deploy')])
+            calls = []
+            self.assertEqual(quick.Execute(args, invoke=lambda command, **kwargs:
+                                          calls.append(command) or SimpleNamespace(returncode=0)), 0)
+            self.assertEqual(len(calls), 1)
+            self.assertTrue(any(item.endswith('cluster_deploy.yml') for item in calls[0]))
+            variables = json.loads((root / 'deploy/variables.json').read_text())
+            self.assertEqual(variables['chain_cluster_genesis'], original)
+            self.assertEqual(json.loads(genesis.read_text()), original)
+
+    def test_test_action_prepares_five_minute_input_and_keeps_data_on_controller(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            package, nodes, sender = root / 'package.tar.gz', root / 'nodes.json', root / 'sender'
+            package.write_bytes(b'fixture package')
+            sender.write_bytes(b'fixture sender')
+            quick.Save(nodes, [{**node, 'port': 18089} for node in Nodes(2)])
+            genesis = root / 'funded.json'
+            quick.Save(genesis, {'base_fee': 1, 'accounts': [{}, {}]})
+            dataset = {'dataset': str(root / 'cached-transactions.bin'), 'genesis': str(genesis),
+                       'dataset_sha256': 'a' * 64}
+            args = quick.Parser().parse_args(['test', '--nodes', str(nodes), '--port', '28089',
+                '--release-id', 'r', '--package', str(package), '--package-sha256', build.Hash(package),
+                '--sender', str(sender), '--wallets', '2', '--output', str(root / 'test01')])
+            calls = []
+            with mock.patch.object(quick, 'VerifySender') as verify, \
+                 mock.patch.object(quick, 'PrepareDataset', return_value=dataset) as prepare:
+                self.assertEqual(quick.Execute(args, invoke=lambda command, **kwargs:
+                                              calls.append(command) or SimpleNamespace(returncode=0)), 0)
+            verify.assert_called_once_with(package.resolve(), sender.resolve())
+            self.assertEqual(prepare.call_args.args[2:], (3020000, 2))
+            variables = json.loads((root / 'test01/variables.json').read_text())
+            self.assertEqual(variables['chain_cluster_duration'], 300)
+            self.assertEqual(variables['chain_dataset'], dataset['dataset'])
+            self.assertTrue(any(item.endswith('cluster_benchmark.yml') for item in calls[0]))
+            self.assertEqual({node['port'] for node in json.loads((root / 'test01/plan.json').read_text())['nodes']}, {28089})
+            with self.assertRaises(FileExistsError):
+                quick.Execute(args, invoke=mock.Mock())
 
 
 if __name__ == '__main__':

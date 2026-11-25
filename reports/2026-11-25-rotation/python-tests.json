@@ -1,0 +1,26 @@
+{
+  "ansible_tools": {
+    "command": "python -B -m unittest discover -s ansible/tests -p 'test_*.py' -q",
+    "platform": "Linux x86_64",
+    "tests": 111,
+    "passed": 111,
+    "seconds": 10.269
+  },
+  "measurement_metrics": {
+    "command": "python -B Test/ExperimentMetricsTest.py",
+    "platform": "Linux x86_64",
+    "tests": 12,
+    "passed": 12,
+    "seconds": 0.004
+  },
+  "rotation_codec": {
+    "command": "python -B Test/VdfRotationNetworkTest.py --self-test",
+    "checks": 4,
+    "status": "passed"
+  },
+  "legacy_vdf_codec": {
+    "command": "python -B Test/VdfNetworkTest.py --self-test",
+    "checks": 14,
+    "status": "passed"
+  }
+}

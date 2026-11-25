@@ -48,6 +48,7 @@ int main(int argc,char* argv[]) {
             if (node["data"]) dataPath=node["data"].as<string>();
             if (node["genesis"]) genesisPath=node["genesis"].as<string>();
             if (node["vdf_key"]) vdfKeyPath=node["vdf_key"].as<string>();
+            if (node["vdf_bootstrap_produce"]) vdfBootstrapProduce=node["vdf_bootstrap_produce"].as<bool>();
             if (node["io_threads"]) ioNum=node["io_threads"].as<int>();
             if (node["verify_threads"]) verifyNum=node["verify_threads"].as<int>();
             if (node["candidate_threads"]) candidateNum=node["candidate_threads"].as<int>();
@@ -93,6 +94,7 @@ int main(int argc,char* argv[]) {
             if (name=="--data") dataPath=value;
             else if (name=="--genesis") genesisPath=value;
             else if (name=="--vdf-key") vdfKeyPath=value;
+            else if (name=="--vdf-bootstrap-produce") vdfBootstrapProduce=ParseNumber(value,0,1)!=0;
             else if (name=="--network-info") nodeNetworkInfoPath=value;
             else if (name=="--stop-file") stopFile=value;
             else if (name=="--bind") listenAddress=value;

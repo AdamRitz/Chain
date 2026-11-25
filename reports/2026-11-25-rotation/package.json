@@ -1,0 +1,7 @@
+{
+  "package": "/opt/chain-rotation/quick-validation-001/rotation-001.tar.gz",
+  "sha256": "b85289ec728e28ed799525727f15137ce3bebb639073fa320017354c098d3d28",
+  "source_commit": "014f6e6c135434fefd1a9189462eb7d8aeb01f5d",
+  "binary_sha256": "b8865698509bb4e164b4c05fcff712d1708f01b2114539d3d9d5124d6c3ffb61",
+  "files": 842
+}

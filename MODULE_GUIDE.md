@@ -1,5 +1,13 @@
 # Chain 模块与修改指南
 
+## 2026-11-25 轮流出块与五分钟测试
+
+新链通过创世 `vdf.producer_rotation: true` 启用轮值，旧链摘要和规则保持。`Consensus/VdfRules.h` 的 `ScheduledProducer` 和 `CanProduce` 共用于本地产块和收到区块的验证，名单位置为 `(slot - StartSlot) % active.size()`。非成员恢复规则保留，已选成员不能绕过自己的时间片。未来块在有界分叉缓存等待，到对应时间片后再采用，数据库提交再次检查时间。
+
+`Network/Vdf.h` 对正常轮值块立即提交；最初两组、空名单和非成员恢复块保留比较等待。`--vdf-bootstrap-produce 0` 仅关闭最初两组本地产块，仍计算和发布 VDF，用于大集群首次启动。新增 `VdfRotationNetwork` 覆盖七节点轮值、离线跳过、重启同步、越权区块和未来区块。
+
+`ansible/scripts/cluster_quick.py` 提供 `stage/deploy/test`，按包哈希和签名交易缓存复用准备结果。正式测量默认 300 秒，预热及结束等待另计。`Test/ExperimentMetricsTest.py` 检查统计缓存计时、样本轮转查询及重组增量；完整时间线写磁盘，内存只保留汇总值。
+
 更新日期：2026-11-24。供后续开发者和 Codex 调整代码前阅读。当前为 C++20、每个程序单入口、头文件集中实现；函数沿用 PascalCase，数据流直接连接。
 
 当前账户转账、并发验签、原子状态落库、分叉恢复与 EVM 的运行实现取自 `933905448951c600156a8ad2a0b3c3a895916fb5`。学习模型、候选策略和相关头文件保留为历史研究资料，当前节点不引用它们；默认 CMake 恢复该基线的十一项回归。切换记录见 `reports/2026-10-28-no-model/REPORT.md`。FISCO 的 `Aligned`、`Capacity` 驱动及 `reports/2026-10-27-fisco-long` 保持最新，独立于本次 Chain 基线切换。

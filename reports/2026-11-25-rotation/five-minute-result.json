@@ -1,0 +1,245 @@
+{
+  "status": "complete",
+  "process_count": 5,
+  "physical_hosts": 1,
+  "measurement_duration_seconds": 300.0,
+  "warmup_seconds": 5.0,
+  "offered_tps": 100,
+  "expected_transactions": 30500,
+  "metrics": {
+    "offered_tps": 100,
+    "achieved_send_tps": 100.00844235055185,
+    "common_commit_tps": 99.97509508734726,
+    "sent_unique": 30500,
+    "sent_wire_copies": 30500,
+    "p50_ms": 270.1996659998258,
+    "p95_ms": 376.32999199968253,
+    "p99_ms": 777.0877739999378,
+    "p99_after_send_ms": 686.8981789998543,
+    "samples": 3000,
+    "unresolved_samples": 0,
+    "deadline_ms": 1000,
+    "deadline_success_fraction": 0.9906666666666667,
+    "send_lateness_p99_ms": 0.7059340000523662,
+    "backlog_growth_per_second": -0.027838989406305217,
+    "tx_backlog_growth_per_second": -0.008241424174151947,
+    "logical_backlog_growth_per_second": -0.007423803583897375,
+    "candidate_backlog_growth_per_second": -0.020050277558796542,
+    "metadata_queue_growth_per_second": 0.00027726353232208987,
+    "logical_backlog_end": 20,
+    "max_backlog_sum": 1719,
+    "reorganizations_sum": 40,
+    "measurement_reorganizations_sum": 36,
+    "max_reorg_depth": 1,
+    "invalid_or_rejected_sum": 0,
+    "drained": true,
+    "recovery_seconds": null,
+    "checks": {
+      "accounts_checked_per_node": 32,
+      "state": {
+        "burned": 0,
+        "state_hash": "fe765007294b97396b6cb6a179ec8c44757e7293a91e293397ffb5adfd59d46f",
+        "supply": 32000000000,
+        "transactions": 30500
+      },
+      "common_block": {
+        "hash": "dc2f85d654ff2e82d83754592bb857fea6e9f954870ed33c12fbcd7c81ef7e78",
+        "height": 1566,
+        "transactions": 30500
+      },
+      "node_states": {
+        "node001": {
+          "burned": 0,
+          "head": "dc2f85d654ff2e82d83754592bb857fea6e9f954870ed33c12fbcd7c81ef7e78",
+          "state_hash": "fe765007294b97396b6cb6a179ec8c44757e7293a91e293397ffb5adfd59d46f",
+          "supply": 32000000000,
+          "transactions": 30500
+        },
+        "node002": {
+          "burned": 0,
+          "head": "dc2f85d654ff2e82d83754592bb857fea6e9f954870ed33c12fbcd7c81ef7e78",
+          "state_hash": "fe765007294b97396b6cb6a179ec8c44757e7293a91e293397ffb5adfd59d46f",
+          "supply": 32000000000,
+          "transactions": 30500
+        },
+        "node003": {
+          "burned": 0,
+          "head": "dc2f85d654ff2e82d83754592bb857fea6e9f954870ed33c12fbcd7c81ef7e78",
+          "state_hash": "fe765007294b97396b6cb6a179ec8c44757e7293a91e293397ffb5adfd59d46f",
+          "supply": 32000000000,
+          "transactions": 30500
+        },
+        "node004": {
+          "burned": 0,
+          "head": "dc2f85d654ff2e82d83754592bb857fea6e9f954870ed33c12fbcd7c81ef7e78",
+          "state_hash": "fe765007294b97396b6cb6a179ec8c44757e7293a91e293397ffb5adfd59d46f",
+          "supply": 32000000000,
+          "transactions": 30500
+        },
+        "node005": {
+          "burned": 0,
+          "head": "dc2f85d654ff2e82d83754592bb857fea6e9f954870ed33c12fbcd7c81ef7e78",
+          "state_hash": "fe765007294b97396b6cb6a179ec8c44757e7293a91e293397ffb5adfd59d46f",
+          "supply": 32000000000,
+          "transactions": 30500
+        }
+      }
+    },
+    "events": [],
+    "sample_poll_seconds": 0.1,
+    "measurement_seconds": 299.87468352800033,
+    "measurement_samples": 2737,
+    "parallel_ingress": false,
+    "resources": [
+      {
+        "node": "node001",
+        "cpu_core_equivalents": 0.18686552847284305,
+        "peak_resident_bytes": 74096640,
+        "received_bytes_per_second": 112519.13306998425,
+        "sent_bytes_per_second": 166037.48490470918,
+        "process_write_bytes_per_second": 68417.95083614778,
+        "db_write_ms_per_second": 39.50674027388854,
+        "measurement_reorganizations": 7,
+        "statistics_seconds": 299.8754529953003,
+        "statistics_intervals": 2736,
+        "statistics_resets": 0,
+        "statistics_time_sources": [
+          "node_raw_us"
+        ]
+      },
+      {
+        "node": "node002",
+        "cpu_core_equivalents": 0.18617954648352672,
+        "peak_resident_bytes": 78684160,
+        "received_bytes_per_second": 108779.05243629153,
+        "sent_bytes_per_second": 169034.78092640935,
+        "process_write_bytes_per_second": 68759.60431657203,
+        "db_write_ms_per_second": 39.27877205571467,
+        "measurement_reorganizations": 10,
+        "statistics_seconds": 299.8746750354767,
+        "statistics_intervals": 2736,
+        "statistics_resets": 0,
+        "statistics_time_sources": [
+          "node_raw_us"
+        ]
+      },
+      {
+        "node": "node003",
+        "cpu_core_equivalents": 0.18814120916456367,
+        "peak_resident_bytes": 75284480,
+        "received_bytes_per_second": 105513.0980719619,
+        "sent_bytes_per_second": 171117.11112781017,
+        "process_write_bytes_per_second": 68267.73001654903,
+        "db_write_ms_per_second": 39.427772737198154,
+        "measurement_reorganizations": 4,
+        "statistics_seconds": 299.87532901763916,
+        "statistics_intervals": 2736,
+        "statistics_resets": 0,
+        "statistics_time_sources": [
+          "node_raw_us"
+        ]
+      },
+      {
+        "node": "node004",
+        "cpu_core_equivalents": 0.18616108341888402,
+        "peak_resident_bytes": 77701120,
+        "received_bytes_per_second": 107528.07031813703,
+        "sent_bytes_per_second": 169185.26064679507,
+        "process_write_bytes_per_second": 68486.5491470421,
+        "db_write_ms_per_second": 39.601855604743925,
+        "measurement_reorganizations": 8,
+        "statistics_seconds": 299.8741250038147,
+        "statistics_intervals": 2736,
+        "statistics_resets": 0,
+        "statistics_time_sources": [
+          "node_raw_us"
+        ]
+      },
+      {
+        "node": "node005",
+        "cpu_core_equivalents": 0.1852150845204378,
+        "peak_resident_bytes": 73138176,
+        "received_bytes_per_second": 109886.53616977928,
+        "sent_bytes_per_second": 168037.74486485877,
+        "process_write_bytes_per_second": 68445.52809242326,
+        "db_write_ms_per_second": 37.069648014331975,
+        "measurement_reorganizations": 7,
+        "statistics_seconds": 299.87431716918945,
+        "statistics_intervals": 2736,
+        "statistics_resets": 0,
+        "statistics_time_sources": [
+          "node_raw_us"
+        ]
+      }
+    ],
+    "controller_cpu_core_equivalents": 0.023913604283636796,
+    "sustainable": true,
+    "tx_sustainable": true
+  },
+  "state_check": {
+    "accounts_checked_per_node": 32,
+    "state": {
+      "burned": 0,
+      "state_hash": "fe765007294b97396b6cb6a179ec8c44757e7293a91e293397ffb5adfd59d46f",
+      "supply": 32000000000,
+      "transactions": 30500
+    },
+    "common_block": {
+      "hash": "dc2f85d654ff2e82d83754592bb857fea6e9f954870ed33c12fbcd7c81ef7e78",
+      "height": 1566,
+      "transactions": 30500
+    },
+    "node_states": {
+      "node001": {
+        "burned": 0,
+        "head": "dc2f85d654ff2e82d83754592bb857fea6e9f954870ed33c12fbcd7c81ef7e78",
+        "state_hash": "fe765007294b97396b6cb6a179ec8c44757e7293a91e293397ffb5adfd59d46f",
+        "supply": 32000000000,
+        "transactions": 30500
+      },
+      "node002": {
+        "burned": 0,
+        "head": "dc2f85d654ff2e82d83754592bb857fea6e9f954870ed33c12fbcd7c81ef7e78",
+        "state_hash": "fe765007294b97396b6cb6a179ec8c44757e7293a91e293397ffb5adfd59d46f",
+        "supply": 32000000000,
+        "transactions": 30500
+      },
+      "node003": {
+        "burned": 0,
+        "head": "dc2f85d654ff2e82d83754592bb857fea6e9f954870ed33c12fbcd7c81ef7e78",
+        "state_hash": "fe765007294b97396b6cb6a179ec8c44757e7293a91e293397ffb5adfd59d46f",
+        "supply": 32000000000,
+        "transactions": 30500
+      },
+      "node004": {
+        "burned": 0,
+        "head": "dc2f85d654ff2e82d83754592bb857fea6e9f954870ed33c12fbcd7c81ef7e78",
+        "state_hash": "fe765007294b97396b6cb6a179ec8c44757e7293a91e293397ffb5adfd59d46f",
+        "supply": 32000000000,
+        "transactions": 30500
+      },
+      "node005": {
+        "burned": 0,
+        "head": "dc2f85d654ff2e82d83754592bb857fea6e9f954870ed33c12fbcd7c81ef7e78",
+        "state_hash": "fe765007294b97396b6cb6a179ec8c44757e7293a91e293397ffb5adfd59d46f",
+        "supply": 32000000000,
+        "transactions": 30500
+      }
+    }
+  },
+  "rotation_check": {
+    "normal_blocks_checked": 1501,
+    "blocks_by_producer": {
+      "fd1b056cc723c087bded83b1ed2a37020f2438538a8afe599292dcf3ebec9426": 299,
+      "8b67052e98b2847c5812232dc119624f9f371ce2f71113b94b1005ccd446eaa0": 302,
+      "f1c7b86cd41083b59d06490b92e4e614784ec5795f6e0154ae75b7d98c23b558": 303,
+      "515cf9aa7b1d59de7c81d90f7da41741c95a3499eb3c0c90bdcfb676faf22c99": 298,
+      "38b75c95ab4e684cbe872c148b62a79fd42e6be5e173e8c4a721b5f11b242dd8": 299
+    },
+    "anchor": {
+      "hash": "dc2f85d654ff2e82d83754592bb857fea6e9f954870ed33c12fbcd7c81ef7e78",
+      "height": 1566,
+      "transactions": 30500
+    }
+  }
+}

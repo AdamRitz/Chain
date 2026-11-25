@@ -20,12 +20,14 @@
   'wallets': chain_cluster_wallets | default(1024) | int,
   'forks': chain_cluster_forks | default(32) | int,
   'query_workers': chain_cluster_query_workers | default(32) | int,
-  'duration': chain_cluster_duration | default(10) | float,
+  'duration': chain_cluster_duration | default(300) | float,
   'warmup': chain_cluster_warmup | default(2) | float,
   'drain_seconds': chain_cluster_drain_seconds | default(5) | float,
   'poll_seconds': chain_cluster_poll_seconds | default(0.1) | float,
   'metrics_period': chain_cluster_metrics_period | default(1.0) | float,
   'sample_hz': chain_cluster_sample_hz | default(20) | float,
   'batch': chain_cluster_batch | default(128) | int,
+  'readiness_timeout': chain_cluster_readiness_timeout | default(300) | float,
+  'bootstrap_producers': chain_cluster_bootstrap_producers | default(1) | int,
   'node_settings': chain_cluster_node_settings | default({})
 } | to_nice_json }}

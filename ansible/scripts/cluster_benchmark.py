@@ -82,7 +82,7 @@ def ValidateSettings(settings):
         raise ValueError('node_settings must be an object')
     forbidden = {'data', 'genesis', 'metrics', 'config', 'port', 'bind', 'seed', 'seeds-file',
                  'peer-discovery', 'max-peers', 'max-connections', 'target-peers', 'backup-seed',
-                 'relay-transactions', 'run-seconds', 'stop-file', 'vdf-key'}
+                 'relay-transactions', 'run-seconds', 'stop-file', 'vdf-key', 'vdf-bootstrap-produce'}
     if any(not isinstance(key, str) or not re.fullmatch(r'[a-z][a-z0-9-]+', key) or key in forbidden or
            not isinstance(value, (str, int, float, bool)) for key, value in settings.items()):
         raise ValueError('Node settings cannot replace lifecycle, topology or identity arguments')
@@ -114,10 +114,15 @@ def Validate(context):
         value = context.get(key)
         if isinstance(value, bool) or not isinstance(value, (int, float)) or not math.isfinite(value) or not lower <= value <= upper:
             raise ValueError('Invalid ' + key)
-    if context['warmup'] + context['duration'] + context['drain_seconds'] > 3000:
+    readiness = context.get('readiness_timeout', 300)
+    if isinstance(readiness, bool) or not isinstance(readiness, (int, float)) or not math.isfinite(readiness) or not 1 <= readiness <= 600:
+        raise ValueError('Invalid readiness_timeout')
+    if type(context.get('bootstrap_producers', 1)) is not int or not 0 <= context.get('bootstrap_producers', 1) <= 64:
+        raise ValueError('Invalid bootstrap_producers')
+    if context['warmup'] + context['duration'] + context['drain_seconds'] + 2 * readiness > 3000:
         raise ValueError('Leave time for deployment and cleanup before the one-hour process guard')
     count = int(context['rate'] * (context['warmup'] + context['duration']))
-    if count < 1 or Path(context['dataset']).stat().st_size < count * 176:
+    if count < 1 or Path(context['dataset']).stat().st_size % 176 or Path(context['dataset']).stat().st_size < count * 176:
         raise ValueError('Prepared dataset is too small')
     plan = json.loads(Path(context['plan']).read_text(encoding='utf-8'))
     keys = {'id', 'host', 'ansible_host', 'ansible_user', 'ansible_port', 'port', 'bind', 'query_host'}
@@ -136,16 +141,21 @@ def Validate(context):
     return plan, genesis
 
 
-def Arguments(plan, settings):
+def Arguments(plan, settings, producer_ids=None):
     ValidateSettings(settings)
     result = {}
     for node in plan['nodes']:
         values = {'io-threads': 1, 'verify-threads': 1, 'candidate-threads': 1,
                   'block-verify-threads': 1, 'query-threads': 1, 'sync': 1, 'produce': 1,
-                  'experiment-index': 1, 'block-ms': 50, 'max-block-txs': 6000,
+                  'experiment-index': 1, 'block-ms': 200, 'max-block-txs': 6000,
                   'block-tx-step': 2000, **settings, 'port': node['port'], 'bind': node['bind'],
                   'peer-discovery': 0, 'max-peers': len(node['neighbors']) + 4, 'target-peers': len(node['neighbors']),
                   'max-connections': len(node['neighbors']) + 36, 'relay-transactions': 1}
+        if producer_ids is not None:
+            # Every node keeps its identity and VDF calculation thread. Only the
+            # first two epochs restrict which local node creates blocks.
+            values['produce'] = 1
+            values['vdf-bootstrap-produce'] = int(node['id'] in producer_ids)
         arguments = [part for key, value in values.items() for part in
                      ('--' + key, str(int(value) if isinstance(value, bool) else value))]
         for peer in node['seeds']:
@@ -154,6 +164,29 @@ def Arguments(plan, settings):
             arguments += ['--backup-seed', peer]
         result[node['id']] = arguments
     return result
+
+
+def ConsensusReady(rows, genesis):
+    """Accept a statistics sweep crossing an epoch boundary, but never bootstrap."""
+    config = genesis.get('vdf', {})
+    if not config.get('enabled', bool(config)):
+        return True
+    expected = min(5, len(rows))
+    identities = {row.get('vdf', {}).get('public_key') for row in rows}
+    committees = {}
+    for row in rows:
+        state = row.get('vdf', {})
+        epoch, producers = state.get('epoch', -1), state.get('producers', [])
+        if (not state.get('enabled') or epoch < 2 or len(producers) != expected or
+                len(set(producers)) != expected or not set(producers).issubset(identities)):
+            return False
+        if config.get('producer_rotation') and state.get('producer_rotation') is not True:
+            return False
+        committee = tuple(producers)
+        if epoch in committees and committees[epoch] != committee:
+            return False
+        committees[epoch] = committee
+    return True
 
 
 class Workers:
@@ -287,23 +320,44 @@ class SparseCluster(ExistingCluster.Cluster):
             Save(self.output / 'readiness-errors.json', {'timeout_seconds': timeout, 'nodes': names, 'errors': errors})
             raise TimeoutError(f'{len(names)} nodes did not become ready within {timeout}s: {names[:8]}; inspect readiness-errors.json')
 
+    def WaitConnected(self, name):
+        timeout = self.workers.context.get('readiness_timeout', 300)
+        deadline = time.monotonic() + timeout
+        error, rows, common = '', [], None
+        while True:
+            try:
+                # Force fresh counters here: cached head-only replies retain old VDF lists.
+                rows = super().Stats()
+                peers_ready = all(not row['failed'] and row['peers'] >= len(node['neighbors'])
+                                  for node, row in zip(self.plan['nodes'], rows))
+                if peers_ready and ConsensusReady(rows, self.genesis):
+                    common = self.Common(rows)
+                    config = self.genesis.get('vdf', {})
+                    required = 1 + 2 * int(config.get('epoch_blocks', 32)) if config.get('enabled', bool(config)) else 1
+                    if common and common['height'] >= required:
+                        Save(self.output / name, {'nodes': rows, 'common': common})
+                        self.cached_stats, self.last_stats = None, 0
+                        return rows
+            except (OSError, ValueError, RuntimeError, ConnectionError) as failure:
+                error = str(failure)
+            if time.monotonic() >= deadline:
+                Save(self.output / 'consensus-readiness-errors.json',
+                     {'nodes': rows, 'common': common, 'error': error, 'timeout_seconds': timeout})
+                raise TimeoutError('Peer graph and common VDF producer list did not become ready; inspect consensus-readiness-errors.json')
+            time.sleep(.5)
+
     def Start(self):
         self.touched = True
-        machines = self.workers.Call('start', self.genesis, Arguments(self.plan, self.settings))
+        config = self.genesis.get('vdf', {})
+        count = self.workers.context.get('bootstrap_producers', 1)
+        bootstrap = bool(config.get('producer_rotation') and 0 < count < len(self.nodes))
+        producers = {node['id'] for node in self.plan['nodes'][:count]} if bootstrap else None
+        machines = self.workers.Call('start', self.genesis, Arguments(self.plan, self.settings, producers))
         if {row['binary_sha256'] for row in machines.values()} != {self.workers.context['binary_sha256']}:
             raise ValueError('Cluster binaries differ from the pinned release')
         Save(self.output / 'machines.json', machines)
-        self.WaitReady(range(len(self.nodes)), timeout=180)
-        deadline = time.monotonic() + 180
-        while True:
-            rows = self.Stats()
-            if all(not row['failed'] and row['peers'] >= len(node['neighbors'])
-                   for node, row in zip(self.plan['nodes'], rows)):
-                Save(self.output / 'readiness.json', rows)
-                return
-            if time.monotonic() >= deadline:
-                raise TimeoutError('Configured peer graph did not connect')
-            time.sleep(.5)
+        self.WaitReady(range(len(self.nodes)), timeout=self.workers.context.get('readiness_timeout', 300))
+        self.WaitConnected('readiness.json')
 
     def Close(self):
         for client in self.clients:

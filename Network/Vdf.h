@@ -119,9 +119,11 @@ void SendVdfCandidates(const shared_ptr<Peer>& peer) {
 }
 
 // Called by GenerateBlock with dbCommitMutex held, before taking txpoolMutex.
+bool vdfBootstrapProduce=true;
 bool PrepareVdfBlock(uint64_t height,const array<uint8_t,32>& parent,VdfConsensus::Extension& extension) {
     if (!vdfIdentityReady||!produceBlocks||DBReadCurrentBlock()!=parent) return false;
     auto epoch=VdfConsensus::Epoch(height);
+    if (epoch<2&&!vdfBootstrapProduce) return false;
     extension.slot=VdfConsensus::CurrentSlot();
     if (extension.slot<VdfConsensus::MinimumSlot(height)) return false;
     auto parentSlot=ReadVdfParentSlot();
@@ -129,6 +131,7 @@ bool PrepareVdfBlock(uint64_t height,const array<uint8_t,32>& parent,VdfConsensu
     extension.producer=vdfPublicKey;
     auto active=DBVdfActiveCandidates(height);
     auto member=any_of(active.begin(),active.end(),[](const auto& record){return record.publicKey==vdfPublicKey;});
+    if (!VdfConsensus::CanProduce(vdfPublicKey,extension.slot,parentSlot,epoch,active)) return false;
     if (epoch<2||active.empty()||!member) {
         if (epoch>=2&&!active.empty()&&extension.slot-parentSlot<VdfConsensus::config.fallbackSlots) return false;
         extension.producerProof=ReadOwnVdfProof(DBVdfContext(epoch));
@@ -210,12 +213,18 @@ nlohmann::json GetVdfStats() {
     shared_lock lock(dbCommitMutex);
     auto height=DBReadBlockHeight()+1,epoch=VdfConsensus::Epoch(height);
     auto producers=nlohmann::json::array(),candidates=nlohmann::json::array();
-    for (const auto& record:DBVdfActiveCandidates(height)) producers.push_back(U32ToHex(record.publicKey));
+    const auto active=DBVdfActiveCandidates(height);
+    for (const auto& record:active) producers.push_back(U32ToHex(record.publicKey));
     if (epoch>0) for (const auto& record:DBVdfCandidatesForNextBlock())
         candidates.push_back({{"public_key",U32ToHex(record.publicKey)},{"score",U32ToHex(VdfConsensus::Score(record))}});
     VdfConsensus::Extension proposed;
     bool eligible=PrepareVdfBlock(height,DBReadCurrentBlock(),proposed);
+    const auto scheduled=VdfConsensus::config.producerRotation&&epoch>=2?
+        VdfConsensus::ScheduledProducer(VdfConsensus::CurrentSlot(),active):nullopt;
     return {{"enabled",true},{"public_key",vdfIdentityReady?U32ToHex(vdfPublicKey):string{}},
+        {"producer_rotation",VdfConsensus::config.producerRotation},
+        {"bootstrap_produce",vdfBootstrapProduce},
+        {"scheduled_producer",scheduled?U32ToHex(*scheduled):string{}},
         {"epoch",epoch},{"next_epoch",epoch+1},{"slot",VdfConsensus::CurrentSlot()},
         {"eligible",eligible},{"producers",producers},{"candidates",candidates},
         {"computed",vdfComputed.load()},{"generation_ms",vdfGeneratedNs.load()/1e6},
@@ -247,6 +256,13 @@ void RunVdfBlockLoop() {
                 attemptedSlot=slot; attemptedReady=ready; attemptedVersion=stateVersion;
                 auto data=GenerateBlock(blockTxStep,atDeadline);
                 if (!data.empty()&&(atDeadline||ReadU64(data.data()+72)>=full)) {
+                    // Record the slot actually signed by GenerateBlock. A valid
+                    // block may finish execution after that slot has ended.
+                    if (VdfConsensus::config.producerRotation) {
+                        optional<VdfConsensus::Extension> generated;
+                        if (!ReadVdfExtension(data,generated)||!generated) continue;
+                        slot=generated->slot;
+                    }
                     lastProducedSlot=slot;
                     if (ProcessBlock(data)) {
                         localProposals++;
@@ -257,7 +273,15 @@ void RunVdfBlockLoop() {
                 }
             }
             if (blockReady) {
-                if (!commitTime) commitTime=steady_clock::now()+milliseconds(propagationMs);
+                // After bootstrap, rotation has one scheduled normal producer.
+                // It does not need the legacy 12 ms competition timer.
+                bool rotating=false;
+                if (VdfConsensus::config.producerRotation) {
+                    lock_guard lock(blockBufferLock);
+                    const auto& extension=BlockBuffer[0].first.vdf;
+                    rotating=extension&&!extension->producerProof;
+                }
+                if (!commitTime) commitTime=steady_clock::now()+milliseconds(rotating?0:propagationMs);
                 if (!nodeRunning||steady_clock::now()>=*commitTime) {
                     pair<Block,vector<uint8_t>> selected;
                     { lock_guard lock(blockBufferLock); selected=std::move(BlockBuffer[0]); BlockBuffer[0]={}; blockReady=false; }

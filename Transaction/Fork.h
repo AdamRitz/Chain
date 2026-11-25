@@ -15,6 +15,11 @@ bool HasForkBlock(const array<uint8_t,32>& hash,const vector<uint8_t>& data) {
 }
 size_t forkBytes=0;
 atomic<bool> forkReady{false};
+atomic<uint64_t> nextFutureForkSlot{UINT64_MAX};
+void ScheduleFutureFork(uint64_t slot) {
+    auto next=nextFutureForkSlot.load();
+    while (slot<next&&!nextFutureForkSlot.compare_exchange_weak(next,slot)) {}
+}
 atomic<uint64_t> forkAttempts{0},forkWalkNs{0},forkLockWaitNs{0},forkBackupKeys{0},forkBackupBytes{0},replayedTx{0};
 atomic<uint64_t> forkRankSkips{0},forkParentSkips{0},branchAppendTx{0},forkReexecuteTx{0},groupedCommitBlocks{0};
 atomic<uint64_t> forkSchedules{0},forkSelections{0},forkInvalidCandidates{0},groupedCommitBatches{0};
@@ -97,6 +102,7 @@ struct RankedFork {
 // 先准备完整父链和累计排名，提交时复核同一状态版本。
 int RankFork(shared_ptr<const ForkEntry> candidate,RankedFork& rank) {
     forkAttempts++; rank={}; rank.tip=std::move(candidate);
+    if (FutureRotationBlock(rank.tip->first)) { ScheduleFutureFork(rank.tip->first.vdf->slot); return 0; }
     auto& branch=rank.branch; auto& transactions=rank.transactions;
     struct WalkTime { uint64_t start=GetSteadyTime(); ~WalkTime() { forkWalkNs+=GetSteadyTime()-start; } } measured;
     shared_lock lock(dbCommitMutex);
@@ -134,6 +140,7 @@ int RankFork(shared_ptr<const ForkEntry> candidate,RankedFork& rank) {
 }
 // 更高的累计有效交易数优先；同数比较高度，最后选择链头哈希较小者。
 int AdoptFork(const RankedFork& rank,vector<vector<uint8_t>>& detached) {
+    if (FutureRotationBlock(rank.tip->first)) { ScheduleFutureFork(rank.tip->first.vdf->slot); return 0; }
     const auto& branch=rank.branch;
     auto common=rank.common,transactions=rank.transactions,score=rank.score;
     auto waitStart=GetSteadyTime(); unique_lock lock(dbCommitMutex); forkLockWaitNs+=GetSteadyTime()-waitStart;
@@ -181,10 +188,17 @@ int AdoptFork(const ForkEntry& candidate,vector<vector<uint8_t>>& detached) {
     return result==1?AdoptFork(rank,detached):result;
 }
 bool ProcessForks() {
+    auto due=nextFutureForkSlot.load();
+    if (due!=UINT64_MAX&&chain::vdf_consensus::CurrentSlot()>=due&&
+        nextFutureForkSlot.compare_exchange_strong(due,UINT64_MAX)) forkReady=true;
     if (!forkReady.exchange(false)) return false;
     forkSchedules++;
     vector<shared_ptr<const ForkEntry>> candidates;
     { lock_guard lock(forkMutex); for (const auto& [hash,entry]:forkBlocks) candidates.push_back(entry); }
+    erase_if(candidates,[](const auto& entry) {
+        if (!FutureRotationBlock(entry->first)) return false;
+        ScheduleFutureFork(entry->first.vdf->slot); return true;
+    });
     unordered_set<array<uint8_t,32>,GetMapHash> parents;
     for (const auto& entry:candidates) parents.insert(entry->first.previousHash);
     vector<RankedFork> ranked;

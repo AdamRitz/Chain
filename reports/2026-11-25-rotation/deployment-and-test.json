@@ -1,0 +1,342 @@
+{
+  "ok": true,
+  "physical_servers": 1,
+  "test_node_processes": 5,
+  "validation": "single-host correctness and five-minute execution",
+  "duration_seconds": 300,
+  "rate": 100,
+  "warmup_seconds": 5,
+  "drain_seconds": 30,
+  "forks": 1,
+  "started_unix": 1795597857.9538262,
+  "release_dir": "/opt/chain-vdf/releases/vdf/rotation-001",
+  "phase": "complete",
+  "package": {
+    "package": "/opt/chain-rotation/quick-validation-001/rotation-001.tar.gz",
+    "sha256": "b85289ec728e28ed799525727f15137ce3bebb639073fa320017354c098d3d28",
+    "source_commit": "014f6e6c135434fefd1a9189462eb7d8aeb01f5d",
+    "binary_sha256": "b8865698509bb4e164b4c05fcff712d1708f01b2114539d3d9d5124d6c3ffb61",
+    "files": 842
+  },
+  "stage": {
+    "returncode": 0,
+    "started_unix": 1795597879.2623148,
+    "finished_unix": 1795597888.8868928,
+    "log": "/opt/chain-rotation/quick-validation-001/stage-first.log"
+  },
+  "repeat_stage": {
+    "returncode": 0,
+    "started_unix": 1795597889.0305474,
+    "finished_unix": 1795597896.2088234,
+    "log": "/opt/chain-rotation/quick-validation-001/stage-repeat.log"
+  },
+  "package_cache": {
+    "before": {
+      "path": "/opt/chain-rotation/tools/packages/rotation-001.tar.gz",
+      "bytes": 55147726,
+      "mtime_ns": 1795597885321394578,
+      "sha256": "b85289ec728e28ed799525727f15137ce3bebb639073fa320017354c098d3d28"
+    },
+    "after": {
+      "path": "/opt/chain-rotation/tools/packages/rotation-001.tar.gz",
+      "bytes": 55147726,
+      "mtime_ns": 1795597885321394578,
+      "sha256": "b85289ec728e28ed799525727f15137ce3bebb639073fa320017354c098d3d28"
+    },
+    "unchanged": true,
+    "copy_task_results": [
+      "skipping: [node021]"
+    ],
+    "copy_skipped": true,
+    "zero_changes": true
+  },
+  "duration": {
+    "returncode": 0,
+    "started_unix": 1795597896.3539994,
+    "finished_unix": 1795598229.801481,
+    "log": "/opt/chain-rotation/quick-validation-001/local-duration.log"
+  },
+  "duration_result": {
+    "status": "complete",
+    "process_count": 5,
+    "physical_hosts": 1,
+    "measurement_duration_seconds": 300.0,
+    "warmup_seconds": 5.0,
+    "offered_tps": 100,
+    "expected_transactions": 30500,
+    "metrics": {
+      "offered_tps": 100,
+      "achieved_send_tps": 100.00844235055185,
+      "common_commit_tps": 99.97509508734726,
+      "sent_unique": 30500,
+      "sent_wire_copies": 30500,
+      "p50_ms": 270.1996659998258,
+      "p95_ms": 376.32999199968253,
+      "p99_ms": 777.0877739999378,
+      "p99_after_send_ms": 686.8981789998543,
+      "samples": 3000,
+      "unresolved_samples": 0,
+      "deadline_ms": 1000,
+      "deadline_success_fraction": 0.9906666666666667,
+      "send_lateness_p99_ms": 0.7059340000523662,
+      "backlog_growth_per_second": -0.027838989406305217,
+      "tx_backlog_growth_per_second": -0.008241424174151947,
+      "logical_backlog_growth_per_second": -0.007423803583897375,
+      "candidate_backlog_growth_per_second": -0.020050277558796542,
+      "metadata_queue_growth_per_second": 0.00027726353232208987,
+      "logical_backlog_end": 20,
+      "max_backlog_sum": 1719,
+      "reorganizations_sum": 40,
+      "measurement_reorganizations_sum": 36,
+      "max_reorg_depth": 1,
+      "invalid_or_rejected_sum": 0,
+      "drained": true,
+      "recovery_seconds": null,
+      "checks": {
+        "accounts_checked_per_node": 32,
+        "state": {
+          "burned": 0,
+          "state_hash": "fe765007294b97396b6cb6a179ec8c44757e7293a91e293397ffb5adfd59d46f",
+          "supply": 32000000000,
+          "transactions": 30500
+        },
+        "common_block": {
+          "hash": "dc2f85d654ff2e82d83754592bb857fea6e9f954870ed33c12fbcd7c81ef7e78",
+          "height": 1566,
+          "transactions": 30500
+        },
+        "node_states": {
+          "node001": {
+            "burned": 0,
+            "head": "dc2f85d654ff2e82d83754592bb857fea6e9f954870ed33c12fbcd7c81ef7e78",
+            "state_hash": "fe765007294b97396b6cb6a179ec8c44757e7293a91e293397ffb5adfd59d46f",
+            "supply": 32000000000,
+            "transactions": 30500
+          },
+          "node002": {
+            "burned": 0,
+            "head": "dc2f85d654ff2e82d83754592bb857fea6e9f954870ed33c12fbcd7c81ef7e78",
+            "state_hash": "fe765007294b97396b6cb6a179ec8c44757e7293a91e293397ffb5adfd59d46f",
+            "supply": 32000000000,
+            "transactions": 30500
+          },
+          "node003": {
+            "burned": 0,
+            "head": "dc2f85d654ff2e82d83754592bb857fea6e9f954870ed33c12fbcd7c81ef7e78",
+            "state_hash": "fe765007294b97396b6cb6a179ec8c44757e7293a91e293397ffb5adfd59d46f",
+            "supply": 32000000000,
+            "transactions": 30500
+          },
+          "node004": {
+            "burned": 0,
+            "head": "dc2f85d654ff2e82d83754592bb857fea6e9f954870ed33c12fbcd7c81ef7e78",
+            "state_hash": "fe765007294b97396b6cb6a179ec8c44757e7293a91e293397ffb5adfd59d46f",
+            "supply": 32000000000,
+            "transactions": 30500
+          },
+          "node005": {
+            "burned": 0,
+            "head": "dc2f85d654ff2e82d83754592bb857fea6e9f954870ed33c12fbcd7c81ef7e78",
+            "state_hash": "fe765007294b97396b6cb6a179ec8c44757e7293a91e293397ffb5adfd59d46f",
+            "supply": 32000000000,
+            "transactions": 30500
+          }
+        }
+      },
+      "events": [],
+      "sample_poll_seconds": 0.1,
+      "measurement_seconds": 299.87468352800033,
+      "measurement_samples": 2737,
+      "parallel_ingress": false,
+      "resources": [
+        {
+          "node": "node001",
+          "cpu_core_equivalents": 0.18686552847284305,
+          "peak_resident_bytes": 74096640,
+          "received_bytes_per_second": 112519.13306998425,
+          "sent_bytes_per_second": 166037.48490470918,
+          "process_write_bytes_per_second": 68417.95083614778,
+          "db_write_ms_per_second": 39.50674027388854,
+          "measurement_reorganizations": 7,
+          "statistics_seconds": 299.8754529953003,
+          "statistics_intervals": 2736,
+          "statistics_resets": 0,
+          "statistics_time_sources": [
+            "node_raw_us"
+          ]
+        },
+        {
+          "node": "node002",
+          "cpu_core_equivalents": 0.18617954648352672,
+          "peak_resident_bytes": 78684160,
+          "received_bytes_per_second": 108779.05243629153,
+          "sent_bytes_per_second": 169034.78092640935,
+          "process_write_bytes_per_second": 68759.60431657203,
+          "db_write_ms_per_second": 39.27877205571467,
+          "measurement_reorganizations": 10,
+          "statistics_seconds": 299.8746750354767,
+          "statistics_intervals": 2736,
+          "statistics_resets": 0,
+          "statistics_time_sources": [
+            "node_raw_us"
+          ]
+        },
+        {
+          "node": "node003",
+          "cpu_core_equivalents": 0.18814120916456367,
+          "peak_resident_bytes": 75284480,
+          "received_bytes_per_second": 105513.0980719619,
+          "sent_bytes_per_second": 171117.11112781017,
+          "process_write_bytes_per_second": 68267.73001654903,
+          "db_write_ms_per_second": 39.427772737198154,
+          "measurement_reorganizations": 4,
+          "statistics_seconds": 299.87532901763916,
+          "statistics_intervals": 2736,
+          "statistics_resets": 0,
+          "statistics_time_sources": [
+            "node_raw_us"
+          ]
+        },
+        {
+          "node": "node004",
+          "cpu_core_equivalents": 0.18616108341888402,
+          "peak_resident_bytes": 77701120,
+          "received_bytes_per_second": 107528.07031813703,
+          "sent_bytes_per_second": 169185.26064679507,
+          "process_write_bytes_per_second": 68486.5491470421,
+          "db_write_ms_per_second": 39.601855604743925,
+          "measurement_reorganizations": 8,
+          "statistics_seconds": 299.8741250038147,
+          "statistics_intervals": 2736,
+          "statistics_resets": 0,
+          "statistics_time_sources": [
+            "node_raw_us"
+          ]
+        },
+        {
+          "node": "node005",
+          "cpu_core_equivalents": 0.1852150845204378,
+          "peak_resident_bytes": 73138176,
+          "received_bytes_per_second": 109886.53616977928,
+          "sent_bytes_per_second": 168037.74486485877,
+          "process_write_bytes_per_second": 68445.52809242326,
+          "db_write_ms_per_second": 37.069648014331975,
+          "measurement_reorganizations": 7,
+          "statistics_seconds": 299.87431716918945,
+          "statistics_intervals": 2736,
+          "statistics_resets": 0,
+          "statistics_time_sources": [
+            "node_raw_us"
+          ]
+        }
+      ],
+      "controller_cpu_core_equivalents": 0.023913604283636796,
+      "sustainable": true,
+      "tx_sustainable": true
+    },
+    "state_check": {
+      "accounts_checked_per_node": 32,
+      "state": {
+        "burned": 0,
+        "state_hash": "fe765007294b97396b6cb6a179ec8c44757e7293a91e293397ffb5adfd59d46f",
+        "supply": 32000000000,
+        "transactions": 30500
+      },
+      "common_block": {
+        "hash": "dc2f85d654ff2e82d83754592bb857fea6e9f954870ed33c12fbcd7c81ef7e78",
+        "height": 1566,
+        "transactions": 30500
+      },
+      "node_states": {
+        "node001": {
+          "burned": 0,
+          "head": "dc2f85d654ff2e82d83754592bb857fea6e9f954870ed33c12fbcd7c81ef7e78",
+          "state_hash": "fe765007294b97396b6cb6a179ec8c44757e7293a91e293397ffb5adfd59d46f",
+          "supply": 32000000000,
+          "transactions": 30500
+        },
+        "node002": {
+          "burned": 0,
+          "head": "dc2f85d654ff2e82d83754592bb857fea6e9f954870ed33c12fbcd7c81ef7e78",
+          "state_hash": "fe765007294b97396b6cb6a179ec8c44757e7293a91e293397ffb5adfd59d46f",
+          "supply": 32000000000,
+          "transactions": 30500
+        },
+        "node003": {
+          "burned": 0,
+          "head": "dc2f85d654ff2e82d83754592bb857fea6e9f954870ed33c12fbcd7c81ef7e78",
+          "state_hash": "fe765007294b97396b6cb6a179ec8c44757e7293a91e293397ffb5adfd59d46f",
+          "supply": 32000000000,
+          "transactions": 30500
+        },
+        "node004": {
+          "burned": 0,
+          "head": "dc2f85d654ff2e82d83754592bb857fea6e9f954870ed33c12fbcd7c81ef7e78",
+          "state_hash": "fe765007294b97396b6cb6a179ec8c44757e7293a91e293397ffb5adfd59d46f",
+          "supply": 32000000000,
+          "transactions": 30500
+        },
+        "node005": {
+          "burned": 0,
+          "head": "dc2f85d654ff2e82d83754592bb857fea6e9f954870ed33c12fbcd7c81ef7e78",
+          "state_hash": "fe765007294b97396b6cb6a179ec8c44757e7293a91e293397ffb5adfd59d46f",
+          "supply": 32000000000,
+          "transactions": 30500
+        }
+      }
+    },
+    "rotation_check": {
+      "normal_blocks_checked": 1501,
+      "blocks_by_producer": {
+        "fd1b056cc723c087bded83b1ed2a37020f2438538a8afe599292dcf3ebec9426": 299,
+        "8b67052e98b2847c5812232dc119624f9f371ce2f71113b94b1005ccd446eaa0": 302,
+        "f1c7b86cd41083b59d06490b92e4e614784ec5795f6e0154ae75b7d98c23b558": 303,
+        "515cf9aa7b1d59de7c81d90f7da41741c95a3499eb3c0c90bdcfb676faf22c99": 298,
+        "38b75c95ab4e684cbe872c148b62a79fd42e6be5e173e8c4a721b5f11b242dd8": 299
+      },
+      "anchor": {
+        "hash": "dc2f85d654ff2e82d83754592bb857fea6e9f954870ed33c12fbcd7c81ef7e78",
+        "height": 1566,
+        "transactions": 30500
+      }
+    }
+  },
+  "cleanup": {
+    "remaining_databases": [],
+    "errors": [],
+    "exception": null
+  },
+  "persistent_deployment": {
+    "prepared": true,
+    "executed": true,
+    "port": 18089,
+    "service": "chain-vdf-rotation001-node021.service",
+    "returncode": 0,
+    "started_unix": 1795598229.802847,
+    "finished_unix": 1795598243.5606434,
+    "log": "/opt/chain-rotation/quick-validation-001/persistent-deploy.log"
+  },
+  "persistent_health": {
+    "returncode": 0,
+    "started_unix": 1795598243.5610356,
+    "finished_unix": 1795598246.5771463,
+    "log": "/opt/chain-rotation/quick-validation-001/persistent-status.log",
+    "result": {
+      "ok": true,
+      "changed": false,
+      "active": true,
+      "service": "chain-vdf-rotation001-node021.service",
+      "active_state": "active",
+      "sub_state": "running",
+      "pid": 15353,
+      "binary_sha256": "b8865698509bb4e164b4c05fcff712d1708f01b2114539d3d9d5124d6c3ffb61",
+      "head": {
+        "genesis": "029d57787c7de024ab413aad075d89fed22c4c4abb9f309520e6c315c62b0e57",
+        "hash": "4b9a96e7dbd0c88eca77274228e26bbe54907fa930d2f997fface4781b64ce17",
+        "height": 13,
+        "transactions": 0
+      }
+    }
+  },
+  "finished_unix": 1795598246.577403
+}

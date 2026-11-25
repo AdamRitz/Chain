@@ -48,9 +48,51 @@ void TestGenesis() {
     SetGenesisUsers(configured);
     const auto enabledRoot = genesisRoot;
     Require(enabledRoot != legacyRoot && rules::config.enabled, "VDF parameters did not change chain identity");
+    // Reproduce the original configuration independently: adding an optional
+    // rule must not change any byte hashed by an existing VDF genesis.
+    const std::array<std::uint64_t, 9> originalFields{1, 1, 2, 4096, 50, 20, 2, 5, 10000};
+    std::vector<std::uint8_t> originalParameters(72, 0);
+    for (std::size_t i = 0; i < originalFields.size(); ++i)
+        rules::detail::Write64(originalParameters.data() + i * 8, originalFields[i]);
+    Require(rules::EncodeConfig(rules::config) == originalParameters, "Existing VDF configuration bytes changed");
+    auto originalGenesisBytes = legacyBytes;
+    const std::string vdfDomain = "Chain VDF consensus v1";
+    originalGenesisBytes.insert(originalGenesisBytes.end(), vdfDomain.begin(), vdfDomain.end());
+    originalGenesisBytes.insert(originalGenesisBytes.end(), originalParameters.begin(), originalParameters.end());
+    crypto_generichash(expected.data(), expected.size(), originalGenesisBytes.data(), originalGenesisBytes.size(), nullptr, 0);
+    Require(enabledRoot == expected, "Existing VDF genesis hash changed");
     const auto canonical = GetGenesisConfig();
     SetGenesisUsers(canonical);
     Require(genesisRoot == enabledRoot && GetGenesisConfig() == canonical, "VDF genesis roundtrip changed identity");
+    auto rotation = configured;
+    rotation["vdf"]["producer_rotation"] = false;
+    SetGenesisUsers(rotation);
+    Require(genesisRoot == enabledRoot && GetGenesisConfig() == canonical && !rules::config.producerRotation,
+            "Explicitly disabled rotation changed the existing VDF genesis");
+    rotation["vdf"]["producer_rotation"] = true;
+    SetGenesisUsers(rotation);
+    const auto rotationRoot = genesisRoot;
+    Require(rotationRoot != enabledRoot && rules::config.producerRotation,
+            "Producer rotation is not bound to the genesis hash");
+    const auto rotationBytes = rules::EncodeConfig(rules::config);
+    Require(rotationBytes.size() == 80 && rules::detail::Read64(rotationBytes.data()) == 2 &&
+            rules::detail::Read64(rotationBytes.data() + 72) == 1,
+            "Producer rotation did not use its configuration version");
+    Require(GetGenesisConfig() == rotation, "Genesis export omitted the producer rotation rule");
+    SetGenesisUsers(GetGenesisConfig());
+    Require(genesisRoot == rotationRoot && rules::config.producerRotation, "Rotating genesis roundtrip changed identity");
+    SetGenesisUsers(configured);
+    for (const auto& invalidValue : std::vector<nlohmann::json>{nullptr, 0, 1, "true", nlohmann::json::array(), nlohmann::json::object()}) {
+        auto invalid = rotation;
+        invalid["vdf"]["producer_rotation"] = invalidValue;
+        try {
+            SetGenesisUsers(invalid);
+            throw std::runtime_error("Non-boolean producer rotation accepted");
+        } catch (const std::invalid_argument&) {
+        }
+        Require(genesisRoot == enabledRoot && !rules::config.producerRotation,
+                "Invalid producer rotation changed the existing configuration");
+    }
     for (const auto& [field, value] : std::map<std::string, std::uint64_t>{{"epoch_blocks", 3}, {"iterations", 8192},
             {"slot_ms", 100}, {"start_time_ms", 10050}, {"fallback_slots", 21}, {"future_slots", 1}}) {
         auto changed = configured;
@@ -82,7 +124,114 @@ void TestGenesis() {
         Require(genesisRoot == enabledRoot, "Invalid start time changed chain identity");
     }
     SetGenesisUsers(legacy);
-    Require(genesisRoot == legacyRoot && !rules::config.enabled, "Loading legacy genesis retained VDF mode");
+    Require(genesisRoot == legacyRoot && !rules::config.enabled && !rules::config.producerRotation,
+            "Loading legacy genesis retained VDF mode or rotation");
+}
+
+void TestRotation(rules::Config configured, const std::vector<election::Candidate>& active,
+    const std::vector<election::Candidate>& next, const election::Candidate& outsider,
+    const election::Candidate& bootstrap, const election::Context& context0,
+    const election::Context& context2, const election::Context& context3) {
+    configured.producerRotation = true;
+    const auto start = rules::StartSlot(configured);
+    const auto minimum = rules::MinimumSlot(rules::EpochStart(2, configured), configured);
+    Require(!rules::ScheduledProducer(start - 1, active, configured), "Schedule accepted a slot before genesis");
+    Require(!rules::ScheduledProducer(start, {}, configured), "Empty committee has a scheduled producer");
+    for (std::size_t size : {std::size_t{1}, std::size_t{2}, std::size_t{5}}) {
+        const auto members = std::span<const election::Candidate>(active).first(size);
+        for (std::uint64_t slot = 101; slot < 111; ++slot) {
+            const auto expectedIndex = (slot - start) % size;
+            Require(rules::ScheduledProducer(slot, members, configured) == members[expectedIndex].publicKey,
+                    "Schedule does not follow score order and absolute slot");
+            for (std::size_t i = 0; i < size; ++i) {
+                rules::Extension block;
+                block.slot = slot;
+                block.producer = members[i].publicKey;
+                Require(rules::CanProduce(block.producer, slot, slot - 1, 2, members, configured) == (i == expectedIndex),
+                        "Producer timing helper accepted the wrong member");
+                Require(rules::VerifyRules(block, slot - 1, {}, members, context2, context3, minimum, configured) == (i == expectedIndex),
+                        "Consensus validation differs from scheduled producer");
+                block.producerProof = members[i];
+                Require(rules::VerifyRules(block, slot - 1, {}, members, context2, context3, minimum, configured) == (i == expectedIndex),
+                        "Member proof bypassed the rotation rule");
+            }
+        }
+    }
+    rules::Extension block;
+    block.slot = 103;
+    block.producer = *rules::ScheduledProducer(block.slot, active, configured);
+    Require(rules::VerifyRules(block, 100, {}, active, context2, context3, minimum, configured),
+            "Next available scheduled member could not skip two absent producers");
+    Require(!rules::CanProduce(block.producer, 100, 100, 2, active, configured), "Duplicate slot passed the timing helper");
+    block.slot = 120;
+    block.producer = active[0].publicKey;
+    Require(block.producer != *rules::ScheduledProducer(block.slot, active, configured), "Wrong-slot test needs a different member");
+    block.producerProof = active[0];
+    Require(!rules::VerifyRules(block, 100, {}, active, context2, context3, minimum, configured),
+            "Recovery gap allowed a member to ignore its rotation");
+    block.producer = outsider.publicKey;
+    block.producerProof = outsider;
+    block.slot = 119;
+    Require(!rules::VerifyRules(block, 100, {}, active, context2, context3, minimum, configured),
+            "Rotation shortened outsider recovery gap");
+    block.slot = 120;
+    Require(rules::VerifyRules(block, 100, {}, active, context2, context3, minimum, configured),
+            "Rotation removed existing outsider recovery");
+    block.producerProof.reset();
+    Require(!rules::VerifyRules(block, 100, {}, active, context2, context3, minimum, configured),
+            "Outsider recovery accepted a missing proof");
+
+    // The next epoch changes the list, but not the global slot arithmetic.
+    const auto following = std::span<const election::Candidate>(next).first(5);
+    block.slot = 104;
+    block.producer = *rules::ScheduledProducer(block.slot, following, configured);
+    Require(block.producer == following[(block.slot - start) % following.size()].publicKey,
+            "Epoch transition reset the rotation");
+    Require(rules::VerifyRules(block, 103, {}, following, context3, std::nullopt,
+            rules::MinimumSlot(rules::EpochStart(3, configured), configured), configured),
+            "New epoch's scheduled member rejected");
+    block.producer = active[(block.slot - start) % active.size()].publicKey;
+    if (block.producer != *rules::ScheduledProducer(block.slot, following, configured))
+        Require(!rules::VerifyRules(block, 103, {}, following, context3, std::nullopt, minimum, configured),
+                "Old epoch's schedule remained authorized");
+
+    block.slot = 101;
+    block.producer = bootstrap.publicKey;
+    block.producerProof = bootstrap;
+    Require(rules::VerifyRules(block, 100, {}, {}, context0, std::nullopt, start, configured),
+            "Rotation prevented open bootstrap production");
+    block.producer = outsider.publicKey;
+    block.producerProof = outsider;
+    Require(rules::VerifyRules(block, 100, {}, {}, context2, context3, minimum, configured),
+            "Rotation prevented production with an empty active list");
+
+    auto invalidList = active;
+    std::swap(invalidList[0], invalidList[1]);
+    block.producerProof.reset();
+    block.producer = *rules::ScheduledProducer(block.slot, invalidList, configured);
+    Require(!rules::VerifyRules(block, 100, {}, invalidList, context2, context3, minimum, configured),
+            "Unsorted active list changed the producer schedule");
+    invalidList = active;
+    invalidList.back() = invalidList.front();
+    Require(!rules::VerifyRules(block, 100, {}, invalidList, context2, context3, minimum, configured),
+            "Duplicate active key created extra producer slots");
+    invalidList = active;
+    invalidList.push_back(outsider);
+    Require(!rules::ScheduledProducer(101, invalidList, configured) &&
+            !rules::CanProduce(outsider.publicKey, 101, 100, 2, invalidList, configured),
+            "Oversized active list entered the schedule");
+
+    auto largest = configured;
+    largest.slotMs = 1;
+    largest.startTimeMs = UINT64_MAX - 1;
+    Require(rules::ScheduledProducer(UINT64_MAX, active, largest) == active[1].publicKey,
+            "Rotation near maximum slot overflowed");
+    Require(rules::CanProduce(active[1].publicKey, UINT64_MAX, UINT64_MAX - 1, 2, active, largest),
+            "Largest valid slot was rejected");
+    Require(!rules::CanProduce(active[0].publicKey, UINT64_MAX - 2, 0, 2, active, largest),
+            "Rotation before genesis underflowed");
+    largest.enabled = false;
+    Require(!rules::ScheduledProducer(UINT64_MAX, active, largest), "Disabled VDF retained its schedule");
 }
 
 void TestEncoding(const election::Candidate& record, const election::SecretKey& key) {
@@ -182,6 +331,7 @@ void TestRules() {
     const auto boot0 = election::CreateCandidate(context0, MakeKey(1));
     const auto boot1 = election::CreateCandidate(context1, MakeKey(1));
     TestEncoding(boot0, MakeKey(1));
+    TestRotation(configured, active, next, outsider, boot0, context0, context2, context3);
 
     rules::Extension block;
     block.slot = 101;
@@ -207,6 +357,11 @@ void TestRules() {
     block.producer = active.front().publicKey;
     block.producerProof.reset();
     Require(rules::VerifyRules(block, 100, {}, active, context2, context3, minimum2, configured), "Elected producer rejected");
+    for (const auto& member : active) {
+        block.producer = member.publicKey;
+        Require(rules::VerifyRules(block, 100, {}, active, context2, context3, minimum2, configured),
+                "Existing VDF chain stopped allowing all members in one slot");
+    }
     block.producer = outsider.publicKey;
     Require(!rules::VerifyRules(block, 100, {}, active, context2, context3, minimum2, configured), "Nonmember produced without proof");
     block.producerProof = outsider;

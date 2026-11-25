@@ -139,8 +139,11 @@ if(Python3_Interpreter_FOUND)
     add_test(NAME VdfNetwork COMMAND "${Python3_EXECUTABLE}" "${CMAKE_CURRENT_SOURCE_DIR}/Test/VdfNetworkTest.py"
         --bin "$<TARGET_FILE_DIR:boost>" --work "${CHAIN_TEST_DATA_ROOT}/vdf-network")
     set_tests_properties(VdfNetwork PROPERTIES TIMEOUT 600)
+    add_test(NAME VdfRotationNetwork COMMAND "${Python3_EXECUTABLE}" "${CMAKE_CURRENT_SOURCE_DIR}/Test/VdfRotationNetworkTest.py"
+        --bin "$<TARGET_FILE_DIR:boost>" --work "${CHAIN_TEST_DATA_ROOT}/vdf-rotation-network")
+    set_tests_properties(VdfRotationNetwork PROPERTIES TIMEOUT 240)
     if(WIN32)
-        set_tests_properties(VdfNetwork PROPERTIES ENVIRONMENT_MODIFICATION "PATH=path_list_prepend:${CHAIN_COMPILER_BIN}")
+        set_tests_properties(VdfNetwork VdfRotationNetwork PROPERTIES ENVIRONMENT_MODIFICATION "PATH=path_list_prepend:${CHAIN_COMPILER_BIN}")
     endif()
     add_test(NAME TxStepNetwork COMMAND "${Python3_EXECUTABLE}" "${CMAKE_CURRENT_SOURCE_DIR}/Test/TxStepNetworkTest.py"
         --bin "$<TARGET_FILE_DIR:boost>" --work "${CHAIN_TEST_DATA_ROOT}/tx-step-network")
