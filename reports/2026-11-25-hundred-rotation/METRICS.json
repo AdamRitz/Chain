@@ -1,0 +1,264 @@
+{
+  "source_commit": "436a5c492c2a5ff7c593ffea3e38cfb77bf36604",
+  "nodes": 100,
+  "cpu_per_node": 2,
+  "memory_gib_per_node": 4,
+  "build_tests_passed": 39,
+  "interrupted_10000": {
+    "status": "interrupted",
+    "recorded_unix": 1795610511.9510515,
+    "reason": "User requested early stop when sustained throughput is far below target; transaction backlog kept growing.",
+    "signal": "SIGINT",
+    "wrapper_pid": 48414,
+    "target_tps": 10000,
+    "last_elapsed_seconds": 150.68274437800028,
+    "measurement_seconds": 148.54840276100003,
+    "common_commit_tps": 5448.203985754869,
+    "achieved_send_tps": 8264.29619694509,
+    "sent_at_last_sample": 1248896,
+    "confirmed_at_last_sample": 814821,
+    "backlog_at_last_sample": 434075,
+    "first_measurement_sample": {
+      "seconds": 2.1343416170002456,
+      "sent": 21248,
+      "common": {
+        "hash": "ab6cbc37aff35d6d38a4665165d52711cca840d3f6496d23b5dab7d7a7f98aaa",
+        "height": 266,
+        "transactions": 5499
+      }
+    },
+    "last_sample": {
+      "seconds": 150.68274437800028,
+      "sent": 1248896,
+      "common": {
+        "hash": "06180023dd8823936e86d266c0f7d26db42b0a8e9372539ce68e1b34e67f8b97",
+        "height": 505,
+        "transactions": 814821
+      }
+    },
+    "timeline_points": 180,
+    "reorganizations_last_sample_sum": 6213,
+    "reorganizations_last_sample_median": 63.0,
+    "confirmation_latency": null,
+    "confirmation_latency_reason": "Interrupted before latency samples were written by the benchmark.",
+    "cleanup_ok": true,
+    "cleanup_nodes": 100,
+    "process_audit_ok": true,
+    "windows": [
+      {
+        "start": 0.025488408999081003,
+        "end": 15.04237832599938,
+        "tps": 7927.806666893451,
+        "backlog": 31349
+      },
+      {
+        "start": 15.04237832599938,
+        "end": 30.41605548699954,
+        "tps": 5390.057247345571,
+        "backlog": 102212
+      },
+      {
+        "start": 30.41605548699954,
+        "end": 45.5044364209989,
+        "tps": 5538.168764794757,
+        "backlog": 169562
+      },
+      {
+        "start": 45.5044364209989,
+        "end": 67.68075632199907,
+        "tps": 6240.350094956855,
+        "backlog": 252870
+      },
+      {
+        "start": 67.68075632199907,
+        "end": 75.21629304499947,
+        "tps": 11008.505836989674,
+        "backlog": 245307
+      },
+      {
+        "start": 75.21629304499947,
+        "end": 91.99736588700034,
+        "tps": 2979.5472834642865,
+        "backlog": 363115
+      },
+      {
+        "start": 91.99736588700034,
+        "end": 105.51163857699976,
+        "tps": 8879.50115797206,
+        "backlog": 378283
+      },
+      {
+        "start": 105.51163857699976,
+        "end": 121.72844824200001,
+        "tps": 3699.864599724218,
+        "backlog": 458059
+      },
+      {
+        "start": 121.72844824200001,
+        "end": 150.68274437800028,
+        "tps": 2693.900747358139,
+        "backlog": 434075
+      }
+    ]
+  },
+  "completed_5000_analysis": {
+    "cpu_core_equivalents": {
+      "min": 0.8707340123681966,
+      "p50": 0.934578271691787,
+      "p95": 1.031864600695771,
+      "max": 1.0752140238793693,
+      "mean": 0.941725472318574,
+      "sum": 94.1725472318574
+    },
+    "measurement_reorganizations": {
+      "min": 44.0,
+      "p50": 51.0,
+      "p95": 56.0,
+      "max": 57.0,
+      "mean": 50.79,
+      "sum": 5079.0
+    },
+    "statistics_seconds": {
+      "min": 300.0877070426941,
+      "p50": 300.09626507759094,
+      "p95": 300.097106218338,
+      "max": 300.0973150730133,
+      "mean": 300.09367863416674,
+      "sum": 30009.36786341667
+    },
+    "statistics_intervals": {
+      "min": 255.0,
+      "p50": 255.0,
+      "p95": 255.0,
+      "max": 255.0,
+      "mean": 255.0,
+      "sum": 25500.0
+    },
+    "statistics_resets": {
+      "min": 0.0,
+      "p50": 0.0,
+      "p95": 0.0,
+      "max": 0.0,
+      "mean": 0.0,
+      "sum": 0.0
+    },
+    "db_write_ms_per_second": {
+      "min": 55.492279779176656,
+      "p50": 70.32290986188654,
+      "p95": 77.16871999354387,
+      "max": 100.90293625087322,
+      "mean": 68.34719941417278,
+      "sum": 6834.719941417277
+    },
+    "peak_resident_MiB": {
+      "min": 306.73046875,
+      "p50": 327.107421875,
+      "p95": 338.390625,
+      "max": 343.5390625,
+      "mean": 327.220390625,
+      "sum": 32722.0390625
+    },
+    "received_MiB_per_second": {
+      "min": 3.2479083164593123,
+      "p50": 4.228698352524692,
+      "p95": 4.9174867882109545,
+      "max": 5.0141492237125815,
+      "mean": 4.194797810705804,
+      "sum": 419.4797810705804
+    },
+    "sent_MiB_per_second": {
+      "min": 3.084209862661985,
+      "p50": 4.014227974652538,
+      "p95": 5.5205786479014,
+      "max": 6.766534232156519,
+      "mean": 4.194132814504502,
+      "sum": 419.4132814504502
+    },
+    "process_write_MiB_per_second": {
+      "min": 4.772145132222145,
+      "p50": 4.787754100413158,
+      "p95": 4.798354463066286,
+      "max": 4.804292550848544,
+      "mean": 4.7871788437704454,
+      "sum": 478.7178843770445
+    },
+    "state": {
+      "nodes": 100,
+      "distinct_states": 1,
+      "distinct_heads": 1,
+      "transactions": [
+        1510000
+      ],
+      "accounts_checked_per_node": 1024
+    },
+    "reorg_sum_matches": true
+  },
+  "completed_5000_checks": {
+    "command_passed": true,
+    "result_passed": true,
+    "full_transaction_count": true,
+    "one_copy_per_transaction": true,
+    "measurement_complete": true,
+    "send_rate_reached": true,
+    "throughput_reached": true,
+    "no_unresolved_samples": true,
+    "all_states_checked": true,
+    "all_binaries_match": true,
+    "clock_sync_matches_configuration": true,
+    "all_rotation_ready": true,
+    "backlog_not_growing": true,
+    "cleanup_passed": true,
+    "completed_without_interruption": true
+  },
+  "cleanup": {
+    "status": "complete",
+    "deleted_files": 516,
+    "deleted_bytes": 7364521672,
+    "deleted_allocated_bytes": 7365636096,
+    "disk_available_before": 6910447616,
+    "disk_available_after": 14276751360,
+    "controller_disk_after_archive": {
+      "total": 37728235520,
+      "used": 19776389120,
+      "free": 16002543616
+    },
+    "total_object_and_timeline_net_bytes_saved": 8663905117
+  },
+  "final_services": {
+    "ok": true,
+    "nodes": 100,
+    "services": 201,
+    "services_stopped_disabled": 201,
+    "remaining_chain_processes": 0,
+    "min_free_gib": 13.693866729736328,
+    "max_free_gib": 31.114238739013672,
+    "failed_nodes": [],
+    "recorded_unix": 1795612700.903614,
+    "reason": "User requested that no persistent Chain service remain running."
+  },
+  "early_stop_rule": {
+    "enabled": true,
+    "start_after_measurement_seconds": 30,
+    "consecutive_windows": 3,
+    "minimum_seconds_per_window": 15,
+    "tps_below_target_ratio": 0.7,
+    "backlog_must_grow": true
+  },
+  "software": {
+    "binary_sha256": "901f79e2b5cefebb3dbdc14d8a42a687c41a2bee349edef8059b7366edb174f2",
+    "package_sha256": "f41de0f59caebaf5f1d1184101029ca3df717b1bb1c0cf8a955a8c6814ce6050",
+    "source_commit": "436a5c492c2a5ff7c593ffea3e38cfb77bf36604",
+    "ctest_passed": 39,
+    "ctest_seconds": 255.96
+  },
+  "archive": {
+    "archive_bytes": 273469194,
+    "archive_sha256": "6fed5c827c2e4e6a845bf63093bca18257ceca3a4c96ce382b1bb054bd994d55",
+    "verified": true,
+    "files": 1680,
+    "timeline_bytes_removed": 1572852639,
+    "net_disk_bytes_saved": 1299383445,
+    "local_copy_verified": true
+  },
+  "temporary_credentials_removed": true
+}
