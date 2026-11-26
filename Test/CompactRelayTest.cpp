@@ -101,7 +101,7 @@ int main(int argc,char** argv) {
         auto blockHash=block.hash;
         boost::asio::io_context io;
         auto first=make_shared<Peer>(tcp::socket(io)),second=make_shared<Peer>(tcp::socket(io)),unknown=make_shared<Peer>(tcp::socket(io));
-        for (auto peer:{first,second,unknown}) { peer->key=NewPeerKey(); peer->port=uint16_t(5000+peer->key); peer->compact=true; }
+        for (auto peer:{first,second,unknown}) { peer->key=NewPeerKey(); peer->port=uint16_t(5000+peer->key); peer->compact=true; peer->ordinarySlot=true; }
         {
             lock_guard lock(peerMutex);
             Require(peerPool.empty()&&addressAttempts.empty(),"peer count fixture starts empty");
