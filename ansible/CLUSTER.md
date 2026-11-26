@@ -4,6 +4,10 @@
 
 ## 百节点按小时计费的准备顺序
 
+4 核机器的 100 节点测试，在现有 `node-settings.json` 中设置 `io-threads=2`、`verify-threads=2`、`candidate-threads=2`、`block-verify-threads=2`、`query-threads=1`，通过 `--node-settings` 传入。其余区块、时钟和验证参数保持原配置。2026-11-26 的 30 秒、9000 TPS 测试使用该线程配置后重组为 0；确认时间 P95 为 1104 ms，仍需优化。直接运行节点的默认线程数与压测脚本的默认线程数不同，复测时应保留最终 argv。
+
+查找吞吐量上限时使用 `--duration 30 --warmup 2 --drain-seconds 5`，每个速率使用新输出目录。先核对实际发送速率、确认 TPS、积压变化、确认时间、账户和清理结果，再提高下一轮速率；测量结束前关机的轮次记录为中断。关机导致 SSH 不可达时保留当前 run/owner；机器重开后先按原记录完成清理，再开始新轮次。
+
 1. 在 Windows 执行 `cluster_quick.py prepare`，提前准备连接图、签名交易和可跨系统使用的 `dataset.json`。该动作在本地完成，无需构建包、Ansible 或 SSH。
 2. 先只启动一台 Linux 构建机，完成本次源码构建、全部 CTest 和 `cluster_release.py` 打包。同一版本已有构建目录可以增量重试，新源码使用新的 release 标识。
 3. 构建包准备完成后启动其余 99 台，使用 `cluster_quick.py stage --forks 32` 并行分发同一份程序和源码。其余节点无需安装编译器或重复运行 CTest。

@@ -102,6 +102,9 @@ awaitable<void> ProcessMessage(shared_ptr<Peer> peer,uint8_t type,vector<uint8_t
     if (type==1||type==10) firstTxTime.compare_exchange_strong(expected,queuedAt);
     // 队列满时暂停该连接读取，利用 TCP 背压，不无限堆积异步任务。
     if (num>(metadata?size_t(64):(blockMessage?maxProtocolTx*4:maxPendingVerify))) { ClosePeer(peer); co_return; }
+    // The complete body is already here, even while admission waits below.
+    // This lease only pauses inventory requests; it never skips validation.
+    auto txBodies=ReserveTxBodies(peer,type,data);
     shared_ptr<BlockWork> work;
     if (type==2||type==7||type==22||type==43) {
         auto fingerprint=GetBlockFingerprint(data,type==43);
@@ -141,7 +144,7 @@ awaitable<void> ProcessMessage(shared_ptr<Peer> peer,uint8_t type,vector<uint8_t
     }
     auto admissionOrder=type==44?peer->admissionRead++:0;
     auto& workers=blockMessage&&candidateThreads?*candidateThreads:*verifyThreads;
-    post(workers,[peer,type,queuedAt,blockMessage,metadata,admissionOrder,reservation=std::move(reservation),work=std::move(work),data=std::move(data),blocks=std::move(blocks)]() mutable {
+    post(workers,[peer,type,queuedAt,blockMessage,metadata,admissionOrder,reservation=std::move(reservation),txBodies=std::move(txBodies),work=std::move(work),data=std::move(data),blocks=std::move(blocks)]() mutable {
         (void)work;
         auto wait=GetSteadyTime()-queuedAt; queueWaitNs+=wait;
         (metadata?metadataQueueWaitNs:(blockMessage?blockQueueWaitNs:txQueueWaitNs))+=wait;
@@ -220,7 +223,7 @@ awaitable<void> ProcessMessage(shared_ptr<Peer> peer,uint8_t type,vector<uint8_t
             nodeRunning=false;
             if (nodeIO) nodeIO->stop();
         }
-        reservation.reset(); work.reset();
+        txBodies.reset();reservation.reset(); work.reset();
         WakeMainLoop();
     });
 }

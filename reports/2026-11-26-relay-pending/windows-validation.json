@@ -1,0 +1,64 @@
+{
+  "final_source_frozen": true,
+  "ctest_passed": 3,
+  "ctest_failed": 0,
+  "network_passed": [
+    "RelayOptimizationNetwork",
+    "AdmissionNetwork"
+  ],
+  "build_targets": [
+    "boost",
+    "transaction_relay_test",
+    "send_budget_test",
+    "relay_transport_test"
+  ],
+  "build_no_work": true,
+  "source_sha256": {
+    "Network/Client.h": "96e22f1089c78897aad7a479b8d307757ca6e7a0d877d8bab1bb785336f11d3d",
+    "Network/SendPriority.h": "cfbf3384176c6d7ffb291d9c62e74642691a8d651df369baa0a9e719701d147f",
+    "Network/Server.h": "ebe9370f1afe2d14e1d977e943410bbf226c82db7cc7a64ac0d9899989f6e8fa",
+    "Network/TransactionRelay.h": "c4e973e80d2e7f0377a6449dfd293c154c76283a24aa6db618a98b8fc21e7252",
+    "Test/SendBudgetTest.cpp": "8d4c0cf80878c29ef346a64d26a8ba4255b4fccd3cb32dcb6df56cd3d9d76578",
+    "Test/TransactionRelayTest.cpp": "ea537c854166e2343eaf81627fc598f623777dabac3f2b7f2b809eaffe55054a"
+  },
+  "binaries": {
+    "boost.exe": "3c36a58ca701660a137919f9bdfb4b25c9ab11b39e26fbecf9c413c4cc25d143",
+    "transaction_relay_test.exe": "df98ef70cb92237d6d85ab1e99060edc3882e69c4d765c50d498e5860abcaaa9",
+    "send_budget_test.exe": "865ea283996bc11fa69baf695f8085a6f14f29cb3d53010c875b001abe2d4391",
+    "relay_transport_test.exe": "5bd140235343c6b30c627e5b5ea26d893d6a4e6691fbf841fc795a4f75fb42b3"
+  },
+  "prior_failure": {
+    "file": "transaction-relay-test-002.log",
+    "cause": "Windows timer completion had not run during fixed 10ms test wait",
+    "fix": "test waits for release condition with 2s deadline; network implementation unchanged"
+  },
+  "relay_network": {
+    "fragments": {
+      "transactions": 800,
+      "bytes": 140800,
+      "fragments": 3,
+      "control_message_between_fragments": true,
+      "legacy_body_equal": true,
+      "replay_unnegotiated_bad_offset_closed": true
+    },
+    "inventory": {
+      "accepted": 1,
+      "invalid": 1,
+      "requests": 2,
+      "retries": 1
+    },
+    "prefill": {
+      "head": "e347ff67611545ffe5d75c61102de12d5503107a0f5b8653821843a0d5dfa4a6",
+      "prefilled": 16,
+      "missing_transactions": 0
+    },
+    "backup": {
+      "started_nodes": 4,
+      "remaining_nodes": 3,
+      "transactions": 16,
+      "recovery_seconds": 4.577999999994063,
+      "backup_attempts": 1,
+      "head": "72712fe01b42185c4c5f0edb1ec919bb10a7f12ad3d11fc0ff2f76568de84a81"
+    }
+  }
+}

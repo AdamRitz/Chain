@@ -85,6 +85,55 @@ int main(int argc,char** argv) {
         Require(txPending.at(nativeKey).lastSource==third.peer->key,"retry reaches third source instead of repeating first two");
         ReadMessages(io,third);
         auto invalid=tx;invalid[112]^=1;vector<uint8_t> statuses;
+        {
+            auto wrongHash=tx;wrongHash[0]^=1;
+            auto wrong=ReserveTxBodies(first.peer,10,wrongHash);
+            Require(wrong->receipts.empty()&&!txReceiving.count(nativeKey),"claimed hash with different content cannot pause requests");
+            Require(!ReserveTxBodies(first.peer,10,span<const uint8_t>(tx).first(175)),"incomplete native body has no receipt");
+            auto bad=ReserveTxBodies(first.peer,10,invalid);
+            Require(bad->receipts.size()==1&&txReceivingBytes==176&&!ReadTxRelayBody(nativeKey),"received bad signature remains unverified");
+            auto created=txReceiving.at(nativeKey).created;
+            auto duplicate=ReserveTxBodies(second.peer,10,invalid);
+            Require(duplicate->receipts.empty()&&txReceiving.at(nativeKey).created==created,"duplicate receipt cannot renew deadline or own another lease");
+            TxRequestBatches requests;
+            {lock_guard lock(txInventoryMutex);txPending.at(nativeKey).lastRequest=0;SelectTxRequestLocked(nativeKey,txPending.at(nativeKey),GetSteadyTime(),requests);}
+            Require(requests.empty(),"complete body waiting for verification pauses retries");
+            auto good=ReserveTxBodies(second.peer,44,tx);
+            Require(good->receipts.size()==1&&txReceiving.at(nativeKey).bodies.size()==2,"different signature bytes are tracked separately and still verified");
+            vector<shared_ptr<TxBodyReservation>> variants;
+            for (size_t i=0;i<3;++i) {auto changed=invalid;changed[113+i]^=1;variants.push_back(ReserveTxBodies(first.peer,10,changed));}
+            Require(txReceiving.at(nativeKey).bodies.size()==maxTxBodyVariants&&variants.back()->receipts.empty(),"signature variants cannot exceed the per-hash record limit");
+            variants.clear();
+            bad.reset();
+            {lock_guard lock(txInventoryMutex);SelectTxRequestLocked(nativeKey,txPending.at(nativeKey),GetSteadyTime(),requests);}
+            Require(requests.count(second.peer->key)&&!TxBodyWaitingLocked(nativeKey,GetSteadyTime()),"failed owner immediately permits another source");
+            good.reset();
+            {lock_guard lock(txInventoryMutex);EraseTxReceivingLocked(nativeKey);}
+            auto old=ReserveTxBodies(first.peer,10,tx);
+            {lock_guard lock(txInventoryMutex);txReceiving.at(nativeKey).created=GetSteadyTime()-txBodyWaitNs;}
+            requests.clear();
+            {lock_guard lock(txInventoryMutex);txPending.at(nativeKey).lastRequest=0;SelectTxRequestLocked(nativeKey,txPending.at(nativeKey),GetSteadyTime(),requests);}
+            Require(!requests.empty(),"absolute wait deadline permits retries while worker is still queued");
+            {lock_guard lock(txInventoryMutex);txReceiving.at(nativeKey).created=GetSteadyTime()-txRequestLifetimeNs;}
+            TxInventoryMaintenance();
+            Require(txReceivingBytes==176,"expired record still accounts for its queued owner bytes");
+            auto fresh=ReserveTxBodies(second.peer,10,tx);auto freshToken=txReceiving.at(nativeKey).token;
+            Require(txReceivingBytes==352,"new generation and old queued task share the same byte quota");
+            old.reset();
+            Require(txReceiving.at(nativeKey).token==freshToken&&txReceivingBytes==176,"old lease cannot release a new generation");
+            fresh.reset();
+            {lock_guard lock(txInventoryMutex);EraseTxReceivingLocked(nativeKey);}
+            vector<shared_ptr<TxBodyReservation>> leases(8);vector<thread> concurrent;
+            for (size_t i=0;i<leases.size();++i) concurrent.emplace_back([&,i]{leases[i]=ReserveTxBodies(first.peer,10,tx);});
+            for (auto& worker:concurrent) worker.join();
+            size_t owners=0;for (const auto& lease:leases) owners+=lease->receipts.size();
+            Require(owners==1&&txReceivingBytes==176,"concurrent duplicate receipts have one bounded owner");
+            leases.clear();Require(txReceivingBytes==0,"concurrent lease destruction releases bytes once");
+            {lock_guard lock(txInventoryMutex);EraseTxReceivingLocked(nativeKey);}
+            // Existing retry tests already used three attempts. Restore the
+            // normal request budget after these direct state-machine checks.
+            txPending.at(nativeKey).attempts=3;
+        }
         Require(ProcessTxPackage(invalid,&statuses)==0&&statuses[0]==TxInvalid,"invalid signature rejected by normal transaction processing");
         RecordVerifiedNativeTransactions(first.peer,invalid,statuses);
         Require(txPending.count(nativeKey)&&!ReadTxRelayBody(nativeKey),"invalid bytes with claimed hash do not satisfy pending request or poison cache");
@@ -98,6 +147,16 @@ int main(int argc,char** argv) {
         auto evm=MakeEvmBody(evmWallet);evmKey=TransactionInventoryKey(evm,true);
         auto evmAnnouncement=EncodeTxInventory(vector<TxInventoryKey>{evmKey});
         ReceiveTxInventory(first.peer,evmAnnouncement);ReadMessages(io,first);
+        {
+            vector<uint8_t> batch(4);WriteU32(batch.data(),uint32_t(evm.size()));batch.insert(batch.end(),evm.begin(),evm.end());batch.push_back(1);
+            Require(!ReserveTxBodies(first.peer,18,batch)&&!txReceiving.count(evmKey),"malformed EVM batch is rejected before any body registration");
+            auto altered=evm;altered.back()^=1;
+            auto mismatch=ReserveTxBodies(first.peer,17,altered);
+            Require(mismatch->receipts.empty(),"complete EVM input is bound to the claimed hash before waiting");
+            auto lease=ReserveTxBodies(first.peer,17,evm);
+            Require(lease->receipts.size()==1,"complete EVM body participates in retry suppression");
+            lease.reset();
+        }
         auto invalidEvm=evm;invalidEvm.back()^=1;
         Require(!ProcessEvmTx(invalidEvm)&&!ObserveKnownEvmTransaction(first.peer,invalidEvm),"EVM input tampering fails signature/hash check");
         Require(txPending.count(evmKey)&&!ReadTxRelayBody(evmKey),"invalid EVM response retains request");
@@ -153,6 +212,40 @@ int main(int argc,char** argv) {
         auto now=GetSteadyTime();
         {lock_guard lock(txInventoryMutex);auto& state=TxPeerStateLocked(third.peer,now);state.replyTokens=0;state.replyAt=now;}
         Require(!ReserveTxReplyBytes(third.peer,176,now)&&ReserveTxReplyBytes(third.peer,176,now+1000000000ULL),"response traffic quota refills with monotonic time");
+        {
+            auto body=GenerateTx(wallet.public_key,receiver.public_key,1,3,wallet);auto key=TransactionInventoryKey(body);
+            {lock_guard lock(txInventoryMutex);for (size_t i=0;i<maxTxBodyRecords;++i) {TxInventoryKey item;WriteU64(item.hash.data(),i+200000);txReceiving[item].created=GetSteadyTime();}}
+            auto capped=ReserveTxBodies(second.peer,10,body);
+            Require(capped->receipts.empty()&&txReceiving.size()==maxTxBodyRecords,"receipt count limit does not grow under a flood");
+            {lock_guard lock(txInventoryMutex);txReceiving.clear();TxInventoryKey item;txReceiving[item].bodies[{}]=maxTxBodyBytes;txReceivingBytes=maxTxBodyBytes;}
+            capped=ReserveTxBodies(second.peer,10,body);
+            Require(capped->receipts.empty()&&txReceivingBytes==maxTxBodyBytes,"receipt byte quota does not grow beyond its limit");
+            {lock_guard lock(txInventoryMutex);txReceiving.clear();txReceivingBytes=0;}
+            Connection cancelled(io);
+            auto previousLimit=maxPendingVerify;maxPendingVerify=1;pendingTxVerify=1;
+            co_spawn(cancelled.peer->strand,ProcessMessage(cancelled.peer,10,vector<uint8_t>(body.begin(),body.end())),detached);
+            io.restart();io.poll();
+            Require(txReceiving.count(key)&&TxBodyWaitingLocked(key,GetSteadyTime()),"body registered while verification admission is full");
+            cancelled.peer->closed=true;
+            auto cancelledAt=steady_clock::now();
+            while (txReceivingBytes&&steady_clock::now()-cancelledAt<seconds(2)) {io.restart();io.run_for(milliseconds(20));}
+            Require(txReceivingBytes==0&&!TxBodyWaitingLocked(key,GetSteadyTime()),"cancelled admission releases the receipt without a worker");
+            pendingTxVerify=0;maxPendingVerify=previousLimit;
+            cancelled.peer->socket.close();
+            Connection admission(io);auto broken=body;broken[112]^=1;
+            verifyThreads=make_unique<thread_pool>(2);
+            for (const auto& bytes:{vector<uint8_t>(broken.begin(),broken.end()),vector<uint8_t>(body.begin(),body.end()),vector<uint8_t>(body.begin(),body.end())})
+                co_spawn(admission.peer->strand,ProcessMessage(admission.peer,44,bytes),detached);
+            io.restart();io.poll();verifyThreads->join();verifyThreads.reset();
+            auto replies=ReadMessages(io,admission,3);size_t accepted=0,known=0,rejected=0;
+            for (const auto& reply:replies) {
+                Require(reply.first==45&&reply.second.size()==1,"each type44 batch retains its admission response");
+                accepted+=reply.second[0]==TxAccepted;known+=reply.second[0]==TxKnown;rejected+=reply.second[0]==TxInvalid;
+            }
+            Require(accepted==1&&known==1&&rejected==1,"bad signature and concurrent good duplicates follow normal validation and ACK rules");
+            Require(txReceivingBytes==0,"successful validation and failed worker release all body bytes");
+            admission.peer->socket.close();
+        }
         for (auto peer:{first.peer,second.peer,third.peer,legacy.peer}) {peer->closePosted=true;peer->socket.close();}
         peerPool.clear();db.reset();
         cout<<"Transaction inventory codec, retries, malformed signatures, EVM bodies, legacy relay, cache and request limits passed\n";

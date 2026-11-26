@@ -866,6 +866,7 @@ nlohmann::json GetNodeStats() {
         {"state_version",snapshot.version},
         {"ingress_wait_ms",ingressWaitNs.load()/1e6},{"clock",GetClockStats()},{"experiment_index",experimentIndex}};
     stats.update(GetProcessResources());
+    stats.update(TxBodyWaitStats());
     return stats;
 }
 #endif

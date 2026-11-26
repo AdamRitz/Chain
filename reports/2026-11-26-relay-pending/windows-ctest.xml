@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="(empty)"
+	tests="3"
+	failures="0"
+	disabled="0"
+	skipped="0"
+	hostname=""
+	time="0"
+	timestamp="2026-11-26T13:27:45"
+	>
+	<testcase name="SendBudgetCorrectness" classname="SendBudgetCorrectness" time="0.0477126" status="run">
+		<properties/>
+		<system-out>Send budget limits, cancellation and concurrent ownership checks passed
+</system-out>
+	</testcase>
+	<testcase name="TransactionRelayCorrectness" classname="TransactionRelayCorrectness" time="0.204643" status="run">
+		<properties/>
+		<system-out>[2026-11-26 13:27:46.090] [info] RocksDB Started. Path:C:/Users/DonQuixote/Documents/Codex/2026-11-10/ni-h/work/continuous-20261125/tests-retry-001/transaction-relay-data\96360367004000, Sync:true
+[2026-11-26 13:27:46.092] [info] Genesis Block Generated. Height:1
+Transaction inventory codec, retries, malformed signatures, EVM bodies, legacy relay, cache and request limits passed
+</system-out>
+	</testcase>
+	<testcase name="RelayTransportCorrectness" classname="RelayTransportCorrectness" time="0.0450303" status="run">
+		<properties/>
+		<system-out>Relay transport, bounds, scheduling and retry tests passed
+</system-out>
+	</testcase>
+</testsuite>
