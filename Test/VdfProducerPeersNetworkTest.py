@@ -290,14 +290,25 @@ def ExerciseIdentityRejections(case):
 
 def ExerciseOrdinaryDuplicate(case):
     """Replace a ring socket by the preferred direction, retaining its place."""
+    deadline = min(time.monotonic() + 20, case.deadline)
+
+    class RetryHandshake(Exception):
+        pass
+
+    def remaining():
+        seconds = deadline - time.monotonic()
+        if seconds <= 0:
+            raise TimeoutError('Ordinary duplicate test exceeded 20 seconds')
+        return seconds
+
     def ready():
         rows = StableRows(case)
         if not rows or not OrdinaryRing(case, rows):
             return False
-        wanted = set(rows[0]['vdf']['producers']) | set(rows[0]['vdf']['next_producers'])
+        wanted = set(rows[0]['vdf']['producers'])
         for index in range(7):
             neighbor = (index + 1) % 7
-            if not {case.public[index], case.public[neighbor]} <= wanted:
+            if rows[index]['vdf']['peer_pending'] or not {case.public[index], case.public[neighbor]} <= wanted:
                 continue
             # Identity ordering keeps inbound when the local public key is larger.
             if case.public[index] <= case.public[neighbor]:
@@ -306,42 +317,77 @@ def ExerciseOrdinaryDuplicate(case):
                              if peer['ordinary_slot'] and peer['port'] == case.ports[neighbor]
                              and peer['outbound']), None)
             if original:
-                return index, neighbor, original
+                return index, neighbor, original, rows[index]['vdf']['epoch'], rows[index]['vdf']['producers']
         return False
 
-    target, neighbor, original = case.Wait(ready, 'ordinary connection selected for duplicate direction test')
-    chain = Query(case.ports[target], 19, raw=True)[:32]
     capabilities = json.dumps({'relay_protocol': 2, 'vdf_peer_protocol': 1,
                                'vdf_block_connection': True}).encode()
-    with socket.create_connection((case.peer_address, case.ports[target]), timeout=3) as connection:
-        connection.sendall(b'\x04' + struct.pack('<H', case.ports[neighbor]) + Frame(14, capabilities))
-        deadline = time.monotonic() + 5
-        answered = False
-        while time.monotonic() < deadline and not answered:
-            connection.settimeout(max(.01, deadline - time.monotonic()))
-            kind, size = struct.unpack('<BI', ReadAll(connection, 5))
-            Require(size <= 2 * 1024 * 1024, 'Duplicate connection response frame bound')
-            data = ReadAll(connection, size)
-            if kind == 13:
-                connection.sendall(Frame(14, capabilities))
-            elif kind == 56:
-                connection.sendall(Frame(57, Identity(case.keys[neighbor], chain, case.ports[neighbor], data)))
-                answered = True
-        Require(answered, 'Duplicate ordinary connection completes identity authentication')
+    attempts = case.report['ordinary_duplicate_attempts'] = []
+    replacement = None
+    while replacement is None:
+        target, neighbor, original, epoch, roster = case.Wait(
+            ready, 'ordinary connection selected for duplicate direction test', timeout=remaining())
+        attempt = {'node': target, 'neighbor': neighbor, 'epoch': epoch}
+        attempts.append(attempt)
 
-        def transferred():
-            entries = case.Stats(target)['vdf']['ordinary_connections']
-            ordinary = [peer for peer in entries if peer['ordinary_slot']]
-            Require(len(ordinary) <= 2, 'Duplicate authentication never expands the ordinary quota')
-            for peer in ordinary:
-                if (peer['port'] == case.ports[neighbor] and peer['authenticated'] and not peer['outbound']
-                        and peer['connection_id'] != original['connection_id']):
-                    Require(not peer['reserved'] and not peer['pending'], 'Transferred ordinary place remains independent of producer capacity')
-                    return peer
-            return False
-        replacement = case.Wait(transferred, 'preferred duplicate inherits the ordinary connection place', timeout=5)
+        def roster_changed(row):
+            return row['vdf']['epoch'] != epoch or row['vdf']['producers'] != roster
+
+        try:
+            chain = Query(case.ports[target], 19, raw=True)[:32]
+            if roster_changed(case.Stats(target)):
+                raise RetryHandshake('producer roster changed before handshake')
+            with socket.create_connection((case.peer_address, case.ports[target]), timeout=min(3, remaining())) as connection:
+                connection.sendall(b'\x04' + struct.pack('<H', case.ports[neighbor]) + Frame(14, capabilities))
+                handshake_deadline = min(time.monotonic() + 5, deadline)
+                answered = False
+                while time.monotonic() < handshake_deadline and not answered:
+                    connection.settimeout(max(.001, handshake_deadline - time.monotonic()))
+                    kind, size = struct.unpack('<BI', ReadAll(connection, 5))
+                    Require(size <= 2 * 1024 * 1024, 'Duplicate connection response frame bound')
+                    data = ReadAll(connection, size)
+                    if kind == 13:
+                        connection.sendall(Frame(14, capabilities))
+                    elif kind == 56:
+                        connection.sendall(Frame(57, Identity(case.keys[neighbor], chain, case.ports[neighbor], data)))
+                        answered = True
+                Require(answered, 'Duplicate ordinary connection completes identity authentication')
+
+                transfer_deadline = min(time.monotonic() + 5, deadline)
+                while time.monotonic() < transfer_deadline:
+                    row = case.Stats(target)
+                    entries = row['vdf']['ordinary_connections']
+                    Require(sum(peer['ordinary_slot'] for peer in entries) <= 2,
+                            'Duplicate authentication never expands the ordinary quota')
+                    for peer in entries:
+                        if (peer['port'] == case.ports[neighbor] and peer['authenticated'] and not peer['outbound']
+                                and peer['connection_id'] != original['connection_id']):
+                            Require(peer['ordinary_slot'] and not peer['reserved'] and not peer['pending'],
+                                    'Preferred duplicate inherits the ordinary place without producer capacity')
+                            replacement = peer
+                    if replacement is not None:
+                        break
+                    if roster_changed(row):
+                        raise RetryHandshake('producer roster changed during handshake')
+                    # Drain replies so a closed test socket is detected before
+                    # selecting another current producer. Slot assertions above
+                    # are never caught or retried.
+                    connection.settimeout(.001)
+                    try:
+                        if not connection.recv(65536):
+                            raise RetryHandshake('duplicate connection closed during handshake')
+                    except socket.timeout:
+                        pass
+                    time.sleep(.03)
+                Require(replacement is not None, 'Preferred duplicate inherits the ordinary connection place')
+        except (ConnectionError, RetryHandshake) as error:
+            attempt['retry'] = str(error)
+        except socket.timeout:
+            if not roster_changed(case.Stats(target)):
+                raise
+            attempt['retry'] = 'producer roster changed before handshake completed'
     restored = case.Wait(lambda: OrdinaryRing(case, [case.Stats(i) for i in range(7)]),
-                         'configured ordinary ring reconnects after the duplicate closes')
+                         'configured ordinary ring reconnects after the duplicate closes', timeout=remaining())
     case.report['ordinary_duplicate'] = {'node': target, 'neighbor': neighbor,
                                          'original': original, 'replacement': replacement,
                                          'restored': [row['vdf']['ordinary_connections'] for row in restored]}
