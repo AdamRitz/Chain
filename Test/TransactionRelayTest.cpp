@@ -192,10 +192,12 @@ void TestMergedWork(boost::asio::io_context& io,const Wallet& wallet,const Walle
         Require(retry&&retry->owners.size()==2,"batch can retry both bodies after capacity returns");retry.reset();
     }
     {
-        auto checks=signatureChecks.load(),invalid=invalidUserTx.load();
         User previous;
         {unique_lock lock(poolUsersMutex);previous=poolUsers.at(wallet.public_key);poolUsers.at(wallet.public_key).balance=0;}
         {lock_guard lock(txpoolMutex);DropUserPoolFrom(wallet.public_key,10);}
+        // DropUserPoolFrom counts the removed pending transactions as invalid;
+        // measure only the subsequent replay against the changed account.
+        auto checks=signatureChecks.load(),invalid=invalidUserTx.load();
         {
             PausedVerification workers;SubmitWork(io,admission,44,NativeBatch({a}));
             Require(pendingTxVerify==1,"verified body absent from pool still enters account validation");workers.Finish();
