@@ -37,6 +37,10 @@ nlohmann::json GetGenesisConfig() {
         {"slot_ms",vdf.slotMs},{"start_time_ms",vdf.startTimeMs},{"fallback_slots",vdf.fallbackSlots},
         {"future_slots",vdf.futureSlots},{"producers",5}};
     if (vdf.enabled&&vdf.producerRotation) result["vdf"]["producer_rotation"]=true;
+    if (vdf.enabled&&vdf.consecutiveBlocks) {
+        result["vdf"]["consecutive_blocks"]=vdf.consecutiveBlocks;
+        result["vdf"]["producer_timeout_slots"]=vdf.producerTimeoutSlots;
+    }
     return result;
 }
 void SetGenesisUsers(const nlohmann::json& config) {
@@ -51,7 +55,8 @@ void SetGenesisUsers(const nlohmann::json& config) {
         if (!settings.is_object()) throw invalid_argument("Genesis vdf must be an object");
         for (const auto& [name,value]:settings.items()) {
             if (name!="enabled"&&name!="epoch_blocks"&&name!="iterations"&&name!="slot_ms"&&name!="start_time_ms"&&
-                name!="fallback_slots"&&name!="future_slots"&&name!="producers"&&name!="producer_rotation") throw invalid_argument("Unknown genesis vdf parameter: "+name);
+                name!="fallback_slots"&&name!="future_slots"&&name!="producers"&&name!="producer_rotation"&&
+                name!="consecutive_blocks"&&name!="producer_timeout_slots") throw invalid_argument("Unknown genesis vdf parameter: "+name);
         }
         vdf.enabled=settings.value("enabled",true);
         if (settings.contains("producer_rotation")) {
@@ -65,6 +70,8 @@ void SetGenesisUsers(const nlohmann::json& config) {
         if (settings.contains("start_time_ms")) vdf.startTimeMs=ReadUserNumber(settings.at("start_time_ms"));
         if (settings.contains("fallback_slots")) vdf.fallbackSlots=ReadUserNumber(settings.at("fallback_slots"));
         if (settings.contains("future_slots")) vdf.futureSlots=ReadUserNumber(settings.at("future_slots"));
+        if (settings.contains("consecutive_blocks")) vdf.consecutiveBlocks=ReadUserNumber(settings.at("consecutive_blocks"));
+        if (settings.contains("producer_timeout_slots")) vdf.producerTimeoutSlots=ReadUserNumber(settings.at("producer_timeout_slots"));
         if (settings.contains("producers")&&ReadUserNumber(settings.at("producers"))!=5) throw invalid_argument("VDF consensus selects at most five producers");
         chain::vdf_consensus::ValidateConfig(vdf);
         if (!vdf.enabled&&settings.size()!=1) throw invalid_argument("Disabled genesis vdf must omit its parameters");

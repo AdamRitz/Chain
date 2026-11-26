@@ -1,6 +1,6 @@
 - name: Verify the controller inputs and Linux node prerequisites
   hosts: chain
-  gather_facts: true
+  gather_facts: "{{ chain_preflight_gather_facts | default(true) | bool }}"
   become: true
   tasks:
     - name: Validate managed identifiers and paths

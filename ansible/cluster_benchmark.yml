@@ -10,6 +10,12 @@
       run_once: true
 
 - ansible.builtin.import_playbook: stage.yml
+  when: not (chain_cluster_staged | default(false) | bool)
+  vars:
+    chain_preflight_gather_facts: "{{ not (chain_cluster_staged | default(false) | bool) }}"
+
+- ansible.builtin.import_playbook: cluster_staged.yml
+  when: chain_cluster_staged | default(false) | bool
 
 - name: Benchmark a fixed-degree cluster and recover every owned test database
   hosts: chain

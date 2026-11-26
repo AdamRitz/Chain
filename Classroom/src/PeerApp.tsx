@@ -925,6 +925,10 @@ function ChainView({ s, request, drafts, transition, externalError, clearExterna
                   <div><dt>出块方式</dt><dd>{s.vdf?.enabled === undefined ? "—" : s.vdf.enabled ? s.vdf.producer_rotation ? "VDF 轮流出块" : "VDF 竞争出块" : "竞争出块"}</dd></div>
                   {s.vdf?.enabled && <>
                     <div><dt>时间片</dt><dd>{s.vdf.slot_ms} ms</dd></div>
+                    {s.vdf.consecutive_blocks > 0 && <>
+                      <div><dt>连续出块</dt><dd>{s.vdf.consecutive_blocks} 块</dd></div>
+                      <div><dt>出块超时</dt><dd>{s.vdf.producer_timeout_slots} 周期</dd></div>
+                    </>}
                     <div><dt>已选成员</dt><dd>{s.running && !s.connection_error && Array.isArray(s.vdf.producers) ? `${s.vdf.producers.length} / ${s.vdf.producer_limit}` : "—"}</dd></div>
                     {s.vdf.producer_rotation && <div><dt>当前生产者</dt><dd className="mono" title={s.running && !s.connection_error ? s.vdf.scheduled_producer || "" : ""}>{s.running && !s.connection_error && s.vdf.scheduled_producer ? short(s.vdf.scheduled_producer, 12) : "—"}</dd></div>}
                   </>}

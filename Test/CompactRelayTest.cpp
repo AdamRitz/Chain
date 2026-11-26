@@ -73,7 +73,9 @@ int main(int argc,char** argv) {
         collisions.Observe(2,hashes[1]);
         Require(collisions.IsAmbiguous(2)&&!collisions.MatchedHash(2),"different local hashes with one ID require repair");
         Require(VerifyMessageSize(51,120)&&!VerifyMessageSize(51,119)&&
-            !VerifyMessageSize(51,120+(maxProtocolTx+7)/8+maxProtocolTx*6+2409),"new frame bounds");
+            VerifyMessageSize(51,120+(maxProtocolTx+7)/8+maxProtocolTx*6+chain::vdf_consensus::kMaxEncodedBytes)&&
+            !VerifyMessageSize(51,120+(maxProtocolTx+7)/8+maxProtocolTx*6+chain::vdf_consensus::kMaxEncodedBytes+1),
+            "new frame bounds");
         Require(VerifyMessageSize(39,112+6000*33),"legacy frame remains supported");
 
         auto root=filesystem::path(argc>1?argv[1]:"compact-relay-data")/to_string(GetSteadyTime());

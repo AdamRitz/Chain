@@ -149,8 +149,11 @@ if(Python3_Interpreter_FOUND)
     add_test(NAME VdfProducerPeersNetwork COMMAND "${Python3_EXECUTABLE}" "${CMAKE_CURRENT_SOURCE_DIR}/Test/VdfProducerPeersNetworkTest.py"
         --bin "$<TARGET_FILE_DIR:boost>" --work "${CHAIN_TEST_DATA_ROOT}/vdf-producer-peers-network")
     set_tests_properties(VdfProducerPeersNetwork PROPERTIES TIMEOUT 240)
+    add_test(NAME VdfContinuousNetwork COMMAND "${Python3_EXECUTABLE}" "${CMAKE_CURRENT_SOURCE_DIR}/Test/VdfContinuousNetworkTest.py"
+        --bin "$<TARGET_FILE_DIR:boost>" --work "${CHAIN_TEST_DATA_ROOT}/vdf-continuous-network")
+    set_tests_properties(VdfContinuousNetwork PROPERTIES TIMEOUT 360)
     if(WIN32)
-        set_tests_properties(VdfNetwork VdfRotationNetwork VdfProducerPeersNetwork PROPERTIES ENVIRONMENT_MODIFICATION "PATH=path_list_prepend:${CHAIN_COMPILER_BIN}")
+        set_tests_properties(VdfNetwork VdfRotationNetwork VdfProducerPeersNetwork VdfContinuousNetwork PROPERTIES ENVIRONMENT_MODIFICATION "PATH=path_list_prepend:${CHAIN_COMPILER_BIN}")
     endif()
     add_test(NAME TxStepNetwork COMMAND "${Python3_EXECUTABLE}" "${CMAKE_CURRENT_SOURCE_DIR}/Test/TxStepNetworkTest.py"
         --bin "$<TARGET_FILE_DIR:boost>" --work "${CHAIN_TEST_DATA_ROOT}/tx-step-network")

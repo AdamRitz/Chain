@@ -31,11 +31,22 @@ Contract compilation: `Contracts/Counter.compiled.json` was produced from `Count
 
 `chiavdf/` contains the transitive source dependencies of `verifier.h` and
 `prover_slow.h`, the portable leading-zero counter, and the Windows uint128
-fallback. The sources are unmodified. The upstream Apache-2.0 license, embedded
+fallback. The upstream Apache-2.0 license, embedded
 MIT notices (including PicoSHA2 and NUCOMP), the uint128 license, and the
 public-domain/MIT-0 notice in `refcode/lzcnt.c` are retained. The upstream Python,
 network client, hardware, assembly generation and build-download code are not
 included or invoked.
+
+2026-11-26 Windows/MinGW patch: `thread_scratch.h`, `nucomp.h` and
+`xgcd_partial.c` let `Crypto/VDF.cpp` own the three GMP scratch contexts for each
+`Prove` or `Verify` call. MinGW TLS stores non-owning pointers; nested calls
+restore previous pointers and normal or exceptional returns destroy the
+contexts before the thread exits. This avoids the emulated-TLS destructor
+ordering failure reproduced by concurrent short-lived threads. Other
+platforms retain upstream's thread-local context lifetime. VDF values,
+proof encoding and algorithms are unchanged. `VdfCorrectness` covers nested
+scope restoration and eight rounds of four concurrent proof/verification
+threads.
 
 The `chain_vdf` static library links system GMP and GMPXX (`libgmp-dev` on Debian
 and Ubuntu; `mingw-w64-ucrt-x86_64-gmp` with MSYS2 UCRT). GMP's own license and

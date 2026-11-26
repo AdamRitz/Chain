@@ -1,9 +1,13 @@
 """Fixed-degree graph, tested-package distribution and lifecycle regressions."""
 import json
+import hashlib
+import io
 import os
 from pathlib import Path
 import shutil
 import subprocess
+import struct
+import tarfile
 import sys
 import tempfile
 import threading
@@ -26,6 +30,14 @@ import cluster_quick as quick
 def Nodes(count):
     return [{'id': f'n{index:04}', 'host': f'10.20.{index // 254}.{index % 254 + 1}'}
             for index in range(count)]
+
+
+def PackageFixture(path):
+    payload = json.dumps({'schema': 1, 'source_commit': 'a' * 40, 'files': []}).encode()
+    with tarfile.open(path, 'w:gz') as archive:
+        member = tarfile.TarInfo('manifest.json')
+        member.size = len(payload)
+        archive.addfile(member, io.BytesIO(payload))
 
 
 class TopologyTests(unittest.TestCase):
@@ -176,6 +188,26 @@ class DistributionTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'checksum mismatch'):
             instance.Validate(self.Request(staged))
 
+    def test_existing_staged_release_is_bound_to_package_manifest_and_files(self):
+        staged = self.Package()
+        archive = self.root / 'release.tar.gz'
+        expected, manifest = build.Hash(archive), stage.ManifestDigest(archive)
+        result = stage.VerifyExisting(staged.parent, 'tested', expected, manifest)
+        self.assertFalse(result['changed'])
+        self.assertEqual(result['binary_sha256'], self.proof['binary_sha256'])
+        with self.assertRaisesRegex(ValueError, 'requested package'):
+            stage.VerifyExisting(staged.parent, 'tested', '0' * 64, manifest)
+        (staged / 'bin/boost').write_bytes(b'\x7fELFtampered')
+        with self.assertRaisesRegex(ValueError, 'checksum'):
+            stage.VerifyExisting(staged.parent, 'tested', expected, manifest)
+        contents = json.loads((staged / 'manifest.json').read_text())
+        for entry in contents['files']:
+            if entry['path'] == 'bin/boost':
+                entry['sha256'] = build.Hash(staged / 'bin/boost')
+        (staged / 'manifest.json').write_text(json.dumps(contents))
+        with self.assertRaisesRegex(ValueError, 'manifest differs'):
+            stage.VerifyExisting(staged.parent, 'tested', expected, manifest)
+
     def test_classroom_build_packages_gateway_and_evm_sender(self):
         self.proof['settings']['classroom'] = True
         (self.source_release / 'build-proof.json').write_text(json.dumps(self.proof))
@@ -257,6 +289,104 @@ class ControlTests(unittest.TestCase):
 
 
 class BenchmarkTests(unittest.TestCase):
+    def test_low_tps_requires_three_complete_windows_and_growing_backlog(self):
+        import cluster_benchmark as benchmark
+        guard = benchmark.LowTpsStop(10000, 2)
+        def Point(seconds, transactions, backlog):
+            return {'seconds': seconds, 'sent': transactions + backlog,
+                    'common': {'transactions': transactions}}
+        self.assertIsNone(guard(Point(31, 0, 0)))
+        self.assertIsNone(guard(Point(32, 0, 0)))
+        self.assertIsNone(guard(Point(46.9, 75000, 75000)))
+        self.assertIsNone(guard(Point(47, 75000, 75000)))
+        self.assertIsNone(guard(Point(62, 150000, 150000)))
+        stop = guard(Point(77, 225000, 225000))
+        self.assertEqual(len(stop['windows']), 3)
+        self.assertEqual(stop['threshold_tps'], 7000)
+        self.assertTrue(all(row['tps'] == 5000 and row['backlog_growth'] > 0 for row in stop['windows']))
+        guard = benchmark.LowTpsStop(10000, 0, start=0)
+        for seconds in range(0, 100, 15):
+            self.assertIsNone(guard(Point(seconds, seconds * 1000, 100000 - seconds * 100)))
+
+    def test_fast_window_resets_the_consecutive_slow_count(self):
+        import cluster_benchmark as benchmark
+        guard = benchmark.LowTpsStop(10000, 0, start=0)
+        def Point(seconds, transactions):
+            return {'seconds': seconds, 'sent': seconds * 10000, 'common': {'transactions': transactions}}
+        for seconds, transactions in ((0, 0), (15, 15000), (30, 165000), (45, 180000), (60, 195000)):
+            self.assertIsNone(guard(Point(seconds, transactions)))
+        self.assertEqual(len(guard(Point(75, 210000))['windows']), 3)
+
+    def test_load_case_stops_sender_keeps_partial_metrics_and_default_has_no_callback(self):
+        import Experiments as experiments
+        class FakeLoad:
+            current = None
+            def __init__(self, *args, **kwargs):
+                FakeLoad.current = self
+                self.started = 0
+                self.sent, self.wire_transactions = 4, 4
+                self.samples, self.late_ms = [], []
+                self.parallel_ingress, self.error = False, None
+                self.stop = threading.Event()
+            def Run(self):
+                self.started = time.monotonic()
+                self.stop.wait(.5)
+        class FakeCluster:
+            nodes = [{'id': 'n1'}]
+            def Stats(self):
+                return [{'failed': False, 'head': 'a', 'pool': 0, 'pending': 0, 'reorganizations': 0,
+                         'invalid': 0, 'rejected': 0, 'max_reorg_depth': 0}]
+            def Common(self, *args):
+                return {'transactions': 4, 'height': 2}
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            base = {'warmup': 0, 'duration': .04, 'drain_seconds': .02, 'ingress': 'shard',
+                    'sample_hz': 1, 'batch': 1, 'poll_seconds': .005, 'wallets': 1,
+                    'deadline_ms': 1000, 'max_backlog_growth': .1}
+            for callback in (None, lambda point: {'reason': 'fixture requested stop'}):
+                output = root / ('early' if callback else 'default')
+                output.mkdir()
+                plan = {**base, **({'stop_when': callback} if callback else {})}
+                with mock.patch.object(experiments, 'Load', FakeLoad), \
+                     mock.patch.object(experiments, 'CheckSamples'), \
+                     mock.patch.object(experiments, 'VerifyNativeState', return_value={'checked': 4}):
+                    result = experiments.LoadCase(FakeCluster(), {'rate': 100, 'suite': 'throughput'},
+                                                  plan, root / 'unused', {}, output)
+                self.assertTrue(FakeLoad.current.stop.is_set())
+                self.assertTrue(result['drained'])
+                self.assertEqual(result['sent_unique'], 4)
+                self.assertEqual('early_stop' in result, callback is not None)
+                self.assertEqual((output / 'early-stop.json').exists(), callback is not None)
+                if callback:
+                    self.assertEqual(result['requested_duration_seconds'], .04)
+                    self.assertFalse(result['sustainable'])
+                    self.assertFalse(result['tx_sustainable'])
+
+    def test_benchmark_cleans_nodes_after_early_stop_and_load_failure(self):
+        import cluster_benchmark as benchmark
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            for failure in (False, True):
+                context = {'output': str(root / str(failure)), 'rate': 10000, 'warmup': 2,
+                    'duration': 300, 'drain_seconds': 5, 'poll_seconds': .1, 'sample_hz': 20,
+                    'batch': 128, 'wallets': 1024, 'dataset': '/unused', 'metrics_period': 1}
+                cluster = mock.Mock(query_sweeps=[], cleanup_errors=[])
+                plan = {'nodes': [{'id': 'a'}], 'injectors': ['a'], 'graph': {}}
+                previous_load = benchmark.Experiments.Load
+                result = {'drained': True, 'unresolved_samples': 0, 'early_stop': {'reason': 'slow'}}
+                with mock.patch.object(benchmark, 'Validate', return_value=(plan, {})), \
+                     mock.patch.object(benchmark, 'SparseCluster', return_value=cluster), \
+                     mock.patch.object(benchmark.Experiments, 'LoadCase',
+                         side_effect=RuntimeError('fixture load failure') if failure else None, return_value=result) as load:
+                    outcome = benchmark.Run(context)
+                cluster.Close.assert_called_once()
+                self.assertIs(benchmark.Experiments.Load, previous_load)
+                self.assertFalse(outcome['ok'])
+                self.assertTrue((Path(context['output']) / 'result.json').is_file())
+                if not failure:
+                    self.assertEqual(outcome['status'], 'stopped_early')
+                    self.assertIsInstance(load.call_args.args[2]['stop_when'], benchmark.LowTpsStop)
+
     def test_ready_requires_committed_producers_and_allows_epoch_boundary(self):
         import cluster_benchmark as benchmark
         keys = [str(index) * 64 for index in range(5)]
@@ -283,6 +413,21 @@ class BenchmarkTests(unittest.TestCase):
         self.assertTrue(benchmark.ConsensusReady(rows, {'vdf': {'enabled': True}}))
         rows[0]['vdf']['producers'] = ['0', 'missing']
         self.assertFalse(benchmark.ConsensusReady(rows, {'vdf': {'enabled': True}}))
+
+    def test_ready_checks_continuous_producer_configuration(self):
+        import cluster_benchmark as benchmark
+        keys = [str(index) * 64 for index in range(5)]
+        genesis = {'vdf': {'enabled': True, 'producer_rotation': True, 'epoch_blocks': 160,
+                           'consecutive_blocks': 32, 'producer_timeout_slots': 8}}
+        rows = [{'vdf': {'enabled': True, 'producer_rotation': True, 'epoch': 2,
+                         'public_key': key, 'producers': keys, 'consecutive_blocks': 32,
+                         'producer_timeout_slots': 8}} for key in keys]
+        self.assertTrue(benchmark.ConsensusReady(rows, genesis))
+        rows[0]['vdf']['consecutive_blocks'] = 16
+        self.assertFalse(benchmark.ConsensusReady(rows, genesis))
+        rows[0]['vdf']['consecutive_blocks'] = 32
+        rows[0]['vdf']['producer_timeout_slots'] = 4
+        self.assertFalse(benchmark.ConsensusReady(rows, genesis))
 
     def test_worker_uses_plan_port_instead_of_global_default(self):
         import cluster_benchmark as benchmark
@@ -372,6 +517,7 @@ class BenchmarkTests(unittest.TestCase):
             self.assertEqual(args[args.index('--peer-discovery') + 1], '0')
             self.assertEqual(args[args.index('--max-peers') + 1], '12')
             self.assertEqual(args[args.index('--target-peers') + 1], '8')
+            self.assertEqual(args[args.index('--clock-sync') + 1], '0')
             self.assertEqual(args.count('--seed'), len(node['seeds']))
             self.assertEqual(args.count('--backup-seed'), len(node['backup_seeds']))
             self.assertEqual([args[index+1] for index, value in enumerate(args) if value == '--backup-seed'], node['backup_seeds'])
@@ -424,6 +570,114 @@ class EntryPointTests(unittest.TestCase):
 
 
 class QuickTests(unittest.TestCase):
+    def SignedDataset(self, root, count=8, wallets=2):
+        from nacl.signing import SigningKey
+        keys = [SigningKey(bytes([index + 1]) * 32) for index in range(wallets)]
+        data = root / 'transactions.bin'
+        with data.open('wb') as output:
+            for index in range(count):
+                key = keys[index % wallets]
+                unsigned = bytes(key.verify_key) + bytes(keys[(index + 1) % wallets].verify_key) + struct.pack('<QQ', 1, index // wallets + 1)
+                digest = hashlib.blake2b(unsigned, digest_size=32).digest()
+                output.write(unsigned + digest + key.sign(digest).signature)
+        genesis = Path(str(data) + '.genesis.json')
+        quick.Save(genesis, {'base_fee': 1, 'accounts': [
+            {'public_key': bytes(key.verify_key).hex(), 'balance': 1000} for key in keys]})
+        return data, genesis
+
+    def test_explicit_dataset_is_portable_and_larger_than_required_prefix(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            data, genesis = self.SignedDataset(root)
+            prepared = quick.PreparedDataset(data, genesis, 6, 2)
+            self.assertEqual(prepared['count'], 8)
+            self.assertEqual(prepared['required_count'], 6)
+            self.assertEqual(prepared['verified_signatures'], 8)
+            manifest = root / 'portable.json'
+            quick.Save(manifest, prepared)
+            other = root / 'other-os'
+            other.mkdir()
+            copied_data, copied_genesis = other / 'signed.bin', other / 'accounts.json'
+            shutil.copyfile(data, copied_data)
+            shutil.copyfile(genesis, copied_genesis)
+            imported = quick.PreparedDataset(copied_data, copied_genesis, 7, 2, manifest)
+            self.assertEqual(imported['dataset_sha256'], prepared['dataset_sha256'])
+            self.assertEqual(imported['required_count'], 7)
+            copied_data.write_bytes(b'x' + copied_data.read_bytes()[1:])
+            with self.assertRaisesRegex(ValueError, 'manifest'):
+                quick.PreparedDataset(copied_data, copied_genesis, 7, 2, manifest)
+
+    def test_explicit_dataset_rejects_invalid_signature_nonce_accounts_and_size(self):
+        from nacl.exceptions import BadSignatureError
+        from nacl.signing import SigningKey
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            data, genesis = self.SignedDataset(root)
+            original = data.read_bytes()
+            tampered = bytearray(original)
+            tampered[175] ^= 1
+            data.write_bytes(tampered)
+            with self.assertRaises(BadSignatureError):
+                quick.PreparedDataset(data, genesis, 6, 2)
+            tampered = bytearray(original)
+            struct.pack_into('<Q', tampered, 72, 2)
+            digest = hashlib.blake2b(tampered[:80], digest_size=32).digest()
+            tampered[80:112] = digest
+            tampered[112:176] = SigningKey(bytes([1]) * 32).sign(digest).signature
+            data.write_bytes(tampered)
+            with self.assertRaisesRegex(ValueError, 'nonce'):
+                quick.PreparedDataset(data, genesis, 6, 2)
+            data.write_bytes(original[:-1])
+            with self.assertRaisesRegex(ValueError, 'complete'):
+                quick.PreparedDataset(data, genesis, 6, 2)
+            data.write_bytes(original)
+            with self.assertRaisesRegex(ValueError, 'at least'):
+                quick.PreparedDataset(data, genesis, 9, 2)
+            with self.assertRaisesRegex(ValueError, 'wallets'):
+                quick.PreparedDataset(data, genesis, 6, 3)
+
+    def test_prepare_needs_no_linux_package_or_ansible_and_reuses_imported_data(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            data, genesis = self.SignedDataset(root)
+            nodes = root / 'nodes.json'
+            quick.Save(nodes, Nodes(2))
+            output = root / 'offline'
+            args = quick.Parser().parse_args(['prepare', '--nodes', str(nodes), '--dataset', str(data),
+                '--wallets', '2', '--rate', '1', '--warmup', '0', '--duration', '6', '--output', str(output)])
+            invoke = mock.Mock(side_effect=AssertionError('Offline prepare called Ansible/SSH'))
+            self.assertEqual(quick.Execute(args, invoke=invoke), 0)
+            invoke.assert_not_called()
+            self.assertTrue((output / 'plan.json').is_file())
+            self.assertEqual(json.loads((output / 'dataset.json').read_text())['count'], 8)
+            self.assertNotIn('chain_package', json.loads((output / 'variables.json').read_text()))
+            self.assertTrue(json.loads((output / 'operation.json').read_text())['offline'])
+
+    def test_test_reuses_portable_dataset_without_signing_or_restaging(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            data, genesis = self.SignedDataset(root)
+            manifest = root / 'portable.json'
+            quick.Save(manifest, quick.PreparedDataset(data, genesis, 6, 2))
+            package, nodes, sender = root / 'package.tar.gz', root / 'nodes.json', root / 'sender'
+            PackageFixture(package)
+            sender.write_bytes(b'sender fixture')
+            quick.Save(nodes, Nodes(2))
+            output = root / 'staged-test'
+            args = quick.Parser().parse_args(['test', '--nodes', str(nodes), '--release-id', 'r',
+                '--package', str(package), '--package-sha256', build.Hash(package), '--sender', str(sender),
+                '--dataset', str(data), '--dataset-manifest', str(manifest), '--staged',
+                '--wallets', '2', '--rate', '1', '--warmup', '0', '--duration', '6', '--output', str(output)])
+            invoke = mock.Mock(return_value=SimpleNamespace(returncode=0))
+            with mock.patch.object(quick, 'VerifySender'), \
+                 mock.patch.object(quick, 'PrepareDataset', side_effect=AssertionError('Imported data was resigned')):
+                self.assertEqual(quick.Execute(args, invoke=invoke), 0)
+            variables = json.loads((output / 'variables.json').read_text())
+            self.assertTrue(variables['chain_cluster_staged'])
+            self.assertEqual(variables['chain_dataset'], str(data.resolve()))
+            self.assertEqual(json.loads((output / 'dataset.json').read_text())['required_count'], 6)
+            self.assertEqual(invoke.call_count, 1)
+
     def test_persistent_deployment_bootstrap_arguments_preserve_legacy_genesis(self):
         import ast
         import jinja2
@@ -458,10 +712,28 @@ class QuickTests(unittest.TestCase):
         result = quick.RotationGenesis(original, now_ms=1000999)
         self.assertNotIn('vdf', original)
         self.assertTrue(result['vdf']['producer_rotation'])
+        self.assertEqual(result['vdf']['epoch_blocks'], 160)
+        self.assertEqual(result['vdf']['consecutive_blocks'], 32)
+        self.assertEqual(result['vdf']['producer_timeout_slots'], 8)
         self.assertEqual(result['vdf']['slot_ms'], 200)
         self.assertEqual(result['vdf']['start_time_ms'], 1000800)
         with self.assertRaisesRegex(ValueError, 'existing VDF genesis'):
             quick.RotationGenesis(result)
+
+    def test_consecutive_producer_settings_are_bound_to_new_genesis(self):
+        original = {'base_fee': 1, 'accounts': []}
+        result = quick.RotationGenesis(original, now_ms=1000999, consecutive_blocks=16,
+                                       producer_timeout_slots=4, epoch_blocks=80)
+        self.assertEqual(result['vdf']['epoch_blocks'], 80)
+        self.assertEqual(result['vdf']['consecutive_blocks'], 16)
+        self.assertEqual(result['vdf']['producer_timeout_slots'], 4)
+        self.assertNotIn('vdf', original)
+        for settings in ({'consecutive_blocks': 0}, {'consecutive_blocks': 820},
+                         {'consecutive_blocks': True}, {'producer_timeout_slots': 0}, {'producer_timeout_slots': 2},
+                         {'producer_timeout_slots': 65537}, {'producer_timeout_slots': True},
+                         {'epoch_blocks': 32}, {'epoch_blocks': 320}, {'epoch_blocks': True}):
+            with self.assertRaises(ValueError):
+                quick.RotationGenesis(original, **settings)
 
     def test_dataset_cache_is_reused_and_tampering_rejected(self):
         with tempfile.TemporaryDirectory() as temporary:
@@ -499,7 +771,7 @@ class QuickTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
             package, nodes, genesis = root / 'package.tar.gz', root / 'nodes.json', root / 'genesis.json'
-            package.write_bytes(b'fixture package')
+            PackageFixture(package)
             quick.Save(nodes, Nodes(2))
             original = {'base_fee': 1, 'accounts': [], 'vdf': {'producer_rotation': False}}
             quick.Save(genesis, original)
@@ -519,7 +791,7 @@ class QuickTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
             package, nodes, sender = root / 'package.tar.gz', root / 'nodes.json', root / 'sender'
-            package.write_bytes(b'fixture package')
+            PackageFixture(package)
             sender.write_bytes(b'fixture sender')
             quick.Save(nodes, [{**node, 'port': 18089} for node in Nodes(2)])
             genesis = root / 'funded.json'
@@ -539,6 +811,10 @@ class QuickTests(unittest.TestCase):
             variables = json.loads((root / 'test01/variables.json').read_text())
             self.assertEqual(variables['chain_cluster_duration'], 300)
             self.assertEqual(variables['chain_dataset'], dataset['dataset'])
+            self.assertEqual(variables['chain_package_manifest_sha256'], stage.ManifestDigest(package))
+            self.assertTrue(variables['chain_cluster_early_stop_enabled'])
+            self.assertEqual(variables['chain_cluster_early_stop_ratio'], .7)
+            self.assertEqual(variables['chain_cluster_early_stop_windows'], 3)
             self.assertTrue(any(item.endswith('cluster_benchmark.yml') for item in calls[0]))
             self.assertEqual({node['port'] for node in json.loads((root / 'test01/plan.json').read_text())['nodes']}, {28089})
             with self.assertRaises(FileExistsError):

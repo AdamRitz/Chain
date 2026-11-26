@@ -5,6 +5,7 @@ import hashlib
 import json
 import socket
 import struct
+import time
 from pathlib import Path
 
 from ClassroomJoinTest import App
@@ -51,25 +52,35 @@ def Main(args):
     def AssertConfig(state, expected):
         actual = state['vdf']
         for key in ['enabled', 'producer_rotation', 'epoch_blocks', 'iterations', 'slot_ms',
-                    'start_time_ms', 'fallback_slots', 'future_slots']:
+                    'start_time_ms', 'fallback_slots', 'future_slots', 'consecutive_blocks', 'producer_timeout_slots']:
             assert actual[key] == expected[key], (key, actual, expected)
         assert actual['producer_limit'] == 5
+
+    def WaitFor(app, predicate, timeout):
+        deadline = time.monotonic() + timeout
+        while time.monotonic() < deadline:
+            state = app.Api('status')
+            if predicate(state):
+                return state
+            time.sleep(.15)
+        raise AssertionError(json.dumps(state, ensure_ascii=False)[:1500])
 
     try:
         creator = New('creator')
         first = creator.Api('create', title='GUI rotation chain')
         profile = first['network']
         config = profile['genesis']['vdf']
-        assert config == dict(enabled=True, producer_rotation=True, epoch_blocks=32,
+        assert config == dict(enabled=True, producer_rotation=True, epoch_blocks=160,
                              iterations=65536, slot_ms=200, start_time_ms=config['start_time_ms'],
-                             fallback_slots=20, future_slots=2, producers=5)
+                             fallback_slots=20, future_slots=2, producers=5,
+                             consecutive_blocks=32, producer_timeout_slots=8)
         assert config['start_time_ms'] > 0 and config['start_time_ms'] % config['slot_ms'] == 0
         AssertConfig(first, config)
         command = creator.NodeProcesses()[0].cmdline()
         assert command[command.index('--max-block-txs') + 1] == '6000'
         assert command[command.index('--block-tx-step') + 1] == '2000'
         assert first['stats']['block_tx_step'] == 2000
-        checks.append('GUI creates a 200 ms rotation chain with 32-block epochs and 6000/2000 block parameters')
+        checks.append('GUI creates a 200 ms chain with 32-block turns, eight-slot timeout and 160-block epochs')
 
         invite = creator.Api('invite', seeds=[f"127.0.0.1:{profile['ports'][0]}"])
         assert invite['genesis'] == profile['genesis']
@@ -84,8 +95,8 @@ def Main(args):
         assert network_info['genesis']['vdf'] == config
         checks.append('Invitation, address discovery and joining preserve every genesis consensus parameter')
 
-        live = creator.Wait(lambda state: state.get('vdf', {}).get('epoch', 0) >= 2 and
-                            bool(state['vdf'].get('scheduled_producer')))
+        live = WaitFor(creator, lambda state: state.get('vdf', {}).get('epoch', 0) >= 2 and
+                       bool(state['vdf'].get('scheduled_producer')), timeout=100)
         AssertConfig(live, config)
         assert live['vdf']['scheduled_producer'] in live['vdf']['producers']
         assert 1 <= len(live['vdf']['producers']) <= 5

@@ -19,6 +19,14 @@ def Digest(path):
     return value.hexdigest()
 
 
+def ManifestDigest(archive):
+    with tarfile.open(archive, 'r:gz') as package:
+        member = package.getmember('manifest.json')
+        if not member.isfile() or not 0 < member.size <= 16 * 1024**2:
+            raise ValueError('Invalid release manifest')
+        return hashlib.sha256(package.extractfile(member).read()).hexdigest()
+
+
 def Relative(value):
     path = PurePosixPath(value)
     if not value or path.is_absolute() or '..' in path.parts or '\\' in value or path == PurePosixPath('.'):
@@ -26,7 +34,7 @@ def Relative(value):
     return path
 
 
-def Validate(directory):
+def Validate(directory, repair_permissions=True):
     directory = Path(directory)
     manifest = json.loads((directory / 'manifest.json').read_text(encoding='utf-8'))
     if manifest.get('schema') != 1 or not re.fullmatch(r'[0-9a-f]{40}', manifest.get('source_commit', '')):
@@ -45,7 +53,10 @@ def Validate(directory):
         mode = str(entry.get('mode', '0644'))
         if mode not in ('0644', '0755'):
             raise ValueError(f'Unsafe release permissions: {relative}')
-        os.chmod(path, int(mode, 8))
+        if repair_permissions:
+            os.chmod(path, int(mode, 8))
+        elif os.name == 'posix' and stat.S_IMODE(path.stat().st_mode) != int(mode, 8):
+            raise ValueError(f'Release file permissions changed: {relative}')
     required = {'bin/boost', 'bin/sender', 'source/Test/ClusterWorker.py', 'source/Test/Netem.py'}
     if not required.issubset(declared):
         raise ValueError('Missing executable or existing ClusterWorker/Netem source')
@@ -61,6 +72,35 @@ def Validate(directory):
         if not os.access(path, os.X_OK):
             raise ValueError('Release executables must have mode 0755')
     return manifest
+
+
+def VerifyExisting(release_root, release_id, expected, expected_manifest):
+    """Check an already staged release without transferring or extracting it."""
+    if not re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9_.-]{0,79}', release_id):
+        raise ValueError('Unsafe release identifier')
+    if not all(re.fullmatch(r'[0-9a-f]{64}', value) for value in (expected, expected_manifest)):
+        raise ValueError('Invalid package or manifest SHA256')
+    requested = Path(release_root)
+    root = requested.resolve(strict=True)
+    if not requested.is_absolute() or root == Path(root.anchor):
+        raise ValueError('Release root must be an absolute managed directory')
+    destination = root / release_id
+    if destination.is_symlink() or destination.resolve(strict=True).parent != root:
+        raise ValueError('Release destination escapes its managed root')
+    marker_file = destination / '.chain-release.json'
+    if marker_file.is_symlink():
+        raise ValueError('Release marker must be an ordinary file')
+    marker = json.loads(marker_file.read_text(encoding='utf-8'))
+    if (marker.get('schema') != 1 or marker.get('release_id') != release_id or
+            marker.get('package_sha256') != expected):
+        raise ValueError('Staged release does not match the requested package; run stage first')
+    if Digest(destination / 'manifest.json') != expected_manifest:
+        raise ValueError('Staged release manifest differs from the requested package')
+    manifest = Validate(destination, repair_permissions=False)
+    if marker.get('source_commit') != manifest['source_commit']:
+        raise ValueError('Staged release source differs from its marker')
+    return {'changed': False, 'directory': str(destination), 'source_commit': manifest['source_commit'],
+            'binary_sha256': Digest(destination / 'bin' / 'boost'), 'package_sha256': expected}
 
 
 def DirectoryPermissions(directory):
@@ -137,9 +177,21 @@ def Stage(archive, release_root, release_id, expected):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--archive', required=True)
+    parser.add_argument('--archive')
+    parser.add_argument('--verify-existing', action='store_true')
+    parser.add_argument('--manifest-sha256')
     parser.add_argument('--release-root', required=True)
     parser.add_argument('--release-id', required=True)
     parser.add_argument('--sha256', required=True)
     args = parser.parse_args()
-    print(json.dumps(Stage(args.archive, args.release_root, args.release_id, args.sha256)))
+    if args.verify_existing:
+        if args.archive:
+            parser.error('--verify-existing does not use --archive')
+        if not args.manifest_sha256:
+            parser.error('--verify-existing requires --manifest-sha256')
+        result = VerifyExisting(args.release_root, args.release_id, args.sha256, args.manifest_sha256)
+    else:
+        if not args.archive:
+            parser.error('--archive is required when staging a release')
+        result = Stage(args.archive, args.release_root, args.release_id, args.sha256)
+    print(json.dumps(result))

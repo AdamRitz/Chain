@@ -29,6 +29,7 @@
 
 #include "xgcd_lehmer_step.h"
 #include "xgcd_partial.h"
+#include "thread_scratch.h"
 
 #if !defined(__MPIR_VERSION) && (LONG_MAX < INT64_MAX)
 #define CHIAVDF_GMP_NARROW_LONG 1
@@ -137,16 +138,7 @@ static inline void chiavdf_set_limb_signed(mpz_ptr rop, mp_limb_signed_t val) {
 }
 #endif
 
-void mpz_xgcd_partial(mpz_t co2, mpz_t co1,
-                                    mpz_t r2, mpz_t r1, const mpz_t L)
-{
-   // Hot-path note:
-   // This function can run in the inner loop of NUDUPL; avoid per-call
-   // `mpz_init/mpz_clear` by using thread-local temporaries.
-   //
-   // Important for ASAN/LSan: these temporaries must be freed at thread-exit, otherwise
-   // LeakSanitizer will report per-thread GMP allocations as leaked.
-   struct chiavdf_xgcd_partial_tls {
+   struct chiavdf_xgcd_partial_ctx {
       mpz_t q;
       mpz_t r;
 #if defined(CHIAVDF_GMP_NARROW_LONG)
@@ -155,25 +147,31 @@ void mpz_xgcd_partial(mpz_t co2, mpz_t co1,
       mpz_t t_bb1;
       mpz_t t_bb2;
 
-      chiavdf_xgcd_partial_tls() {
+      chiavdf_xgcd_partial_ctx() {
          mpz_init(q); mpz_init(r);
          mpz_init(t_aa1); mpz_init(t_aa2);
          mpz_init(t_bb1); mpz_init(t_bb2);
       }
-      ~chiavdf_xgcd_partial_tls() {
+      ~chiavdf_xgcd_partial_ctx() {
          mpz_clear(q); mpz_clear(r);
          mpz_clear(t_aa1); mpz_clear(t_aa2);
          mpz_clear(t_bb1); mpz_clear(t_bb2);
       }
 #else
-      chiavdf_xgcd_partial_tls() { mpz_init(q); mpz_init(r); }
-      ~chiavdf_xgcd_partial_tls() { mpz_clear(q); mpz_clear(r); }
+      chiavdf_xgcd_partial_ctx() { mpz_init(q); mpz_init(r); }
+      ~chiavdf_xgcd_partial_ctx() { mpz_clear(q); mpz_clear(r); }
 #endif
 
-      chiavdf_xgcd_partial_tls(const chiavdf_xgcd_partial_tls&) = delete;
-      chiavdf_xgcd_partial_tls& operator=(const chiavdf_xgcd_partial_tls&) = delete;
+      chiavdf_xgcd_partial_ctx(const chiavdf_xgcd_partial_ctx&) = delete;
+      chiavdf_xgcd_partial_ctx& operator=(const chiavdf_xgcd_partial_ctx&) = delete;
    };
-   static thread_local chiavdf_xgcd_partial_tls tls;
+
+void mpz_xgcd_partial(mpz_t co2, mpz_t co1,
+                                    mpz_t r2, mpz_t r1, const mpz_t L)
+{
+   // Reuse temporaries throughout one proof call on MinGW and throughout the
+   // thread on other platforms, avoiding allocation in the inner loop.
+   auto& tls = chiavdf_thread_scratch<chiavdf_xgcd_partial_ctx>();
    mpz_ptr q = tls.q;
    mpz_ptr r = tls.r;
    mp_limb_signed_t aa2, aa1, bb2, bb1, rr1, rr2, bb, i;

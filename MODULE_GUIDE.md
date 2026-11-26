@@ -2,13 +2,13 @@
 
 ## 2026-11-25 轮流出块与五分钟测试
 
-`Classroom/Gateway/App.h` 新建 GUI 链时写入 VDF 轮值参数（200 ms、32 块、65536 次迭代），邀请加入和已保存链保留原有创世参数。`status.vdf` 将当前链配置与节点返回的 VDF 统计合并；节点停止后只返回配置。前端创建窗口保留链名输入，节点页显示出块方式、时间片和生产者。`ClassroomRotation` 回归覆盖创建、邀请、消息、停止重启和无 VDF 的旧链切换。
+`Classroom/Gateway/App.h` 新建 GUI 链时写入 VDF 参数：200 ms 时间片、每人连续 32 个实际区块、连续 8 个空时间片后换人、每 160 块更新五人名单、65536 次迭代。邀请加入和已保存链保留原有创世参数。`status.vdf` 将当前链配置与节点返回的 VDF 统计合并；节点停止后只返回配置。创建窗口保留链名输入，节点页显示出块方式、时间片、连续出块数、出块超时和生产者。`ClassroomRotation` 回归覆盖创建、邀请、消息、停止重启和无 VDF 的旧链切换。
 
-新链通过创世 `vdf.producer_rotation: true` 启用轮值，旧链摘要和规则保持。`Consensus/VdfRules.h` 的 `ScheduledProducer` 和 `CanProduce` 共用于本地产块和收到区块的验证，名单位置为 `(slot - StartSlot) % active.size()`。非成员恢复规则保留，已选成员不能绕过自己的时间片。未来块在有界分叉缓存等待，到对应时间片后再采用，数据库提交再次检查时间。
+新链通过创世 `vdf.producer_rotation: true`、`consecutive_blocks: 32`、`producer_timeout_slots: 8` 启用连续出块；`epoch_blocks` 必须等于 `5 * consecutive_blocks`。`Consensus/VdfRules.h` 的 `ScheduleTurn` 从父块记录计算出块顺序编号与已出块数，`ScheduledTurnProducer` 和 `CanProduceTurn` 共用于本地产块和收到区块的验证。正常每 32 块换人；未满 32 块且父块槽为 `p` 时，`p+1..p+8` 仍由当前成员出块，`p+9` 起下一位接管。新区块扩展增加两个 8 字节整数并参与签名。旧链省略 `consecutive_blocks` 时仍由 `ScheduledProducer` 和 `CanProduce` 使用原规则，创世摘要和编码保持。未来块在有界分叉缓存等待，到对应时间片后再采用，数据库提交再次检查时间。
 
 `Network/Vdf.h` 对正常轮值块立即提交；最初两组、空名单和非成员恢复块保留比较等待。`--vdf-bootstrap-produce 0` 仅关闭最初两组本地产块，仍计算和发布 VDF，用于大集群首次启动。新增 `VdfRotationNetwork` 覆盖七节点轮值、离线跳过、重启同步、越权区块和未来区块。
 
-`ansible/scripts/cluster_quick.py` 提供 `stage/deploy/test`，按包哈希和签名交易缓存复用准备结果。正式测量默认 300 秒，预热及结束等待另计。`Test/ExperimentMetricsTest.py` 检查统计缓存计时、样本轮转查询及重组增量；完整时间线写磁盘，内存只保留汇总值。
+`ansible/scripts/cluster_quick.py` 提供 `stage/deploy/test`，按包哈希和签名交易缓存复用准备结果。新测试链默认使用 160/32/8 参数，可用 `--epoch-blocks`、`--consecutive-blocks`、`--producer-timeout-slots` 调整；部署已有链保留提供的创世参数。正式测量默认 300 秒，预热及结束等待另计。`Test/ExperimentMetricsTest.py` 检查统计缓存计时、样本轮转查询及重组增量；完整时间线写磁盘，内存只保留汇总值。
 
 更新日期：2026-11-24。供后续开发者和 Codex 调整代码前阅读。当前为 C++20、每个程序单入口、头文件集中实现；函数沿用 PascalCase，数据流直接连接。
 

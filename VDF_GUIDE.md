@@ -10,8 +10,21 @@
 - 对 `e >= 2`，目标组 `G_e` 的输入绑定链标识、公钥、目标组编号、迭代数和 `G_(e-2)` 的完整区块哈希序列。节点在 `G_(e-1)` 计算并传播目标为 `G_e` 的记录。
 - 排序值为带协议域的 `BLAKE2b-256(challenge || Y)`；排序值相同再比较公钥。签名和证明见证本身不参与排序。同一公钥只保留一份记录。
 - `G_(e-1)` 每个块携带当时已验证的前五份记录；新块合并父块记录后重新排序，不能移除仍应进入前五的旧记录。该组最后一块的名单用于 `G_e`。它反映已写入这条分支的记录，传播未完成的记录不自动进入名单。
-- `producer_rotation: true` 时，按名单中的顺序轮流出块。当前生产者为 `producers[(slot - start_time_ms / slot_ms) % producers.size()]`，名单按 VDF 排序值、公钥排序。每个时间片只允许对应成员出块；离线成员的时间片跳过，下一成员继续。旧链未启用此参数时，名单中的成员均可出块。
-- 名单为空时，任意身份持本组有效证明可以出块。名单非空时，其他身份只有满足 `block.slot - parent.slot >= fallback_slots` 并携带本组有效证明才能出块。名单中的成员不能利用这个条件越过轮流出块的顺序。
+- 新建链设置 `producer_rotation: true`、`consecutive_blocks: 32`、`producer_timeout_slots: 8`、`epoch_blocks: 160`。名单按 VDF 排序值、公钥排序，依次由每人连续生成 32 个实际区块，再交给下一人。正常五人一轮共 160 块，然后使用新名单。
+- 每个区块记录本轮的出块顺序编号和该成员已生成的块数；收到区块时根据父块重新计算并验证。未满 32 块时，连续 8 个完整时间片没有新区块，则下一位接管：父块时间片为 `p`，`p+1` 至 `p+8` 仍由当前成员出块，`p+9` 起轮到下一位。时间片为 200 ms 时，8 个空时间片共 1.6 秒。更长的停块按每 8 个空时间片依次跳过成员。
+- 旧轮值链省略 `consecutive_blocks` 时保留每个时间片换人的规则：`producers[(slot - start_time_ms / slot_ms) % producers.size()]`。旧链未启用 `producer_rotation` 时，名单中的成员均可出块。
+- 名单为空时，任意身份持本组有效证明可以出块。名单非空时，非成员恢复出块需要持本组有效证明；连续出块模式要求父子时间片间隔达到 `max(fallback_slots, producer_timeout_slots * 名单人数 + 1)`，让名单中的成员先依次接管。旧模式继续使用 `fallback_slots`。名单中的成员按对应的轮值规则出块。
+
+名单成员连续出块的计算方式：先读取父块的顺序编号 `n` 和已出块数 `b`，同一组选举名单内若 `b=consecutive_blocks`，先令 `n=n+1,b=0`；更换名单时从 `n=0,b=0` 开始。然后计算：
+
+```text
+d = floor((block.slot - parent.slot - 1) / producer_timeout_slots)
+block.turn.number = n + d
+block.turn.blocks = (d > 0 ? 0 : b) + 1
+producer = producers[block.turn.number % producers.size()]
+```
+
+顺序编号随区块写入并参与签名；同步、重启和分叉验证从父块恢复同一顺序。离线成员可能少于 32 块，接管者从自己的第 1 块开始。最初两组及空名单的区块记录 `number=0,blocks=0`；非成员恢复出块保留计算得到的顺序编号并记录 `blocks=0`，后续成员从第 1 块继续。
 
 `slot = floor(逻辑 Unix 毫秒 / slot_ms)`。区块槽必须大于父槽，不能超过本地当前槽加 `future_slots`，且必须满足：
 
@@ -36,11 +49,11 @@ slot_ms = 200
 genesis = {
     'base_fee': 1, 'accounts': [],
     'vdf': {
-        'enabled': True, 'epoch_blocks': 32, 'iterations': 65536,
+        'enabled': True, 'epoch_blocks': 160, 'iterations': 65536,
         'slot_ms': slot_ms,
         'start_time_ms': int(time.time() * 1000) // slot_ms * slot_ms,
         'fallback_slots': 20, 'future_slots': 2, 'producers': 5,
-        'producer_rotation': True,
+        'producer_rotation': True, 'consecutive_blocks': 32, 'producer_timeout_slots': 8,
     },
 }
 with open('/srv/chain-vdf/genesis.json', 'x') as output:
@@ -51,14 +64,16 @@ PY
 | 参数 | 默认值 / 要求 | 含义 |
 |---|---|---|
 | `enabled` | 无 `vdf` 对象时关闭；对象内省略时为 `true` | 启用新协议 |
-| `epoch_blocks` | 32；范围 1–4096 | 每组的区块数 |
+| `epoch_blocks` | 旧配置省略时为 32；新建链为 160；范围 1–4096 | 每组的区块数；连续出块模式要求等于 `5 * consecutive_blocks` |
 | `iterations` | 65536；范围 4096–100000000 | 每个公钥、组和输入上下文的计算迭代数 |
 | `slot_ms` | 50；范围 1–5000 | 一个槽的毫秒数 |
 | `start_time_ms` | 启用时必填，正整数且能被 `slot_ms` 整除 | 新链统一时间起点 |
 | `fallback_slots` | 20；大于 `future_slots` 且不超过 65536 | 非名单身份出块要求的父子槽间隔 |
 | `future_slots` | 2；范围 0–2 | 接收节点允许的未来槽偏差 |
 | `producers` | 固定为 5 | 当前协议允许名单的最大人数 |
-| `producer_rotation` | 默认 `false`；新建轮值链设为 `true` | 启用按时间片轮流出块，绑定新的创世摘要 |
+| `producer_rotation` | 默认 `false`；新建轮值链设为 `true` | 启用名单轮流出块，绑定新的创世摘要 |
+| `consecutive_blocks` | 省略为 0，保留旧规则；新建链为 32；启用时范围 1–819 | 每位成员连续生成的实际区块数，要求启用 `producer_rotation` |
+| `producer_timeout_slots` | 8；大于 `future_slots` 且不超过 65536 | 连续多少个完整空时间片后交给下一位成员；仅连续出块模式使用 |
 
 这些参数都绑定创世摘要，修改后属于另一条链。默认 `50 ms × 20 = 1 s` 是恢复出块的最小父子槽间隔；正常有资格节点不需要等这个间隔。
 
@@ -72,9 +87,9 @@ PY
 
 节点通过已有邻居传播所选公钥的 IP 和监听端口，支持 IPv4、IPv6。地址记录只用于查找连接目标；每条连接使用独立的随机挑战，验证对端对创世摘要、公钥、监听端口和挑战的 Ed25519 签名。最多保存十个所选公钥，每个公钥最多四个地址，三十秒未更新的地址删除。
 
-发布新区块时，先把摘要加入下一时间片出块者的发送队列，再发送给另外三位当前出块者，随后向普通邻居转发。出块者连接不受 `--block-relay-peers` 的普通转发数量限制。跨轮次的最后一块按它携带的新名单选择下一位。各 TCP 连接并行发送。
+发布新区块时，先把摘要加入下一位接替出块的成员的发送队列，再发送给其余当前出块者，随后向普通邻居转发。连续出块期间也优先通知下一位成员，便于提前同步。出块者连接不受 `--block-relay-peers` 的普通转发数量限制。跨轮次的最后一块按它携带的新名单选择第一位成员。各 TCP 连接并行发送。
 
-能力字段 `vdf_peer_protocol: 1` 通过现有消息 13/14 协商。新增消息：56 为 32 字节挑战；57 为 32 字节公钥和 64 字节签名；58 为地址记录，每条 51 字节，每个消息最多十条。未协商的旧节点继续使用原有传播协议。此次更新不改变区块编码、创世摘要和按时间片轮值的规则。
+能力字段 `vdf_peer_protocol: 1` 通过现有消息 13/14 协商。新增消息：56 为 32 字节挑战；57 为 32 字节公钥和 64 字节签名；58 为地址记录，每条 51 字节，每个消息最多十条。未协商的旧节点继续使用原有传播协议。连接身份协议沿用已有格式；连续出块使用下面的新版创世参数和区块扩展。
 
 本地验证使用 `VdfPeerProtocolCorrectness` 和 `VdfProducerPeersNetwork`。后者运行七个节点，普通连接上限设为二，检查当前五人十条直连、下一轮提前连接、发块发送顺序、错误身份拒绝和重启后的账户状态。
 
@@ -82,9 +97,9 @@ PY
 
 `--vdf-bootstrap-produce 0`（YAML `node.vdf_bootstrap_produce: false`）只关闭本节点在最初两组的出块，保留 VDF 计算和传播。默认值为 `1`。大集群首次启动只让一个节点设为 `1`；从第三组开始所有生产节点自动执行正常轮值，无需重启。这个开关只控制本机生成区块，不改变收到区块的验证规则。
 
-旧链省略 `producer_rotation` 或设为 `false` 时，创世参数编码和摘要保持不变。启用轮值需要创建新链、使用新数据目录；原有创世文件不能直接修改。
+旧链省略 `consecutive_blocks` 或设为 0 时，创世参数编码、摘要和原有出块规则保持。启用连续出块需要创建新链、使用新数据目录。连续出块创世参数采用版本 3 的 96 字节编码，包含 `consecutive_blocks` 和 `producer_timeout_slots`；`GetGenesisConfig` 仅在启用时输出这两个新字段。
 
-当前类群判别式参数为 1024 位。输出 `Y` 占 100 字节，证明见证占 100 字节；完整候选记录加上上下文、公钥和签名共 **382 字节**。区块扩展固定部分 **116 字节**，通常携带五份下一组记录时共 **2026 字节**；再携带一份本组生产证明时为 **2408 字节**。当前每块保存完整的滚动名单，尚未实现跨块记录去重。
+当前类群判别式参数为 1024 位。输出 `Y` 占 100 字节，证明见证占 100 字节；完整候选记录加上上下文、公钥和签名共 **382 字节**。旧区块扩展固定部分 **116 字节**，携带五份下一组记录时共 **2026 字节**，另带一份本组生产证明时为 **2408 字节**。连续出块的版本 2 扩展增加两个 8 字节整数（顺序编号、已出块数），对应为 **132、2042、2424 字节**。当前每块保存完整的滚动名单。
 
 公钥绑定挑战意味着更换公钥需要重新计算。对一个挑战，计算包含顺序相关的重复平方；攻击者仍可以在多核、多个设备上同时计算不同公钥的挑战，并在更多结果中挑选较小值。机制给每次候选尝试增加计算成本，没有限制同一主体可创建的公钥数。调整 `iterations` 应依据部署硬件上的计算耗时、验证耗时和每组可用时间；不能仅凭迭代数推导身份公平性或绝对抗女巫能力。
 
@@ -98,6 +113,7 @@ PY
 | `producers`、`candidates` | 下一个区块的有效名单、当前分支已写入的下一组记录 |
 | `public_key`、`eligible` | 本地生产身份、当前是否能构造符合时间与资格条件的候选 |
 | `producer_rotation`、`scheduled_producer` | 是否启用轮流出块、当前时间片对应的公钥 |
+| `consecutive_blocks`、`producer_timeout_slots` | 每人连续出块数、停块后交接的空时间片数 |
 | `bootstrap_produce` | 本节点是否在最初两组生成区块 |
 | `computed`、`generation_ms` | 本进程生成的记录数、累计生成耗时；重启清零 |
 | `proof_checks`、`proof_cache_hits` | 实际证明校验次数、已验证记录缓存命中次数 |
@@ -154,6 +170,7 @@ chain_vdf_required_tests:
   - VdfStateCorrectness
   - VdfNetwork
   - VdfRotationNetwork
+  - VdfContinuousNetwork
   - VdfProducerPeersNetwork
 chain_vdf_instance_id: experiment-001
 chain_vdf_service_name: chain-vdf-experiment-001.service

@@ -2,6 +2,33 @@
 
 新入口使用一个已经通过完整测试的 Linux 构建包。控制机分发相同二进制和源码；目标节点不用安装 C++ 编译器。编译和 GDB 调试仍在构建机进行。生产数据库、节点身份、隔离测试数据库分别由部署记录管理。
 
+## 百节点按小时计费的准备顺序
+
+1. 在 Windows 执行 `cluster_quick.py prepare`，提前准备连接图、签名交易和可跨系统使用的 `dataset.json`。该动作在本地完成，无需构建包、Ansible 或 SSH。
+2. 先只启动一台 Linux 构建机，完成本次源码构建、全部 CTest 和 `cluster_release.py` 打包。同一版本已有构建目录可以增量重试，新源码使用新的 release 标识。
+3. 构建包准备完成后启动其余 99 台，使用 `cluster_quick.py stage --forks 32` 并行分发同一份程序和源码。其余节点无需安装编译器或重复运行 CTest。
+4. 使用 `cluster_quick.py test --staged` 校验已安装程序，再开始 300 秒测试。通过 `--dataset`、`--dataset-genesis`、`--dataset-manifest` 复用 Windows 准备的数据，无需重新签名或再次分发程序包。
+5. 测试结束自动停止节点、收集记录并清理本轮数据库。核对清理结果后关闭服务器；此流程使用 `stage/test`。
+
+离线准备示例：
+
+```powershell
+python -B ansible/scripts/cluster_quick.py prepare `
+  --nodes D:/ChainTest/nodes.json --cluster continuous32-100 --port 28089 `
+  --degree 8 --seed 1 --injectors 4 `
+  --dataset D:/ChainTest/transactions.bin `
+  --dataset-genesis D:/ChainTest/transactions.bin.genesis.json `
+  --node-settings D:/ChainTest/node-settings.json `
+  --rate 10000 --warmup 2 --duration 300 --wallets 1024 `
+  --output D:/ChainTest/offline-prepare-001
+```
+
+数据正文只上传到 Linux 控制机，再通过四个注入节点发送。10,000 TPS、预热 2 秒、测量 300 秒需要 3,020,000 笔交易，即 531,520,000 字节。提前准备更多交易后可复用同一文件的前缀。
+
+默认早停规则：正式测量满 30 秒后，连续三个至少 15 秒的窗口内 TPS 低于输入目标的 70%，且每个窗口积压增加，则停止发送并执行收集和清理。可通过 `--early-stop-ratio`、`--early-stop-start-seconds`、`--early-stop-window-seconds`、`--early-stop-windows` 调整；`--no-early-stop` 关闭早停。
+
+100 台、degree 8 的普通连接共 400 条；出块者另外保持五人直连。已有同一计划时使用 `--plan`，连接图和测试端口保持一致。SSH 凭据使用独立 inventory、Ansible Vault 或 `--extra-vars-file`。
+
 ## 快速入口：部署和五分钟测试
 
 准备下面说明的构建包和 `nodes.json` 后，可以直接使用 `cluster_quick.py`。`deploy` 只创建持久服务，`test` 只运行独立测试，`stage` 只分发包。三个动作都复用现有 Ansible playbook，每台节点不重新编译。目标机缓存的包 SHA256 相同时跳过复制；已经发布的构建继续校验文件内容。控制机每次只计算一次包 SHA256。
@@ -27,7 +54,9 @@ python3 -B ansible/scripts/cluster_quick.py test \
 
 测试数据按 `ceil(rate × (warmup + duration))` 自动生成。例如 20,000 TPS、预热 2 秒、正式测量 300 秒，需要 **6,040,000 笔，1,063,040,000 字节**原生交易正文。数据仅保存在控制机，按 `sender` 摘要、账户数和交易数缓存；重复测试校验缓存后直接复用，不再次签名，不向每个节点分发交易文件。各轮只生成新的创世文件和结果目录。
 
-新测试创世参数明确设置 `vdf.producer_rotation=true`、`epoch_blocks=32`、`slot_ms=200`、`iterations=65536`，时间起点以 200 ms 对齐。`deploy --genesis` 从不添加或修改这些字段；新建持久轮值链时，应在提供的创世配置中明确设置它们。既有链升级二进制仍沿用原共识参数。
+新测试创世参数明确设置 `vdf.producer_rotation=true`、`epoch_blocks=160`、`consecutive_blocks=32`、`producer_timeout_slots=8`、`slot_ms=200`、`iterations=65536`，时间起点以 200 ms 对齐。一次选最多五人，依次每人连续生成 32 个实际区块；连续 8 个完整时间片没有新区块后交给下一人。父块槽为 `p` 且当前成员未出满 32 块时，`p+1..p+8` 仍归该成员，`p+9` 起下一位接管。顺序编号和已出块数随区块保存，同步及重启从父块恢复。
+
+使用 `--consecutive-blocks N`、`--producer-timeout-slots T` 和 `--epoch-blocks E` 调整新测试链，要求 `N` 在 1..819、`T` 在 3..65536、`E=5*N`。省略 `--epoch-blocks` 时自动采用 `5*N`。例如每人 16 块、停块 4 个周期后接管：`--consecutive-blocks 16 --producer-timeout-slots 4 --epoch-blocks 80`。`deploy --genesis` 保留提供的创世参数；新建持久链时在创世文件中设置以上字段。已有链省略 `consecutive_blocks` 时继续使用原有规则。
 
 `--duration`、`--warmup`、`--drain-seconds` 分别设置正式测量、预热和停止发送后的等待时间。启动连接、形成五人名单、最后账户核对和清理时间单独计入命令运行时间。默认 `--query-workers 32`、`--forks 32`，允许范围 1..128。1000 节点使用同一入口，先根据控制机查询耗时调整并发，不能只提高线程数而不记录查询开销。
 
@@ -70,6 +99,8 @@ python3 -B ansible/scripts/cluster_release.py \
 ```
 
 如果节点缺少共享库，可用多个 `--library /absolute/path/libNAME.so.VERSION` 将普通库文件放入包中的 `lib/`；文件名要与运行时 SONAME 对应。不要打包 glibc 或动态加载器。目标系统和架构应与构建机匹配；`stage.yml` 在每台节点执行 `ldd`，缺库时停止部署。现有构建生成的调试信息和源码保留在包内。包中包含 `boost`、`sender`、构建中存在的 `evm_sender`；完整 GUI 构建还必须包含 Linux 网关 `chain_classroom`，源码和前端资产一并保留。
+
+百节点可以显式使用 `--runtime-dir /opt/chain-hundred-20261125/runtime-libraries` 自动收集运行库。打包前对所有程序运行 `ldd -r`，检查 ELF64 x86-64 和 GLIBC 不超过 2.34；非 glibc 依赖必须按 SONAME 从指定目录的普通文件解析，传递依赖一并打包。旧的 `--library` 手动方式继续可用。
 
 创建 `/srv/chain/cluster-vars.json`：
 

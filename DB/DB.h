@@ -4,12 +4,14 @@
 #include <algorithm>
 #include <charconv>
 #include <memory>
+#include <map>
 #include <mutex>
 #include <shared_mutex>
 #include <vector>
 #include <deque>
 #include <unordered_set>
 #include <thread>
+#include <tuple>
 #include <rocksdb/db.h>
 #include <rocksdb/version.h>
 #include <rocksdb/options.h>
@@ -585,25 +587,52 @@ array<uint8_t,32> DBReadCurrentBlock() {
 }
 // These helpers require the caller to hold dbCommitMutex. DBGet also reads the
 // branchBatch overlay, so fork replay derives every context from its own parent.
+// Contexts are immutable for a chain and a source-epoch tip.
+mutex vdfContextMutex;
+map<tuple<array<uint8_t,32>,uint64_t,array<uint8_t,32>>,chain::vdf_election::Context> vdfContexts;
+deque<tuple<array<uint8_t,32>,uint64_t,array<uint8_t,32>>> vdfContextOrder;
 chain::vdf_election::Context DBVdfContext(uint64_t targetEpoch) {
     using namespace chain::vdf_consensus;
     auto genesis=DBReadBlockByHeight("1");
     if (genesis.size()<112) throw runtime_error("Missing VDF genesis block");
     Digest genesisHash{}; memcpy(genesisHash.data(),genesis.data()+80,32);
-    return ContextForEpoch(chain::vdf_consensus::config,genesisRoot,genesisHash,targetEpoch,[](uint64_t height)->optional<Digest> {
+    Digest sourceHash=genesisHash;
+    if (targetEpoch>=2) {
+        const auto end=EpochStart(targetEpoch-2)+chain::vdf_consensus::config.epochBlocks-1;
+        string encoded;
+        if (!DBGet("height/"+to_string(end),encoded)||encoded.size()!=32) throw runtime_error("Missing VDF anchor block");
+        memcpy(sourceHash.data(),encoded.data(),32);
+    }
+    // The last hash commits to all preceding hashes in the source epoch. A
+    // fork gets a different key even while replaying through branchBatch.
+    const auto key=make_tuple(genesisRoot,targetEpoch,sourceHash);
+    {lock_guard lock(vdfContextMutex);if (auto it=vdfContexts.find(key);it!=vdfContexts.end()) return it->second;}
+    auto context=ContextForEpoch(chain::vdf_consensus::config,genesisRoot,genesisHash,targetEpoch,[](uint64_t height)->optional<Digest> {
         string encoded;
         if (!DBGet("height/"+to_string(height),encoded)) return nullopt;
         if (encoded.size()!=32) throw runtime_error("Invalid VDF anchor height index");
         Digest hash{}; memcpy(hash.data(),encoded.data(),32); return hash;
     });
+    {
+        lock_guard lock(vdfContextMutex);
+        if (vdfContexts.emplace(key,context).second) {
+            vdfContextOrder.push_back(key);
+            while (vdfContextOrder.size()>32) {vdfContexts.erase(vdfContextOrder.front());vdfContextOrder.pop_front();}
+        }
+    }
+    return context;
 }
-uint64_t DBVdfParentSlot() {
-    if (!chain::vdf_consensus::config.enabled) return 0;
-    if (DBReadBlockHeight()<=1) return chain::vdf_consensus::StartSlot()-1;
+optional<chain::vdf_consensus::Extension> DBVdfParentExtension() {
+    if (!chain::vdf_consensus::config.enabled||DBReadBlockHeight()<=1) return nullopt;
     const auto parent=DBReadBlockByHash(DBReadCurrentBlock());
     optional<chain::vdf_consensus::Extension> extension;
     if (!ReadVdfExtension(parent,extension)||!extension) throw runtime_error("Missing VDF parent extension");
-    return extension->slot;
+    return extension;
+}
+uint64_t DBVdfParentSlot() {
+    if (!chain::vdf_consensus::config.enabled) return 0;
+    const auto parent=DBVdfParentExtension();
+    return parent?parent->slot:chain::vdf_consensus::StartSlot()-1;
 }
 vector<chain::vdf_election::Candidate> DBVdfActiveCandidates(uint64_t height) {
     using namespace chain::vdf_consensus;
@@ -657,7 +686,11 @@ bool DBValidateVdfBlock(const vector<uint8_t>& data,bool committing) {
         const auto next=DBVdfNextContext(height);
         const auto previousCandidates=DBVdfCandidatesForNextBlock();
         const auto activeCandidates=DBVdfActiveCandidates(height);
-        return VerifyRules(*extension,DBVdfParentSlot(),previousCandidates,activeCandidates,current,next,MinimumSlot(height));
+        const auto parent=DBVdfParentExtension();
+        const auto parentSlot=parent?parent->slot:StartSlot()-1;
+        const bool sameEpoch=parentHeight>=2&&Epoch(parentHeight)==Epoch(height);
+        return VerifyRules(*extension,parentSlot,previousCandidates,activeCandidates,current,next,MinimumSlot(height),
+            chain::vdf_consensus::config,parent?parent->turn:nullopt,sameEpoch);
     } catch (...) {
         return false;
     }

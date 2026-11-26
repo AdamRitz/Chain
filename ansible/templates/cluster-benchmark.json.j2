@@ -29,5 +29,11 @@
   'batch': chain_cluster_batch | default(128) | int,
   'readiness_timeout': chain_cluster_readiness_timeout | default(300) | float,
   'bootstrap_producers': chain_cluster_bootstrap_producers | default(1) | int,
+  'early_stop_enabled': chain_cluster_early_stop_enabled | default(true) | bool,
+  'early_stop_ratio': chain_cluster_early_stop_ratio | default(0.7) | float,
+  'early_stop_start_seconds': chain_cluster_early_stop_start_seconds | default(30) | float,
+  'early_stop_window_seconds': chain_cluster_early_stop_window_seconds | default(15) | float,
+  'early_stop_windows': chain_cluster_early_stop_windows | default(3) | int,
+  'max_backlog_growth': chain_cluster_max_backlog_growth | default(10) | float,
   'node_settings': chain_cluster_node_settings | default({})
 } | to_nice_json }}

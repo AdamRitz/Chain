@@ -4,6 +4,7 @@
 #include <iostream>
 #include <map>
 #include <stdexcept>
+#include <tuple>
 
 namespace {
 
@@ -273,14 +274,192 @@ void TestEncoding(const election::Candidate& record, const election::SecretKey& 
     Require(rules::MerkleRoot(NumberHash(77), changed) == root, "Signature creates a circular block commitment");
     Require(rules::MerkleRoot(NumberHash(78), extension) != root, "Transaction root is not bound to block root");
     extension.candidates.assign(5, record);
-    Require(rules::Encode(extension).size() == rules::kMaxEncodedBytes, "Maximum extension size mismatch");
+    Require(rules::Encode(extension).size() == rules::kMaxEncodedBytes - rules::kTurnEncodedBytes,
+            "Legacy maximum extension size changed");
     Require(rules::Parse(rules::Encode(extension), decoded), "Maximum-size extension cannot be decoded");
+    const auto legacyMaximum = rules::Encode(extension);
+    extension.turn = rules::ProducerTurn{17, 31};
+    const auto turnBytes = rules::Encode(extension);
+    Require(turnBytes.size() == rules::kMaxEncodedBytes && turnBytes[8] == 2 && turnBytes[9] == 0,
+            "Producer turn did not use extension version 2");
+    Require(rules::Parse(turnBytes, decoded) && decoded == extension, "Producer turn roundtrip failed");
+    Require(rules::detail::Read64(turnBytes.data() + 52) == 17 &&
+            rules::detail::Read64(turnBytes.data() + 60) == 31, "Producer turn field offsets changed");
+    Require(std::equal(legacyMaximum.begin() + 52, legacyMaximum.end(), turnBytes.begin() + 68),
+            "Producer turn changed legacy candidate or signature encoding");
+    const auto turnRoot = rules::MerkleRoot(NumberHash(77), extension);
+    changed = extension;
+    ++changed.turn->number;
+    Require(rules::MerkleRoot(NumberHash(77), changed) != turnRoot, "Turn number is not bound to block root");
+    changed = extension;
+    ++changed.turn->blocks;
+    Require(rules::MerkleRoot(NumberHash(77), changed) != turnRoot, "Turn block count is not bound to block root");
+    auto downgrade = turnBytes;
+    downgrade[8] = 1;
+    Require(!rules::Parse(downgrade, decoded), "Turn bytes accepted with legacy version");
     extension.candidates.push_back(record);
     try {
         (void)rules::Encode(extension);
         throw std::runtime_error("Six candidates encoded");
     } catch (const std::invalid_argument&) {
     }
+}
+
+void TestConsecutiveTurns(rules::Config configured, const std::vector<election::Candidate>& active,
+    const std::vector<election::Candidate>& next, const election::Candidate& outsider,
+    const election::Candidate& bootstrap, const election::Context& context0,
+    const election::Context& context2, const election::Context& context3) {
+    configured.producerRotation = true;
+    const auto oldBytes = rules::EncodeConfig(configured);
+    auto legacyTimeout = configured;
+    legacyTimeout.producerTimeoutSlots = 333;
+    Require(rules::EncodeConfig(legacyTimeout) == oldBytes, "Unused timeout changed legacy genesis bytes");
+    configured.consecutiveBlocks = 32;
+    configured.producerTimeoutSlots = 8;
+    configured.epochBlocks = 160;
+    const auto configBytes = rules::EncodeConfig(configured);
+    Require(configBytes.size() == 96 && rules::detail::Read64(configBytes.data()) == 3 &&
+            rules::detail::Read64(configBytes.data() + 72) == 1 &&
+            rules::detail::Read64(configBytes.data() + 80) == 32 &&
+            rules::detail::Read64(configBytes.data() + 88) == 8, "Consecutive configuration encoding changed");
+    for (const auto& invalid : std::vector<rules::Config>{
+            [&] { auto value = configured; value.producerRotation = false; return value; }(),
+            [&] { auto value = configured; value.epochBlocks = 32; return value; }(),
+            [&] { auto value = configured; value.consecutiveBlocks = 820; return value; }(),
+            [&] { auto value = configured; value.producerTimeoutSlots = 2; return value; }(),
+            [&] { auto value = configured; value.producerTimeoutSlots = 65537; return value; }()}) {
+        try {
+            rules::ValidateConfig(invalid);
+            throw std::runtime_error("Invalid consecutive configuration accepted");
+        } catch (const std::invalid_argument&) {}
+    }
+    Require(!rules::ScheduledProducer(101, active, configured) &&
+            !rules::CanProduce(active[0].publicKey, 101, 100, 2, active, configured),
+            "Legacy producer helper authorized consecutive production");
+    std::optional<rules::ProducerTurn> parentTurn;
+    std::uint64_t parentSlot = 100;
+    for (std::uint64_t i = 0; i < 160; ++i) {
+        const bool sameEpoch = i != 0;
+        const auto slot = parentSlot + 1;
+        const auto turn = rules::ScheduleTurn(slot, parentSlot, parentTurn, sameEpoch, configured);
+        Require(turn == rules::ProducerTurn{i / 32, i % 32 + 1}, "Producer did not retain 32 consecutive blocks");
+        const auto expected = active[(i / 32) % active.size()].publicKey;
+        Require(rules::ScheduledTurnProducer(slot, parentSlot, parentTurn, sameEpoch, active, configured) == expected,
+                "Consecutive producer does not follow elected order");
+        rules::Extension block;
+        block.slot = slot;
+        block.producer = expected;
+        block.turn = turn;
+        Require(rules::VerifyRules(block, parentSlot, {}, active, context2, context3, 1,
+                configured, parentTurn, sameEpoch), "Consecutive member block rejected");
+        for (const auto& other : active) {
+            if (other.publicKey == expected) continue;
+            block.producer = other.publicKey;
+            block.producerProof = other;
+            Require(!rules::VerifyRules(block, parentSlot, {}, active, context2, context3, 1,
+                    configured, parentTurn, sameEpoch), "Wrong producer bypassed consecutive turn with a proof");
+        }
+        block.producer = expected;
+        block.producerProof.reset();
+        ++block.turn->blocks;
+        Require(!rules::VerifyRules(block, parentSlot, {}, active, context2, context3, 1,
+                configured, parentTurn, sameEpoch), "Forged consecutive block count accepted");
+        block.turn = turn;
+        const auto encoded = rules::Encode(block);
+        rules::Extension restarted;
+        Require(rules::Parse(encoded, restarted) && restarted.turn == block.turn,
+                "Stored parent turn cannot be recovered after restart");
+        parentTurn = restarted.turn;
+        parentSlot = slot;
+    }
+    Require(rules::ScheduleTurn(parentSlot + 1, parentSlot, parentTurn, false, configured) == rules::ProducerTurn{0, 1},
+            "New epoch did not restart from the first elected producer");
+    rules::Extension nextBlock;
+    nextBlock.slot = parentSlot + 1;
+    nextBlock.producer = next.front().publicKey;
+    nextBlock.turn = rules::ProducerTurn{0, 1};
+    Require(rules::VerifyRules(nextBlock, parentSlot, {}, std::span(next).first(5), context3, std::nullopt,
+            1, configured, parentTurn, false), "New epoch did not use its own elected list");
+
+    parentSlot = 100;
+    parentTurn = rules::ProducerTurn{0, 7};
+    const auto verify = [&](const rules::Extension& block, const std::optional<rules::ProducerTurn>& state = rules::ProducerTurn{0, 7}) {
+        return rules::VerifyRules(block, parentSlot, {}, active, context2, context3, 1, configured, state, true);
+    };
+    for (std::uint64_t missed = 0; missed < 3; ++missed) {
+        const auto slot = parentSlot + missed * 8 + 1;
+        const auto expectedTurn = rules::ProducerTurn{missed, missed ? 1ULL : 8ULL};
+        Require(rules::ScheduleTurn(slot, parentSlot, parentTurn, true, configured) == expectedTurn,
+                "Multiple offline producers did not advance after each eight empty slots");
+        rules::Extension block;
+        block.slot = slot;
+        block.producer = active[missed].publicKey;
+        block.turn = expectedTurn;
+        Require(verify(block), "Timeout successor block rejected");
+        if (missed) {
+            block.producer = active[0].publicKey;
+            block.producerProof = active[0];
+            Require(!verify(block), "Old leader remained authorized after timeout");
+        }
+    }
+    Require(rules::ScheduleTurn(108, 100, parentTurn, true, configured) == rules::ProducerTurn{0, 8} &&
+            rules::ScheduleTurn(109, 100, parentTurn, true, configured) == rules::ProducerTurn{1, 1},
+            "Timeout boundary did not wait eight complete empty slots");
+    rules::Extension block;
+    block.slot = 101;
+    block.producer = active[0].publicKey;
+    block.turn = rules::ProducerTurn{0, 8};
+    Require(!verify(block, std::nullopt), "Missing same-epoch parent turn accepted");
+    Require(!verify(block, rules::ProducerTurn{0, 33}), "Invalid parent block count accepted");
+    block.turn.reset();
+    Require(!verify(block), "Consecutive block without a turn accepted");
+    block.turn = rules::ProducerTurn{0, 8};
+    auto legacy = configured;
+    legacy.consecutiveBlocks = 0;
+    Require(!rules::VerifyRules(block, 100, {}, active, context2, context3, 1, legacy),
+            "Consecutive extension accepted by legacy chain");
+
+    Require(rules::RecoverySlotGap(active.size(), configured) == 41, "Recovery did not allow five producer timeouts");
+    block.producer = outsider.publicKey;
+    block.producerProof = outsider;
+    block.slot = 140;
+    block.turn = rules::ProducerTurn{4, 0};
+    Require(!verify(block), "Outsider recovered before all elected producers timed out");
+    block.slot = 141;
+    block.turn = rules::ProducerTurn{5, 0};
+    Require(verify(block), "Outsider recovery after all timeouts rejected");
+    block.turn->blocks = 1;
+    Require(!verify(block), "Outsider forged a member's completed block count");
+    Require(rules::ScheduleTurn(142, 141, rules::ProducerTurn{5, 0}, true, configured) == rules::ProducerTurn{5, 1},
+            "Member did not resume from recovery turn");
+
+    block.slot = 101;
+    block.producer = bootstrap.publicKey;
+    block.producerProof = bootstrap;
+    block.turn = rules::ProducerTurn{};
+    Require(rules::VerifyRules(block, 100, {}, {}, context0, std::nullopt, 1, configured),
+            "Consecutive bootstrap proof rejected");
+    block.turn->blocks = 1;
+    Require(!rules::VerifyRules(block, 100, {}, {}, context0, std::nullopt, 1, configured),
+            "Bootstrap claimed an elected producer count");
+    block.turn = rules::ProducerTurn{};
+    block.producer = outsider.publicKey;
+    block.producerProof = outsider;
+    Require(rules::VerifyRules(block, 100, {}, {}, context2, context3, 1, configured),
+            "Empty elected list could not advance with proof");
+    block.producerProof.reset();
+    Require(!rules::VerifyRules(block, 100, {}, {}, context2, context3, 1, configured),
+            "Open production accepted a missing proof");
+
+    for (const auto& [slot, previous, turn] : std::vector<std::tuple<std::uint64_t, std::uint64_t, rules::ProducerTurn>>{
+            {101, 100, {UINT64_MAX, 32}}, {109, 100, {UINT64_MAX, 1}}, {100, 100, {0, 1}}}) {
+        try {
+            (void)rules::ScheduleTurn(slot, previous, turn, true, configured);
+            throw std::runtime_error("Invalid or overflowing producer turn accepted");
+        } catch (const std::invalid_argument&) {}
+    }
+    Require(rules::ScheduleTurn(101, 100, rules::ProducerTurn{UINT64_MAX, 31}, true, configured) ==
+            rules::ProducerTurn{UINT64_MAX, 32}, "Largest valid producer turn rejected");
 }
 
 void TestRules() {
@@ -332,6 +511,7 @@ void TestRules() {
     const auto boot1 = election::CreateCandidate(context1, MakeKey(1));
     TestEncoding(boot0, MakeKey(1));
     TestRotation(configured, active, next, outsider, boot0, context0, context2, context3);
+    TestConsecutiveTurns(configured, active, next, outsider, boot0, context0, context2, context3);
 
     rules::Extension block;
     block.slot = 101;

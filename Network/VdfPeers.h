@@ -253,7 +253,13 @@ vector<shared_ptr<Peer>> PrioritizeVdfBlockPeers(const vector<uint8_t>& data,vec
         next.clear();for (const auto& candidate:extension->candidates) next.push_back(candidate.publicKey);
     }
     if (!next.empty()) {
-        auto key=next[(extension->slot+1-VdfConsensus::StartSlot())%next.size()];
+        auto key=next.front();
+        if (VdfConsensus::config.consecutiveBlocks&&extension->turn) {
+            if (VdfConsensus::Epoch(height+1)==epoch) {
+                const auto index=extension->turn->number%next.size();
+                key=next[(index+(extension->turn->blocks?1:0))%next.size()];
+            }
+        } else key=next[(extension->slot+1-VdfConsensus::StartSlot())%next.size()];
         erase(order,key);order.insert(order.begin(),key);
     }
     set<pair<ip::address,uint16_t>> sent;

@@ -40,7 +40,7 @@ bool VerifyMessageSize(uint8_t type,uint32_t size) {
         case 30:case 32:case 34:case 36:case 38:return size<=16384;
         case 31:case 37:return size>0&&size%32==0&&size<=128*32;
         case 33:case 35:return size==0;
-        case 39:return size>=112&&size<=112+maxProtocolTx*33+2408;
+        case 39:return size>=112&&size<=112+maxProtocolTx*33+chain::vdf_consensus::kMaxEncodedBytes;
         case 40:return size>32&&(size-32)%4==0&&size<=32+maxProtocolTx*4;
         case 41:return size>=216;
         case 42:return size==10;
@@ -51,8 +51,8 @@ bool VerifyMessageSize(uint8_t type,uint32_t size) {
         case 48:return size<=1024*19;
         case 49:return size==chain::vdf_election::kEncodedBytes;
         case 50:return size==0;
-        case 51:return size>=120&&size<=120+(maxProtocolTx+7)/8+maxProtocolTx*6+2408;
-        case 52:return size>=128&&size<=8+120+(maxProtocolTx+7)/8+maxProtocolTx*6+2408+64*8+65536;
+        case 51:return size>=120&&size<=120+(maxProtocolTx+7)/8+maxProtocolTx*6+chain::vdf_consensus::kMaxEncodedBytes;
+        case 52:return size>=128&&size<=8+120+(maxProtocolTx+7)/8+maxProtocolTx*6+chain::vdf_consensus::kMaxEncodedBytes+64*8+65536;
         case 53:case 54:return size>0&&size%33==0&&size<=1024*33;
         case 55:return size>17&&size<=17+65536;
         case 56:return size==chain::vdf_peer::kChallengeBytes;

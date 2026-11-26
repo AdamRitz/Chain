@@ -1,0 +1,353 @@
+{
+  "date": "2026-11-26",
+  "base_commit": "f640721db6ef9eb1d1516a2234f151cd0bb01680",
+  "mode": {
+    "producers": 5,
+    "consecutive_blocks": 32,
+    "epoch_blocks": 160,
+    "producer_timeout_slots": 8,
+    "slot_ms": 200
+  },
+  "build": {
+    "status": "passed",
+    "no_work_check": true
+  },
+  "ctest": {
+    "status": "passed",
+    "tests": 42,
+    "failures": 0,
+    "skipped": 0,
+    "duration_seconds": 580.8641444,
+    "cases": [
+      {
+        "name": "ChainCorrectness",
+        "duration_seconds": 0.911472,
+        "status": "passed"
+      },
+      {
+        "name": "AccountCorrectness",
+        "duration_seconds": 0.765651,
+        "status": "passed"
+      },
+      {
+        "name": "ForkStateCorrectness",
+        "duration_seconds": 45.0007,
+        "status": "passed"
+      },
+      {
+        "name": "ThroughputCorrectness",
+        "duration_seconds": 0.603932,
+        "status": "passed"
+      },
+      {
+        "name": "FlowCorrectness",
+        "duration_seconds": 0.838257,
+        "status": "passed"
+      },
+      {
+        "name": "SendBudgetCorrectness",
+        "duration_seconds": 0.0517947,
+        "status": "passed"
+      },
+      {
+        "name": "CompactRelayCorrectness",
+        "duration_seconds": 0.696333,
+        "status": "passed"
+      },
+      {
+        "name": "TransactionRelayCorrectness",
+        "duration_seconds": 0.643673,
+        "status": "passed"
+      },
+      {
+        "name": "ExecutionReuseCorrectness",
+        "duration_seconds": 0.788524,
+        "status": "passed"
+      },
+      {
+        "name": "RelayTransportCorrectness",
+        "duration_seconds": 0.0510995,
+        "status": "passed"
+      },
+      {
+        "name": "TxStepCorrectness",
+        "duration_seconds": 1.37685,
+        "status": "passed"
+      },
+      {
+        "name": "VdfCorrectness",
+        "duration_seconds": 1.28492,
+        "status": "passed"
+      },
+      {
+        "name": "VdfElectionCorrectness",
+        "duration_seconds": 2.72892,
+        "status": "passed"
+      },
+      {
+        "name": "VdfPeerProtocolCorrectness",
+        "duration_seconds": 0.0341278,
+        "status": "passed"
+      },
+      {
+        "name": "VdfRulesCorrectness",
+        "duration_seconds": 1.5504,
+        "status": "passed"
+      },
+      {
+        "name": "VdfBlockCorrectness",
+        "duration_seconds": 1.49975,
+        "status": "passed"
+      },
+      {
+        "name": "VdfStateCorrectness",
+        "duration_seconds": 1.95254,
+        "status": "passed"
+      },
+      {
+        "name": "RelayOptimizationNetwork",
+        "duration_seconds": 11.5755,
+        "status": "passed"
+      },
+      {
+        "name": "PropagationNetwork",
+        "duration_seconds": 6.85944,
+        "status": "passed"
+      },
+      {
+        "name": "PropagationTopology",
+        "duration_seconds": 9.13665,
+        "status": "passed"
+      },
+      {
+        "name": "VdfNetwork",
+        "duration_seconds": 56.96,
+        "status": "passed"
+      },
+      {
+        "name": "VdfRotationNetwork",
+        "duration_seconds": 35.1459,
+        "status": "passed"
+      },
+      {
+        "name": "VdfProducerPeersNetwork",
+        "duration_seconds": 18.8787,
+        "status": "passed"
+      },
+      {
+        "name": "VdfContinuousNetwork",
+        "duration_seconds": 64.5179,
+        "status": "passed"
+      },
+      {
+        "name": "TxStepNetwork",
+        "duration_seconds": 47.9631,
+        "status": "passed"
+      },
+      {
+        "name": "ChainNetwork",
+        "duration_seconds": 24.1886,
+        "status": "passed"
+      },
+      {
+        "name": "AccountNetwork",
+        "duration_seconds": 2.81442,
+        "status": "passed"
+      },
+      {
+        "name": "ForkNetwork",
+        "duration_seconds": 3.23645,
+        "status": "passed"
+      },
+      {
+        "name": "EvmNetwork",
+        "duration_seconds": 5.67017,
+        "status": "passed"
+      },
+      {
+        "name": "ExperimentNetwork",
+        "duration_seconds": 6.37342,
+        "status": "passed"
+      },
+      {
+        "name": "AdmissionNetwork",
+        "duration_seconds": 7.33632,
+        "status": "passed"
+      },
+      {
+        "name": "InviteCorrectness",
+        "duration_seconds": 0.508282,
+        "status": "passed"
+      },
+      {
+        "name": "ChatFunding",
+        "duration_seconds": 0.0819064,
+        "status": "passed"
+      },
+      {
+        "name": "ClassroomIndex",
+        "duration_seconds": 0.701442,
+        "status": "passed"
+      },
+      {
+        "name": "ClassroomNetwork",
+        "duration_seconds": 8.41091,
+        "status": "passed"
+      },
+      {
+        "name": "ClassroomJoin",
+        "duration_seconds": 9.60637,
+        "status": "passed"
+      },
+      {
+        "name": "InviteNetwork",
+        "duration_seconds": 15.499,
+        "status": "passed"
+      },
+      {
+        "name": "ClassroomFundingNetwork",
+        "duration_seconds": 24.7068,
+        "status": "passed"
+      },
+      {
+        "name": "ClassroomChains",
+        "duration_seconds": 49.6604,
+        "status": "passed"
+      },
+      {
+        "name": "ClassroomWallets",
+        "duration_seconds": 16.4229,
+        "status": "passed"
+      },
+      {
+        "name": "ClassroomRotation",
+        "duration_seconds": 91.3856,
+        "status": "passed"
+      },
+      {
+        "name": "IPv6Network",
+        "duration_seconds": 2.44502,
+        "status": "passed"
+      }
+    ],
+    "real_duration_seconds": 581.05
+  },
+  "first_ctest_run": {
+    "status": "failed",
+    "tests": 42,
+    "passed": 40,
+    "failed": [
+      "CompactRelayCorrectness",
+      "VdfCorrectness"
+    ],
+    "log": "ctest-all.log",
+    "junit": "ctest-all.xml",
+    "fixes": {
+      "CompactRelayCorrectness": "Frame-bound assertion retained the old extension limit; it now accepts kMaxEncodedBytes and rejects kMaxEncodedBytes+1.",
+      "VdfCorrectness": "MinGW emulated TLS/C++ destructor ordering corrupted GMP scratch cleanup at thread exit; a standalone TLS/GMP program reproduced the failure without Chain or VDF code. Prove/Verify now own scratch on the stack and TLS holds only non-owning pointers; nested scopes restore previous pointers. Other platforms retain thread-local scratch."
+    }
+  },
+  "vdf_stability": {
+    "runs": 10,
+    "failures": 0,
+    "concurrent_thread_exits": 320
+  },
+  "vdf_extended": {
+    "status": "passed",
+    "iterations": 2023424,
+    "known_proof_bytes": 200,
+    "checkpoint_prove_matches_official_vector": true,
+    "log": "vdf-extended.log"
+  },
+  "windows_binaries": {
+    "boost.exe": {
+      "sha256": "30ab53a08303c59e8a4180577169749e3e83314d25287c9c8fb9f955c8c67a5f",
+      "bytes": 16921540
+    },
+    "sender.exe": {
+      "sha256": "01c44f34ed8ad122770a682376c3fe836de107e68f9281bb96092264d0b08fa0",
+      "bytes": 15057647
+    },
+    "chain_classroom.exe": {
+      "sha256": "856b94600a280531a4fb5e8c64a6792eaa314b5bfff93dd516296c4c279395bc",
+      "bytes": 16817020
+    }
+  },
+  "cleanup": {
+    "processes_stopped": true,
+    "databases_removed": 297,
+    "sqlite_indexes_removed": 42,
+    "bytes_removed": 330388546
+  },
+  "frontend_tests": {
+    "status": "passed",
+    "total": 32,
+    "passed": 32,
+    "failed": 0,
+    "skipped": 0
+  },
+  "typescript": {
+    "status": "passed"
+  },
+  "vite": {
+    "status": "passed"
+  },
+  "ansible_tools": {
+    "status": "passed",
+    "tests_run": 139,
+    "passed": 127,
+    "skipped": 12,
+    "elapsed_seconds": 47.632,
+    "skip_reasons": "Linux Ansible controller, Unix permissions and unavailable Windows symbolic links"
+  },
+  "experiment_metrics": {
+    "status": "passed",
+    "tests_run": 12,
+    "passed": 12
+  },
+  "ansible_context": {
+    "status": "passed",
+    "yaml_files": 21,
+    "context_nodes": 100,
+    "duration": 300.0,
+    "early_stop_ratio": 0.7,
+    "staged_facts_disabled": true
+  },
+  "offline_prepare": {
+    "status": "passed",
+    "elapsed_seconds": 553.7388442,
+    "output": "offline-prepare-001",
+    "manifest": "offline-prepare-001/dataset.json",
+    "manifest_sha256": "a20869168fb6516ff02d81beb30471adf376339631bf82655f991fde53ebb0d4",
+    "dataset_sha256": "fb0bf18e9d8d7823b765a902147245a4a0cf7f898d7e37b8d05732367da04cb0",
+    "genesis_sha256": "a5e9517a027142d1227edc67f4b899e7a9298f6189fc4e38d7e59814d5c25286",
+    "dataset_bytes": 536800000,
+    "transactions": 3050000,
+    "required_transactions": 3020000,
+    "verified_signatures": 3050000,
+    "wallets": 1024,
+    "nodes": 100,
+    "degree": 8,
+    "edges": 400,
+    "injectors": 4,
+    "port": 28089,
+    "measurement_seconds": 300.0,
+    "offered_tps": 10000
+  },
+  "portable_manifest_reuse": {
+    "status": "passed",
+    "elapsed_seconds": 0.4530000000013388,
+    "required_transactions": 3020000,
+    "signature_verification_repeated": false
+  },
+  "cloud": {
+    "connections_this_task": 0,
+    "deployed": false,
+    "tps_measured": false,
+    "test_duration_seconds": 300,
+    "offered_tps": 10000,
+    "forks": 32,
+    "query_workers": 32,
+    "readiness_timeout_seconds": 180
+  }
+}

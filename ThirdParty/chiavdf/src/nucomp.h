@@ -73,7 +73,7 @@ void qfb_nucomp(qfb_t r, const qfb_t f, const qfb_t g, mpz_t const& D, mpz_t con
    }
 
    // Same approach as qfb_nudupl: keep GMP temporaries for the life of the thread.
-   static thread_local qfb_nucomp_ctx ctx;
+   auto& ctx = chiavdf_thread_scratch<qfb_nucomp_ctx>();
 
    /* nucomp calculation (phases in nucomp_phases.h) */
    if (qfb_nucomp_prepare(ctx, left, right))
@@ -121,7 +121,7 @@ void qfb_nudupl(qfb_t r, qfb_t f, mpz_t const& D, mpz_t const& L)
     // Performance note:
     // This function is on the hot path for ARM `square_vdf` (NUDUPL). Avoid per-iteration
     // `mpz_init/mpz_clear` churn by reusing a thread-local scratch context.
-    static thread_local qfb_nudupl_ctx ctx;
+    auto& ctx = chiavdf_thread_scratch<qfb_nudupl_ctx>();
 
     /* nucomp calculation (phases in nucomp_phases.h) */
     qfb_nudupl_prepare(ctx, f);

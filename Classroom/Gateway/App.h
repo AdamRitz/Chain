@@ -682,7 +682,8 @@ class ClassroomApp {
                 sodium_memzero(anchor.private_key.data(), anchor.private_key.size());
                 constexpr uint64_t slotMs = 200;
                 next["genesis"]["vdf"] = {{"enabled", true}, {"producer_rotation", true},
-                    {"epoch_blocks", 32}, {"iterations", 65536}, {"slot_ms", slotMs},
+                    {"epoch_blocks", 160}, {"consecutive_blocks", 32}, {"producer_timeout_slots", 8},
+                    {"iterations", 65536}, {"slot_ms", slotMs},
                     {"start_time_ms", uint64_t(NowMs()) / slotMs * slotMs},
                     {"fallback_slots", 20}, {"future_slots", 2}, {"producers", 5}};
                 SetGenesisUsers(next["genesis"]);
@@ -1274,6 +1275,8 @@ class ClassroomApp {
         };
         Json result = {{"enabled", true}, {"producer_rotation", settings.value("producer_rotation", false)},
             {"epoch_blocks", number("epoch_blocks", defaults.epochBlocks)},
+            {"consecutive_blocks", number("consecutive_blocks", defaults.consecutiveBlocks)},
+            {"producer_timeout_slots", number("producer_timeout_slots", defaults.producerTimeoutSlots)},
             {"iterations", number("iterations", defaults.iterations)},
             {"slot_ms", number("slot_ms", defaults.slotMs)},
             {"start_time_ms", ReadUserNumber(settings.at("start_time_ms"))},

@@ -345,6 +345,7 @@ def RecoverFault(cluster, fault):
 
 def LoadCase(cluster, case, plan, dataset, genesis, output):
     warmup, duration = plan['warmup'], plan['duration']
+    requested_duration, early_stop = duration, None
     load = Load(cluster, dataset, case['rate'], warmup+duration, case.get('pattern', 'steady'),
                 'shard' if case.get('fault', {}).get('kind') == 'partition' else plan['ingress'],
                 plan['sample_hz'], plan.get('latency_batch', plan['batch']) if case['suite'] in ['latency', 'fault'] else plan['batch'], plan.get('parallel_ingress', False))
@@ -381,6 +382,16 @@ def LoadCase(cluster, case, plan, dataset, genesis, output):
                 point = {'seconds': time.monotonic()-load.started, 'sent': load.sent,
                          'common': common, 'nodes': stats}
                 metrics.Add(point); timeline.write(json.dumps(point)+'\n'); timeline.flush()
+                if early_stop is None and plan.get('stop_when'):
+                    early_stop = plan['stop_when'](point)
+                    if early_stop:
+                        early_stop = {**early_stop, 'seconds': point['seconds'], 'sent': load.sent}
+                        Save(output/'early-stop.json', early_stop)
+                        events.append({'event': 'early_stop', **early_stop})
+                        load.stop.set()
+                        duration = max(0, point['seconds']-warmup)
+                        metrics.end = warmup+duration
+                        deadline = time.monotonic()+plan['drain_seconds']
                 CheckSamples(cluster, load)
                 if recovery_started and recovery_seconds is None:
                     if all(stats) and len({row['head'] for row in stats}) == 1:
@@ -407,7 +418,8 @@ def LoadCase(cluster, case, plan, dataset, genesis, output):
         latency = [(row['included_at']-row['scheduled'])*1000 for row in completed]
         sent_latency = [(row['included_at']-row['sent_at'])*1000 for row in completed]
         measured = metrics.measured
-        first, last = (measured[0], measured[-1]) if len(measured) >= 2 else (None, None)
+        first, last = (measured[0], measured[-1]) if (len(measured) >= 2 and
+            measured[-1]['seconds'] > measured[0]['seconds']) else (None, None)
         throughput = (last['common']['transactions']-first['common']['transactions'])/(last['seconds']-first['seconds']) if first else None
         achieved = (last['sent']-first['sent'])/(last['seconds']-first['seconds']) if first else None
         backlogs = [row['backlog'] for row in measured]
@@ -440,13 +452,17 @@ def LoadCase(cluster, case, plan, dataset, genesis, output):
                    'recovery_seconds': recovery_seconds, 'checks': checks, 'events': events,
                    'sample_poll_seconds': plan['poll_seconds'], 'measurement_seconds': last['seconds']-first['seconds'] if first else 0,
                    'measurement_samples': len(measured), 'parallel_ingress': load.parallel_ingress}
+        if plan.get('stop_when'):
+            summary.update(early_stop=early_stop, requested_duration_seconds=requested_duration)
         summary['resources'] = [resource.Summary(node['id']) for resource, node in zip(metrics.nodes, cluster.nodes)]
         cpu_end = controller.cpu_times()
-        summary['controller_cpu_core_equivalents'] = (cpu_end.user+cpu_end.system-cpu_start.user-cpu_start.system)/(time.monotonic()-controller_start)
-        summary['sustainable'] = bool(not fault and checks and throughput is not None and achieved is not None and
+        controller_seconds = time.monotonic()-controller_start
+        summary['controller_cpu_core_equivalents'] = ((cpu_end.user+cpu_end.system-cpu_start.user-cpu_start.system)/controller_seconds
+                                                    if controller_seconds > 0 else None)
+        summary['sustainable'] = bool(not fault and not early_stop and checks and throughput is not None and achieved is not None and
                                       achieved >= .95*case['rate'] and throughput >= .95*case['rate'] and invalid == 0 and
                                       slope <= plan['max_backlog_growth'] and not summary['unresolved_samples'])
-        summary['tx_sustainable'] = bool(not fault and checks and throughput is not None and achieved is not None and
+        summary['tx_sustainable'] = bool(not fault and not early_stop and checks and throughput is not None and achieved is not None and
                                       achieved >= .95*case['rate'] and throughput >= .95*case['rate'] and invalid == 0 and
                                       tx_slope is not None and tx_slope <= plan['max_backlog_growth'] and not summary['unresolved_samples'])
         Save(output/'latency-samples.json', load.samples)

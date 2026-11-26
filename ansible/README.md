@@ -185,6 +185,7 @@ chain_vdf_required_tests:
   - VdfStateCorrectness
   - VdfNetwork
   - VdfRotationNetwork
+  - VdfContinuousNetwork
   - VdfProducerPeersNetwork
 
 chain_vdf_instance_id: experiment-001
@@ -199,7 +200,9 @@ chain_vdf_genesis: "{{ lookup('file', '/srv/chain-vdf/genesis.json') | from_json
 
 CentOS Stream 9、Rocky 9、AlmaLinux 9 自动启用 CRB 并安装 EPEL 依赖。其他 EL9 发行版需预先配置其相应开发仓库。依赖已经安装时设置 `chain_vdf_install_dependencies: false`，工具仍会实际构建并校验。默认构建并行度为一，适用于 2 vCPU / 4 GiB 内存主机；不会自动增加交换空间。
 
-默认必需测试列表包含 VDF 计算、选举、连接身份协议、区块规则、状态和网络测试，以及 `VdfRotationNetwork`、`VdfProducerPeersNetwork`。构建工具要求这些名称出现在本次 CTest 计划中，且全量模式运行全部已注册测试；服务工具还要求 `complete: true` 的构建证明与当前源码、二进制哈希一致。
+默认必需测试列表包含 VDF 计算、选举、连接身份协议、区块规则、状态和网络测试，以及 `VdfRotationNetwork`、`VdfContinuousNetwork`、`VdfProducerPeersNetwork`。构建工具要求这些名称出现在本次 CTest 计划中，且全量模式运行全部已注册测试；服务工具还要求 `complete: true` 的构建证明与当前源码、二进制哈希一致。
+
+新建链使用 `epoch_blocks: 160`、`consecutive_blocks: 32`、`producer_timeout_slots: 8`、`producer_rotation: true` 和 `slot_ms: 200`。五位成员按顺序各连续生成 32 个实际区块；当前成员连续 8 个完整时间片没有发块后由下一位接管。`cluster_quick.py test` 默认采用这些参数，提供 `--consecutive-blocks`、`--producer-timeout-slots`、`--epoch-blocks` 调整，要求 `epoch_blocks = 5 * consecutive_blocks`。已有链保留原有创世文件和出块规则。完整协议见 [VDF_GUIDE.md](../VDF_GUIDE.md)，集群操作见 [CLUSTER.md](CLUSTER.md)。
 
 多机部署的并发和 CPU 使用分别配置：
 

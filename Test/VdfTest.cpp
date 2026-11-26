@@ -1,4 +1,5 @@
 #include "../Crypto/VDF.h"
+#include "../ThirdParty/chiavdf/src/thread_scratch.h"
 
 #include <algorithm>
 #include <chrono>
@@ -39,11 +40,43 @@ void RequireInvalidIterations(const chain::vdf::Challenge& challenge, std::uint6
     throw std::runtime_error("Prove accepted invalid iterations");
 }
 
+#if defined(__MINGW32__)
+struct ScratchFixture {
+    inline static int alive = 0;
+    ScratchFixture() { ++alive; }
+    ~ScratchFixture() { --alive; }
+};
+
+void TestScratchLifetime() {
+    {
+        chiavdf_scratch_scope<ScratchFixture> outer;
+        auto* saved = &chiavdf_thread_scratch<ScratchFixture>();
+        Require(ScratchFixture::alive == 1, "Outer scratch was not constructed");
+        try {
+            chiavdf_scratch_scope<ScratchFixture> inner;
+            Require(&chiavdf_thread_scratch<ScratchFixture>() != saved && ScratchFixture::alive == 2,
+                    "Nested call reused the outer scratch");
+            throw 17;
+        } catch (int) {}
+        Require(&chiavdf_thread_scratch<ScratchFixture>() == saved && ScratchFixture::alive == 1,
+                "Exception did not restore the outer scratch");
+    }
+    Require(ScratchFixture::alive == 0, "Scratch survived its call");
+    try {
+        (void)chiavdf_thread_scratch<ScratchFixture>();
+        throw std::runtime_error("Scratch pointer survived its call");
+    } catch (const std::logic_error&) {}
+}
+#endif
+
 } // namespace
 
 int main(int argc, char** argv) {
     using namespace chain::vdf;
     try {
+#if defined(__MINGW32__)
+        TestScratchLifetime();
+#endif
         Challenge challenge{};
         for (std::size_t i = 0; i < challenge.size(); ++i) challenge[i] = static_cast<std::uint8_t>(i);
 
@@ -125,13 +158,16 @@ int main(int argc, char** argv) {
             Require(!Verify(challenge, iterations, malformed), "Malformed proof accepted");
         }
 
-        std::array<std::future<bool>, 4> workers;
-        for (auto& worker : workers) {
-            worker = std::async(std::launch::async, [&] {
-                return Prove(challenge, iterations) == proof && Verify(challenge, iterations, proof);
-            });
+        // Recreate threads repeatedly to cover scratch cleanup at thread exit.
+        for (int round = 0; round < 8; ++round) {
+            std::array<std::future<bool>, 4> workers;
+            for (auto& worker : workers) {
+                worker = std::async(std::launch::async, [&] {
+                    return Prove(challenge, iterations) == proof && Verify(challenge, iterations, proof);
+                });
+            }
+            for (auto& worker : workers) Require(worker.get(), "Concurrent prove/verify failed");
         }
-        for (auto& worker : workers) Require(worker.get(), "Concurrent prove/verify failed");
 
         std::cout << "VDF correctness passed; iterations=" << iterations
                   << " prove_ms=" << std::chrono::duration<double, std::milli>(proved - start).count()

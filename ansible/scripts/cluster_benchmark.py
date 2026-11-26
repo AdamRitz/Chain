@@ -88,6 +88,39 @@ def ValidateSettings(settings):
         raise ValueError('Node settings cannot replace lifecycle, topology or identity arguments')
 
 
+class LowTpsStop:
+    """Stop after three slow 15-second windows with increasing transaction backlog."""
+    def __init__(self, rate, warmup, *, ratio=.7, start=30, window=15, windows=3):
+        self.rate, self.warmup, self.ratio = rate, warmup, ratio
+        self.start, self.window, self.windows = start, window, windows
+        self.previous, self.slow = None, []
+
+    def __call__(self, point):
+        if not point.get('common') or point['seconds'] < self.warmup + self.start:
+            return None
+        current = {'seconds': point['seconds'], 'transactions': point['common']['transactions'],
+                   'backlog': point['sent'] - point['common']['transactions']}
+        if self.previous is None:
+            self.previous = current
+            return None
+        elapsed = current['seconds'] - self.previous['seconds']
+        if elapsed < self.window:
+            return None
+        throughput = (current['transactions'] - self.previous['transactions']) / elapsed
+        growth = current['backlog'] - self.previous['backlog']
+        record = {'begin_seconds': self.previous['seconds'], 'end_seconds': current['seconds'],
+                  'tps': throughput, 'backlog_growth': growth}
+        self.previous = current
+        if throughput < self.rate * self.ratio and growth > 0:
+            self.slow.append(record)
+        else:
+            self.slow.clear()
+        if len(self.slow) < self.windows:
+            return None
+        return {'reason': 'TPS below threshold and transaction backlog increased in consecutive windows',
+                'threshold_tps': self.rate * self.ratio, 'windows': self.slow[-self.windows:]}
+
+
 def Validate(context):
     for key in ('inventory', 'plan', 'dataset', 'genesis', 'output', 'ansible_dir', 'ansible_playbook'):
         if not isinstance(context.get(key), str) or not Path(context[key]).is_absolute():
@@ -119,6 +152,16 @@ def Validate(context):
         raise ValueError('Invalid readiness_timeout')
     if type(context.get('bootstrap_producers', 1)) is not int or not 0 <= context.get('bootstrap_producers', 1) <= 64:
         raise ValueError('Invalid bootstrap_producers')
+    if type(context.get('early_stop_enabled', True)) is not bool:
+        raise ValueError('Invalid early_stop_enabled')
+    for key, default, lower, upper in (('early_stop_ratio', .7, .01, .99),
+            ('early_stop_start_seconds', 30, 0, 600), ('early_stop_window_seconds', 15, .1, 600),
+            ('max_backlog_growth', 10, 0, 10000000)):
+        value = context.get(key, default)
+        if isinstance(value, bool) or not isinstance(value, (int, float)) or not math.isfinite(value) or not lower <= value <= upper:
+            raise ValueError('Invalid ' + key)
+    if type(context.get('early_stop_windows', 3)) is not int or not 1 <= context.get('early_stop_windows', 3) <= 20:
+        raise ValueError('Invalid early_stop_windows')
     if context['warmup'] + context['duration'] + context['drain_seconds'] + 2 * readiness > 3000:
         raise ValueError('Leave time for deployment and cleanup before the one-hour process guard')
     count = int(context['rate'] * (context['warmup'] + context['duration']))
@@ -148,7 +191,7 @@ def Arguments(plan, settings, producer_ids=None):
         values = {'io-threads': 1, 'verify-threads': 1, 'candidate-threads': 1,
                   'block-verify-threads': 1, 'query-threads': 1, 'sync': 1, 'produce': 1,
                   'experiment-index': 1, 'block-ms': 200, 'max-block-txs': 6000,
-                  'block-tx-step': 2000, **settings, 'port': node['port'], 'bind': node['bind'],
+                  'block-tx-step': 2000, 'clock-sync': 0, **settings, 'port': node['port'], 'bind': node['bind'],
                   'peer-discovery': 0, 'max-peers': len(node['neighbors']) + 4, 'target-peers': len(node['neighbors']),
                   'max-connections': len(node['neighbors']) + 36, 'relay-transactions': 1}
         if producer_ids is not None:
@@ -181,6 +224,10 @@ def ConsensusReady(rows, genesis):
                 len(set(producers)) != expected or not set(producers).issubset(identities)):
             return False
         if config.get('producer_rotation') and state.get('producer_rotation') is not True:
+            return False
+        if config.get('consecutive_blocks', 0) > 0 and (
+                state.get('consecutive_blocks') != config['consecutive_blocks'] or
+                state.get('producer_timeout_slots') != config.get('producer_timeout_slots', 8)):
             return False
         committee = tuple(producers)
         if epoch in committees and committees[epoch] != committee:
@@ -387,17 +434,23 @@ def Run(context):
             super().__init__(view, *arguments, **kwargs)
 
     Experiments.Load = InjectorLoad
-    result = {'ok': False, 'nodes': len(plan['nodes']), 'injectors': plan['injectors'], 'graph': plan['graph']}
+    result = {'ok': False, 'status': 'failed', 'nodes': len(plan['nodes']), 'injectors': plan['injectors'], 'graph': plan['graph']}
     phase = 'start'
     try:
         cluster.Start()
         phase = 'benchmark'
         parameters = {key: context[key] for key in ('warmup', 'duration', 'drain_seconds', 'poll_seconds', 'sample_hz', 'batch', 'wallets')}
-        parameters.update(ingress='shard', deadline_ms=1000, max_backlog_growth=10,
+        parameters.update(ingress='shard', deadline_ms=1000, max_backlog_growth=context.get('max_backlog_growth', 10),
                           parallel_ingress=True)
+        if context.get('early_stop_enabled', True):
+            parameters['stop_when'] = LowTpsStop(context['rate'], context['warmup'],
+                ratio=context.get('early_stop_ratio', .7), start=context.get('early_stop_start_seconds', 30),
+                window=context.get('early_stop_window_seconds', 15), windows=context.get('early_stop_windows', 3))
         result['metrics'] = Experiments.LoadCase(cluster, {'rate': context['rate'], 'suite': 'throughput'},
                                                 parameters, context['dataset'], genesis, output)
-        result['ok'] = bool(result['metrics']['drained'] and not result['metrics']['unresolved_samples'])
+        result['ok'] = bool(result['metrics']['drained'] and not result['metrics']['unresolved_samples'] and
+                            not result['metrics'].get('early_stop'))
+        result['status'] = 'stopped_early' if result['metrics'].get('early_stop') else ('complete' if result['ok'] else 'failed')
     except Exception as error:
         result.update(error=str(error), phase=phase, error_type=type(error).__name__,
                       error_location=[{'file': Path(frame.filename).name, 'function': frame.name, 'line': frame.lineno}
@@ -411,7 +464,7 @@ def Run(context):
         result['metrics_period_seconds'] = context['metrics_period']
         Save(output / 'query-sweeps.json', cluster.query_sweeps)
         if cluster.cleanup_errors:
-            result.update(ok=False, cleanup_errors=cluster.cleanup_errors)
+            result.update(ok=False, status='failed', cleanup_errors=cluster.cleanup_errors)
         Save(output / 'result.json', result)
     return result
 

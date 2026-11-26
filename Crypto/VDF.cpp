@@ -10,6 +10,14 @@ namespace {
 static_assert(kOutputBytes == BQFC_FORM_SIZE);
 static_assert(kDiscriminantBits == BQFC_MAX_D_BITS);
 
+struct ScratchForCall {
+#if defined(__MINGW32__)
+    chiavdf_scratch_scope<qfb_nucomp_ctx> nucomp;
+    chiavdf_scratch_scope<qfb_nudupl_ctx> nudupl;
+    chiavdf_scratch_scope<chiavdf_xgcd_partial_ctx> xgcd;
+#endif
+};
+
 bool ValidIterations(std::uint64_t iterations) noexcept {
     return iterations != 0 && iterations <= kMaxIterations;
 }
@@ -25,6 +33,7 @@ Proof Prove(const Challenge& challenge, std::uint64_t iterations) {
     if (!ValidIterations(iterations)) {
         throw std::invalid_argument("VDF iterations must be in [1, 100000000]");
     }
+    [[maybe_unused]] ScratchForCall scratch;
     auto discriminant = Discriminant(challenge);
     auto x = DeserializeForm(discriminant, DEFAULT_ELEMENT, kOutputBytes, true);
     // The ordinary prover stores intermediate forms. Above one million
@@ -46,6 +55,7 @@ bool Verify(const Challenge& challenge, std::uint64_t iterations,
         return false;
     }
     try {
+        [[maybe_unused]] ScratchForCall scratch;
         auto discriminant = Discriminant(challenge);
         auto x = DeserializeForm(discriminant, DEFAULT_ELEMENT, kOutputBytes, true);
         // Strict decoding checks the discriminant, reduced form and canonical

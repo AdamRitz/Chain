@@ -1,0 +1,32 @@
+- name: Verify a previously distributed release before starting a new test
+  hosts: chain
+  gather_facts: false
+  become: true
+  tasks:
+    - name: Require the manifest hash from the checked controller package
+      ansible.builtin.assert:
+        that:
+          - chain_package_manifest_sha256 is defined
+          - chain_package_manifest_sha256 is match('^[0-9a-f]{64}$')
+      run_once: true
+    - name: Verify the installed package marker and every manifest file
+      ansible.builtin.command:
+        argv:
+          - "{{ chain_python }}"
+          - "{{ chain_tools_root }}/stage_release.py"
+          - --verify-existing
+          - --release-root
+          - "{{ chain_release_root }}"
+          - --release-id
+          - "{{ chain_release_id }}"
+          - --sha256
+          - "{{ chain_package_sha256 }}"
+          - --manifest-sha256
+          - "{{ chain_package_manifest_sha256 }}"
+      register: chain_existing_release
+      changed_when: false
+      environment:
+        PYTHONDONTWRITEBYTECODE: '1'
+    - name: Retain the checked binary and package identities
+      ansible.builtin.set_fact:
+        chain_staged_metadata: "{{ {chain_release_id: chain_existing_release.stdout | from_json} }}"

@@ -68,6 +68,61 @@ class ReleaseTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'checksum'):
             stage.Stage(archive, releases, 'r1', digest)
 
+    def test_verify_existing_needs_no_archive_and_detects_source_tampering(self):
+        archive, digest = self.Package()
+        releases = self.root / 'releases'
+        first = stage.Stage(archive, releases, 'r1', digest)
+        manifest_digest = stage.ManifestDigest(archive)
+        archive.unlink()
+        checked = stage.VerifyExisting(releases, 'r1', digest, manifest_digest)
+        self.assertFalse(checked['changed'])
+        self.assertEqual(checked['binary_sha256'], first['binary_sha256'])
+        self.assertEqual(checked['package_sha256'], digest)
+        (releases / 'r1/source/Test/ClusterWorker.py').write_text('# changed worker\n')
+        with self.assertRaisesRegex(ValueError, 'checksum'):
+            stage.VerifyExisting(releases, 'r1', digest, manifest_digest)
+
+    def test_verify_existing_rejects_a_rewritten_manifest(self):
+        archive, digest = self.Package()
+        releases = self.root / 'releases'
+        first = stage.Stage(archive, releases, 'r1', digest)
+        manifest_digest = stage.ManifestDigest(archive)
+        binary = Path(first['directory']) / 'bin/boost'
+        binary.write_bytes(b'\x7fELFtampered')
+        manifest = Path(first['directory']) / 'manifest.json'
+        value = json.loads(manifest.read_text())
+        for row in value['files']:
+            if row['path'] == 'bin/boost':
+                row['sha256'] = stage.Digest(binary)
+        manifest.write_text(json.dumps(value))
+        with self.assertRaisesRegex(ValueError, 'manifest differs'):
+            stage.VerifyExisting(releases, 'r1', digest, manifest_digest)
+
+    def test_verify_existing_rejects_another_package_and_changed_marker(self):
+        archive, digest = self.Package()
+        releases = self.root / 'releases'
+        first = stage.Stage(archive, releases, 'r1', digest)
+        manifest_digest = stage.ManifestDigest(archive)
+        with self.assertRaisesRegex(ValueError, 'requested package'):
+            stage.VerifyExisting(releases, 'r1', '0' * 64, manifest_digest)
+        marker = Path(first['directory']) / '.chain-release.json'
+        value = json.loads(marker.read_text())
+        value['source_commit'] = 'b' * 40
+        marker.write_text(json.dumps(value))
+        with self.assertRaisesRegex(ValueError, 'source differs'):
+            stage.VerifyExisting(releases, 'r1', digest, manifest_digest)
+
+    @unittest.skipUnless(os.name == 'posix', 'Unix file permissions')
+    def test_verify_existing_rejects_changed_permissions_without_repair(self):
+        archive, digest = self.Package()
+        releases = self.root / 'releases'
+        first = stage.Stage(archive, releases, 'r1', digest)
+        binary = Path(first['directory']) / 'bin/boost'
+        binary.chmod(0o644)
+        with self.assertRaisesRegex(ValueError, 'permissions changed'):
+            stage.VerifyExisting(releases, 'r1', digest, stage.ManifestDigest(archive))
+        self.assertEqual(stat.S_IMODE(binary.stat().st_mode), 0o644)
+
     @unittest.skipUnless(os.name == 'posix', 'Unix directory permissions')
     def test_publish_directory_permissions_with_restrictive_umask(self):
         archive, digest = self.Package()

@@ -126,12 +126,28 @@ bool PrepareVdfBlock(uint64_t height,const array<uint8_t,32>& parent,VdfConsensu
     if (epoch<2&&!vdfBootstrapProduce) return false;
     extension.slot=VdfConsensus::CurrentSlot();
     if (extension.slot<VdfConsensus::MinimumSlot(height)) return false;
-    auto parentSlot=ReadVdfParentSlot();
+    const auto parentExtension=DBVdfParentExtension();
+    auto parentSlot=parentExtension?parentExtension->slot:VdfConsensus::StartSlot()-1;
     if (extension.slot<=parentSlot) return false;
     extension.producer=vdfPublicKey;
     auto active=DBVdfActiveCandidates(height);
     auto member=any_of(active.begin(),active.end(),[](const auto& record){return record.publicKey==vdfPublicKey;});
-    if (!VdfConsensus::CanProduce(vdfPublicKey,extension.slot,parentSlot,epoch,active)) return false;
+    if (VdfConsensus::config.consecutiveBlocks) {
+        extension.turn=VdfConsensus::ProducerTurn{};
+        if (epoch>=2&&!active.empty()) {
+            const bool sameEpoch=height>2&&VdfConsensus::Epoch(height-1)==epoch;
+            extension.turn=VdfConsensus::ScheduleTurn(extension.slot,parentSlot,
+                parentExtension?parentExtension->turn:nullopt,sameEpoch,VdfConsensus::config);
+            if (member) {
+                const auto scheduled=VdfConsensus::ScheduledTurnProducer(extension.slot,parentSlot,
+                    parentExtension?parentExtension->turn:nullopt,sameEpoch,active,VdfConsensus::config);
+                if (!scheduled||*scheduled!=vdfPublicKey) return false;
+            } else {
+                if (extension.slot-parentSlot<VdfConsensus::RecoverySlotGap(active.size(),VdfConsensus::config)) return false;
+                extension.turn->blocks=0;
+            }
+        }
+    } else if (!VdfConsensus::CanProduce(vdfPublicKey,extension.slot,parentSlot,epoch,active)) return false;
     if (epoch<2||active.empty()||!member) {
         if (epoch>=2&&!active.empty()&&extension.slot-parentSlot<VdfConsensus::config.fallbackSlots) return false;
         extension.producerProof=ReadOwnVdfProof(DBVdfContext(epoch));
@@ -219,10 +235,21 @@ nlohmann::json GetVdfStats() {
         candidates.push_back({{"public_key",U32ToHex(record.publicKey)},{"score",U32ToHex(VdfConsensus::Score(record))}});
     VdfConsensus::Extension proposed;
     bool eligible=PrepareVdfBlock(height,DBReadCurrentBlock(),proposed);
-    const auto scheduled=VdfConsensus::config.producerRotation&&epoch>=2?
-        VdfConsensus::ScheduledProducer(VdfConsensus::CurrentSlot(),active):nullopt;
+    optional<VdfConsensus::PublicKey> scheduled;
+    const auto parent=DBVdfParentExtension();
+    if (VdfConsensus::config.producerRotation&&epoch>=2) {
+        if (VdfConsensus::config.consecutiveBlocks&&parent&&VdfConsensus::CurrentSlot()>parent->slot)
+            scheduled=VdfConsensus::ScheduledTurnProducer(VdfConsensus::CurrentSlot(),parent->slot,parent->turn,
+                height>2&&VdfConsensus::Epoch(height-1)==epoch,active,VdfConsensus::config);
+        else if (!VdfConsensus::config.consecutiveBlocks)
+            scheduled=VdfConsensus::ScheduledProducer(VdfConsensus::CurrentSlot(),active);
+    }
     nlohmann::json result={{"enabled",true},{"public_key",vdfIdentityReady?U32ToHex(vdfPublicKey):string{}},
         {"producer_rotation",VdfConsensus::config.producerRotation},
+        {"consecutive_blocks",VdfConsensus::config.consecutiveBlocks},
+        {"producer_timeout_slots",VdfConsensus::config.producerTimeoutSlots},
+        {"turn_number",parent&&parent->turn?parent->turn->number:0},
+        {"turn_blocks",parent&&parent->turn?parent->turn->blocks:0},
         {"bootstrap_produce",vdfBootstrapProduce},
         {"scheduled_producer",scheduled?U32ToHex(*scheduled):string{}},
         {"epoch",epoch},{"next_epoch",epoch+1},{"slot",VdfConsensus::CurrentSlot()},
@@ -242,8 +269,28 @@ void RunVdfBlockLoop() {
         size_t attemptedReady=SIZE_MAX;
         optional<steady_clock::time_point> commitTime;
         const auto propagationMs=max(uint64_t(1),min(uint64_t(12),VdfConsensus::config.slotMs/4));
+        auto commitReady=[&] {
+            if (!blockReady) {commitTime.reset();return;}
+            bool rotating=false;
+            if (VdfConsensus::config.producerRotation) {
+                lock_guard lock(blockBufferLock);
+                const auto& extension=BlockBuffer[0].first.vdf;
+                rotating=extension&&!extension->producerProof;
+            }
+            if (!commitTime) commitTime=steady_clock::now()+milliseconds(rotating?0:propagationMs);
+            if (nodeRunning&&steady_clock::now()<*commitTime) return;
+            pair<Block,vector<uint8_t>> selected;
+            {lock_guard lock(blockBufferLock);selected=std::move(BlockBuffer[0]);BlockBuffer[0]={};blockReady=false;}
+            commitTime.reset();
+            if (!selected.second.empty()&&CommitBlock(selected.first,selected.second)) {
+                AnnounceBlock(selected.second);forkReady=true;
+            }
+        };
         while (nodeRunning||blockReady||forkReady) {
             if (ProcessForks()) { AnnounceBlock(DBReadBlockByHash(DBReadCurrentBlock())); commitTime.reset(); }
+            // Adopt an already received parent before selecting transactions
+            // and signing a new block for the continuous producer's turn.
+            if (VdfConsensus::config.consecutiveBlocks) commitReady();
             auto slot=VdfConsensus::CurrentSlot();
             auto phase=uint64_t(GetLogicalTimeUs()/1000)%VdfConsensus::config.slotMs;
             size_t ready;
@@ -274,25 +321,7 @@ void RunVdfBlockLoop() {
                     }
                 }
             }
-            if (blockReady) {
-                // After bootstrap, rotation has one scheduled normal producer.
-                // It does not need the legacy 12 ms competition timer.
-                bool rotating=false;
-                if (VdfConsensus::config.producerRotation) {
-                    lock_guard lock(blockBufferLock);
-                    const auto& extension=BlockBuffer[0].first.vdf;
-                    rotating=extension&&!extension->producerProof;
-                }
-                if (!commitTime) commitTime=steady_clock::now()+milliseconds(rotating?0:propagationMs);
-                if (!nodeRunning||steady_clock::now()>=*commitTime) {
-                    pair<Block,vector<uint8_t>> selected;
-                    { lock_guard lock(blockBufferLock); selected=std::move(BlockBuffer[0]); BlockBuffer[0]={}; blockReady=false; }
-                    commitTime.reset();
-                    if (!selected.second.empty()&&CommitBlock(selected.first,selected.second)) {
-                        AnnounceBlock(selected.second); forkReady=true;
-                    }
-                }
-            } else commitTime.reset();
+            commitReady();
             if (!nodeRunning&&!blockReady&&!forkReady) break;
             unique_lock lock(txpoolMutex);
             txpoolCondition.wait_for(lock,milliseconds(2));
