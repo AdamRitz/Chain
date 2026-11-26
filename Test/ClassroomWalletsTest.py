@@ -264,6 +264,8 @@ def Main(args):
         app.Api('wallet_select', id=second_id)
         app.Api('unlock', password=SECOND_PASSWORD)
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as occupied:
+            if os.name != 'nt':
+                occupied.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
             occupied.bind(('0.0.0.0', a['ports'][0]))
             occupied.listen()
             Rejected('network_switch', id=a['id'])

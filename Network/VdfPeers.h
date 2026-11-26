@@ -12,7 +12,7 @@ struct VdfPeerEndpoint {
 struct VdfPeerTarget {array<uint8_t,32> publicKey;ip::address address;uint16_t port;bool blockOnly=false;};
 vector<array<uint8_t,32>> vdfCurrentProducers,vdfNextProducers;
 map<array<uint8_t,32>,vector<VdfPeerEndpoint>> vdfPeerEndpoints;
-set<array<uint8_t,32>> vdfBlockEndpoints;
+set<array<uint8_t,32>> vdfBlockEndpoints,vdfLegacyEndpoints;
 bool vdfLocalParticipant=false,vdfHintsDirty=false;
 uint64_t vdfHintsPublishedAt=0;
 atomic<uint64_t> vdfPeerAuthenticationFailures{0};
@@ -36,9 +36,14 @@ bool AdmitVdfPeerLocked(const shared_ptr<Peer>& peer) {
     size_t ordinary=0,pending=0;
     for (const auto& [id,entry]:peerPool) if (!entry->closePosted) {
         if (entry->vdfPending) ++pending;
-        else if (!entry->vdfReserved) ++ordinary;
+        if (entry->ordinarySlot) ++ordinary;
     }
-    if (!peer->blockOnly&&ordinary<maxPeers) return true;
+    if (peerPool.size()>=maxPeers+(VdfProducerMeshEnabled()?vdfPeerReserveLimit+vdfPeerPendingLimit:0)) return false;
+    // A producer dial uses the extra producer capacity, never a vacant place
+    // intended for the configured/discovered ordinary network.
+    if (!peer->blockOnly&&!peer->expectedVdfKey&&ordinary<maxPeers) {
+        peer->ordinarySlot=true;return true;
+    }
     if (!VdfProducerMeshEnabled()||!vdfLocalParticipant||pending>=vdfPeerPendingLimit) return false;
     if (peerPool.size()>=maxPeers+vdfPeerReserveLimit+vdfPeerPendingLimit) return false;
     peer->vdfPending=true;peer->vdfPendingAt=GetSteadyTime();
@@ -46,6 +51,14 @@ bool AdmitVdfPeerLocked(const shared_ptr<Peer>& peer) {
 }
 bool IsPendingVdfPeer(const shared_ptr<Peer>& peer) {
     lock_guard lock(peerMutex);return peer->vdfPending;
+}
+void RememberVdfPeerProtocolLocked(const shared_ptr<Peer>& peer) {
+    if (!peer->vdfAuthenticated||!WantedVdfKeyLocked(peer->vdfPeerKey)) return;
+    if (peer->blockOnly||peer->blockRelayProtocol) {
+        vdfBlockEndpoints.insert(peer->vdfPeerKey);vdfLegacyEndpoints.erase(peer->vdfPeerKey);
+    } else if (peer->capabilitiesReceived&&!vdfBlockEndpoints.count(peer->vdfPeerKey)) {
+        vdfLegacyEndpoints.insert(peer->vdfPeerKey);
+    }
 }
 chain::vdf_peer::EndpointHint VdfEndpointHint(const array<uint8_t,32>& key,ip::address address,uint16_t port) {
     chain::vdf_peer::EndpointHint hint;
@@ -132,8 +145,8 @@ void ReceiveVdfPeerIdentity(const shared_ptr<Peer>& peer,span<const uint8_t> dat
         } else {
             first=true;
             peer->vdfAuthenticated=true;peer->vdfPeerKey=identity.publicKey;
-            peer->vdfReserved=vdfLocalParticipant&&WantedVdfKeyLocked(identity.publicKey);
-            if (peer->blockRelayProtocol&&WantedVdfKeyLocked(identity.publicKey)) vdfBlockEndpoints.insert(identity.publicKey);
+            peer->vdfReserved=!peer->ordinarySlot&&vdfLocalParticipant&&WantedVdfKeyLocked(identity.publicKey);
+            RememberVdfPeerProtocolLocked(peer);
             if (peer->vdfPending&&!peer->vdfReserved) close.push_back(peer);
             else {
                 peer->vdfPending=false;
@@ -146,8 +159,9 @@ void ReceiveVdfPeerIdentity(const shared_ptr<Peer>& peer,span<const uint8_t> dat
                     if (!vdfIdentityReady&&peer->remoteInstance.empty()) break;
                     if (other==peer||other->closePosted||other->blockOnly!=peer->blockOnly||!other->vdfAuthenticated||other->vdfPeerKey!=identity.publicKey) continue;
                     if ((other->outbound==preferOutbound&&keep->outbound!=preferOutbound)||
-                            (other->outbound==keep->outbound&&other->key<keep->key)) {close.push_back(keep);keep=other;}
-                    else close.push_back(other);
+                            (other->outbound==keep->outbound&&other->key<keep->key)) {
+                        TransferOrdinarySlotLocked(other,keep);close.push_back(keep);keep=other;
+                    } else {TransferOrdinarySlotLocked(keep,other);close.push_back(other);}
                 }
             }
         }
@@ -197,34 +211,33 @@ vector<VdfPeerTarget> RefreshVdfProducerPeers() {
         vdfCurrentProducers=std::move(current);vdfNextProducers=std::move(next);
         vdfLocalParticipant=vdfIdentityReady&&WantedVdfKeyLocked(vdfPublicKey);
         erase_if(vdfBlockEndpoints,[](const auto& key){return !WantedVdfKeyLocked(key);});
+        erase_if(vdfLegacyEndpoints,[](const auto& key){return !WantedVdfKeyLocked(key);});
         set<array<uint8_t,32>> blockConnected;
         for (const auto& [id,peer]:peerPool) if (!peer->closePosted&&peer->vdfAuthenticated) {
             if (peer->blockOnly) blockConnected.insert(peer->vdfPeerKey);
-            if (peer->blockRelayProtocol&&WantedVdfKeyLocked(peer->vdfPeerKey)) vdfBlockEndpoints.insert(peer->vdfPeerKey);
+            RememberVdfPeerProtocolLocked(peer);
         }
         for (auto it=vdfPeerEndpoints.begin();it!=vdfPeerEndpoints.end();) {
             erase_if(it->second,[&](const auto& entry){return now-entry.seen>30'000'000'000ULL;});
             if (!WantedVdfKeyLocked(it->first)||it->second.empty()) it=vdfPeerEndpoints.erase(it);else ++it;
         }
-        vector<shared_ptr<Peer>> ordinary;
         for (const auto& [id,peer]:peerPool) {
             if (peer->closePosted) continue;
             const auto wanted=vdfLocalParticipant&&peer->vdfAuthenticated&&WantedVdfKeyLocked(peer->vdfPeerKey);
-            auto reserved=wanted&&(peer->blockOnly||!blockConnected.count(peer->vdfPeerKey));
+            auto reserved=!peer->ordinarySlot&&wanted&&(peer->blockOnly||!blockConnected.count(peer->vdfPeerKey));
             peer->vdfReserved=reserved;
             if (peer->vdfPending&&now-peer->vdfPendingAt>3'000'000'000ULL) {close.push_back(peer);continue;}
-            if (peer->blockOnly&&peer->vdfAuthenticated&&!wanted) {close.push_back(peer);continue;}
-            if (!reserved&&!peer->vdfPending) ordinary.push_back(peer);
+            // Ordinary places survive elections. Extra connections expire
+            // with their producer role or the replacement block connection.
+            if (!peer->ordinarySlot&&!reserved&&!peer->vdfPending) {close.push_back(peer);continue;}
             if (peer->vdfAuthenticated)
                 vdfHintsDirty|=RememberVdfEndpointLocked(VdfEndpointHint(peer->vdfPeerKey,peer->address,peer->port),true,now);
         }
-        // Preserve the older ordinary topology when a former producer loses
-        // its reserved place, rather than evicting an arbitrary ring neighbor.
-        sort(ordinary.begin(),ordinary.end(),[](const auto& a,const auto& b){return a->key<b->key;});
-        for (size_t i=maxPeers;i<ordinary.size();++i) close.push_back(ordinary[i]);
         if (vdfLocalParticipant) for (const auto& [key,entries]:vdfPeerEndpoints) {
             if (key==vdfPublicKey||!WantedVdfKeyLocked(key)) continue;
-            const bool blockOnly=vdfBlockEndpoints.count(key)!=0;
+            // Hints do not carry capabilities. Try the block handshake first;
+            // only an authenticated capability reply establishes a legacy peer.
+            const bool blockOnly=!vdfLegacyEndpoints.count(key);
             bool connected=false;
             for (const auto& [id,peer]:peerPool) if (!peer->closePosted&&peer->blockOnly==blockOnly&&peer->vdfAuthenticated&&peer->vdfPeerKey==key) connected=true;
             if (connected) continue;
@@ -302,6 +315,7 @@ void RecordVdfBlockRecipient(const vector<uint8_t>& data,const shared_ptr<Peer>&
 }
 nlohmann::json GetVdfPeerStats() {
     nlohmann::json connections=nlohmann::json::array(),current=nlohmann::json::array(),next=nlohmann::json::array(),following=nlohmann::json::array();
+    nlohmann::json ordinary=nlohmann::json::array();
     size_t pending=0,blockConnections=0;set<array<uint8_t,32>> seen;
     lock_guard lock(peerMutex);
     for (const auto& key:vdfNextProducers) following.push_back(U32ToHex(key));
@@ -312,6 +326,11 @@ nlohmann::json GetVdfPeerStats() {
         if (peer->closePosted) continue;
         pending+=peer->vdfPending;
         blockConnections+=peer->blockOnly&&peer->vdfAuthenticated;
+        if (!peer->blockOnly) ordinary.push_back({{"connection_id",peer->key},
+            {"public_key",peer->vdfAuthenticated?U32ToHex(peer->vdfPeerKey):string{}},
+            {"address",peer->address.to_string()},{"port",peer->port},{"ordinary_slot",peer->ordinarySlot},
+            {"authenticated",peer->vdfAuthenticated},{"pending",peer->vdfPending},
+            {"reserved",peer->vdfReserved},{"outbound",peer->outbound}});
         if (!peer->vdfAuthenticated||!seen.insert(peer->vdfPeerKey).second) continue;
         auto publicKey=U32ToHex(peer->vdfPeerKey);
         connections.push_back({{"public_key",publicKey},{"address",peer->address.to_string()},{"port",peer->port},{"reserved",peer->vdfReserved},{"block_connection",peer->blockOnly}});
@@ -321,7 +340,7 @@ nlohmann::json GetVdfPeerStats() {
     return {{"producer_mesh",VdfProducerMeshEnabled()},{"producer_peers",current},{"next_producers",following},
         {"next_producer_peers",next},{"peer_connections",connections},{"peer_reserve_limit",vdfPeerReserveLimit},
         {"peer_pending_limit",vdfPeerPendingLimit},{"peer_pending",pending},{"peer_authentication_failures",vdfPeerAuthenticationFailures.load()},
-        {"block_connections",blockConnections},
+        {"block_connections",blockConnections},{"ordinary_connections",ordinary},
         {"last_block_recipients",vdfLastBlockRecipients},{"last_block_slot",vdfLastBlockSlot},
         {"last_block_epoch",vdfLastBlockEpoch},{"last_block_height",vdfLastBlockHeight},{"last_block_hash",U32ToHex(vdfLastBlockHash)}};
 }

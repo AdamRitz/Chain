@@ -1,6 +1,7 @@
 """Saved chains use isolated ledgers and exactly one supervised node per gateway."""
 import argparse
 import json
+import os
 import socket
 import threading
 import time
@@ -146,6 +147,8 @@ def Main(args):
         assert not app.NodeProcesses()
         app.Api('unlock', password='isolated-classroom-test')
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as occupied:
+            if os.name != 'nt':
+                occupied.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
             occupied.bind(('0.0.0.0', b['ports'][0]))
             occupied.listen()
             Rejected(app, 'network_switch', id=b['id'], network_id=a['id'])
@@ -187,6 +190,8 @@ def Main(args):
         finally:
             b_profile_path.write_bytes(original)
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as occupied:
+            if os.name != 'nt':
+                occupied.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
             occupied.bind(('0.0.0.0', b['ports'][0]))
             occupied.listen()
             Rejected(app, 'network_switch', id=b['id'], network_id=a['id'])

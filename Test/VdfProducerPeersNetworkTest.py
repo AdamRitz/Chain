@@ -70,8 +70,8 @@ class ProducerPeersCase(Case):
         self.Wait(lambda: all(self.Stats(i)['vdf']['enabled'] for i in started), 'node startup')
 
 
-def StableRows(case):
-    rows = [case.Stats(i) for i in range(7)]
+def StableRows(case, rows=None):
+    rows = rows if rows is not None else [case.Stats(i) for i in range(7)]
     if len({row['vdf']['epoch'] for row in rows}) != 1:
         return False
     roster = rows[0]['vdf']['producers']
@@ -80,6 +80,24 @@ def StableRows(case):
     if max(row['height'] for row in rows) - min(row['height'] for row in rows) > 2:
         return False
     return rows
+
+
+def OrdinaryRing(case, rows):
+    for index, row in enumerate(rows):
+        ordinary = [peer for peer in row['vdf']['ordinary_connections'] if peer['ordinary_slot']]
+        expected = {(index - 1) % 7, (index + 1) % 7}
+        if len(ordinary) != 2 or {peer['port'] for peer in ordinary} != {case.ports[i] for i in expected}:
+            return False
+        for peer in ordinary:
+            if (not peer['authenticated'] or peer['pending'] or peer['reserved']
+                    or peer['address'] != case.peer_address
+                    or peer['public_key'] != case.public[case.ports.index(peer['port'])]):
+                return False
+    return rows
+
+
+def AuditOrdinaryRing(case, rows):
+    Require(OrdinaryRing(case, rows), 'All seven nodes retain both ordinary ring neighbors across elections')
 
 
 def AuditEndpoints(case, rows):
@@ -270,8 +288,71 @@ def ExerciseIdentityRejections(case):
     case.Check('invalid signatures, wrong ports, wrong chains and replayed challenges cannot take producer connections')
 
 
+def ExerciseOrdinaryDuplicate(case):
+    """Replace a ring socket by the preferred direction, retaining its place."""
+    def ready():
+        rows = StableRows(case)
+        if not rows or not OrdinaryRing(case, rows):
+            return False
+        wanted = set(rows[0]['vdf']['producers']) | set(rows[0]['vdf']['next_producers'])
+        for index in range(7):
+            neighbor = (index + 1) % 7
+            if not {case.public[index], case.public[neighbor]} <= wanted:
+                continue
+            # Identity ordering keeps inbound when the local public key is larger.
+            if case.public[index] <= case.public[neighbor]:
+                continue
+            original = next((peer for peer in rows[index]['vdf']['ordinary_connections']
+                             if peer['ordinary_slot'] and peer['port'] == case.ports[neighbor]
+                             and peer['outbound']), None)
+            if original:
+                return index, neighbor, original
+        return False
+
+    target, neighbor, original = case.Wait(ready, 'ordinary connection selected for duplicate direction test')
+    chain = Query(case.ports[target], 19, raw=True)[:32]
+    capabilities = json.dumps({'relay_protocol': 2, 'vdf_peer_protocol': 1,
+                               'vdf_block_connection': True}).encode()
+    with socket.create_connection((case.peer_address, case.ports[target]), timeout=3) as connection:
+        connection.sendall(b'\x04' + struct.pack('<H', case.ports[neighbor]) + Frame(14, capabilities))
+        deadline = time.monotonic() + 5
+        answered = False
+        while time.monotonic() < deadline and not answered:
+            connection.settimeout(max(.01, deadline - time.monotonic()))
+            kind, size = struct.unpack('<BI', ReadAll(connection, 5))
+            Require(size <= 2 * 1024 * 1024, 'Duplicate connection response frame bound')
+            data = ReadAll(connection, size)
+            if kind == 13:
+                connection.sendall(Frame(14, capabilities))
+            elif kind == 56:
+                connection.sendall(Frame(57, Identity(case.keys[neighbor], chain, case.ports[neighbor], data)))
+                answered = True
+        Require(answered, 'Duplicate ordinary connection completes identity authentication')
+
+        def transferred():
+            entries = case.Stats(target)['vdf']['ordinary_connections']
+            ordinary = [peer for peer in entries if peer['ordinary_slot']]
+            Require(len(ordinary) <= 2, 'Duplicate authentication never expands the ordinary quota')
+            for peer in ordinary:
+                if (peer['port'] == case.ports[neighbor] and peer['authenticated'] and not peer['outbound']
+                        and peer['connection_id'] != original['connection_id']):
+                    Require(not peer['reserved'] and not peer['pending'], 'Transferred ordinary place remains independent of producer capacity')
+                    return peer
+            return False
+        replacement = case.Wait(transferred, 'preferred duplicate inherits the ordinary connection place', timeout=5)
+    restored = case.Wait(lambda: OrdinaryRing(case, [case.Stats(i) for i in range(7)]),
+                         'configured ordinary ring reconnects after the duplicate closes')
+    case.report['ordinary_duplicate'] = {'node': target, 'neighbor': neighbor,
+                                         'original': original, 'replacement': replacement,
+                                         'restored': [row['vdf']['ordinary_connections'] for row in restored]}
+    case.Check('ordinary connection deduplication transfers its place and configured neighbors reconnect')
+
+
 def Exercise(case):
     case.Start()
+    initial_ring = case.Wait(lambda: OrdinaryRing(case, [case.Stats(i) for i in range(7)]),
+                             'all seven nodes establish their two ordinary ring neighbors')
+    case.report['ordinary_ring_initial'] = [row['vdf']['ordinary_connections'] for row in initial_ring]
     case.Wait(lambda: min(case.Stats(i)['vdf']['computed'] for i in range(7)) >= 3,
               'all seven candidates computed their VDFs')
     snapshots, priorities, preconnected = {}, {}, {}
@@ -280,7 +361,9 @@ def Exercise(case):
 
     def connected():
         nonlocal initial_roster
-        rows = StableRows(case)
+        rows = [case.Stats(i) for i in range(7)]
+        AuditOrdinaryRing(case, rows)
+        rows = StableRows(case, rows)
         if not rows or rows[0]['vdf']['epoch'] < 2:
             return False
         edges = CompleteCurrent(case, rows)
@@ -292,7 +375,8 @@ def Exercise(case):
         epoch = rows[0]['vdf']['epoch']
         record = {'epoch': epoch, 'height': [row['height'] for row in rows], 'producers': roster,
                   'edges': edges, 'peers': [row['peers'] for row in rows],
-                  'endpoints': [row['vdf']['peer_connections'] for row in rows]}
+                  'endpoints': [row['vdf']['peer_connections'] for row in rows],
+                  'ordinary_connections': [row['vdf']['ordinary_connections'] for row in rows]}
         for item in AuditPriority(case, rows):
             priorities[item['public_key']] = item
         case.report['block_priority'] = list(priorities.values())
@@ -314,10 +398,12 @@ def Exercise(case):
     case.report['block_priority'] = list(priorities.values())
     case.Check('five producers maintain all ten authenticated connections over a sparse ordinary ring')
     case.Check('all ten producer links use block connections while transfers propagate on the ordinary ring')
+    case.Check('ordinary ring neighbors retain their two places before and after the producer roster changes')
     case.Check('new producers connect before their election takes effect, despite max-peers=2')
     case.Check('producer public keys match their signed listening endpoints')
     case.Check('at least five producers send a generated block to the next producer before the other three')
     ExerciseIdentityRejections(case)
+    ExerciseOrdinaryDuplicate(case)
 
     # Exercise useful work after the extra links are established, then restart
     # without production so all seven durable state snapshots can be compared.

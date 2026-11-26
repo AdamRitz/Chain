@@ -85,8 +85,9 @@ struct Peer:enable_shared_from_this<Peer> {
     atomic<bool> closePosted{false}; // safe to read before posting to the strand
     atomic<bool> shortCompact{false};
     atomic<bool> prefillCompact{false},txInventory{false},fragments{false};
-    atomic<bool> blockRelayProtocol{false};
+    atomic<bool> blockRelayProtocol{false},capabilitiesReceived{false};
     bool blockOnly=false; // Fixed before this connection enters peerPool.
+    bool ordinarySlot=false; // Protected by peerMutex; transferred only when duplicate connections merge.
     bool relayCapabilitiesSent=false; // strand only; receiving support does not wait for the remote stats reply
     chain::fragment::Receiver fragmentReceiver;
     uint64_t nextFragmentId=1;
@@ -136,6 +137,7 @@ pair<uint64_t,shared_ptr<Peer>> AddPeer(tcp::socket socket,uint16_t port=0) {
     peer->key=key;
     peer->port=port;
     peer->address=CanonicalAddress(endpoint.address());
+    peer->ordinarySlot=true;
     peerPool.emplace(key,peer);
     return {key,peer};
 }
@@ -213,6 +215,11 @@ const string& NodeRelayInstance() {
     static const string value=[] {array<uint8_t,32> id{};randombytes_buf(id.data(),id.size());return U32ToHex(id);}();
     return value;
 }
+void TransferOrdinarySlotLocked(const shared_ptr<Peer>& keep,const shared_ptr<Peer>& drop) {
+    if (keep->blockOnly||drop->blockOnly||!drop->ordinarySlot) return;
+    keep->ordinarySlot=true;drop->ordinarySlot=false;
+    keep->vdfReserved=false;keep->vdfPending=false;
+}
 void DeduplicatePeer(const shared_ptr<Peer>& peer,const string& instance) {
     if (instance.size()!=64||instance==NodeRelayInstance()||
         !all_of(instance.begin(),instance.end(),[](char c){return (c>='0'&&c<='9')||(c>='a'&&c<='f');})) return;
@@ -224,8 +231,9 @@ void DeduplicatePeer(const shared_ptr<Peer>& peer,const string& instance) {
         for (const auto& [key,other]:peerPool) {
             if (other==peer||other->closePosted||other->blockOnly!=peer->blockOnly||other->address!=peer->address||other->port!=peer->port||other->remoteInstance!=instance) continue;
             if ((other->outbound==preferOutbound&&keep->outbound!=preferOutbound)||
-                (other->outbound==keep->outbound&&other->key<keep->key)) { close.push_back(keep);keep=other; }
-            else close.push_back(other);
+                            (other->outbound==keep->outbound&&other->key<keep->key)) {
+                TransferOrdinarySlotLocked(other,keep);close.push_back(keep);keep=other;
+            } else {TransferOrdinarySlotLocked(keep,other);close.push_back(other);}
         }
     }
     for (const auto& extra:close) RejectSend(extra);
@@ -370,7 +378,7 @@ void QueryBlock(const shared_ptr<Peer>& peer,uint64_t height) {
 size_t ConnectedPeerCountLocked(bool includeAttempts=false) {
     set<pair<string,uint16_t>> endpoints;
     for (const auto& [key,peer]:peerPool)
-        if (!peer->closePosted&&peer->port&&!peer->blockOnly) endpoints.emplace(peer->address.to_string(),peer->port);
+        if (!peer->closePosted&&peer->port&&peer->ordinarySlot) endpoints.emplace(peer->address.to_string(),peer->port);
     if (includeAttempts) endpoints.insert(addressAttempts.begin(),addressAttempts.end());
     return endpoints.size();
 }
@@ -551,9 +559,13 @@ awaitable<void> OpenDiscoveryMode() {
     while (nodeRunning) {
         PruneCompactBlocks();
         vector<shared_ptr<Peer>> peers;
+        set<pair<ip::address,uint16_t>> connectedEndpoints;
         {
             lock_guard lock(peerMutex);
-            for (const auto& [key,peer]:peerPool) peers.push_back(peer);
+            for (const auto& [key,peer]:peerPool) {
+                peers.push_back(peer);
+                if (!peer->closePosted&&peer->port&&peer->ordinarySlot) connectedEndpoints.emplace(peer->address,peer->port);
+            }
         }
         for (const auto& peer:peers) QueryHeight(peer);
         // Bound concurrent seed attempts so an unreachable first address does
@@ -575,8 +587,6 @@ awaitable<void> OpenDiscoveryMode() {
             delay+=150;
         }
         auto now=GetSteadyTime();
-        set<pair<ip::address,uint16_t>> connectedEndpoints;
-        for (const auto& peer:peers) if (!peer->closePosted&&peer->port&&!peer->blockOnly) connectedEndpoints.emplace(peer->address,peer->port);
         if (targetPeers&&connectedEndpoints.size()<targetPeers) {
             if (!belowTargetSince) belowTargetSince=now;
             if (now-belowTargetSince>=5'000'000'000ULL&&!backupPeers.empty()) {

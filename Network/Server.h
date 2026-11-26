@@ -479,7 +479,8 @@ awaitable<void> session(uint64_t key,shared_ptr<Peer> peer) {
                 peer->prefillCompact=peer->shortCompact&&compactPrefill&&enabled("compact_prefill");
                 peer->txInventory=txInventory&&enabled("tx_inventory");
                 peer->fragments=fragmentMessages&&enabled("message_fragments");
-                peer->blockRelayProtocol=enabled("vdf_block_connection");
+                peer->blockRelayProtocol=peer->blockOnly||enabled("vdf_block_connection");
+                peer->capabilitiesReceived=true;
                 auto mesh=capabilities.find("vdf_peer_protocol");
                 peer->vdfPeerProtocol|=mesh!=capabilities.end()&&mesh->is_number_unsigned()&&mesh->get<uint64_t>()==1;
                 auto instance=capabilities.find("relay_instance");
@@ -492,7 +493,7 @@ awaitable<void> session(uint64_t key,shared_ptr<Peer> peer) {
                     // Producer connections deduplicate after identity checking,
                     // using public-key order at both ends. Observers and old
                     // nodes keep the existing relay-instance ordering.
-                    if (peer->vdfPeerProtocol&&vdfIdentityReady&&producer) {
+                    if (peer->blockOnly||(peer->vdfPeerProtocol&&vdfIdentityReady&&producer)) {
                         lock_guard lock(peerMutex);peer->remoteInstance=instance->get<string>();
                     } else DeduplicatePeer(peer,instance->get<string>());
                 }
