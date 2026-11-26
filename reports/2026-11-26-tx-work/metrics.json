@@ -1,0 +1,86 @@
+{
+  "dataset_sha256": "d0b9d1fb12bceac690cc67a1197dc14692e9ffef730e48e1dc4d6fe6c58a9b1d",
+  "unique_count": 100000,
+  "rate": 10000,
+  "seconds": 10,
+  "copies": 6,
+  "batch": 256,
+  "passed": true,
+  "runs": [
+    {
+      "label": "baseline",
+      "binary_sha256": "be583953f22f9765558df139462eb318d839505a6be9b940faf5c34a8b4f5e24",
+      "unique_count": 100000,
+      "copies": 6,
+      "body_count": 600000,
+      "passed": true,
+      "ingress_seconds": 10.035883664000721,
+      "admitted_unique_tps": 9964.244639334114,
+      "load_seconds": 10,
+      "unique_rate": 10000,
+      "latest_sender_finish_seconds": 10.024926483001764,
+      "maximum_sender_lag_ms": 0.34497000160627067,
+      "peak_pending_tx_verify": 1536,
+      "cpu_seconds": 8.63,
+      "counters": {
+        "received": 600000,
+        "valid": 100000,
+        "duplicate": 500000,
+        "invalid": 0,
+        "rejected": 0,
+        "signature_checks": 100000,
+        "signature_cache_hits": 500000,
+        "verify_worker_ms": 12579.778402,
+        "pool_worker_ms": 221.917913,
+        "tx_queue_wait_ms": 14853.108766
+      },
+      "final_head": "c476ecded62d969d927a235274c0151ac1ada356993a6e120482e9e883a72de4",
+      "chain_transactions": 100000,
+      "accounts": {
+        "verified_users": 1024,
+        "burned": 0,
+        "supply": 1024000000000
+      },
+      "database_removed": true
+    },
+    {
+      "label": "candidate",
+      "binary_sha256": "7eeb800a644187733bf217648f26d52dc62feed7f2b0db9f5a1b8afad319f5f6",
+      "unique_count": 100000,
+      "copies": 6,
+      "body_count": 600000,
+      "passed": true,
+      "ingress_seconds": 10.027212303000852,
+      "admitted_unique_tps": 9972.861546979804,
+      "load_seconds": 10,
+      "unique_rate": 10000,
+      "latest_sender_finish_seconds": 10.00837068400142,
+      "maximum_sender_lag_ms": 0.347782999597257,
+      "peak_pending_tx_verify": 256,
+      "cpu_seconds": 7.3,
+      "counters": {
+        "received": 600000,
+        "valid": 100000,
+        "duplicate": 500000,
+        "invalid": 0,
+        "rejected": 0,
+        "signature_checks": 100000,
+        "signature_cache_hits": 1588,
+        "verify_worker_ms": 5718.810684,
+        "pool_worker_ms": 93.709489,
+        "tx_queue_wait_ms": 173.61958,
+        "tx_work_merged": 152862,
+        "tx_work_pool_known": 345550,
+        "tx_work_capacity": 0
+      },
+      "final_head": "c476ecded62d969d927a235274c0151ac1ada356993a6e120482e9e883a72de4",
+      "chain_transactions": 100000,
+      "accounts": {
+        "verified_users": 1024,
+        "burned": 0,
+        "supply": 1024000000000
+      },
+      "database_removed": true
+    }
+  ]
+}

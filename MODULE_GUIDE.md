@@ -8,7 +8,7 @@
 
 登记上限为 65536 个不同哈希、48 MiB 正文长度；等待回执上限为 131072 笔，每个任务记录最多 16 个来源。整个批次一次登记，容量不足时不持有部分任务。原连接断开时，已有其他副本的任务继续处理；无副本的任务在同一个锁内撤销。节点停止或任务异常时释放登记。
 
-节点统计新增 `tx_work_active`、`tx_work_bytes`、`tx_work_waiters`、`tx_work_merged`、`tx_work_pool_known`、`tx_work_capacity`。`Test/TransactionRelayTest.cpp` 覆盖重复批次、回执顺序、不同签名、容量重试、断连和 EVM；`Test/DuplicateIngressBenchmark.py` 使用同一组签名交易比较两个程序的重复交易处理速度，并在提交相同区块后核对账户状态。
+节点统计新增 `tx_work_active`、`tx_work_bytes`、`tx_work_waiters`、`tx_work_merged`、`tx_work_pool_known`、`tx_work_capacity`。`Test/TransactionRelayTest.cpp` 覆盖重复批次、回执顺序、不同签名、容量重试、断连和 EVM；`Test/DuplicateIngressBenchmark.py` 使用同一组签名交易比较两个程序的重复交易处理速度，并在提交相同区块后核对账户状态。测试结果见 `reports/2026-11-26-tx-work/REPORT.md`。
 
 ## 2026-11-26 交易正文接收与重试
 
