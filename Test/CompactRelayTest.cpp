@@ -1,4 +1,5 @@
 #include <filesystem>
+#include <future>
 #include <iostream>
 #include "../Network/Server.h"
 #include "../EVM/BuildTransaction.h"
@@ -50,10 +51,15 @@ int main(int argc,char** argv) {
         vector<array<uint8_t,32>> hashes(9); vector<uint8_t> contracts(9,0);
         for (size_t i=0;i<hashes.size();++i) hashes[i][0]=uint8_t(i);
         contracts[0]=contracts[8]=1;
-        auto encoded=chain::compact::Encode(header,hashes,contracts,12345);
+        chain::compact::Decoded encodedDetails;
+        auto encoded=chain::compact::Encode(header,hashes,contracts,12345,&encodedDetails);
         chain::compact::Decoded decoded;
         Require(encoded.size()==120+2+9*6&&chain::compact::Decode(encoded,10000,2408,decoded),"short compact size and parse");
         Require(decoded.contracts==contracts&&decoded.nonce==12345&&decoded.transactionEnd==encoded.size(),"bitmap crosses byte boundary");
+        Require(encodedDetails.nonce==decoded.nonce&&encodedDetails.key==decoded.key&&encodedDetails.ids==decoded.ids&&
+            encodedDetails.contracts==decoded.contracts&&encodedDetails.transactionEnd==decoded.transactionEnd,
+            "encoding returns the same short IDs and metadata as decoding without a second parse");
+        Require(chain::compact::Encode(header,hashes,contracts,12345)==encoded,"metadata output preserves wire encoding");
         for (size_t i=0;i<hashes.size();++i) Require(decoded.ids[i]==chain::compact::ShortId(decoded.key,hashes[i]),"IDs preserve transaction order");
         for (size_t length=0;length<encoded.size();++length)
             Require(!chain::compact::Decode(span<const uint8_t>(encoded).first(length),10000,2408,decoded),"truncated compact rejected");
@@ -67,6 +73,7 @@ int main(int argc,char** argv) {
         header[0]^=1;
         Require(chain::compact::DeriveKey(header,12345)!=chain::compact::DeriveKey(span<const uint8_t>(encoded).first(112),12345),"block header changes ID key");
         vector<uint64_t> repeated{7,7,9}; chain::compact::ShortIdIndex collisions(repeated);
+        Require(UniqueCompactIds(repeated)==vector<uint8_t>({0,0,1}),"shared prefill collision table excludes both duplicate positions");
         Require(collisions.IsAmbiguous(0)&&collisions.IsAmbiguous(1),"repeated advertised IDs both require repair");
         collisions.Observe(2,hashes[0]); collisions.Observe(2,hashes[0]);
         Require(!collisions.IsAmbiguous(2)&&collisions.MatchedHash(2).has_value(),"same transaction in pool and recent cache is unique");
@@ -208,10 +215,11 @@ int main(int argc,char** argv) {
         auto oldPrefillMax=compactPrefillMax,oldPrefillBytes=compactPrefillBytes;
         compactPrefillMax=1; compactPrefillBytes=176;
         Require(chain::compact::Decode(compact,maxProtocolTx,2408,decoded),"selection compact parsed");
-        auto selected=SelectCompactPrefilled(first,full,EvmPayloads{},hashes,decoded);
+        auto uniqueIds=UniqueCompactIds(decoded.ids);
+        auto selected=SelectCompactPrefilled(first,full,EvmPayloads{},hashes,uniqueIds);
         Require(selected.size()==1&&selected[0].index==1,"prefill prioritizes later unknown transaction and skips known hash");
         compactPrefillBytes=175;
-        Require(SelectCompactPrefilled(first,full,EvmPayloads{},hashes,decoded).empty(),"prefill byte limit includes transaction bytes");
+        Require(SelectCompactPrefilled(first,full,EvmPayloads{},hashes,uniqueIds).empty(),"prefill byte limit includes transaction bytes");
         compactPrefillMax=oldPrefillMax; compactPrefillBytes=oldPrefillBytes;
         compactPeerKnowsTransaction=nullptr; prefillTestKnown.clear();
 
@@ -240,6 +248,114 @@ int main(int argc,char** argv) {
         ReceiveShortCompactBlock(first,compact);
         Require(compactBlocks.at(blockHash)->missing==3,"removed snapshot transaction is fetched by index");
         CompleteBlockReceive(blockHash); snapshot.reset(); reusedSnapshot.reset(); ResetCompactHashSnapshot();
+        ReceiveShortCompactBlock(first,compact); ReceiveShortCompactBlock(second,compact);
+        {
+            auto waiting=compactBlocks.at(blockHash);
+            const auto records=compactReceiveRecords,bytes=compactReceiveBytes;
+            auto reply=RepairResponse(blockHash,full,{0});
+            Require(!ReserveCompactReceive(unknown,41,reply),"unrequested source cannot pause compact repair");
+            auto received=ReserveCompactReceive(first,41,reply);
+            Require(received&&waiting->receivedResponses==1&&compactReceiveRecords==records+1&&compactReceiveBytes==bytes+reply.size(),
+                "received repair is counted before its worker starts");
+            waiting->lastRequest=0; const auto attempts=waiting->attempts;
+            PruneCompactBlocks();
+            Require(waiting->attempts==attempts&&!waiting->fullFallback,"queued repair reply suppresses timeout requests");
+            received->processed=ReceiveMissingTransactions(first,reply);
+            const auto progress=waiting->lastRequest; received.reset();
+            Require(waiting->receivedResponses==0&&waiting->missing==2&&waiting->lastRequest==progress&&
+                compactReceiveRecords==records&&compactReceiveBytes==bytes,"processed partial reply releases accounting and keeps progress time");
+            received=ReserveCompactReceive(first,41,reply);
+            received.reset();
+            Require(waiting->lastRequest==0,"cancelled reply restores repair immediately");
+            PruneCompactBlocks();
+            Require(waiting->attempts==attempts+1&&waiting->sourceId==second->key,"cancelled reply rotates to alternate source");
+            vector<shared_ptr<CompactReceiveReservation>> bounded;
+            while (auto reservation=ReserveCompactReceive(second,41,reply)) bounded.push_back(std::move(reservation));
+            Require(compactReceiveRecords==maxCompactReceiveRecords&&!bounded.empty(),"queued repair records have a global count bound");
+            bounded.clear();
+            Require(compactReceiveRecords==records&&compactReceiveBytes==bytes&&waiting->receivedResponses==0,"all cancelled repair records release bytes and counts");
+            received=ReserveCompactReceive(second,41,reply);
+            CompleteBlockReceive(blockHash);
+            ReceiveShortCompactBlock(first,compact);
+            auto replacement=compactBlocks.at(blockHash); auto replacementTime=replacement->lastRequest;
+            received.reset();
+            Require(replacement!=waiting&&replacement->lastRequest==replacementTime&&replacement->receivedResponses==0,
+                "old reply cancellation cannot change a replacement record with the same block hash");
+            CompleteBlockReceive(blockHash);
+        }
+        ReceiveShortCompactBlock(first,compact); ReceiveShortCompactBlock(second,compact);
+        {
+            auto waiting=compactBlocks.at(blockHash);
+            waiting->awaitingVerification=true; waiting->lastRequest=GetSteadyTime()-6000000000ULL;
+            inflightBlocks[blockHash]=waiting->lastRequest;
+            auto received=ReserveCompactReceive(first,2,full);
+            Require(received&&waiting->verificationTasks==1,"full block verification task is counted");
+            PruneCompactBlocks();
+            Require(waiting->awaitingVerification&&!waiting->fullFallback&&inflightBlocks.count(blockHash),
+                "active full block task retains compact and inflight records past five seconds");
+            received.reset();
+            Require(!waiting->awaitingVerification&&waiting->fullFallback&&!inflightBlocks.count(blockHash),
+                "cancelled full block task restores full fallback without trusting its header");
+            PruneCompactBlocks();
+            Require(waiting->sourceId==second->key,"cancelled full block task can retry another source");
+            CompleteBlockReceive(blockHash);
+        }
+        ReceiveShortCompactBlock(first,compact);
+        {
+            auto waiting=compactBlocks.at(blockHash);
+            auto received=ReserveCompactReceive(first,41,RepairResponse(blockHash,full,{0}));
+            const auto records=compactReceiveRecords,bytes=compactReceiveBytes;
+            waiting->created=GetSteadyTime()-31000000000ULL;
+            waiting->lastRequest=GetSteadyTime();
+            PruneCompactBlocks();
+            Require(!compactBlocks.count(blockHash)&&compactBytes==0,"received replies cannot extend fixed compact lifetime");
+            received.reset();
+            Require(compactReceiveRecords==records-1&&compactReceiveBytes<bytes,"expired compact reply still releases its reservation");
+        }
+        for (const bool byteBound:{false,true}) {
+            ReceiveShortCompactBlock(first,compact);
+            auto waiting=compactBlocks.at(blockHash);
+            const auto records=compactReceiveRecords,bytes=compactReceiveBytes;
+            vector<shared_ptr<CompactReceiveReservation>> occupied;
+            auto reply=RepairResponse(blockHash,full,{0});
+            if (byteBound) {
+                while (compactReceiveBytes+full.size()<maxCompactReceiveBytes) {
+                    const auto remaining=maxCompactReceiveBytes-compactReceiveBytes-full.size();
+                    vector<uint8_t> filler(min(maxMessageSize,remaining));
+                    Require(filler.size()>=40,"byte-bound fixture contains one repair header");
+                    copy(blockHash.begin(),blockHash.end(),filler.begin());
+                    auto reservation=ReserveCompactReceive(first,41,filler);
+                    Require(bool(reservation),"fill receive byte allowance");occupied.push_back(std::move(reservation));
+                }
+            } else while (compactReceiveRecords+1<maxCompactReceiveRecords) {
+                auto reservation=ReserveCompactReceive(first,41,reply);
+                Require(bool(reservation),"fill receive record allowance");occupied.push_back(std::move(reservation));
+            }
+            waiting->awaitingVerification=true;
+            auto invalid=full;invalid[112+112]^=1;
+            auto received=ReserveCompactReceive(first,2,invalid);
+            Require(bool(received),"exactly one full verification reservation fits");
+            const auto chargedRecords=compactReceiveRecords,chargedBytes=compactReceiveBytes;
+            boost::asio::io_context verificationIO;
+            promise<void> release;auto released=release.get_future().share();exception_ptr failure;
+            candidateThreads=make_unique<boost::asio::thread_pool>(1);
+            post(*candidateThreads,[released]{released.wait();});
+            {
+                struct ReleaseWorker {
+                    promise<void>& release;
+                    ~ReleaseWorker() {release.set_value();candidateThreads->join();candidateThreads.reset();}
+                } cleanup{release};
+                co_spawn(verificationIO,ProcessMessage(first,2,std::move(invalid),std::move(received)),
+                    [&](exception_ptr error){failure=error;});
+                verificationIO.run();
+                Require(!failure&&waiting->awaitingVerification&&!waiting->fullFallback&&waiting->verificationTasks==1&&
+                    compactReceiveRecords==chargedRecords&&compactReceiveBytes==chargedBytes,
+                    "transferred receipt is charged once and remains owned by the queued worker");
+            }
+            Require(waiting->fullFallback&&!waiting->awaitingVerification,"invalid transferred block still fails verification");
+            occupied.clear();CompleteBlockReceive(blockHash);
+            Require(compactReceiveRecords==records&&compactReceiveBytes==bytes,"transferred and occupied reservations all release");
+        }
         ReceiveShortCompactBlock(first,compact);
         Require(compactBlocks.count(blockHash)&&compactBlocks.at(blockHash)->missing==3,"unknown transactions requested by index");
         auto pending=compactBlocks.at(blockHash);
@@ -307,7 +423,9 @@ int main(int argc,char** argv) {
         ReceiveMissingTransactions(first,RepairResponse(blockHash,full,{0,1,2}));
         pending=compactBlocks.at(blockHash); pending->lastRequest=GetSteadyTime()-6000000000ULL;
         PruneCompactBlocks();
-        Require(pending->fullFallback&&!pending->awaitingVerification&&pending->sourceId==second->key,"stalled verification retries after five seconds");
+        Require(!pending->fullFallback&&pending->awaitingVerification,"queued verification is not downloaded again after five seconds");
+        CompleteBlockReceive(blockHash,false,true); PruneCompactBlocks();
+        Require(pending->fullFallback&&!pending->awaitingVerification&&pending->sourceId==second->key,"failed queued verification retries another source");
         CompleteBlockReceive(blockHash);
 
         auto third=make_shared<Peer>(tcp::socket(io)),fourth=make_shared<Peer>(tcp::socket(io));

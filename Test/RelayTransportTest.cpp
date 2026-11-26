@@ -44,6 +44,9 @@ int main() {
     queue.Push(SendPriority::Bulk,1);queue.Push(SendPriority::Bulk,2);
     Require(queue.Pop().second==1);queue.PushFront(SendPriority::Bulk,1);queue.Push(SendPriority::Urgent,3);
     Require(queue.Pop().second==3&&queue.Pop().second==1&&queue.Pop().second==2);
+    queue.Push(MessageSendPriority(10),10); queue.Push(MessageSendPriority(43),43);
+    queue.Push(MessageSendPriority(41),41);
+    Require(queue.Pop().second==41&&queue.Pop().second==10&&queue.Pop().second==43);
     EarlyRelayBudget budget;std::array<uint8_t,32> producer{};
     for(unsigned i=0;i<8;i++)Require(budget.Reserve(2,1,producer,1024));
     Require(!budget.Reserve(2,1,producer,1024));

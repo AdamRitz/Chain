@@ -10,7 +10,7 @@ enum class SendPriority:size_t { Urgent=0,Transaction=1,Bulk=2 };
 inline SendPriority MessageSendPriority(uint8_t type) {
     switch (type) {
     case 1: case 10: case 17: case 18: case 44: case 53: case 54: return SendPriority::Transaction;
-    case 2: case 7: case 22: case 24: case 26: case 41: case 43: return SendPriority::Bulk;
+    case 2: case 7: case 22: case 24: case 26: case 43: return SendPriority::Bulk;
     default: return SendPriority::Urgent;
     }
 }

@@ -105,6 +105,10 @@ def CompleteCurrent(case, rows):
         connected = set(rows[index]['vdf']['producer_peers'])
         if not set(roster) - {public} <= connected:
             return False
+        block_connections = {peer['public_key'] for peer in rows[index]['vdf']['peer_connections']
+                             if peer.get('block_connection')}
+        if not set(roster) - {public} <= block_connections:
+            return False
         for other in roster:
             if other != public:
                 edges.add(tuple(sorted((public, other))))
@@ -123,6 +127,10 @@ def CompleteNext(case, rows):
     for public in current | set(following):
         row = rows[case.public.index(public)]
         if not set(following) - {public} <= set(row['vdf']['next_producer_peers']):
+            return False
+        block_connections = {peer['public_key'] for peer in row['vdf']['peer_connections']
+                             if peer.get('block_connection')}
+        if not set(following) - {public} <= block_connections:
             return False
     return following
 
@@ -305,6 +313,7 @@ def Exercise(case):
     case.report['producer_connections'] = snapshots
     case.report['block_priority'] = list(priorities.values())
     case.Check('five producers maintain all ten authenticated connections over a sparse ordinary ring')
+    case.Check('all ten producer links use block connections while transfers propagate on the ordinary ring')
     case.Check('new producers connect before their election takes effect, despite max-peers=2')
     case.Check('producer public keys match their signed listening endpoints')
     case.Check('at least five producers send a generated block to the next producer before the other three')

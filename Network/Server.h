@@ -21,14 +21,14 @@ unordered_map<array<uint8_t,32>,weak_ptr<BlockWork>,GetMapHash> blockWork;
 size_t blockWorkBytes=0;
 struct BlockWork {
     array<uint8_t,32> fingerprint;
-    vector<uint8_t> data;
+    size_t bytes=0;
     bool registered=false;
     ~BlockWork() {
         if (!registered) return;
         lock_guard lock(blockWorkMutex);
         auto found=blockWork.find(fingerprint);
         if (found!=blockWork.end()&&found->second.expired()) blockWork.erase(found);
-        blockWorkBytes-=data.size();
+        blockWorkBytes-=bytes;
     }
 };
 array<uint8_t,32> GetBlockFingerprint(const vector<uint8_t>& data,bool batch) {
@@ -43,9 +43,9 @@ shared_ptr<BlockWork> ReserveBlockWork(const vector<uint8_t>& data,const array<u
     lock_guard lock(blockWorkMutex);
     auto found=blockWork.find(fingerprint);
     if (found!=blockWork.end()) known=found->second.lock();
-    if (known&&known->data==data) { duplicate=true; duplicateBlockWork++; return {}; }
+    if (known) { duplicate=true; duplicateBlockWork++; return {}; }
     if (blockWork.size()>=64||data.size()>32*1024*1024-blockWorkBytes) return {};
-    auto work=make_shared<BlockWork>(); work->fingerprint=fingerprint; work->data=data;
+    auto work=make_shared<BlockWork>(); work->fingerprint=fingerprint; work->bytes=data.size();
     blockWork[fingerprint]=work; blockWorkBytes+=data.size(); work->registered=true; return work;
 }
 shared_ptr<BlockWork> ReserveBlockWork(const vector<uint8_t>& data,bool batch,bool& duplicate) {
@@ -74,7 +74,12 @@ struct VerifyReservation {
         (block?pendingBlockBytes:pendingTxBytes)-=bytes; pendingVerifyBytes-=bytes;
     }
 };
-awaitable<void> ProcessMessage(shared_ptr<Peer> peer,uint8_t type,vector<uint8_t> data) {
+struct TxPostProcessTime {
+    uint64_t started=GetSteadyTime();
+    ~TxPostProcessTime() { txPostProcessNs+=GetSteadyTime()-started;txPostProcessTasks++; }
+};
+awaitable<void> ProcessMessage(shared_ptr<Peer> peer,uint8_t type,vector<uint8_t> data,
+        shared_ptr<CompactReceiveReservation> compactReceipt) {
     bool blockMessage=type!=1&&type!=10&&type!=17&&type!=18&&type!=44;
     vector<TxWorkInput> txInputs;
     if (!blockMessage&&!ParseTxWork(type,data,txInputs)) { ClosePeer(peer);co_return; }
@@ -88,6 +93,10 @@ awaitable<void> ProcessMessage(shared_ptr<Peer> peer,uint8_t type,vector<uint8_t
     if (!blockMessage) num=txInputs.size();
     bool metadata=type==39||type==41||type==51||type==52;
     if (metadata) num=1;
+    if (!compactReceipt) compactReceipt=ReserveCompactReceive(peer,type,data);
+    vector<shared_ptr<CompactReceiveReservation>> compactBatchReceipts;
+    if (type==43) for (const auto& block:blocks)
+        if (auto receipt=ReserveCompactReceive(peer,7,block)) compactBatchReceipts.push_back(std::move(receipt));
     auto& byteCounter=blockMessage?pendingBlockBytes:pendingTxBytes;
     auto byteLimit=blockMessage?size_t(16*1024*1024):size_t(48*1024*1024);
     steady_timer timer(co_await this_coro::executor);
@@ -165,7 +174,7 @@ awaitable<void> ProcessMessage(shared_ptr<Peer> peer,uint8_t type,vector<uint8_t
         co_await timer.async_wait(use_awaitable);
     }
     auto& workers=blockMessage&&candidateThreads?*candidateThreads:*verifyThreads;
-    post(workers,[peer,type,queuedAt,blockMessage,metadata,txBatch=std::move(txBatch),fingerprints=std::move(fingerprints),reservation=std::move(reservation),txBodies=std::move(txBodies),work=std::move(work),data=std::move(data),blocks=std::move(blocks)]() mutable {
+    post(workers,[peer,type,queuedAt,blockMessage,metadata,txBatch=std::move(txBatch),fingerprints=std::move(fingerprints),reservation=std::move(reservation),txBodies=std::move(txBodies),work=std::move(work),compactReceipt=std::move(compactReceipt),compactBatchReceipts=std::move(compactBatchReceipts),data=std::move(data),blocks=std::move(blocks)]() mutable {
         (void)work;
         auto wait=GetSteadyTime()-queuedAt; queueWaitNs+=wait;
         (metadata?metadataQueueWaitNs:(blockMessage?blockQueueWaitNs:txQueueWaitNs))+=wait;
@@ -175,21 +184,23 @@ awaitable<void> ProcessMessage(shared_ptr<Peer> peer,uint8_t type,vector<uint8_t
                 vector<uint8_t> results;
                 const bool relay=!produceBlocks||relayTransactions;
                 auto added=ProcessTxPackage(data,&results,fingerprints);
+                TxPostProcessTime postTime;
                 RecordVerifiedNativeTransactions(peer,data,results);
-                for (size_t i=0;i<results.size();++i) CompleteTxWork(txBatch->owners[i],results[i]);
+                CompleteTxWorks(txBatch->owners,results,peer);
                 if (relay&&added) {
                     vector<uint8_t> accepted; accepted.reserve(added*176);
                     for (size_t i=0;i<results.size();i++) if (results[i]==TxAccepted)
                         accepted.insert(accepted.end(),data.begin()+i*176,data.begin()+(i+1)*176);
                     relayedTransactions+=added;
-                    RelayAcceptedTransactions(peer,accepted,false);
+                    RelayAcceptedTransactions(peer,accepted,false,false);
                 }
                 if (relay) skippedRelayTransactions+=data.size()/176-added;
             } else if (type==17) {
                 if (ProcessEvmTx(data,&fingerprints[0])) {
+                    TxPostProcessTime postTime;
                     RecordVerifiedEvmTransaction(peer,data);
                     CompleteTxWork(txBatch->owners[0],TxAccepted);
-                    if (!produceBlocks||relayTransactions) RelayAcceptedTransactions(peer,data,true);
+                    if (!produceBlocks||relayTransactions) RelayAcceptedTransactions(peer,data,true,false);
                 } else CompleteTxWork(txBatch->owners[0],ObserveKnownEvmTransaction(peer,data)?TxKnown:TxInvalid);
             } else if (type==18) {
                 size_t offset=0,index=0;
@@ -198,16 +209,20 @@ awaitable<void> ProcessMessage(shared_ptr<Peer> peer,uint8_t type,vector<uint8_t
                     if (size<221||size>176+45+maxEvmInput||size>data.size()-offset) break;
                     auto tx=span<const uint8_t>(data).subspan(offset,size);
                     if (ProcessEvmTx(tx,&fingerprints[index])) {
+                        TxPostProcessTime postTime;
                         RecordVerifiedEvmTransaction(peer,tx);
                         CompleteTxWork(txBatch->owners[index],TxAccepted);
-                        if (!produceBlocks||relayTransactions) RelayAcceptedTransactions(peer,tx,true);
+                        if (!produceBlocks||relayTransactions) RelayAcceptedTransactions(peer,tx,true,false);
                     } else CompleteTxWork(txBatch->owners[index],ObserveKnownEvmTransaction(peer,tx)?TxKnown:TxInvalid);
                     offset+=size;++index;
                 }
             } else if (type==39) ReceiveCompactBlock(peer,data);
             else if (type==51) ReceiveShortCompactBlock(peer,data);
             else if (type==52) ReceivePrefilledCompactBlock(peer,data);
-            else if (type==41) ReceiveMissingTransactions(peer,data);
+            else if (type==41) {
+                const bool processed=ReceiveMissingTransactions(peer,data);
+                if (compactReceipt) compactReceipt->processed=processed;
+            }
             else {
                 if (type!=43) blocks.push_back(std::move(data));
                 bool queuedBatch=false;
@@ -406,6 +421,7 @@ awaitable<void> session(uint64_t key,shared_ptr<Peer> peer) {
         // Extra slots only admit authenticated selected producers. Until the
         // challenge completes, process negotiation and identity frames only.
         if (IsPendingVdfPeer(peer)&&type!=13&&type!=14&&type!=56&&type!=57) continue;
+        if (peer->blockOnly&&(MessageSendPriority(type)==SendPriority::Transaction||type==49||type==50)) { ClosePeer(peer);co_return; }
         if (type==1||type==10||type==44||type==2||type==7||type==17||type==18||type==22) {
             co_await ProcessMessage(peer,type,std::move(data));
         } else if ((type==39||type==51||type==52)&&peer->port) {
@@ -463,6 +479,7 @@ awaitable<void> session(uint64_t key,shared_ptr<Peer> peer) {
                 peer->prefillCompact=peer->shortCompact&&compactPrefill&&enabled("compact_prefill");
                 peer->txInventory=txInventory&&enabled("tx_inventory");
                 peer->fragments=fragmentMessages&&enabled("message_fragments");
+                peer->blockRelayProtocol=enabled("vdf_block_connection");
                 auto mesh=capabilities.find("vdf_peer_protocol");
                 peer->vdfPeerProtocol|=mesh!=capabilities.end()&&mesh->is_number_unsigned()&&mesh->get<uint64_t>()==1;
                 auto instance=capabilities.find("relay_instance");
@@ -521,10 +538,14 @@ awaitable<void> session(uint64_t key,shared_ptr<Peer> peer) {
 awaitable<void> AcceptPeer(shared_ptr<Peer> peer) {
     array<uint8_t,1> type;
     if (!co_await ReadData(peer,buffer(type),3)) co_return;
-    if (type[0]!=1&&type[0]!=2&&type[0]!=3&&type[0]!=4) { ClosePeer(peer); co_return; }
-    if (type[0]==1||type[0]==3||type[0]==4) {
+    if (type[0]!=1&&type[0]!=2&&type[0]!=3&&type[0]!=4&&type[0]!=5) { ClosePeer(peer); co_return; }
+    if (type[0]==5) {
+        if (!VdfProducerMeshEnabled()||!vdfIdentityReady) {ClosePeer(peer);co_return;}
+        peer->blockOnly=true;peer->blockRelayProtocol=true;
+    }
+    if (type[0]==1||type[0]==3||type[0]==4||type[0]==5) {
         peer->compact=type[0]>=3;
-        peer->discoveryV2=type[0]==4;
+        peer->discoveryV2=type[0]>=4;
         array<uint8_t,2> port;
         if (!co_await ReadData(peer,buffer(port),3)) co_return;
         peer->port=uint16_t(port[0])|(uint16_t(port[1])<<8);
@@ -539,7 +560,7 @@ awaitable<void> AcceptPeer(shared_ptr<Peer> peer) {
         }
         QueryHeight(peer);
         if (peer->compact) SendData(peer,GenerateMessage(13,{}));
-        if (VdfConsensus::config.enabled) SendData(peer,GenerateMessage(50,{}));
+        if (VdfConsensus::config.enabled&&!peer->blockOnly) SendData(peer,GenerateMessage(50,{}));
     }
     co_await session(peer->key,peer);
 }

@@ -83,25 +83,43 @@ struct TxWork {
     vector<weak_ptr<Peer>> sources;
 };
 
-void CompleteTxWork(const shared_ptr<TxWork>& work,uint8_t status) {
-    vector<TxWorkWaiter> waiters;
-    vector<weak_ptr<Peer>> sources;
+void CompleteTxWorks(span<const shared_ptr<TxWork>> works,span<const uint8_t> statuses,
+        const shared_ptr<Peer>& recordedSource={}) {
+    if (works.size()!=statuses.size()) throw invalid_argument("Transaction completion count");
+    if (works.empty()) return;
+    struct Completed {
+        shared_ptr<TxWork> work;
+        uint8_t status;
+        vector<TxWorkWaiter> waiters;
+        vector<weak_ptr<Peer>> sources;
+    };
+    vector<Completed> completed;completed.reserve(works.size());
     {
         lock_guard lock(txWorkMutex);
-        if (!work->registered) return;
-        auto found=txWork.find(work->fingerprint);
-        if (found==txWork.end()||found->second.get()!=work.get()) return;
-        work->registered=false;txWorkBytes-=work->bytes;
-        waiters=std::move(work->waiters);sources=std::move(work->sources);
-        txWork.erase(found);
+        for (size_t i=0;i<works.size();++i) {
+            const auto& work=works[i];if (!work->registered) continue;
+            auto found=txWork.find(work->fingerprint);
+            if (found==txWork.end()||found->second.get()!=work.get()) continue;
+            work->registered=false;txWorkBytes-=work->bytes;
+            completed.push_back({work,statuses[i],std::move(work->waiters),std::move(work->sources)});
+            txWork.erase(found);
+        }
     }
     // No registry lock is held while updating possession or sending receipts.
-    if (status==TxAccepted||status==TxKnown) {
-        duplicateTx+=work->merged;
+    if (completed.empty()) return;
+    {
         lock_guard lock(txInventoryMutex);auto now=GetSteadyTime();
-        for (const auto& weak:sources) if (auto peer=weak.lock()) TxRememberPeerLocked(peer,work->key,now);
+        for (const auto& item:completed) if (item.status==TxAccepted||item.status==TxKnown) {
+            duplicateTx+=item.work->merged;
+            for (const auto& weak:item.sources) if (auto peer=weak.lock();peer&&peer!=recordedSource)
+                TxRememberPeerLocked(peer,item.work->key,now);
+        }
     }
-    for (auto& waiter:waiters) waiter.reply->Set(waiter.index,status==TxAccepted&&!waiter.owner?uint8_t(TxKnown):status);
+    for (auto& item:completed) for (auto& waiter:item.waiters)
+        waiter.reply->Set(waiter.index,item.status==TxAccepted&&!waiter.owner?uint8_t(TxKnown):item.status);
+}
+void CompleteTxWork(const shared_ptr<TxWork>& work,uint8_t status) {
+    CompleteTxWorks(span<const shared_ptr<TxWork>>(&work,1),span<const uint8_t>(&status,1));
 }
 struct TxWorkBatch {
     vector<shared_ptr<TxWork>> owners;
@@ -109,10 +127,8 @@ struct TxWorkBatch {
     ~TxWorkBatch() {
         // Cancellation, post failure, and an unwound worker all release the
         // active entries; Busy allows a submitter to retry on another source.
-        for (auto& owner:owners) {
-            try { CompleteTxWork(owner,TxBusy); }
-            catch (...) { nodeFailed=true;nodeRunning=false; }
-        }
+        try { vector<uint8_t> cancelled(owners.size(),TxBusy);CompleteTxWorks(owners,cancelled); }
+        catch (...) { nodeFailed=true;nodeRunning=false; }
     }
     bool CancelIfUnshared() {
         vector<TxWorkWaiter> cancelled;

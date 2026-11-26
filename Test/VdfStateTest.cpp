@@ -1,6 +1,6 @@
 #include <filesystem>
 #include <iostream>
-#include "../Transaction/Block.h"
+#include "../Network/Server.h"
 
 using namespace std;
 namespace consensus=chain::vdf_consensus;
@@ -108,6 +108,35 @@ int main(int argc,char** argv) {
         Require(DBVdfCandidatesForNextBlock().empty(),"new group starts a separate candidate set");
         Require(DBVdfActiveCandidates(6)==selected,"previous boundary selects current producers");
         Require(DBVdfContext(2)==main.Context(2),"database and branch derive the same context");
+        ClearVdfExtensionCache();
+        const auto metadataLoads=vdfExtensionLoads.load();
+        const auto metadataBytes=vdfExtensionReadBytes.load();
+        for (size_t i=0;i<8;++i) {
+            Require(DBVdfParentSlot()==103&&DBVdfActiveCandidates(6)==selected,
+                    "parent and boundary metadata remain identical on repeated reads");
+        }
+        Require(vdfExtensionLoads==metadataLoads+1&&
+                vdfExtensionReadBytes==metadataBytes+main.blocks.back().second.size(),
+                "parent and boundary share one complete block read by hash");
+
+        // A busy transaction pool must not repeatedly inspect a member which
+        // is not scheduled. A later slot can make that same member eligible.
+        const auto originalConfig=consensus::config;
+        consensus::config.producerRotation=true;
+        nowSlot=104;
+        const auto scheduled=consensus::ScheduledProducer(nowSlot,selected);
+        for (const auto& record:selected) if (record.publicKey!=*scheduled) { vdfPublicKey=record.publicKey; break; }
+        vdfIdentityReady=true;
+        consensus::Extension proposed;
+        const auto productionAttempts=vdfPrepareAttempts.load();
+        for (size_t i=0;i<8;++i)
+            Require(!PrepareVdfBlock(6,DBReadCurrentBlock(),proposed),"off-turn member declines repeated production");
+        Require(vdfPrepareAttempts==productionAttempts+1,"off-turn member checks its schedule only once per parent and slot");
+        do {++nowSlot;} while (consensus::ScheduledProducer(nowSlot,selected)!=vdfPublicKey);
+        Require(PrepareVdfBlock(6,DBReadCurrentBlock(),proposed)&&proposed.slot==nowSlot,
+                "member retries and becomes eligible in its scheduled slot");
+        consensus::config=originalConfig; nowSlot=500; vdfIdentityReady=false;
+        { lock_guard lock(vdfAttemptMutex); vdfDeclinedAttempt.reset(); }
 
         const auto outsider=election::CreateCandidate(main.Context(2),wallets[6].private_key);
         Branch tooEarly=main;
@@ -184,6 +213,8 @@ int main(int argc,char** argv) {
         Require(AdoptFork(invalid.blocks.back(),detached)==-1,"fork replay rejects old-anchor candidate records");
         Require(detached.empty()&&DBReadCurrentBlock()==originalHead&&DBVdfContext(2)==originalContext&&
                 DBVdfActiveCandidates(6)==selected,"invalid VDF fork restores head, context and committee");
+        Require(!vdfExtensions.contains(invalid.blocks.front().first.hash),
+                "failed branch does not publish temporary block metadata into cache");
         ClearForks();
 
         Branch alternate(genesis);
@@ -210,7 +241,9 @@ int main(int argc,char** argv) {
         append(alternate.Add(wallets[0],126,{},openProof));
         const auto savedHead=DBReadCurrentBlock();
         const auto savedContext=DBVdfContext(3);
-        db.reset(); InitDB(root.string(),true); GenerateGenesisBlock();
+        db.reset(); InitDB(root.string(),true);
+        Require(vdfExtensions.empty(),"opening a database clears metadata from the previous database instance");
+        GenerateGenesisBlock();
         Require(DBReadCurrentBlock()==savedHead&&DBVdfContext(3)==savedContext&&DBVdfParentSlot()==126,
                 "restart restores VDF context and parent slot from stored blocks");
         Require(DBVdfActiveCandidates(7)==replacement&&DBVdfCandidatesForNextBlock().empty(),

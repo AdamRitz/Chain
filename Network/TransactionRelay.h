@@ -13,13 +13,16 @@ constexpr size_t maxTxKnownPeers=256,maxTxKnownPerPeer=4096,maxTxKnownItems=1310
 constexpr size_t maxTxRecentBytes=32*1024*1024,maxTxRecentCount=131072;
 constexpr uint64_t txRequestRetryNs=200000000ULL,txRequestLifetimeNs=5000000000ULL;
 constexpr uint64_t txBodyWaitNs=2000000000ULL;
+constexpr uint64_t txBodyOwnerWaitNs=30000000000ULL;
 constexpr size_t maxTxBodyRecords=65536,maxTxBodyBytes=48*1024*1024,maxTxBodyVariants=4;
 constexpr size_t maxTxRequestReplyBytes=1024*1024;
 constexpr uint64_t txReplyRateBytes=4*1024*1024,txReplyBurstBytes=4*1024*1024;
 atomic<uint64_t> txInventoryAnnounced{0},txInventoryRequests{0},txInventoryRetries{0};
 atomic<uint64_t> txInventoryExpired{0},txInventoryDropped{0},txInventoryReplies{0};
+atomic<uint64_t> txInventoryRequestQueueRejected{0},txInventoryReplyRefundBytes{0};
 atomic<uint64_t> txInventoryBodySent{0},txInventoryHashSent{0},txInventoryKnownSkipped{0};
 atomic<uint64_t> txBodyWaitSkips{0},txBodyWaitDuplicates{0},txBodyWaitTimeouts{0},txBodyWaitReleased{0},txBodyWaitCapacity{0};
+atomic<uint64_t> txBodyActiveWaitSkips{0};
 
 struct TxInventoryKey {
     uint8_t kind=0; // 0: native; 1: EVM, whose hash binds the complete input.
@@ -73,7 +76,7 @@ struct TxPeerKnown {
 };
 struct PendingTransaction {
     vector<weak_ptr<Peer>> sources;
-    uint64_t created=0,lastRequest=0,lastSource=0;
+    uint64_t created=0,started=0,lastRequest=0,lastSource=0,requestToken=0;
     unsigned attempts=0;
     size_t nextSource=0;
 };
@@ -94,16 +97,30 @@ struct ReceivingTransaction {
 unordered_map<TxInventoryKey,ReceivingTransaction,TxInventoryHash> txReceiving;
 size_t txReceivingBytes=0;
 uint64_t nextTxBodyToken=0;
+uint64_t nextTxRequestToken=0;
 void EraseTxReceivingLocked(const TxInventoryKey& key) {
     txReceiving.erase(key);
+}
+bool ReleaseTxBodyWaitLocked(const TxInventoryKey& key,ReceivingTransaction& receiving,uint64_t now) {
+    if (receiving.retryReleased) return false;
+    receiving.retryReleased=true;
+    if (auto pending=txPending.find(key);pending!=txPending.end()) {
+        if (!pending->second.started) pending->second.started=pending->second.created;
+        pending->second.created=now;pending->second.lastRequest=0;
+    }
+    return true;
 }
 bool TxBodyWaitingLocked(const TxInventoryKey& key,uint64_t now) {
     auto found=txReceiving.find(key);
     if (found==txReceiving.end()||found->second.retryReleased||found->second.bodies.empty()) return false;
     auto& receiving=found->second;
-    if (now<receiving.created||now-receiving.created>=txBodyWaitNs) {
-        receiving.retryReleased=true;txBodyWaitTimeouts++;return false;
+    // Each body is held by the real processing task's RAII reservation. Keep
+    // waiting while that owner exists; duplicates never extend this deadline.
+    if (now<receiving.created||now-receiving.created>=txBodyOwnerWaitNs) {
+        if (ReleaseTxBodyWaitLocked(key,receiving,now)) txBodyWaitTimeouts++;
+        return false;
     }
+    if (now-receiving.created>=txBodyWaitNs) txBodyActiveWaitSkips++;
     return true;
 }
 struct TxBodyReceipt {
@@ -127,9 +144,9 @@ struct TxBodyReservation {
             found->second.bodies.erase(body);
             // A failed/cancelled owner releases the pause even if another
             // signature variant is queued. Duplicates cannot renew this pause.
-            found->second.retryReleased=true;txBodyWaitReleased++;
-            if (auto pending=txPending.find(receipt.key);pending!=txPending.end()) {
-                pending->second.lastRequest=0;
+            const bool released=ReleaseTxBodyWaitLocked(receipt.key,found->second,GetSteadyTime());
+            if (released) txBodyWaitReleased++;
+            if (auto pending=txPending.find(receipt.key);released&&pending!=txPending.end()) {
                 for (size_t i=0;i<pending->second.sources.size();++i)
                     if (auto peer=pending->second.sources[i].lock();peer&&peer->key==receipt.source)
                         pending->second.nextSource=i+1;
@@ -173,8 +190,9 @@ shared_ptr<TxBodyReservation> ReserveTxBodies(const shared_ptr<Peer>& peer,uint8
         lock_guard lock(txInventoryMutex);
         if (txRecentBodies.count(key)) continue;
         auto found=txReceiving.find(key);
-        if (found!=txReceiving.end()&&now>=found->second.created&&now-found->second.created>=txRequestLifetimeNs) {
-            EraseTxReceivingLocked(key);found=txReceiving.end();
+        if (found!=txReceiving.end()&&now>=found->second.created&&now-found->second.created>=txBodyOwnerWaitNs) {
+            if (found->second.bodies.empty()) { EraseTxReceivingLocked(key);found=txReceiving.end(); }
+            else if (ReleaseTxBodyWaitLocked(key,found->second,now)) txBodyWaitTimeouts++;
         }
         if (found==txReceiving.end()) {
             if (txReceiving.size()>=maxTxBodyRecords||nextTxBodyToken==UINT64_MAX) {txBodyWaitCapacity++;continue;}
@@ -196,7 +214,9 @@ nlohmann::json TxBodyWaitStats() {
     return {{"tx_body_records",txReceiving.size()},{"tx_body_record_bytes",txReceivingBytes},
         {"tx_body_wait_skips",txBodyWaitSkips.load()},{"tx_body_wait_duplicates",txBodyWaitDuplicates.load()},
         {"tx_body_wait_timeouts",txBodyWaitTimeouts.load()},{"tx_body_wait_released",txBodyWaitReleased.load()},
-        {"tx_body_wait_capacity",txBodyWaitCapacity.load()}};
+        {"tx_body_wait_capacity",txBodyWaitCapacity.load()},{"tx_body_active_wait_skips",txBodyActiveWaitSkips.load()},
+        {"tx_inventory_request_queue_rejected",txInventoryRequestQueueRejected.load()},
+        {"tx_inventory_reply_refund_bytes",txInventoryReplyRefundBytes.load()}};
 }
 
 // Caller holds txInventoryMutex. These are remote possession hints only; they
@@ -303,11 +323,11 @@ void TxRememberSourceLocked(PendingTransaction& pending,const shared_ptr<Peer>& 
     }
     if (pending.sources.size()<maxTxSources) pending.sources.push_back(peer);
 }
-struct TxRequestBatch { shared_ptr<Peer> peer;vector<TxInventoryKey> keys; };
+struct TxRequestBatch { shared_ptr<Peer> peer;vector<TxInventoryKey> keys;vector<uint64_t> tokens; };
 using TxRequestBatches=map<uint64_t,TxRequestBatch>;
 void SelectTxRequestLocked(const TxInventoryKey& key,PendingTransaction& pending,uint64_t now,TxRequestBatches& requests) {
     if (TxBodyWaitingLocked(key,now)) {txBodyWaitSkips++;return;}
-    if (pending.attempts>=6||(pending.lastRequest&&
+    if (pending.requestToken||pending.attempts>=6||(pending.lastRequest&&
         (now<pending.lastRequest||now-pending.lastRequest<txRequestRetryNs))) return;
     shared_ptr<Peer> chosen;
     for (size_t i=0;i<pending.sources.size();++i) {
@@ -316,9 +336,9 @@ void SelectTxRequestLocked(const TxInventoryKey& key,PendingTransaction& pending
         chosen=source;pending.nextSource=index+1;break;
     }
     if (!chosen) return;
-    if (pending.attempts) txInventoryRetries++;
-    pending.attempts++; pending.lastSource=chosen->key; pending.lastRequest=now;
-    auto& batch=requests[chosen->key];batch.peer=chosen;batch.keys.push_back(key);
+    if (nextTxRequestToken==UINT64_MAX) return;
+    pending.requestToken=++nextTxRequestToken;
+    auto& batch=requests[chosen->key];batch.peer=chosen;batch.keys.push_back(key);batch.tokens.push_back(pending.requestToken);
 }
 void SendTxRequestBatches(TxRequestBatches& requests) {
     for (auto& [id,batch]:requests) {
@@ -327,7 +347,18 @@ void SendTxRequestBatches(TxRequestBatches& requests) {
         for (size_t offset=0;offset<batch.keys.size();offset+=128) {
             auto keys=span<const TxInventoryKey>(batch.keys).subspan(offset,min(size_t(128),batch.keys.size()-offset));
             auto message=make_shared<const vector<uint8_t>>(GenerateMessage(54,EncodeTxInventory(keys)));
-            if (TrySendGossip(batch.peer,std::move(message))) txInventoryRequests+=keys.size();
+            const bool sent=TrySendGossip(batch.peer,std::move(message));
+            if (sent) txInventoryRequests+=keys.size();else txInventoryRequestQueueRejected+=keys.size();
+            lock_guard lock(txInventoryMutex);auto now=GetSteadyTime();
+            for (size_t i=0;i<keys.size();++i) {
+                auto found=txPending.find(keys[i]);
+                if (found==txPending.end()||found->second.requestToken!=batch.tokens[offset+i]) continue;
+                auto& pending=found->second;pending.requestToken=0;
+                if (sent) {
+                    if (pending.attempts) txInventoryRetries++;
+                    pending.attempts++;pending.lastSource=batch.peer->key;pending.lastRequest=now;
+                }
+            }
         }
     }
 }
@@ -346,7 +377,7 @@ bool ReceiveTxInventory(const shared_ptr<Peer>& peer,span<const uint8_t> data) {
             auto found=txPending.find(key);
             if (found==txPending.end()) {
                 if (txPending.size()>=maxTxPending) {txInventoryDropped++;continue;}
-                found=txPending.try_emplace(key).first;found->second.created=now;
+                found=txPending.try_emplace(key).first;found->second.created=found->second.started=now;
             }
             TxRememberSourceLocked(found->second,peer);SelectTxRequestLocked(key,found->second,now,requests);
         }
@@ -362,21 +393,28 @@ void TxInventoryMaintenance() {
             if (!peer||peer->closePosted) {txKnownItems-=it->second.hashes.size()+it->second.notices.size();it=txPeerKnown.erase(it);}else ++it;
         }
         for (auto it=txReceiving.begin();it!=txReceiving.end();) {
-            if (now>=it->second.created&&now-it->second.created>=txRequestLifetimeNs) {
-                auto key=it->first;++it;EraseTxReceivingLocked(key);
-            } else ++it;
+            auto& receiving=it->second;
+            if (now>=receiving.created) {
+                if (receiving.bodies.empty()&&now-receiving.created>=txRequestLifetimeNs) {it=txReceiving.erase(it);continue;}
+                if (!receiving.bodies.empty()&&now-receiving.created>=txBodyOwnerWaitNs&&
+                        ReleaseTxBodyWaitLocked(it->first,receiving,now)) txBodyWaitTimeouts++;
+            }
+            ++it;
         }
         // Only 1024 due requests are scheduled on one tick, even when all
         // 16384 entries were announced simultaneously.
         size_t scheduled=0;
         for (auto it=txPending.begin();it!=txPending.end();) {
             auto& pending=it->second;
-            if (now>=pending.created&&now-pending.created>=txRequestLifetimeNs) {
+            if (!pending.started) pending.started=pending.created;
+            const bool waiting=TxBodyWaitingLocked(it->first,now);
+            const bool expired=now>=pending.started&&now-pending.started>=txBodyOwnerWaitNs+txRequestLifetimeNs;
+            if (expired||(!waiting&&now>=pending.created&&now-pending.created>=txRequestLifetimeNs)) {
                 it=txPending.erase(it);txInventoryExpired++;continue;
             }
             if (scheduled<maxTxInventoryItems) {
-                auto attempts=pending.attempts;SelectTxRequestLocked(it->first,pending,now,requests);
-                scheduled+=pending.attempts!=attempts;
+                auto token=pending.requestToken;SelectTxRequestLocked(it->first,pending,now,requests);
+                scheduled+=pending.requestToken!=token;
             }
             ++it;
         }
@@ -394,16 +432,29 @@ bool ReserveTxReplyBytes(const shared_ptr<Peer>& peer,size_t bytes,uint64_t now)
     if (bytes>state.replyTokens) return false;
     state.replyTokens-=bytes;return true;
 }
+struct TxReplyReservation {
+    shared_ptr<Peer> peer;
+    size_t bytes=0;
+    ~TxReplyReservation() {
+        if (!bytes) return;
+        lock_guard lock(txInventoryMutex);
+        auto found=txPeerKnown.find(peer->key);
+        if (found!=txPeerKnown.end()) found->second.replyTokens=min<uint64_t>(txReplyBurstBytes,found->second.replyTokens+bytes);
+        txInventoryReplyRefundBytes+=bytes;
+    }
+};
 bool ServeTxRequests(const shared_ptr<Peer>& peer,span<const uint8_t> data) {
     vector<TxInventoryKey> keys;if (!DecodeTxInventory(data,keys)) return false;
     if (!txInventory||!peer||!peer->port||peer->closePosted) return true;
     peer->txInventory=true;
     size_t bytes=0;vector<uint8_t> native,evm;vector<TxInventoryKey> returned;
+    TxReplyReservation reservation{peer};
     for (const auto& key:keys) {
         auto body=ReadTxRelayBody(key);if (!body) continue;
         auto size=body->size()+(key.kind?4:0);
         if (size>maxTxRequestReplyBytes-bytes) break;
         if (!ReserveTxReplyBytes(peer,size,GetSteadyTime())) break;
+        reservation.bytes+=size;
         if (!key.kind) native.insert(native.end(),body->begin(),body->end());
         else {auto offset=evm.size();evm.resize(offset+4);WriteU32(evm.data()+offset,uint32_t(body->size()));evm.insert(evm.end(),body->begin(),body->end());}
         bytes+=size;returned.push_back(key);
@@ -411,6 +462,8 @@ bool ServeTxRequests(const shared_ptr<Peer>& peer,span<const uint8_t> data) {
     bool nativeSent=false,evmSent=false;
     if (!native.empty()) nativeSent=TrySendGossip(peer,make_shared<const vector<uint8_t>>(GenerateMessage(10,native)));
     if (!evm.empty()) evmSent=TrySendGossip(peer,make_shared<const vector<uint8_t>>(GenerateMessage(18,evm)));
+    if (nativeSent) reservation.bytes-=native.size();
+    if (evmSent) reservation.bytes-=evm.size();
     if (nativeSent||evmSent) {
         lock_guard lock(txInventoryMutex);auto now=GetSteadyTime();
         for (const auto& key:returned) if (key.kind?evmSent:nativeSent) {TxRememberPeerLocked(peer,key,now);txInventoryReplies++;}
@@ -420,47 +473,62 @@ bool ServeTxRequests(const shared_ptr<Peer>& peer,span<const uint8_t> data) {
 // New accepted native transactions are passed as a contiguous 176-byte batch;
 // one complete EVM transaction is passed with evm=true. The caller still owns
 // signature, account, nonce and pool-capacity validation.
-void RelayAcceptedTransactions(const shared_ptr<Peer>& source,span<const uint8_t> data,bool evm=false) {
+void RelayAcceptedTransactions(const shared_ptr<Peer>& source,span<const uint8_t> data,bool evm=false,bool remember=true) {
     if (data.empty()||(!evm&&data.size()%176)) return;
     vector<TxInventoryKey> keys;vector<span<const uint8_t>> bodies;
     if (evm) {keys.push_back(TransactionInventoryKey(data,true));bodies.push_back(data);}
     else for (size_t offset=0;offset<data.size();offset+=176) {auto body=data.subspan(offset,176);keys.push_back(TransactionInventoryKey(body));bodies.push_back(body);}
-    {
+    if (remember) {
         lock_guard lock(txInventoryMutex);auto now=GetSteadyTime();
         for (size_t i=0;i<keys.size();++i) TxRememberBodyLocked(source,keys[i],bodies[i],now);
     }
     array<uint8_t,32> selection{};crypto_generichash(selection.data(),32,data.data(),data.size(),nullptr,0);
-    auto peers=SelectBroadcastPeers(source?PeerId(source):0,selection,txRelayPeers);
-    // Rank the selected upgraded peers for full-body push. The payload changes
-    // the choice between batches, and legacy full-body traffic is independent.
+    auto peers=SelectBroadcastPeers(source?PeerId(source):0,selection,txRelayPeers,true);
+    // Rank peers once, then spend each transaction's push count only on peers
+    // that have not already received it. Legacy peers retain full-body relay.
     static const array<uint8_t,32> pushSalt=[] {array<uint8_t,32> value{};randombytes_buf(value.data(),value.size());return value;}();
-    vector<pair<array<uint8_t,16>,uint64_t>> pushRank;
-    if (txInventory&&txPushPeers) for (const auto& peer:peers) if (peer->txInventory) {
+    vector<pair<array<uint8_t,16>,shared_ptr<Peer>>> pushRank;
+    if (txInventory&&txPushPeers) for (const auto& peer:peers) {
         array<uint8_t,40> input{};copy(selection.begin(),selection.end(),input.begin());WriteU64(input.data()+32,peer->key);
         array<uint8_t,16> score{};crypto_generichash(score.data(),score.size(),input.data(),input.size(),pushSalt.data(),pushSalt.size());
-        pushRank.emplace_back(score,peer->key);
+        pushRank.emplace_back(score,peer);
     }
-    auto pushCount=min(txPushPeers,pushRank.size());partial_sort(pushRank.begin(),pushRank.begin()+pushCount,pushRank.end());
-    unordered_set<uint64_t> pushIds;for (size_t i=0;i<pushCount;++i) pushIds.insert(pushRank[i].second);
+    if (!pushRank.empty()) {
+        sort(pushRank.begin(),pushRank.end(),[](const auto& first,const auto& second) {return first.first<second.first;});
+        peers.clear();for (auto& item:pushRank) peers.push_back(std::move(item.second));
+    }
+    vector<size_t> pushed(keys.size(),0);
     for (const auto& peer:peers) {
-        vector<TxInventoryKey> selected;vector<uint8_t> full;
-        bool inventory=txInventory&&peer->txInventory&&!pushIds.count(peer->key);
+        vector<size_t> selected;
         {
             lock_guard lock(txInventoryMutex);
+            auto known=txPeerKnown.find(peer->key);
             for (size_t i=0;i<keys.size();++i) {
-                if (TxPeerNotifiedLocked(peer,keys[i])) {txInventoryKnownSkipped++;continue;}
-                selected.push_back(keys[i]);if (!inventory) full.insert(full.end(),bodies[i].begin(),bodies[i].end());
+                if (known!=txPeerKnown.end()&&(known->second.hashes.count(keys[i])||known->second.notices.count(keys[i]))) {
+                    txInventoryKnownSkipped++;continue;
+                }
+                selected.push_back(i);
             }
         }
         if (selected.empty()) continue;
-        if (!inventory) {
+        vector<TxInventoryKey> fullKeys,inventoryKeys;vector<size_t> fullIndices;vector<uint8_t> full;
+        const bool supportsInventory=txInventory&&peer->txInventory;
+        for (auto index:selected) {
+            if (!supportsInventory||pushed[index]<txPushPeers) {
+                fullKeys.push_back(keys[index]);fullIndices.push_back(index);
+                full.insert(full.end(),bodies[index].begin(),bodies[index].end());
+            } else inventoryKeys.push_back(keys[index]);
+        }
+        if (!full.empty()) {
             if (TrySendGossip(peer,make_shared<const vector<uint8_t>>(GenerateMessage(evm?17:10,full)))) {
-                txInventoryBodySent+=selected.size();lock_guard lock(txInventoryMutex);auto now=GetSteadyTime();
-                for (const auto& key:selected) TxRememberPeerLocked(peer,key,now);
+                if (supportsInventory) for (auto index:fullIndices) pushed[index]++;
+                txInventoryBodySent+=fullKeys.size();lock_guard lock(txInventoryMutex);auto now=GetSteadyTime();
+                for (const auto& key:fullKeys) TxRememberPeerLocked(peer,key,now);
             }
-        } else {
-            for (size_t offset=0;offset<selected.size();offset+=maxTxInventoryItems) {
-                auto batch=span<const TxInventoryKey>(selected).subspan(offset,min(maxTxInventoryItems,selected.size()-offset));
+        }
+        if (!inventoryKeys.empty()) {
+            for (size_t offset=0;offset<inventoryKeys.size();offset+=maxTxInventoryItems) {
+                auto batch=span<const TxInventoryKey>(inventoryKeys).subspan(offset,min(maxTxInventoryItems,inventoryKeys.size()-offset));
                 if (TrySendGossip(peer,make_shared<const vector<uint8_t>>(GenerateMessage(53,EncodeTxInventory(batch))))) {
                     txInventoryHashSent+=batch.size();
                     // Sending a hash does not establish remote possession.

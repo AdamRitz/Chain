@@ -127,7 +127,7 @@ int main() {
             Require(MessageSendPriority(39)==SendPriority::Urgent&&MessageSendPriority(51)==SendPriority::Urgent&&
                 MessageSendPriority(40)==SendPriority::Urgent&&MessageSendPriority(45)==SendPriority::Urgent&&
                 MessageSendPriority(10)==SendPriority::Transaction&&MessageSendPriority(54)==SendPriority::Transaction&&
-                MessageSendPriority(41)==SendPriority::Bulk,
+                MessageSendPriority(41)==SendPriority::Urgent,
                 "compact announcements, requests and admission replies have correct priorities");
             SendQueueBudget leases(100,4,4);
             auto destination=std::make_shared<SendPeerBudget>();

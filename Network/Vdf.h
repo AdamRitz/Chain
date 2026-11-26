@@ -16,7 +16,29 @@ unique_ptr<thread_pool> vdfVerifyThreads;
 thread vdfComputeThread;
 atomic<size_t> vdfPendingProofs{0};
 atomic<uint64_t> vdfComputed{0},vdfSkippedProofs{0},vdfGeneratedNs{0};
+atomic<uint64_t> vdfOwnProofVersion{0},vdfPrepareAttempts{0},vdfDeclinedAttemptHits{0};
 bool vdfIdentityReady=false;
+bool vdfBootstrapProduce=true;
+struct VdfAttempt {
+    array<uint8_t,32> parent{},identity{};
+    uint64_t height=0,slot=0,proofVersion=0;
+    VdfConsensus::Config config;
+    bool bootstrapProduce=true;
+    bool operator==(const VdfAttempt&) const = default;
+};
+mutex vdfAttemptMutex;
+optional<VdfAttempt> vdfDeclinedAttempt;
+VdfAttempt MakeVdfAttempt(uint64_t height,const array<uint8_t,32>& parent,uint64_t slot) {
+    return {parent,vdfPublicKey,height,slot,vdfOwnProofVersion.load(),VdfConsensus::config,vdfBootstrapProduce};
+}
+bool WasVdfAttemptDeclined(const VdfAttempt& attempt) {
+    lock_guard lock(vdfAttemptMutex);
+    if (!vdfDeclinedAttempt||*vdfDeclinedAttempt!=attempt) return false;
+    vdfDeclinedAttemptHits++; return true;
+}
+bool DeclineVdfAttempt(const VdfAttempt& attempt) {
+    lock_guard lock(vdfAttemptMutex); vdfDeclinedAttempt=attempt; return false;
+}
 
 // These helpers only manipulate records which have passed proof verification.
 vector<VdfElection::Candidate> MergeVdfCandidates(vector<VdfElection::Candidate> records) {
@@ -49,6 +71,7 @@ bool StoreVdfCandidate(const VdfElection::Candidate& record,bool own=false) {
         if (none_of(vdfOwnProofs.begin(),vdfOwnProofs.end(),[&](const auto& item){return item.context==record.context;})) {
             vdfOwnProofs.push_back(record);
             if (vdfOwnProofs.size()>8) vdfOwnProofs.pop_front();
+            vdfOwnProofVersion++;
         }
     }
     auto found=find_if(vdfCandidateSets.begin(),vdfCandidateSets.end(),[&](const auto& item){return item.context==record.context;});
@@ -119,16 +142,18 @@ void SendVdfCandidates(const shared_ptr<Peer>& peer) {
 }
 
 // Called by GenerateBlock with dbCommitMutex held, before taking txpoolMutex.
-bool vdfBootstrapProduce=true;
 bool PrepareVdfBlock(uint64_t height,const array<uint8_t,32>& parent,VdfConsensus::Extension& extension) {
     if (!vdfIdentityReady||!produceBlocks||DBReadCurrentBlock()!=parent) return false;
+    const auto attempt=MakeVdfAttempt(height,parent,VdfConsensus::CurrentSlot());
+    if (WasVdfAttemptDeclined(attempt)) return false;
+    vdfPrepareAttempts++;
     auto epoch=VdfConsensus::Epoch(height);
-    if (epoch<2&&!vdfBootstrapProduce) return false;
-    extension.slot=VdfConsensus::CurrentSlot();
-    if (extension.slot<VdfConsensus::MinimumSlot(height)) return false;
+    if (epoch<2&&!vdfBootstrapProduce) return DeclineVdfAttempt(attempt);
+    extension.slot=attempt.slot;
+    if (extension.slot<VdfConsensus::MinimumSlot(height)) return DeclineVdfAttempt(attempt);
     const auto parentExtension=DBVdfParentExtension();
     auto parentSlot=parentExtension?parentExtension->slot:VdfConsensus::StartSlot()-1;
-    if (extension.slot<=parentSlot) return false;
+    if (extension.slot<=parentSlot) return DeclineVdfAttempt(attempt);
     extension.producer=vdfPublicKey;
     auto active=DBVdfActiveCandidates(height);
     auto member=any_of(active.begin(),active.end(),[](const auto& record){return record.publicKey==vdfPublicKey;});
@@ -141,17 +166,17 @@ bool PrepareVdfBlock(uint64_t height,const array<uint8_t,32>& parent,VdfConsensu
             if (member) {
                 const auto scheduled=VdfConsensus::ScheduledTurnProducer(extension.slot,parentSlot,
                     parentExtension?parentExtension->turn:nullopt,sameEpoch,active,VdfConsensus::config);
-                if (!scheduled||*scheduled!=vdfPublicKey) return false;
+                if (!scheduled||*scheduled!=vdfPublicKey) return DeclineVdfAttempt(attempt);
             } else {
-                if (extension.slot-parentSlot<VdfConsensus::RecoverySlotGap(active.size(),VdfConsensus::config)) return false;
+                if (extension.slot-parentSlot<VdfConsensus::RecoverySlotGap(active.size(),VdfConsensus::config)) return DeclineVdfAttempt(attempt);
                 extension.turn->blocks=0;
             }
         }
-    } else if (!VdfConsensus::CanProduce(vdfPublicKey,extension.slot,parentSlot,epoch,active)) return false;
+    } else if (!VdfConsensus::CanProduce(vdfPublicKey,extension.slot,parentSlot,epoch,active)) return DeclineVdfAttempt(attempt);
     if (epoch<2||active.empty()||!member) {
-        if (epoch>=2&&!active.empty()&&extension.slot-parentSlot<VdfConsensus::config.fallbackSlots) return false;
+        if (epoch>=2&&!active.empty()&&extension.slot-parentSlot<VdfConsensus::config.fallbackSlots) return DeclineVdfAttempt(attempt);
         extension.producerProof=ReadOwnVdfProof(DBVdfContext(epoch));
-        if (!extension.producerProof) return false;
+        if (!extension.producerProof) return DeclineVdfAttempt(attempt);
     }
     if (epoch>0) {
         auto candidates=DBVdfCandidatesForNextBlock();
@@ -184,6 +209,7 @@ void LoadVdfIdentity(const string& dataPath,const string& configuredPath) {
 }
 void InitializeVdfRuntime(const string& dataPath,const string& identityPath) {
     if (!VdfConsensus::config.enabled) return;
+    { lock_guard lock(vdfAttemptMutex); vdfDeclinedAttempt.reset(); }
     if (produceBlocks) LoadVdfIdentity(dataPath,identityPath);
     prepareVdfBlock=PrepareVdfBlock;
     signVdfBlock=[](const array<uint8_t,32>& hash,VdfConsensus::Signature& signature) {
@@ -205,6 +231,7 @@ void InitializeVdfRuntime(const string& dataPath,const string& identityPath) {
                     vdfGeneratedNs+=GetSteadyTime()-start; vdfComputed++;
                     if (!VdfConsensus::VerifyProof(record,context)) throw runtime_error("Locally generated VDF failed verification");
                     if (StoreVdfCandidate(record,true)) PublishVdfCandidate(record);
+                    WakeMainLoop();
                 }
                 auto now=GetSteadyTime();
                 if (now-lastRequest>=1000000000ULL) {
@@ -257,7 +284,10 @@ nlohmann::json GetVdfStats() {
         {"computed",vdfComputed.load()},{"generation_ms",vdfGeneratedNs.load()/1e6},
         {"proof_checks",VdfConsensus::proofChecks.load()},{"proof_cache_hits",VdfConsensus::proofCacheHits.load()},
         {"invalid_proofs",VdfConsensus::invalidProofs.load()},{"skipped_proofs",vdfSkippedProofs.load()},
-        {"pending_proofs",vdfPendingProofs.load()}};
+        {"pending_proofs",vdfPendingProofs.load()},
+        {"prepare_attempts",vdfPrepareAttempts.load()},{"declined_attempt_hits",vdfDeclinedAttemptHits.load()},
+        {"extension_cache_hits",vdfExtensionCacheHits.load()},{"extension_loads",vdfExtensionLoads.load()},
+        {"extension_read_bytes",vdfExtensionReadBytes.load()}};
     result.update(GetVdfPeerStats());
     return result;
 }
@@ -266,6 +296,7 @@ void RunVdfBlockLoop() {
     try {
         uint64_t lastProducedSlot=UINT64_MAX;
         uint64_t attemptedSlot=UINT64_MAX,attemptedVersion=UINT64_MAX;
+        uint64_t attemptedProofVersion=UINT64_MAX;
         size_t attemptedReady=SIZE_MAX;
         optional<steady_clock::time_point> commitTime;
         const auto propagationMs=max(uint64_t(1),min(uint64_t(12),VdfConsensus::config.slotMs/4));
@@ -297,12 +328,16 @@ void RunVdfBlockLoop() {
             { lock_guard lock(txpoolMutex); ready=readyPoolTx; }
             auto full=blockTxStep>1?maxBlockTx/blockTxStep*blockTxStep:maxBlockTx;
             const bool atDeadline=phase>=VdfConsensus::config.slotMs-propagationMs;
-            const auto stateVersion=ReadChainHead().version;
+            const auto head=ReadChainHead();
+            const auto stateVersion=head.version;
+            const auto proofVersion=vdfOwnProofVersion.load();
             const bool earlyAttempt=full&&ready>=full&&
-                (attemptedSlot!=slot||attemptedReady!=ready||attemptedVersion!=stateVersion);
+                (attemptedSlot!=slot||attemptedReady!=ready||attemptedVersion!=stateVersion||attemptedProofVersion!=proofVersion);
             if (nodeRunning&&produceBlocks&&slot!=lastProducedSlot&&
-                (earlyAttempt||atDeadline)) {
+                (earlyAttempt||atDeadline)&&
+                !WasVdfAttemptDeclined(MakeVdfAttempt(head.height+1,head.hash,slot))) {
                 attemptedSlot=slot; attemptedReady=ready; attemptedVersion=stateVersion;
+                attemptedProofVersion=proofVersion;
                 auto data=GenerateBlock(blockTxStep,atDeadline);
                 if (!data.empty()&&(atDeadline||ReadU64(data.data()+72)>=full)) {
                     // Record the slot actually signed by GenerateBlock. A valid

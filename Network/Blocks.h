@@ -13,10 +13,10 @@ struct CompactBlock {
     weak_ptr<Peer> source;
     vector<weak_ptr<Peer>> sources;
     unordered_set<uint64_t> requestedSources;
-    uint64_t sourceId=0,created=0,lastRequest=0;
+    uint64_t sourceId=0,created=0,lastRequest=0,receiveGeneration=0;
     unsigned attempts=0;
     bool shortEncoding=false,repairedAll=false,fullFallback=false,awaitingVerification=false;
-    size_t missing=0,bytes=0,encodedBytes=0;
+    size_t missing=0,bytes=0,encodedBytes=0,receivedResponses=0,verificationTasks=0;
 };
 mutex relayMutex;
 unordered_map<array<uint8_t,32>,shared_ptr<CompactBlock>,GetMapHash> compactBlocks;
@@ -30,6 +30,8 @@ size_t relayTransactionBytes=0;
 size_t maxRelayTransactionBytes=32*1024*1024,maxRecentBlockTransactions=131072;
 size_t compactBytes=0,relayBytes=0;
 constexpr size_t maxCompactBytes=32*1024*1024,maxCompactBlocks=16,maxRelayBytes=32*1024*1024;
+constexpr size_t maxCompactReceiveRecords=64,maxCompactReceiveBytes=32*1024*1024;
+size_t compactReceiveRecords=0,compactReceiveBytes=0;
 atomic<uint64_t> compactAnnouncements{0},compactReconstructed{0},missingTransactions{0},relaySuppressed{0};
 atomic<uint64_t> syncRequests{0},syncRetries{0},syncBlocks{0};
 atomic<uint64_t> recentTransactionHits{0};
@@ -107,8 +109,54 @@ void ClearCompactTransactions(CompactBlock& block) {
 void BeginCompactFullFallback(CompactBlock& block) {
     if (!block.fullFallback) compactFullFallbacks++;
     block.fullFallback=true; block.awaitingVerification=false;
+    ++block.receiveGeneration; block.receivedResponses=block.verificationTasks=0;
     ClearCompactTransactions(block);
     block.attempts=max(block.attempts,3u); block.lastRequest=0;
+}
+// A received reply is no longer a missing network response. Keep its repair
+// record while the bounded worker task is queued or running, and release it
+// on completion, cancellation or exception without trusting its contents.
+struct CompactReceiveReservation {
+    array<uint8_t,32> hash{};
+    weak_ptr<CompactBlock> block;
+    uint64_t generation=0;
+    size_t bytes=0;
+    bool verification=false,active=false,processed=false;
+    ~CompactReceiveReservation() {
+        if (!active) return;
+        lock_guard lock(relayMutex);
+        --compactReceiveRecords; compactReceiveBytes-=bytes;
+        auto found=compactBlocks.find(hash);
+        auto expected=block.lock();
+        if (found==compactBlocks.end()||found->second!=expected||found->second->receiveGeneration!=generation) return;
+        auto& current=*found->second;
+        auto& count=verification?current.verificationTasks:current.receivedResponses;
+        --count;
+        if (verification) {
+            if (!count&&current.awaitingVerification) {
+                BeginCompactFullFallback(current); inflightBlocks.erase(hash);
+            }
+        } else if (!count&&!processed&&!current.awaitingVerification) current.lastRequest=0;
+    }
+};
+shared_ptr<CompactReceiveReservation> ReserveCompactReceive(const shared_ptr<Peer>& peer,uint8_t type,
+        const vector<uint8_t>& data) {
+    const bool verification=type==2||type==7||type==22;
+    if ((!verification&&type!=41)||!peer||data.size()<(verification?112u:40u)||data.size()>maxMessageSize) return {};
+    array<uint8_t,32> hash{}; memcpy(hash.data(),data.data()+(verification?80:0),32);
+    lock_guard lock(relayMutex);
+    auto found=compactBlocks.find(hash);
+    if (found==compactBlocks.end()||!found->second->requestedSources.count(peer->key)) return {};
+    auto& block=*found->second;
+    if (!verification&&(block.awaitingVerification||block.fullFallback)) return {};
+    if (compactReceiveRecords>=maxCompactReceiveRecords||data.size()>maxCompactReceiveBytes-compactReceiveBytes) return {};
+    auto reservation=make_shared<CompactReceiveReservation>();
+    reservation->hash=hash; reservation->block=found->second; reservation->bytes=data.size();
+    reservation->generation=block.receiveGeneration;
+    reservation->verification=verification; reservation->active=true;
+    ++compactReceiveRecords; compactReceiveBytes+=data.size();
+    ++(verification?block.verificationTasks:block.receivedResponses);
+    return reservation;
 }
 void RememberBlockSource(const array<uint8_t,32>& hash,uint64_t source) {
     if (!source) return;
@@ -152,13 +200,18 @@ void PruneCompactBlocks() {
         const auto now=GetSteadyTime();
         for (auto it=compactBlocks.begin();it!=compactBlocks.end();) {
             auto& block=*it->second;
+            if (now>=block.created&&now-block.created>30000000000ULL) {
+                inflightBlocks.erase(it->first);
+                compactBytes-=block.bytes; it=compactBlocks.erase(it); continue;
+            }
+            if (block.receivedResponses||block.verificationTasks) { ++it; continue; }
             if (now<block.created||now<block.lastRequest) { ++it; continue; }
             if (block.awaitingVerification) {
                 if (now-block.lastRequest<5000000000ULL) { ++it; continue; }
                 BeginCompactFullFallback(block);
             }
             if (now-block.lastRequest<uint64_t(compactRepairMs)*1000000) { ++it; continue; }
-            if (block.attempts>=6||now-block.created>30000000000ULL) {
+            if (block.attempts>=6) {
                 compactBytes-=block.bytes; it=compactBlocks.erase(it); continue;
             }
             if (block.attempts>=3&&!block.fullFallback) BeginCompactFullFallback(block);
@@ -188,6 +241,8 @@ void PruneCompactBlocks() {
             ++it;
         }
         for (auto it=inflightBlocks.begin();it!=inflightBlocks.end();) {
+            auto found=compactBlocks.find(it->first);
+            if (found!=compactBlocks.end()&&(found->second->receivedResponses||found->second->verificationTasks)) { ++it; continue; }
             if (now>=it->second&&now-it->second>5000000000ULL) it=inflightBlocks.erase(it); else ++it;
         }
     }
@@ -213,19 +268,17 @@ shared_ptr<const vector<uint8_t>> ReadRelayBlock(const array<uint8_t,32>& hash) 
 }
 vector<chain::compact::PrefilledTransaction> SelectCompactPrefilled(const shared_ptr<Peer>& peer,
         const vector<uint8_t>& block,const EvmPayloads& payloads,const vector<array<uint8_t,32>>& hashes,
-        const chain::compact::Decoded& compact) {
+        span<const uint8_t> uniqueIds) {
     vector<chain::compact::PrefilledTransaction> result;
     if (!compactPeerKnowsTransaction) return result;
     const auto limit=min(compactPrefillMax,chain::compact::kMaxPrefilledTransactions);
     const auto byteLimit=min(compactPrefillBytes,chain::compact::kMaxPrefilledBytes);
-    unordered_map<uint64_t,size_t> idCounts;
-    for (const auto id:compact.ids) ++idCounts[id];
     size_t bytes=0;
     // Later transactions in each sender's nonce sequence are the most likely
     // to have arrived recently. Skip every hash already reported by this peer.
     for (size_t i=hashes.size();i>0&&result.size()<limit;--i) {
         const auto position=i-1;
-        if (idCounts[compact.ids[position]]!=1||compactPeerKnowsTransaction(peer,hashes[position])) continue;
+        if (!uniqueIds[position]||compactPeerKnowsTransaction(peer,hashes[position])) continue;
         const auto payload=payloads.find(position);
         const auto size=176+(payload==payloads.end()?size_t(0):payload->second.size());
         if (size>byteLimit-bytes) continue;
@@ -234,6 +287,13 @@ vector<chain::compact::PrefilledTransaction> SelectCompactPrefilled(const shared
         result.push_back({uint32_t(position),std::move(tx)}); bytes+=size;
     }
     reverse(result.begin(),result.end()); return result;
+}
+vector<uint8_t> UniqueCompactIds(span<const uint64_t> ids) {
+    unordered_map<uint64_t,size_t> counts; counts.reserve(ids.size());
+    for (auto id:ids) ++counts[id];
+    vector<uint8_t> unique; unique.reserve(ids.size());
+    for (auto id:ids) unique.push_back(counts.at(id)==1);
+    return unique;
 }
 void AnnounceBlock(const vector<uint8_t>& data) {
     if (data.size()<112) return;
@@ -275,20 +335,12 @@ void AnnounceBlock(const vector<uint8_t>& data) {
             relayTransactionBytes+=size; recentBlockTransactions.emplace(txHash,std::move(tx)); relayTransactionOrder.push_back(txHash);
         }
     }
-    vector<uint8_t> compact(112+num*33); memcpy(compact.data(),data.data(),112);
-    for (size_t i=0;i<num;i++) {
-        memcpy(compact.data()+112+i*33,data.data()+112+i*176+80,32);
-        compact[112+i*33+32]=payloads.count(i)?1:0;
-    }
-    if (extension) {
-        const auto encoded=chain::vdf_consensus::Encode(*extension);
-        compact.insert(compact.end(),encoded.begin(),encoded.end());
-    }
-    auto summary=make_shared<const vector<uint8_t>>(GenerateMessage(39,compact));
-    shared_ptr<const vector<uint8_t>> full,shortSummary;
+    const auto encodedExtension=extension?chain::vdf_consensus::Encode(*extension):vector<uint8_t>{};
+    shared_ptr<const vector<uint8_t>> full,summary,shortSummary;
     vector<uint8_t> shortPayload;
     vector<array<uint8_t,32>> shortHashes;
     chain::compact::Decoded shortDecoded;
+    vector<uint8_t> uniqueShortIds;
     peers=SelectBroadcastPeers(source,hash,blockRelayPeers);
     peers=PrioritizeVdfBlockPeers(data,std::move(peers),source);
     unordered_set<uint64_t> sent;
@@ -302,13 +354,13 @@ void AnnounceBlock(const vector<uint8_t>& data) {
                     memcpy(shortHashes[i].data(),data.data()+112+i*176+80,32); contracts[i]=payloads.count(i)?1:0;
                 }
                 uint64_t nonce=0; randombytes_buf(&nonce,sizeof(nonce));
-                shortPayload=chain::compact::Encode(span<const uint8_t>(data).first(112),shortHashes,contracts,nonce);
-                shortPayload.insert(shortPayload.end(),compact.begin()+112+num*33,compact.end());
-                chain::compact::Decode(shortPayload,maxProtocolTx,chain::vdf_consensus::kMaxEncodedBytes,shortDecoded);
+                shortPayload=chain::compact::Encode(span<const uint8_t>(data).first(112),shortHashes,contracts,nonce,&shortDecoded);
+                shortPayload.insert(shortPayload.end(),encodedExtension.begin(),encodedExtension.end());
                 shortSummary=make_shared<const vector<uint8_t>>(GenerateMessage(51,shortPayload)); compactShortAnnouncements++;
             }
             if (compactPrefill&&peer->prefillCompact.load()) {
-                auto entries=SelectCompactPrefilled(peer,data,payloads,shortHashes,shortDecoded);
+                if (uniqueShortIds.empty()&&!shortDecoded.ids.empty()) uniqueShortIds=UniqueCompactIds(shortDecoded.ids);
+                auto entries=SelectCompactPrefilled(peer,data,payloads,shortHashes,uniqueShortIds);
                 if (!entries.empty()) {
                     auto message=make_shared<const vector<uint8_t>>(GenerateMessage(52,chain::compact::EncodePrefilled(shortPayload,entries)));
                     if (TrySendGossip(peer,message)) { compactPrefilledAnnouncements++; compactPrefilledTransactions+=entries.size(); RecordVdfBlockRecipient(data,peer); }
@@ -317,7 +369,18 @@ void AnnounceBlock(const vector<uint8_t>& data) {
             }
             if (TrySendGossip(peer,shortSummary)) RecordVdfBlockRecipient(data,peer);
         }
-        else if (peer->compact) {if (TrySendGossip(peer,summary)) RecordVdfBlockRecipient(data,peer);}
+        else if (peer->compact) {
+            if (!summary) {
+                vector<uint8_t> compact(112+num*33); memcpy(compact.data(),data.data(),112);
+                for (size_t i=0;i<num;++i) {
+                    memcpy(compact.data()+112+i*33,data.data()+112+i*176+80,32);
+                    compact[112+i*33+32]=payloads.count(i)?1:0;
+                }
+                compact.insert(compact.end(),encodedExtension.begin(),encodedExtension.end());
+                summary=make_shared<const vector<uint8_t>>(GenerateMessage(39,compact));
+            }
+            if (TrySendGossip(peer,summary)) RecordVdfBlockRecipient(data,peer);
+        }
         else {
             if (!full) full=make_shared<const vector<uint8_t>>(GenerateNewBlockMessage(data));
             if (TrySendGossip(peer,full)) RecordVdfBlockRecipient(data,peer);
@@ -343,6 +406,7 @@ void RepairCompactRoot(const array<uint8_t,32>& hash,const shared_ptr<CompactBlo
         if (found==compactBlocks.end()||found->second!=block||!block->awaitingVerification) return;
         compactRootFailures++; inflightBlocks.erase(hash);
         peer=block->source.lock();
+        ++block->receiveGeneration; block->receivedResponses=block->verificationTasks=0;
         ClearCompactTransactions(*block); block->awaitingVerification=false;
         if (block->shortEncoding&&!block->repairedAll&&block->missing) {
             // A unique local short-ID match may still be a collision. Fetch all
@@ -387,7 +451,8 @@ void SubmitCompactBlock(const array<uint8_t,32>& hash,const shared_ptr<CompactBl
     }
     if (!CompactRootMatches(root)) { RepairCompactRoot(hash,block); return; }
     compactReconstructed++;
-    co_spawn(peer->strand,ProcessMessage(peer,2,std::move(data)),[peer](exception_ptr error){if (error) PeerError(peer,error);});
+    auto received=ReserveCompactReceive(peer,2,data);
+    co_spawn(peer->strand,ProcessMessage(peer,2,std::move(data),std::move(received)),[peer](exception_ptr error){if (error) PeerError(peer,error);});
 }
 void ReceiveCompactBlockEncoding(const shared_ptr<Peer>& peer,const vector<uint8_t>& data,bool shortEncoding,
         const vector<chain::compact::PrefilledTransaction>& prefilled={}) {
@@ -538,7 +603,8 @@ awaitable<void> SendBounded(const shared_ptr<Peer>& peer,vector<uint8_t> data) {
     steady_timer timer(peer->strand);
     shared_ptr<SendReservation> reservation;
     while (!peer->closed&&nodeRunning) {
-        reservation=sendQueueBudget.TryReserve(peer->sendBudget,data.size(),maxSendBytes,false);
+        reservation=sendQueueBudget.TryReserve(peer->sendBudget,data.size(),maxSendBytes,false,
+            !data.empty()&&MessageSendPriority(data.front())==SendPriority::Urgent);
         if (reservation) break;
         timer.expires_after(milliseconds(1)); co_await timer.async_wait(use_awaitable);
     }
@@ -570,47 +636,50 @@ vector<vector<uint8_t>> ReadMissingTransactions(const vector<uint8_t>& request) 
     if (response.size()>32) replies.push_back(GenerateMessage(41,response));
     return replies;
 }
-void ReceiveMissingTransactions(const shared_ptr<Peer>& peer,const vector<uint8_t>& data) {
-    if (data.size()<32||data.size()>maxMessageSize) return;
+bool ReceiveMissingTransactions(const shared_ptr<Peer>& peer,const vector<uint8_t>& data) {
+    if (data.size()<32||data.size()>maxMessageSize) return false;
     array<uint8_t,32> hash; memcpy(hash.data(),data.data(),32);
     shared_ptr<CompactBlock> block;
     {
         lock_guard lock(relayMutex);
-        auto found=compactBlocks.find(hash); if (found==compactBlocks.end()||!found->second->requestedSources.count(peer->key)) return;
-        if (found->second->awaitingVerification||found->second->fullFallback) return;
+        auto found=compactBlocks.find(hash); if (found==compactBlocks.end()||!found->second->requestedSources.count(peer->key)) return false;
+        if (found->second->awaitingVerification||found->second->fullFallback) return false;
         block=found->second; size_t offset=32;
         struct Entry { uint32_t index,length; size_t offset; array<uint8_t,32> hash; };
         vector<Entry> entries; unordered_set<uint32_t> positions;
         size_t newBytes=0,extraBytes=0;
         while (offset<data.size()) {
-            if (data.size()-offset<8) return;
+            if (data.size()-offset<8) return false;
             auto index=ReadU32(data.data()+offset),length=ReadU32(data.data()+offset+4); offset+=8;
             if (index>=block->hashes.size()||length>data.size()-offset||length<176||
-                (block->contracts[index]?(length<221||length>221+maxEvmInput):length!=176)) return;
-            if (!positions.insert(index).second) return;
+                (block->contracts[index]?(length<221||length>221+maxEvmInput):length!=176)) return false;
+            if (!positions.insert(index).second) return false;
             array<uint8_t,32> txHash; memcpy(txHash.data(),data.data()+offset+80,32);
             if (block->shortEncoding) {
-                if (chain::compact::ShortId(block->shortKey,txHash)!=block->shortIds[index]) return;
-            } else if (txHash!=block->hashes[index]) return;
+                if (chain::compact::ShortId(block->shortKey,txHash)!=block->shortIds[index]) return false;
+            } else if (txHash!=block->hashes[index]) return false;
             if (block->transactions[index].empty()) { newBytes+=length; extraBytes+=length-176; entries.push_back({index,length,offset,txHash}); }
             offset+=length;
         }
         // Validate the complete reply before changing the pending block. A bad
         // trailing record must not leave missing==0 without verification.
         if (extraBytes>maxBlockBytes-block->encodedBytes) {
-            BeginCompactFullFallback(*block); inflightBlocks.erase(hash); return;
+            BeginCompactFullFallback(*block); inflightBlocks.erase(hash); return false;
         }
-        if (newBytes>maxCompactBytes-compactBytes) return;
+        if (newBytes>maxCompactBytes-compactBytes) return false;
         for (const auto& entry:entries) {
             block->transactions[entry.index].assign(data.begin()+entry.offset,data.begin()+entry.offset+entry.length);
             block->hashes[entry.index]=entry.hash; block->missing--;
         }
         block->bytes+=newBytes; compactBytes+=newBytes; block->encodedBytes+=extraBytes;
-        if (block->missing) return;
+        if (entries.empty()) return false;
+        block->lastRequest=GetSteadyTime();
+        if (block->missing) return true;
         block->source=peer; block->sourceId=PeerId(peer);
         block->awaitingVerification=true; block->lastRequest=GetSteadyTime(); inflightBlocks[hash]=block->lastRequest;
     }
     SubmitCompactBlock(hash,block);
+    return true;
 }
 vector<vector<uint8_t>> ReadBlockReplies(uint8_t type,const vector<uint8_t>& request) {
     if (type==40) return ReadMissingTransactions(request);

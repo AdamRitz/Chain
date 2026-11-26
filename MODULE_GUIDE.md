@@ -1,5 +1,17 @@
 # Chain 模块与修改指南
 
+## 2026-11-26 减少重复处理与区块等待
+
+`Network/Client.h`、`Server.h` 和 `VdfPeers.h` 为当前及下一轮出块者建立独立的区块 TCP 连接。握手类型 5 复用现有链身份与挑战签名检查；普通连接和区块连接分别去重。交易正文、交易清单及 VDF 候选证明走普通连接，区块与缺失交易回复走区块连接。区块连接通过认证后才替代普通连接；普通连接数单独计入 `targetPeers`。连接预留、认证超时和总数上限继续生效，节点退出当前及下一轮名单后回收区块连接。`vdf.block_connections` 与 `vdf.peer_connections[].block_connection` 可检查实际连接。
+
+`Network/TransactionRelay.h` 和 `TxWork.h` 将同批交易完成后的来源登记合并，已记录的正文不再在转发时重复写入缓存。发送完整交易时先排除已经知道该交易的邻居，再选择最多三个接收者。交易请求只有成功进入发送队列才增加尝试次数；发送回复失败时归还回复字节额度。收到的交易正文在处理任务仍存在时暂停重复索取，最多等待 30 秒；重复正文不刷新起始时间，失败或到期后恢复向其他来源请求。
+
+`Network/Blocks.h`、`CompactCodec.h` 为同一区块共用短 ID 冲突表，编码时直接取得元数据，旧类型 39 按需编码。类型 41 缺失交易回复使用区块发送优先级和既有预留容量。收到回复或完整区块后，以 RAII 记录覆盖排队、验证、异常及取消；仍有处理任务时暂停重复补取，记录从首次创建起最多保留 30 秒。记录限制为 64 项、32 MiB，generation 防止旧任务释放新任务的状态。`Server.h` 的区块任务只保留完整正文哈希和字节数，不再另存一份完整区块。
+
+`DB/DB.h` 按完整区块哈希缓存最近 512 个已提交区块的 VDF 扩展字段，分支执行中的临时数据独立读取。`Network/Vdf.h` 缓存当前父块、时间片、公钥、配置和本地证明版本下的出块失败结果，避免非当班节点每次循环重新读块和尝试生成。父块、时间片或证明更新后重新判断，成功结果不缓存。
+
+新增统计：`tx_postprocess_ms`、`tx_postprocess_tasks`、`tx_body_active_wait_skips`、`tx_inventory_request_queue_rejected`、`tx_inventory_reply_refund_bytes`，以及 `vdf.prepare_attempts`、`vdf.declined_attempt_hits`、`vdf.extension_cache_hits`、`vdf.extension_loads`、`vdf.extension_read_bytes`。网络测试检查当前及下一轮出块者实际建立区块连接，并继续完成转账、同步和重启。交易、补块和 VDF 回归覆盖容量边界、取消、失败重试、旧任务释放、重组及数据库重开。
+
 ## 2026-11-26 按哈希合并重复交易任务
 
 `Network/TxWork.h` 在 `ReserveVerify` 前对完整交易正文计算 256 位哈希，包含签名与全部 EVM 输入。相同哈希只登记一个处理任务，重复副本共用处理结果；比较哈希后不再比较完整交易字节。该哈希传给验签函数复用。报文中的交易哈希仍需检查，签名、余额和 nonce 规则保持原有逻辑。

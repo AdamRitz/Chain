@@ -193,6 +193,52 @@ void TestCommitment(const vector<uint8_t>& bytes) {
     Require(!VerifyBlock(SerializeBlockALL(changed)),"producer signature binds parent hash");
 }
 
+void TestVdfAttemptRetry(const Wallet& producer) {
+    const auto clock=consensus::currentTimeMs;
+    uint64_t slot=100;
+    consensus::currentTimeMs=[&] { return slot*consensus::config.slotMs; };
+    vdfPublicKey=producer.public_key; vdfIdentityReady=true;
+    const auto parent=DBReadCurrentBlock();
+    consensus::Extension extension;
+    const auto attempts=vdfPrepareAttempts.load();
+    Require(!PrepareVdfBlock(2,parent,extension),"missing local proof declines production");
+    const auto skipped=vdfDeclinedAttemptHits.load();
+    for (size_t i=0;i<8;++i)
+        Require(!PrepareVdfBlock(2,parent,extension),"same parent and slot reuse failed production check");
+    Require(vdfPrepareAttempts==attempts+1&&vdfDeclinedAttemptHits==skipped+8,
+            "repeated attempts do not reread production state");
+    ++slot;
+    Require(!PrepareVdfBlock(2,parent,extension)&&vdfPrepareAttempts==attempts+2,
+            "new slot performs its own production check");
+    --slot;
+    Require(!PrepareVdfBlock(2,parent,extension)&&vdfPrepareAttempts==attempts+3,
+            "clock rollback does not reuse another slot's result");
+    auto changedParent=parent; changedParent[0]^=1;
+    Require(!WasVdfAttemptDeclined(MakeVdfAttempt(2,changedParent,slot)),
+            "different branch parent never reuses a declined attempt");
+
+    const auto proof=election::CreateCandidate(DBVdfContext(0),producer.private_key);
+    Require(consensus::VerifyProof(proof,DBVdfContext(0)),"new local proof is valid");
+    const auto oldProofVersion=vdfOwnProofVersion.load();
+    StoreVdfCandidate(proof,true);
+    Require(vdfOwnProofVersion==oldProofVersion+1&&
+            !WasVdfAttemptDeclined(MakeVdfAttempt(2,parent,slot)),
+            "proof completion invalidates the declined attempt in the same slot");
+    Require(PrepareVdfBlock(2,parent,extension)&&extension.producerProof==proof,
+            "proof completion allows immediate production retry");
+    StoreVdfCandidate(proof,true);
+    Require(vdfOwnProofVersion==oldProofVersion+1,"duplicate proof does not create repeated retries");
+    vdfBootstrapProduce=false;
+    Require(!PrepareVdfBlock(2,parent,extension),"disabled bootstrap production is declined");
+    vdfBootstrapProduce=true;
+    Require(PrepareVdfBlock(2,parent,extension),"restored bootstrap setting performs a fresh check");
+
+    { lock_guard lock(vdfRuntimeMutex); vdfOwnProofs.clear(); vdfCandidateSets.clear(); }
+    { lock_guard lock(vdfAttemptMutex); vdfDeclinedAttempt.reset(); }
+    vdfIdentityReady=false;
+    consensus::currentTimeMs=clock;
+}
+
 int main(int argc,char** argv) {
     try {
         Require(sodium_init()>=0,"libsodium initializes");
@@ -214,6 +260,7 @@ int main(int argc,char** argv) {
         InitDB(root.string(),true); GenerateGenesisBlock();
         const auto genesis=DBReadBlockByHeight("1");
         Require(genesis.size()==112&&VerifyBlock(genesis),"genesis keeps the original header-only encoding");
+        TestVdfAttemptRetry(producer);
 
         consensus::Extension proposal;
         proposal.slot=100;

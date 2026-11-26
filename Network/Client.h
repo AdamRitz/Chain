@@ -54,8 +54,10 @@ string configuredPeerFile;
 mutex seedAttemptMutex;
 set<pair<string,uint16_t>> seedAttempts;
 set<pair<string,uint16_t>> addressAttempts; // protected by peerMutex, like peerPool
+set<pair<string,uint16_t>> blockAddressAttempts;
 bool relayTransactions=false;
 atomic<uint64_t> networkSentBytes{0},localProposals{0};
+atomic<uint64_t> txPostProcessNs{0},txPostProcessTasks{0};
 array<atomic<uint64_t>,3> prioritySentMessages{},prioritySentBytes{};
 atomic<uint64_t> gossipDropped{0},broadcastSelected{0},broadcastExcluded{0};
 atomic<uint64_t> blockStepWaitNs{0},blockStepProposals{0},blockTailProposals{0};
@@ -83,6 +85,8 @@ struct Peer:enable_shared_from_this<Peer> {
     atomic<bool> closePosted{false}; // safe to read before posting to the strand
     atomic<bool> shortCompact{false};
     atomic<bool> prefillCompact{false},txInventory{false},fragments{false};
+    atomic<bool> blockRelayProtocol{false};
+    bool blockOnly=false; // Fixed before this connection enters peerPool.
     bool relayCapabilitiesSent=false; // strand only; receiving support does not wait for the remote stats reply
     chain::fragment::Receiver fragmentReceiver;
     uint64_t nextFragmentId=1;
@@ -218,7 +222,7 @@ void DeduplicatePeer(const shared_ptr<Peer>& peer,const string& instance) {
         const bool preferOutbound=NodeRelayInstance()<instance;
         auto keep=peer;
         for (const auto& [key,other]:peerPool) {
-            if (other==peer||other->closePosted||other->address!=peer->address||other->port!=peer->port||other->remoteInstance!=instance) continue;
+            if (other==peer||other->closePosted||other->blockOnly!=peer->blockOnly||other->address!=peer->address||other->port!=peer->port||other->remoteInstance!=instance) continue;
             if ((other->outbound==preferOutbound&&keep->outbound!=preferOutbound)||
                 (other->outbound==keep->outbound&&other->key<keep->key)) { close.push_back(keep);keep=other; }
             else close.push_back(other);
@@ -235,6 +239,7 @@ void QueueData(const shared_ptr<Peer>& peer,shared_ptr<const vector<uint8_t>> da
 }
 void SendData(const shared_ptr<Peer>& peer,shared_ptr<const vector<uint8_t>> data) {
     if (!peer||!data||data->empty()||peer->closePosted) return;
+    if (peer->blockOnly&&(MessageSendPriority(data->front())==SendPriority::Transaction||data->front()==49||data->front()==50)) return;
     auto reservation=sendQueueBudget.TryReserve(peer->sendBudget,data->size(),maxSendBytes,true,
         MessageSendPriority(data->front())==SendPriority::Urgent);
     if (!reservation) { RejectSend(peer); return; }
@@ -247,6 +252,7 @@ void SendData(const shared_ptr<Peer>& peer,vector<uint8_t> data) {
 }
 bool TrySendGossip(const shared_ptr<Peer>& peer,shared_ptr<const vector<uint8_t>> data) {
     if (!peer||!data||data->empty()||peer->closePosted) return false;
+    if (peer->blockOnly&&(MessageSendPriority(data->front())==SendPriority::Transaction||data->front()==49||data->front()==50)) return false;
     auto reservation=sendQueueBudget.TryReserve(peer->sendBudget,data->size(),maxSendBytes,false,
         MessageSendPriority(data->front())==SendPriority::Urgent);
     if (!reservation) { gossipDropped++; return false; }
@@ -273,18 +279,24 @@ void SendAdmission(const shared_ptr<Peer>& peer,uint64_t order,vector<uint8_t> r
         }
     });
 }
-vector<shared_ptr<Peer>> SelectBroadcastPeers(uint64_t source,const array<uint8_t,32>& payloadHash,size_t limit) {
+vector<shared_ptr<Peer>> SelectBroadcastPeers(uint64_t source,const array<uint8_t,32>& payloadHash,size_t limit,bool transactions=false) {
     // Every process has its own salt. Hashing the payload also changes the
     // selected neighbors between messages, without depending on map order.
     static const array<uint8_t,32> salt=[] { array<uint8_t,32> value{}; randombytes_buf(value.data(),value.size()); return value; }();
     vector<shared_ptr<Peer>> peers;optional<pair<ip::address,uint16_t>> sourceEndpoint;
     {
         lock_guard lock(peerMutex);
-        for (const auto& [key,peer]:peerPool) {peers.push_back(peer);if (key==source) sourceEndpoint=make_pair(peer->address,peer->port);}
+        for (const auto& [key,peer]:peerPool) {
+            if (key==source) sourceEndpoint=make_pair(peer->address,peer->port);
+            if (peer->blockOnly&&(!peer->vdfAuthenticated||peer->vdfPending)) continue;
+            peers.push_back(peer);
+        }
     }
+    if (!transactions) stable_sort(peers.begin(),peers.end(),[](const auto& a,const auto& b){return a->blockOnly>b->blockOnly;});
     set<pair<ip::address,uint16_t>> sent;
     vector<pair<array<uint8_t,16>,shared_ptr<Peer>>> ranked;
     for (const auto& peer:peers) {
+        if (transactions&&peer->blockOnly) continue;
         auto id=make_pair(peer->address,peer->port);
         if (peer->closePosted||!peer->port||peer->key==source||(sourceEndpoint&&id==*sourceEndpoint)||!sent.insert(id).second) continue;
         array<uint8_t,16> score{};
@@ -316,11 +328,13 @@ void BroadcastData(vector<uint8_t> data,uint64_t source=0) {
     auto limit=MessageSendPriority(data.front())==SendPriority::Transaction?txRelayPeers:0;
     array<uint8_t,32> hash{};
     if (limit) crypto_generichash(hash.data(),hash.size(),data.data(),data.size(),nullptr,0);
-    auto peers=SelectBroadcastPeers(source,hash,limit);
+    auto peers=SelectBroadcastPeers(source,hash,limit,MessageSendPriority(data.front())==SendPriority::Transaction||data.front()==49||data.front()==50);
     auto shared=make_shared<const vector<uint8_t>>(std::move(data));
     for (const auto& peer:peers) TrySendGossip(peer,shared);
 }
-awaitable<void> ProcessMessage(shared_ptr<Peer> peer,uint8_t type,vector<uint8_t> data);
+struct CompactReceiveReservation;
+awaitable<void> ProcessMessage(shared_ptr<Peer> peer,uint8_t type,vector<uint8_t> data,
+    shared_ptr<CompactReceiveReservation> compactReceipt={});
 #include "Blocks.h"
 #include "TransactionRelay.h"
 #include "TxWork.h"
@@ -356,12 +370,12 @@ void QueryBlock(const shared_ptr<Peer>& peer,uint64_t height) {
 size_t ConnectedPeerCountLocked(bool includeAttempts=false) {
     set<pair<string,uint16_t>> endpoints;
     for (const auto& [key,peer]:peerPool)
-        if (!peer->closePosted&&peer->port) endpoints.emplace(peer->address.to_string(),peer->port);
+        if (!peer->closePosted&&peer->port&&!peer->blockOnly) endpoints.emplace(peer->address.to_string(),peer->port);
     if (includeAttempts) endpoints.insert(addressAttempts.begin(),addressAttempts.end());
     return endpoints.size();
 }
 awaitable<void> Connect(ip::address address,uint16_t port,unsigned delayMs=0,bool backup=false,
-        optional<array<uint8_t,32>> expectedVdfKey=nullopt) {
+        optional<array<uint8_t,32>> expectedVdfKey=nullopt,bool blockOnly=false) {
     address=CanonicalAddress(address);
     auto executor=co_await this_coro::executor;
     if (!port||connectionCount>=VdfConnectionLimit()) co_return;
@@ -369,17 +383,19 @@ awaitable<void> Connect(ip::address address,uint16_t port,unsigned delayMs=0,boo
     {
         lock_guard lock(peerMutex);
         for (const auto& [key,peer]:peerPool) {
-            if (peer->port==port&&peer->address==address) co_return;
+            if (!peer->closePosted&&peer->blockOnly==blockOnly&&peer->port==port&&peer->address==address) co_return;
         }
         if (backup&&(!targetPeers||ConnectedPeerCountLocked(true)>=targetPeers)) co_return;
-        if (addressAttempts.size()>=32||!addressAttempts.emplace(address.to_string(),port).second) co_return;
+        auto& attempts=blockOnly?blockAddressAttempts:addressAttempts;
+        if (attempts.size()>=32||!attempts.emplace(address.to_string(),port).second) co_return;
     }
-    struct ReleaseAddress { string address; uint16_t port; ~ReleaseAddress() { lock_guard lock(peerMutex);addressAttempts.erase({address,port}); } } release{address.to_string(),port};
+    struct ReleaseAddress { string address; uint16_t port; bool block; ~ReleaseAddress() { lock_guard lock(peerMutex);(block?blockAddressAttempts:addressAttempts).erase({address,port}); } } release{address.to_string(),port,blockOnly};
     struct RecordAttempt { pair<string,uint16_t> endpoint;bool success=false;~RecordAttempt(){peerRetrySchedule.Record(endpoint,success,GetSteadyTime());if(!success)peerConnectFailures++;} } attempt{{address.to_string(),port}};
     if (backup) backupConnectAttempts++;
     if (delayMs) { steady_timer stagger(executor);stagger.expires_after(milliseconds(delayMs));co_await stagger.async_wait(use_awaitable); }
     auto peer=make_shared<Peer>(tcp::socket(executor));
     peer->outbound=true;
+    peer->blockOnly=blockOnly;
     boost::system::error_code ec;
     peer->deadline.expires_after(seconds(5));
     peer->deadline.async_wait([peer](boost::system::error_code error){if (!error) ClosePeer(peer);});
@@ -387,8 +403,8 @@ awaitable<void> Connect(ip::address address,uint16_t port,unsigned delayMs=0,boo
     peer->deadline.cancel();
     if (ec) co_return;
     peer->socket.set_option(tcp::no_delay(true),ec);
-    peer->discoveryV2=address.is_v6()||peerProtocolV2;
-    array<uint8_t,3> hello{uint8_t(peer->discoveryV2?4:3),uint8_t(listenPort),uint8_t(listenPort>>8)};
+    peer->discoveryV2=blockOnly||address.is_v6()||peerProtocolV2;
+    array<uint8_t,3> hello{uint8_t(blockOnly?5:(peer->discoveryV2?4:3)),uint8_t(listenPort),uint8_t(listenPort>>8)};
     co_await async_write(peer->socket,buffer(hello),redirect_error(use_awaitable,ec));
     if (ec) co_return;
     peer->key=NewPeerKey();
@@ -406,14 +422,14 @@ awaitable<void> Connect(ip::address address,uint16_t port,unsigned delayMs=0,boo
     co_spawn(peer->strand,session(peer->key,peer),[peer](exception_ptr error){PeerError(peer,error);});
     QueryHeight(peer);
     SendData(peer,GenerateMessage(13,{}));
-    if (VdfConsensus::config.enabled) SendData(peer,GenerateMessage(50,{}));
+    if (VdfConsensus::config.enabled&&!peer->blockOnly) SendData(peer,GenerateMessage(50,{}));
 }
 awaitable<void> MaintainVdfProducerPeers() {
     steady_timer timer(co_await this_coro::executor);
     while (nodeRunning) {
         auto targets=RefreshVdfProducerPeers();
         for (const auto& target:targets)
-            co_spawn(timer.get_executor(),Connect(target.address,target.port,0,false,target.publicKey),[](exception_ptr){});
+            co_spawn(timer.get_executor(),Connect(target.address,target.port,0,false,target.publicKey,target.blockOnly),[](exception_ptr){});
         timer.expires_after(milliseconds(200));
         co_await timer.async_wait(use_awaitable);
     }
@@ -560,7 +576,7 @@ awaitable<void> OpenDiscoveryMode() {
         }
         auto now=GetSteadyTime();
         set<pair<ip::address,uint16_t>> connectedEndpoints;
-        for (const auto& peer:peers) if (!peer->closePosted&&peer->port) connectedEndpoints.emplace(peer->address,peer->port);
+        for (const auto& peer:peers) if (!peer->closePosted&&peer->port&&!peer->blockOnly) connectedEndpoints.emplace(peer->address,peer->port);
         if (targetPeers&&connectedEndpoints.size()<targetPeers) {
             if (!belowTargetSince) belowTargetSince=now;
             if (now-belowTargetSince>=5'000'000'000ULL&&!backupPeers.empty()) {
@@ -769,13 +785,14 @@ nlohmann::json GetNodeStats() {
     auto height=snapshot.height,chainTx=snapshot.transactions,burned=snapshot.burned;
     auto userCount=snapshot.users,evmCount=snapshot.contracts; auto head=snapshot.hash;
     auto sends=sendQueueBudget.Snapshot();
-    nlohmann::json stats={{"relay_protocol",shortIds?2:1},{"relay_instance",NodeRelayInstance()},{"vdf_peer_protocol",VdfProducerMeshEnabled()?1:0},{"compact_prefill",shortIds&&compactPrefill},{"tx_inventory",txInventory},{"message_fragments",fragmentMessages},
+    nlohmann::json stats={{"relay_protocol",shortIds?2:1},{"relay_instance",NodeRelayInstance()},{"vdf_peer_protocol",VdfProducerMeshEnabled()?1:0},{"vdf_block_connection",VdfProducerMeshEnabled()},{"compact_prefill",shortIds&&compactPrefill},{"tx_inventory",txInventory},{"message_fragments",fragmentMessages},
         {"vdf",GetVdfStats()},{"received",receivedTx.load()},{"valid",validTx.load()},{"invalid",invalidTx.load()},
         {"duplicate",duplicateTx.load()},{"rejected",rejectedTx.load()},{"committed",committedTx.load()},
         {"pool",poolSize},{"ready_pool",readySize},{"pending",pendingVerify.load()},{"peak_pending",peakPendingVerify.load()},
         {"blocks",blockCount.load()},{"height",height},{"head",U32ToHex(head)},
         {"elapsed_seconds",elapsed},{"local_commit_tps",elapsed>0?committedTx.load()/elapsed:0},
         {"verify_worker_ms",verifyNs.load()/1e6},{"pool_worker_ms",poolNs.load()/1e6},
+        {"tx_postprocess_ms",txPostProcessNs.load()/1e6},{"tx_postprocess_tasks",txPostProcessTasks.load()},
         {"signature_checks",signatureChecks.load()},{"signature_cache_hits",signatureCacheHits.load()},
         {"duplicate_blocks",duplicateBlocks.load()},{"pool_refresh_ms",poolRefreshNs.load()/1e6},
         {"tx_commit_wait_ms",txCommitWaitNs.load()/1e6},{"tx_read_ms",txReadNs.load()/1e6},

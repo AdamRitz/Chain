@@ -65,18 +65,23 @@ inline bool Decode(std::span<const uint8_t> data,size_t maxTransactions,size_t m
     return true;
 }
 inline std::vector<uint8_t> Encode(std::span<const uint8_t> header,std::span<const Hash> hashes,
-        std::span<const uint8_t> contracts,uint64_t nonce) {
+        std::span<const uint8_t> contracts,uint64_t nonce,Decoded* encoded=nullptr) {
     if (header.size()!=kHeaderBytes||hashes.size()!=contracts.size()||ReadLittle(header.subspan(72,8))!=hashes.size())
         throw std::invalid_argument("Invalid compact transaction count");
     auto key=DeriveKey(header,nonce);
+    Decoded details;
+    if (encoded) { details.nonce=nonce; details.key=key; details.ids.reserve(hashes.size()); details.contracts.assign(contracts.begin(),contracts.end()); }
     std::vector<uint8_t> result(header.begin(),header.end());
     AppendLittle(result,nonce,kNonceBytes);
     size_t bitmap=result.size(); result.resize(bitmap+(hashes.size()+7)/8,0);
     for (size_t i=0;i<hashes.size();++i) {
         if (contracts[i]>1) throw std::invalid_argument("Invalid compact transaction type");
         result[bitmap+i/8]|=uint8_t(contracts[i]<<(i%8));
-        AppendLittle(result,ShortId(key,hashes[i]),kShortIdBytes);
+        const auto id=ShortId(key,hashes[i]);
+        AppendLittle(result,id,kShortIdBytes);
+        if (encoded) details.ids.push_back(id);
     }
+    if (encoded) { details.transactionEnd=result.size(); *encoded=std::move(details); }
     return result;
 }
 struct PrefilledTransaction {

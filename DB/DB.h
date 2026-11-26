@@ -99,6 +99,15 @@ atomic<uint64_t> executionPrefixHits{0},executionPrefixTransactions{0};
 atomic<uint64_t> nativeParallelBlocks{0},nativeParallelTransactions{0};
 atomic<uint64_t> evmAccountWrites{0},evmSlotWrites{0},evmPersistNs{0};
 atomic<uint64_t> commitLockWaitNs{0},candidateLockWaitNs{0};
+mutex vdfExtensionMutex;
+unordered_map<array<uint8_t,32>,shared_ptr<const chain::vdf_consensus::Extension>,GetMapHash> vdfExtensions;
+deque<array<uint8_t,32>> vdfExtensionOrder;
+constexpr size_t maxVdfExtensions=512;
+atomic<uint64_t> vdfExtensionCacheHits{0},vdfExtensionLoads{0},vdfExtensionReadBytes{0};
+void ClearVdfExtensionCache() {
+    lock_guard lock(vdfExtensionMutex);
+    vdfExtensions.clear(); vdfExtensionOrder.clear();
+}
 void InvalidateExecutionCache() {
     dbStateVersion++;
     lock_guard lock(executionMutex); executionCache.clear(); executionBytes=0;
@@ -125,6 +134,7 @@ bool DBGet(const string& key,string& value) {
     return true;
 }
 void InitDB(const string& path="test",bool sync=true) {
+    ClearVdfExtensionCache();
     dbSync=sync;
     options=rocksdb::Options();
     options.create_if_missing=true;
@@ -622,12 +632,34 @@ chain::vdf_election::Context DBVdfContext(uint64_t targetEpoch) {
     }
     return context;
 }
+shared_ptr<const chain::vdf_consensus::Extension> DBVdfExtension(const array<uint8_t,32>& hash) {
+    // Branch replay reads its temporary batch directly. It must neither use nor
+    // publish entries from writes which could still be rolled back.
+    if (!branchBatch) {
+        lock_guard lock(vdfExtensionMutex);
+        if (auto found=vdfExtensions.find(hash);found!=vdfExtensions.end()) {
+            vdfExtensionCacheHits++; return found->second;
+        }
+    }
+    const auto data=DBReadBlockByHash(hash);
+    vdfExtensionLoads++; vdfExtensionReadBytes+=data.size();
+    optional<chain::vdf_consensus::Extension> extension;
+    if (data.size()<112||memcmp(data.data()+80,hash.data(),hash.size())||
+        !ReadVdfExtension(data,extension)||!extension) throw runtime_error("Missing VDF block extension");
+    auto result=make_shared<const chain::vdf_consensus::Extension>(std::move(*extension));
+    if (!branchBatch) {
+        lock_guard lock(vdfExtensionMutex);
+        if (auto found=vdfExtensions.find(hash);found!=vdfExtensions.end()) return found->second;
+        while (vdfExtensions.size()>=maxVdfExtensions) {
+            vdfExtensions.erase(vdfExtensionOrder.front()); vdfExtensionOrder.pop_front();
+        }
+        vdfExtensions.emplace(hash,result); vdfExtensionOrder.push_back(hash);
+    }
+    return result;
+}
 optional<chain::vdf_consensus::Extension> DBVdfParentExtension() {
     if (!chain::vdf_consensus::config.enabled||DBReadBlockHeight()<=1) return nullopt;
-    const auto parent=DBReadBlockByHash(DBReadCurrentBlock());
-    optional<chain::vdf_consensus::Extension> extension;
-    if (!ReadVdfExtension(parent,extension)||!extension) throw runtime_error("Missing VDF parent extension");
-    return extension;
+    return *DBVdfExtension(DBReadCurrentBlock());
 }
 uint64_t DBVdfParentSlot() {
     if (!chain::vdf_consensus::config.enabled) return 0;
@@ -640,10 +672,7 @@ vector<chain::vdf_election::Candidate> DBVdfActiveCandidates(uint64_t height) {
     const auto epoch=Epoch(height);
     if (epoch<2) return {};
     const auto end=EpochStart(epoch)-1;
-    const auto block=DBReadBlockByHeight(to_string(end));
-    optional<Extension> extension;
-    if (!ReadVdfExtension(block,extension)||!extension) throw runtime_error("Missing VDF election boundary block");
-    return extension->candidates;
+    return DBVdfExtension(DBReadBlockHashByHeight(end))->candidates;
 }
 vector<chain::vdf_election::Candidate> DBVdfCandidatesForNextBlock() {
     using namespace chain::vdf_consensus;
@@ -651,10 +680,7 @@ vector<chain::vdf_election::Candidate> DBVdfCandidatesForNextBlock() {
     if (!chain::vdf_consensus::config.enabled||height<2) return {};
     if (height==UINT64_MAX) throw runtime_error("VDF next block height overflow");
     if (Epoch(height)!=Epoch(height+1)) return {};
-    const auto parent=DBReadBlockByHash(DBReadCurrentBlock());
-    optional<Extension> extension;
-    if (!ReadVdfExtension(parent,extension)||!extension) throw runtime_error("Missing VDF parent candidates");
-    return extension->candidates;
+    return DBVdfExtension(DBReadCurrentBlock())->candidates;
 }
 optional<chain::vdf_election::Context> DBVdfNextContext(uint64_t height) {
     using namespace chain::vdf_consensus;

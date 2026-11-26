@@ -217,6 +217,22 @@ void TestMergedWork(boost::asio::io_context& io,const Wallet& wallet,const Walle
 int main(int argc,char** argv) {
     try {
         if (sodium_init()<0) return 1;
+        {
+            vector<uint8_t> block(112+176,0);block[112+112]=1;
+            Require(blockWork.empty()&&blockWorkBytes==0,"block-work test starts without live tasks");
+            bool duplicate=false;auto owner=ReserveBlockWork(block,false,duplicate);
+            Require(owner&&!duplicate&&owner->bytes==block.size()&&blockWorkBytes==block.size(),"full block registers one hash and its byte charge");
+            auto same=ReserveBlockWork(block,false,duplicate);
+            Require(!same&&duplicate&&blockWorkBytes==block.size(),"same complete block hash merges without a second byte charge");
+            auto changed=block;changed[112+112]^=1;duplicate=false;
+            auto altered=ReserveBlockWork(changed,false,duplicate);
+            Require(altered&&!duplicate&&altered->fingerprint!=owner->fingerprint,"changed transaction signature creates distinct block work");
+            duplicate=false;auto batch=ReserveBlockWork(block,true,duplicate);
+            Require(batch&&!duplicate&&batch->fingerprint!=owner->fingerprint,"batch format is part of the work hash");
+            Require(blockWorkBytes==block.size()*3&&blockWork.size()==3,"all distinct block tasks charge their full size");
+            owner.reset();Require(blockWorkBytes==block.size()*2,"owner destruction releases its byte charge once");
+            altered.reset();batch.reset();Require(blockWorkBytes==0&&blockWork.empty(),"all block work is released after processing");
+        }
         TxInventoryKey nativeKey{},evmKey{};nativeKey.hash[0]=7;evmKey=nativeKey;evmKey.kind=1;
         vector<TxInventoryKey> keys{nativeKey,evmKey,nativeKey},parsed;
         auto encoded=EncodeTxInventory(keys);
@@ -273,16 +289,30 @@ int main(int argc,char** argv) {
             bad.reset();
             {lock_guard lock(txInventoryMutex);SelectTxRequestLocked(nativeKey,txPending.at(nativeKey),GetSteadyTime(),requests);}
             Require(requests.count(second.peer->key)&&!TxBodyWaitingLocked(nativeKey,GetSteadyTime()),"failed owner immediately permits another source");
+            Require(txPending.at(nativeKey).attempts==3,"selection does not consume a request attempt before queue admission");
+            // These direct state checks discard the selected messages.
+            txPending.at(nativeKey).requestToken=0;requests.clear();
             good.reset();
             {lock_guard lock(txInventoryMutex);EraseTxReceivingLocked(nativeKey);}
             auto old=ReserveTxBodies(first.peer,10,tx);
             {lock_guard lock(txInventoryMutex);txReceiving.at(nativeKey).created=GetSteadyTime()-txBodyWaitNs;}
             requests.clear();
             {lock_guard lock(txInventoryMutex);txPending.at(nativeKey).lastRequest=0;SelectTxRequestLocked(nativeKey,txPending.at(nativeKey),GetSteadyTime(),requests);}
-            Require(!requests.empty(),"absolute wait deadline permits retries while worker is still queued");
+            Require(requests.empty(),"a real queued owner still suppresses requests after two seconds");
             {lock_guard lock(txInventoryMutex);txReceiving.at(nativeKey).created=GetSteadyTime()-txRequestLifetimeNs;}
             TxInventoryMaintenance();
-            Require(txReceivingBytes==176,"expired record still accounts for its queued owner bytes");
+            Require(txReceiving.count(nativeKey)&&txPending.count(nativeKey),"queued owner and its sources survive the ordinary request lifetime");
+            {lock_guard lock(txInventoryMutex);txReceiving.at(nativeKey).created=GetSteadyTime()-txBodyOwnerWaitNs;
+                SelectTxRequestLocked(nativeKey,txPending.at(nativeKey),GetSteadyTime(),requests);}
+            Require(!requests.empty(),"absolute owner deadline still permits recovery from a stuck task");
+            txPending.at(nativeKey).requestToken=0;txPending.at(nativeKey).attempts=6;requests.clear();
+            TxInventoryMaintenance();
+            Require(txReceivingBytes==176&&txReceiving.at(nativeKey).retryReleased,"expired owner remains charged without pausing new requests");
+            auto afterDeadline=ReserveTxBodies(second.peer,10,tx);
+            Require(afterDeadline->receipts.empty()&&txReceivingBytes==176,"same live owner cannot establish a second waiting period");
+            // Completion by another path can remove this generation while the
+            // old task still holds its reservation; test that release boundary.
+            {lock_guard lock(txInventoryMutex);EraseTxReceivingLocked(nativeKey);}
             auto fresh=ReserveTxBodies(second.peer,10,tx);auto freshToken=txReceiving.at(nativeKey).token;
             Require(txReceivingBytes==352,"new generation and old queued task share the same byte quota");
             old.reset();
@@ -340,6 +370,79 @@ int main(int argc,char** argv) {
         Require(frames.size()==2&&frames[0].first==10&&frames[0].second==vector<uint8_t>(tx.begin(),tx.end()),"native response reuses type10 exact body");
         Require(frames[1].first==18&&ReadU32(frames[1].second.data())==evm.size()&&equal(evm.begin(),evm.end(),frames[1].second.begin()+4),"EVM response retains length and complete input");
 
+        {
+            Connection congested(io);
+            auto waiting=GenerateTx(wallet.public_key,receiver.public_key,1,50,wallet);
+            auto waitingKey=TransactionInventoryKey(waiting);
+            auto notice=EncodeTxInventory(vector<TxInventoryKey>{waitingKey});
+            auto occupied=sendQueueBudget.TryReserve(congested.peer->sendBudget,maxSendBytes,maxSendBytes,false);
+            Require(bool(occupied),"test fills only the target peer's send allowance");
+            auto attemptsBefore=txInventoryRetries.load(),rejectedBefore=txInventoryRequestQueueRejected.load();
+            for (unsigned i=0;i<8;++i) Require(ReceiveTxInventory(congested.peer,notice),"inventory accepted while send queue is full");
+            const auto& pending=txPending.at(waitingKey);
+            Require(pending.attempts==0&&pending.lastRequest==0&&pending.requestToken==0,
+                "rejected queue admission consumes neither attempts nor retry time and releases selection");
+            Require(txInventoryRetries==attemptsBefore&&txInventoryRequestQueueRejected-rejectedBefore==8,
+                "unsent requests are counted separately from actual retries");
+            occupied.reset();TxInventoryMaintenance();
+            Require(txPending.at(waitingKey).attempts==1,"request can be sent immediately after capacity returns");
+            auto request=ReadMessages(io,congested);
+            Require(request.size()==1&&request[0].first==54&&request[0].second==notice,"recovered capacity sends the missing request");
+            {lock_guard lock(txInventoryMutex);txPending.erase(waitingKey);}
+
+            occupied=sendQueueBudget.TryReserve(congested.peer->sendBudget,maxSendBytes,maxSendBytes,false);
+            Require(bool(occupied),"reply failure test fills peer send allowance");
+            const uint64_t tokens=1000000;
+            {lock_guard lock(txInventoryMutex);auto& state=TxPeerStateLocked(congested.peer,GetSteadyTime());
+                state.replyTokens=tokens;state.replyAt=GetSteadyTime()+1000000000ULL;}
+            auto refunded=txInventoryReplyRefundBytes.load();
+            auto requested=EncodeTxInventory(vector<TxInventoryKey>{nativeKey,evmKey});
+            Require(ServeTxRequests(congested.peer,requested),"rejected reply keeps connection available");
+            Require(txPeerKnown.at(congested.peer->key).replyTokens==tokens&&
+                txInventoryReplyRefundBytes-refunded==tx.size()+4+evm.size(),"both unsent native and EVM replies refund their byte quota");
+            occupied.reset();Require(ServeTxRequests(congested.peer,requested),"same reply can retry after queue capacity returns");
+            Require(txPeerKnown.at(congested.peer->key).replyTokens==tokens-tx.size()-4-evm.size(),"successful replies consume byte quota once");
+            Require(ReadMessages(io,congested,2).size()==2,"recovered replies contain both requested transaction kinds");
+            ClosePeer(congested.peer);
+        }
+
+        {
+            Connection slow(io),alternate(io);
+            auto waiting=GenerateTx(wallet.public_key,receiver.public_key,1,80,wallet);
+            auto waitingKey=TransactionInventoryKey(waiting);
+            auto notice=EncodeTxInventory(vector<TxInventoryKey>{waitingKey});
+            Require(ReceiveTxInventory(slow.peer,notice),"owner timeout test requests its first source");
+            Require(ReadMessages(io,slow).size()==1,"first source receives initial body request");
+            Require(ReceiveTxInventory(alternate.peer,notice),"owner timeout test retains alternate source");
+            auto owner=ReserveTxBodies(slow.peer,10,waiting);
+            Require(owner->receipts.size()==1,"timeout test holds an actual body reservation");
+            uint64_t started;
+            {lock_guard lock(txInventoryMutex);started=GetSteadyTime()-txBodyOwnerWaitNs;
+                txReceiving.at(waitingKey).created=started;
+                auto& pending=txPending.at(waitingKey);pending.created=pending.started=started;}
+            TxInventoryMaintenance();
+            Require(txPending.count(waitingKey)&&txPending.at(waitingKey).attempts==2&&
+                txPending.at(waitingKey).lastSource==alternate.peer->key,"maintenance resumes at another source without erasing or resetting attempts");
+            auto retried=ReadMessages(io,alternate);
+            Require(retried.size()==1&&retried[0].first==54&&retried[0].second==notice,"owner expiry sends a real missing-body request");
+            const auto resumed=txPending.at(waitingKey).created;
+            auto duplicate=ReserveTxBodies(alternate.peer,10,waiting);
+            auto invalid=waiting;invalid[112]^=1;
+            auto variant=ReserveTxBodies(slow.peer,10,invalid);variant.reset();
+            Require(duplicate->receipts.empty()&&txReceiving.at(waitingKey).created==started&&
+                txReceiving.at(waitingKey).retryReleased&&txPending.at(waitingKey).created==resumed&&
+                txPending.at(waitingKey).started==started&&txPending.at(waitingKey).attempts==2,
+                "duplicate and failed signature variant cannot renew deadlines or reset attempts");
+            {lock_guard lock(txInventoryMutex);auto& pending=txPending.at(waitingKey);
+                pending.started=GetSteadyTime()-txBodyOwnerWaitNs-txRequestLifetimeNs;
+                pending.created=GetSteadyTime();}
+            TxInventoryMaintenance();
+            Require(!txPending.count(waitingKey),"fixed total request lifetime expires even when a reply recently resumed requests");
+            owner.reset();TxInventoryMaintenance();
+            Require(!txReceiving.count(waitingKey),"completed expired owner releases its final receipt record");
+            ClosePeer(slow.peer);ClosePeer(alternate.peer);
+        }
+
         auto next=GenerateTx(wallet.public_key,receiver.public_key,10,2,wallet);auto nextKey=TransactionInventoryKey(next);
         Require(ProcessTxPackage(next,&statuses)==1,"new native transaction validated before broadcast");
         // Add two broadcast targets. A zero push count still serves old peers
@@ -355,6 +458,29 @@ int main(int argc,char** argv) {
         Require(ReadMessages(io,second,0).empty()&&ReadMessages(io,legacy,0).empty(),"known-body and notification caches suppress redundant broadcasts");
         Require(ServeTxRequests(second.peer,EncodeTxInventory(vector<TxInventoryKey>{nextKey})),"notified peer can request body");
         frames=ReadMessages(io,second);Require(frames.size()==1&&frames[0].first==10&&TxPeerKnowsTransaction(second.peer,nextKey.hash),"body response establishes possession separately from notification");
+
+        {
+            Connection unknown(io);
+            vector<uint8_t> batch;vector<TxInventoryKey> batchKeys;
+            for (uint64_t nonce=60;nonce<76;++nonce) {
+                auto body=GenerateTx(wallet.public_key,receiver.public_key,1,nonce,wallet);
+                batch.insert(batch.end(),body.begin(),body.end());batchKeys.push_back(TransactionInventoryKey(body));
+            }
+            Require(ProcessTxPackage(batch,&statuses)==batchKeys.size(),"push selection test uses verified accepted transactions");
+            RecordVerifiedNativeTransactions(first.peer,batch,statuses);
+            legacy.peer->txInventory=true;txPushPeers=1;
+            {lock_guard lock(peerMutex);peerPool.emplace(third.peer->key,third.peer);peerPool.emplace(unknown.peer->key,unknown.peer);}
+            {lock_guard lock(txInventoryMutex);for (auto target:{second.peer,third.peer,legacy.peer})
+                for (const auto& key:batchKeys) TxRememberPeerLocked(target,key,GetSteadyTime());}
+            RelayAcceptedTransactions(first.peer,batch,false,false);
+            auto pushed=ReadMessages(io,unknown);
+            Require(pushed.size()==1&&pushed[0].first==10&&pushed[0].second==batch,
+                "known peers never consume the only full-body destination for any transaction");
+            Require(ReadMessages(io,second,0).empty()&&ReadMessages(io,third,0).empty()&&ReadMessages(io,legacy,0).empty(),
+                "already-known destinations receive neither duplicate body nor inventory");
+            {lock_guard lock(peerMutex);peerPool.erase(third.peer->key);peerPool.erase(unknown.peer->key);}
+            legacy.peer->txInventory=false;txPushPeers=0;ClosePeer(unknown.peer);
+        }
 
         // Bound hostile announcements and sources without sending thousands of
         // queued requests: exercise the same protected state helpers directly.
