@@ -1,0 +1,502 @@
+{
+  "date": "2026-11-26",
+  "measurement_seconds_requested": 30,
+  "repetitions_per_point": 1,
+  "fisco": [
+    {
+      "status": "incomplete",
+      "ok": false,
+      "nodes": 100,
+      "target_tps": 8000,
+      "warmup_seconds": 2,
+      "requested_measurement_seconds": 30,
+      "drain_seconds": 5,
+      "users": 1024,
+      "amount": 1,
+      "routing": "ring",
+      "sample_hz": 2,
+      "head_poll_seconds": 0.2,
+      "driver_exit_code": 0,
+      "tps": 866.4282162027555,
+      "measurement_seconds": 30.04980621950017,
+      "committed_delta": 26036,
+      "endpoint_span_limit_passed": true,
+      "endpoint_spans_seconds": [
+        0.1295856320002713,
+        0.1750466769999548
+      ],
+      "actual_send_tps": 4278.933333333333,
+      "submitted": 144368,
+      "callback_success": 123038,
+      "callback_errors": 0,
+      "callback_unresolved": 21330,
+      "unsubmitted": 111632,
+      "driver_errors": {},
+      "receipt_p50_ms": 10774.326331,
+      "receipt_p95_ms": 21322.601107,
+      "receipt_p99_ms": 26076.193293,
+      "receipt_success_samples": 107064,
+      "p50_ms": 12598.448912063759,
+      "p95_ms": 31180.564430063896,
+      "p99_ms": 31180.564430063896,
+      "planned_samples": 60,
+      "confirmation_samples": 10,
+      "attempted_samples": 33,
+      "unresolved_samples": 50,
+      "within_one_second_fraction": 0.0,
+      "final_count_min": 46086,
+      "transactions_received_on_all_nodes": 45038,
+      "drained": false,
+      "state_nodes_checked": 100,
+      "same_height_state_passed": true,
+      "final_common_height": 25,
+      "all_final_heights_equal": false,
+      "confirmed_samples_within_audited_height": 10,
+      "balance_accounts_checked": 1024,
+      "balance_mismatches": null,
+      "balance_audit_passed": false,
+      "balance_audit_basis": "raw balances retained; transfers not all verified",
+      "run": "pbft100-001",
+      "error_count": 1674,
+      "errors_by_phase": {
+        "sample_receipt": 1674
+      },
+      "profile": "pbft100",
+      "cleanup": {
+        "stop": {
+          "nodes": 100,
+          "passed": 100
+        },
+        "collect": {
+          "nodes": 100,
+          "passed": 100
+        },
+        "clean": {
+          "nodes": 100,
+          "passed": 100
+        }
+      },
+      "audit_hashes": {
+        "block_hashes": [
+          "0x358567700842202e6c9a5a44c2570e586c002c3528e8bbff38a94e19e7a6fb2f"
+        ],
+        "state_roots": [
+          "0x6c580468429853e476126eebb9cb57d3811530d51790f7740cd94ac15e5add86"
+        ]
+      }
+    },
+    {
+      "status": "incomplete",
+      "ok": false,
+      "nodes": 100,
+      "target_tps": 2000,
+      "warmup_seconds": 2,
+      "requested_measurement_seconds": 30,
+      "drain_seconds": 5,
+      "users": 1024,
+      "amount": 1,
+      "routing": "ring",
+      "sample_hz": 2,
+      "head_poll_seconds": 0.2,
+      "driver_exit_code": 0,
+      "tps": 2004.37839582856,
+      "measurement_seconds": 29.980367043000115,
+      "committed_delta": 60092,
+      "endpoint_span_limit_passed": true,
+      "endpoint_spans_seconds": [
+        0.13301981299991894,
+        0.09342876700065972
+      ],
+      "actual_send_tps": 2000.0,
+      "submitted": 64000,
+      "callback_success": 63985,
+      "callback_errors": 15,
+      "callback_unresolved": 0,
+      "unsubmitted": 0,
+      "driver_errors": {
+        "sdk:10004:AlreadyInTxPool": 15
+      },
+      "receipt_p50_ms": 229.248993,
+      "receipt_p95_ms": 1894.761295,
+      "receipt_p99_ms": 3098.142741,
+      "receipt_success_samples": 59986,
+      "p50_ms": 433.03667526197387,
+      "p95_ms": 2225.7210042625957,
+      "p99_ms": 3725.7210042625957,
+      "planned_samples": 60,
+      "confirmation_samples": 60,
+      "attempted_samples": 60,
+      "unresolved_samples": 0,
+      "within_one_second_fraction": 0.9,
+      "final_count_min": 65024,
+      "transactions_received_on_all_nodes": 64000,
+      "drained": true,
+      "state_nodes_checked": 100,
+      "same_height_state_passed": true,
+      "final_common_height": 123,
+      "all_final_heights_equal": true,
+      "confirmed_samples_within_audited_height": 60,
+      "balance_accounts_checked": 1024,
+      "balance_mismatches": null,
+      "balance_audit_passed": false,
+      "balance_audit_basis": "raw balances retained; transfers not all verified",
+      "run": "pbft100-002",
+      "error_count": 142,
+      "errors_by_phase": {
+        "sample_receipt": 142
+      },
+      "profile": "pbft100",
+      "cleanup": {
+        "stop": {
+          "nodes": 100,
+          "passed": 100
+        },
+        "collect": {
+          "nodes": 100,
+          "passed": 100
+        },
+        "clean": {
+          "nodes": 100,
+          "passed": 100
+        }
+      },
+      "audit_hashes": {
+        "block_hashes": [
+          "0xdf8c2915b4d73fcf201a33b0f40f06b03130eff47764e79b2ec2377e66a3f914"
+        ],
+        "state_roots": [
+          "0xc9e00034c7f3d2614b2c1e4222089eecd7dd3cfbdebf7a6ee113d957e8d1da74"
+        ]
+      },
+      "independent_balance_audit": {
+        "balances_compared": 1024,
+        "mismatches": 0,
+        "expected_submitted": 64000,
+        "committed_transfers": 64000,
+        "all_nodes_same_hash_and_state": true,
+        "sdk_errors": {
+          "sdk:10004:AlreadyInTxPool": 15
+        },
+        "original_summary_unchanged": true
+      }
+    },
+    {
+      "status": "incomplete",
+      "ok": false,
+      "nodes": 100,
+      "target_tps": 8000,
+      "warmup_seconds": 2,
+      "requested_measurement_seconds": 30,
+      "drain_seconds": 5,
+      "users": 1024,
+      "amount": 1,
+      "routing": "ring",
+      "sample_hz": 2,
+      "head_poll_seconds": 0.2,
+      "driver_exit_code": 0,
+      "tps": 4160.100639587384,
+      "measurement_seconds": 29.99302440249994,
+      "committed_delta": 124774,
+      "endpoint_span_limit_passed": true,
+      "endpoint_spans_seconds": [
+        0.08305961299993214,
+        0.07085757599998033
+      ],
+      "actual_send_tps": 6221.266666666666,
+      "submitted": 202638,
+      "callback_success": 152637,
+      "callback_errors": 0,
+      "callback_unresolved": 50001,
+      "unsubmitted": 53362,
+      "driver_errors": {},
+      "receipt_p50_ms": 5943.397118,
+      "receipt_p95_ms": 15012.231748,
+      "receipt_p99_ms": 18939.888894,
+      "receipt_success_samples": 136637,
+      "p50_ms": 14724.232375539941,
+      "p95_ms": 20018.41434254038,
+      "p99_ms": 23400.908103540132,
+      "planned_samples": 60,
+      "confirmation_samples": 29,
+      "attempted_samples": 47,
+      "unresolved_samples": 31,
+      "within_one_second_fraction": 0.0,
+      "final_count_min": 130544,
+      "transactions_received_on_all_nodes": 129520,
+      "drained": false,
+      "state_nodes_checked": 100,
+      "same_height_state_passed": true,
+      "final_common_height": 31,
+      "all_final_heights_equal": false,
+      "confirmed_samples_within_audited_height": 29,
+      "balance_accounts_checked": 1024,
+      "balance_mismatches": null,
+      "balance_audit_passed": false,
+      "balance_audit_basis": "raw balances retained; transfers not all verified",
+      "run": "rpbft5-001",
+      "error_count": 1667,
+      "errors_by_phase": {
+        "sample_receipt": 1667
+      },
+      "profile": "rpbft5",
+      "cleanup": {
+        "stop": {
+          "nodes": 100,
+          "passed": 100
+        },
+        "collect": {
+          "nodes": 100,
+          "passed": 100
+        },
+        "clean": {
+          "nodes": 100,
+          "passed": 100
+        }
+      },
+      "audit_hashes": {
+        "block_hashes": [
+          "0x72642fd4f2e0dedf934d0305db6fff2c965d20350eeaff5cbcf4a23b28f47bb0"
+        ],
+        "state_roots": [
+          "0xcb62a87e9e4e387c56e1fb1c5d32f0b444f788b86ab65e770b7c7b5c741c8089"
+        ]
+      }
+    },
+    {
+      "status": "complete",
+      "ok": true,
+      "nodes": 100,
+      "target_tps": 4000,
+      "warmup_seconds": 2,
+      "requested_measurement_seconds": 30,
+      "drain_seconds": 5,
+      "users": 1024,
+      "amount": 1,
+      "routing": "ring",
+      "sample_hz": 2,
+      "head_poll_seconds": 0.2,
+      "driver_exit_code": 0,
+      "tps": 4003.266714919884,
+      "measurement_seconds": 29.991506574500818,
+      "committed_delta": 120064,
+      "endpoint_span_limit_passed": true,
+      "endpoint_spans_seconds": [
+        0.08114207699964027,
+        0.062000990000342426
+      ],
+      "actual_send_tps": 4000.0,
+      "submitted": 128000,
+      "callback_success": 128000,
+      "callback_errors": 0,
+      "callback_unresolved": 0,
+      "unsubmitted": 0,
+      "driver_errors": {},
+      "receipt_p50_ms": 308.733297,
+      "receipt_p95_ms": 481.13636,
+      "receipt_p99_ms": 517.388077,
+      "receipt_success_samples": 120000,
+      "p50_ms": 624.5696071346174,
+      "p95_ms": 763.8058591346635,
+      "p99_ms": 842.4580061346205,
+      "planned_samples": 60,
+      "confirmation_samples": 60,
+      "attempted_samples": 60,
+      "unresolved_samples": 0,
+      "within_one_second_fraction": 1.0,
+      "final_count_min": 129024,
+      "transactions_received_on_all_nodes": 128000,
+      "drained": true,
+      "state_nodes_checked": 100,
+      "same_height_state_passed": true,
+      "final_common_height": 160,
+      "all_final_heights_equal": true,
+      "confirmed_samples_within_audited_height": 60,
+      "balance_accounts_checked": 1024,
+      "balance_mismatches": 0,
+      "balance_audit_passed": true,
+      "balance_audit_basis": "all submitted transfers",
+      "run": "rpbft5-002",
+      "error_count": 115,
+      "errors_by_phase": {
+        "sample_receipt": 115
+      },
+      "profile": "rpbft5",
+      "cleanup": {
+        "stop": {
+          "nodes": 100,
+          "passed": 100
+        },
+        "collect": {
+          "nodes": 100,
+          "passed": 100
+        },
+        "clean": {
+          "nodes": 100,
+          "passed": 100
+        }
+      },
+      "audit_hashes": {
+        "block_hashes": [
+          "0x7f9f4eb9e4b16fceae05209bdf00847e941e3cc1597b6175fdd5b0938cd2754b"
+        ],
+        "state_roots": [
+          "0x21944d4933a055e6d0b50523193c35036205dc2f03906601d33747ff9e4210f0"
+        ]
+      }
+    }
+  ],
+  "chain": [
+    {
+      "target_tps": 6000,
+      "status": "complete",
+      "ok": true,
+      "measurement_seconds": 29.79113092999978,
+      "tps": 5938.915189749774,
+      "actual_send_tps": 5998.026742249671,
+      "p50_seconds": 0.29138014899990594,
+      "p95_seconds": 0.7904219790002571,
+      "within_one_second_percent": 95.66666666666667,
+      "measurement_reorganizations_sum": 0,
+      "max_reorg_depth": 0,
+      "drained": true,
+      "state_nodes_checked": 100,
+      "all_node_states_equal": true,
+      "accounts_checked_per_node": 1024,
+      "common_block_height": 484,
+      "common_block_hash": "81b8e557be9e7fdda81e105674a6dbb704c6d6df3c02627f4714bb6917bc373b",
+      "cleanup_successful_records": 100,
+      "cleanup_records": 100,
+      "databases_removed": 100,
+      "cleanup_all_expected_records_ok": true,
+      "node_cpu_cores": {
+        "source": "result.metrics.resources",
+        "nodes": 100,
+        "mean": 0.8976690781122675,
+        "p50": 0.8987589184049737,
+        "p95": 1.0611541667204523,
+        "maximum": 1.1975257012241416
+      },
+      "blocks_per_second": 4.967921504818182,
+      "mean_transactions_per_block": 1195.4527027027027,
+      "producer_mesh_complete_roster_snapshots": 27,
+      "producer_mesh_ten_edge_snapshots": 27,
+      "binary_sha256s": [
+        "8e9e8dbe306b39742e29cce477148a659447019b7fd7e40199c668afddc2c054"
+      ]
+    },
+    {
+      "target_tps": 7000,
+      "status": "complete",
+      "ok": true,
+      "measurement_seconds": 29.76739909600019,
+      "tps": 6892.204432720073,
+      "actual_send_tps": 7000.410056920301,
+      "p50_seconds": 0.3077289549996749,
+      "p95_seconds": 0.5728090480001811,
+      "within_one_second_percent": 99.16666666666667,
+      "measurement_reorganizations_sum": 0,
+      "max_reorg_depth": 0,
+      "drained": true,
+      "state_nodes_checked": 100,
+      "all_node_states_equal": true,
+      "accounts_checked_per_node": 1024,
+      "common_block_height": 485,
+      "common_block_hash": "4efe890ada05a3a68317d4c854089c239106c8732aaf89e9ace34c072cd9727c",
+      "cleanup_successful_records": 100,
+      "cleanup_records": 100,
+      "databases_removed": 100,
+      "cleanup_all_expected_records_ok": true,
+      "node_cpu_cores": {
+        "source": "result.metrics.resources",
+        "nodes": 100,
+        "mean": 1.0393850498067962,
+        "p50": 1.0095080506822052,
+        "p95": 1.2727814748626878,
+        "maximum": 1.3783617859561907
+      },
+      "blocks_per_second": 4.938288344437597,
+      "mean_transactions_per_block": 1395.6666666666667,
+      "producer_mesh_complete_roster_snapshots": 26,
+      "producer_mesh_ten_edge_snapshots": 26,
+      "binary_sha256s": [
+        "8e9e8dbe306b39742e29cce477148a659447019b7fd7e40199c668afddc2c054"
+      ]
+    },
+    {
+      "target_tps": 8000,
+      "status": "complete",
+      "ok": true,
+      "measurement_seconds": 29.80871649100027,
+      "tps": 8002.223110546133,
+      "actual_send_tps": 7999.807709667611,
+      "p50_seconds": 0.34231993699995655,
+      "p95_seconds": 0.6331477509997967,
+      "within_one_second_percent": 100.0,
+      "measurement_reorganizations_sum": 0,
+      "max_reorg_depth": 0,
+      "drained": true,
+      "state_nodes_checked": 100,
+      "all_node_states_equal": true,
+      "accounts_checked_per_node": 1024,
+      "common_block_height": 483,
+      "common_block_hash": "5c65280abdf20014c0da60adfe46140e9bf9e6d3087cb0691e54b049839ad7b3",
+      "cleanup_successful_records": 100,
+      "cleanup_records": 100,
+      "databases_removed": 100,
+      "cleanup_all_expected_records_ok": true,
+      "node_cpu_cores": {
+        "source": "result.metrics.resources",
+        "nodes": 100,
+        "mean": 1.175976998305376,
+        "p50": 1.140837272429062,
+        "p95": 1.4339414443138407,
+        "maximum": 1.6264953158231936
+      },
+      "blocks_per_second": 4.964990694741371,
+      "mean_transactions_per_block": 1611.7297297297298,
+      "producer_mesh_complete_roster_snapshots": 28,
+      "producer_mesh_ten_edge_snapshots": 28,
+      "binary_sha256s": [
+        "8e9e8dbe306b39742e29cce477148a659447019b7fd7e40199c668afddc2c054"
+      ]
+    },
+    {
+      "target_tps": 9000,
+      "status": "failed",
+      "ok": false,
+      "measurement_seconds": 29.640017439000076,
+      "tps": 5111.805359488055,
+      "actual_send_tps": 8999.724799385916,
+      "p50_seconds": 10.69094683100002,
+      "p95_seconds": 16.132512618999954,
+      "within_one_second_percent": 0.16666666666666669,
+      "measurement_reorganizations_sum": 56,
+      "max_reorg_depth": 31,
+      "drained": false,
+      "state_nodes_checked": null,
+      "all_node_states_equal": null,
+      "accounts_checked_per_node": null,
+      "common_block_height": null,
+      "common_block_hash": null,
+      "cleanup_successful_records": 100,
+      "cleanup_records": 100,
+      "databases_removed": 100,
+      "cleanup_all_expected_records_ok": true,
+      "node_cpu_cores": {
+        "source": "result.metrics.resources",
+        "nodes": 100,
+        "mean": 1.3483016022472083,
+        "p50": 1.2884028070640323,
+        "p95": 1.718243069914301,
+        "maximum": 1.8794745147550362
+      },
+      "blocks_per_second": 2.7665300861835904,
+      "mean_transactions_per_block": 1847.7317073170732,
+      "producer_mesh_complete_roster_snapshots": 25,
+      "producer_mesh_ten_edge_snapshots": 24,
+      "binary_sha256s": [
+        "8e9e8dbe306b39742e29cce477148a659447019b7fd7e40199c668afddc2c054"
+      ]
+    }
+  ]
+}

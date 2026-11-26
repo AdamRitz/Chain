@@ -1,0 +1,17 @@
+{
+  "ok": true,
+  "tests": 27,
+  "failures": 0,
+  "errors": 0,
+  "skipped": 0,
+  "seconds": 80.9369999999908,
+  "python39_syntax": true,
+  "openssl": "3.4.1",
+  "network_connections": 0,
+  "log": "repo-tooling-validation.log",
+  "distinct_tests_passed": 27,
+  "initial_suite_failures": 1,
+  "rerun_tests": 1,
+  "rerun_seconds": 12.406999999991967,
+  "rerun_reason": "Normalize Windows long and 8.3 temporary-directory paths in stage-module assertion"
+}

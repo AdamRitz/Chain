@@ -1,0 +1,13 @@
+{
+  "file": "fisco100-evidence.tar.gz",
+  "bytes": 96179649,
+  "sha256": "720424a71801ab0ba0efab5bd7125b3e5f64f27a423a1c8ce6b9ebec40eadd87",
+  "verified_files": 608,
+  "excluded": [
+    "signed-transactions.bin",
+    "sdk-config.toml",
+    "account directory"
+  ],
+  "chain_archive_file": "results-short-synced-002.tar.gz",
+  "chain_archive_sha256": "b45a28b3ca95e1d733b4509458d29dbf4a63e70c6f5b79d65eecd40de8691ca1"
+}

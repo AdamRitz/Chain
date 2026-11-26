@@ -1,5 +1,7 @@
 # FISCO BCOS 多节点性能测试
 
+百节点 PBFT100/rPBFT5 的 Ansible 分发、30 秒测试和清理入口见 [Fleet](Fleet/README.md)。
+
 使用独立测试链，测量十节点共同链的每秒交易数（Transactions Per Second，TPS）。原 Chain 数据目录保持独立。本次数据与结论见 [实验报告](../../reports/2026-09-30-fisco-ten-node/REPORT.md)。
 
 ## 文件

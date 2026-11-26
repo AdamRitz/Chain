@@ -1,0 +1,18 @@
+{
+  "servers": 100,
+  "vcpus_per_server": 4,
+  "memory_gib_per_server": 8,
+  "nodes_per_server": 1,
+  "fisco_version": "3.7.3",
+  "fisco_commit": "5811f123b0a82928de8ec662e84763d67c16fb1e",
+  "fisco_binary_sha256": "7c29bd2afe615a57af02a440fc4d665c3beec3cf7301ec4007cc07caf5b683f4",
+  "fisco_archive_sha256": "b2b0121722a612ded5ccf4209bf88d12f224f4ebc75a5f2d9bafeac898b27d89",
+  "java_sdk_version": "3.7.0",
+  "jdk_version": "17.0.17",
+  "maven_version": "3.9.9",
+  "java_source_sha256": "c4ab4dd8d3bad6e5152299df08f69d83aa1fdf4b7c7c9459b08ee3f4f196ec7b",
+  "java_class_sha256": "af80a6dfbc356163048aaa5c3eb216cae252c1198e379f283dba763e98953829",
+  "chain_commit": "a9e651ffe70d0f3b7e204c7f233302db6d24a876",
+  "chain_binary_sha256": "8e9e8dbe306b39742e29cce477148a659447019b7fd7e40199c668afddc2c054",
+  "disk_size_per_server_cloud_label": "40 GB"
+}

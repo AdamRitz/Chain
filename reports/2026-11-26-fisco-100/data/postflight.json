@@ -1,0 +1,6 @@
+{
+  "nodes": 100,
+  "command_success": 100,
+  "unexpected_output": [],
+  "stopped_and_database_removed": true
+}
