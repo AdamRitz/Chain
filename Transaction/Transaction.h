@@ -147,15 +147,25 @@ array<uint8_t,176> GenerateTx(const array<uint8_t,32>& sender,const array<uint8_
     if (crypto_sign_detached(tx.signature.data(),nullptr,tx.hash.data(),32,wallet.private_key.data())!=0) throw runtime_error("Sign failed");
     return SerializeTxALL(tx,partByte);
 }
-bool VerifyTransaction(const array<uint8_t,176>& data,span<const uint8_t> payload={}) {
+array<uint8_t,32> GetTransactionFingerprint(span<const uint8_t> data) {
+    array<uint8_t,32> fingerprint;
+    crypto_generichash(fingerprint.data(),fingerprint.size(),data.data(),data.size(),nullptr,0);
+    return fingerprint;
+}
+bool VerifyTransaction(const array<uint8_t,176>& data,span<const uint8_t> payload={},const array<uint8_t,32>* receivedFingerprint=nullptr) {
     if (!payload.empty()&&(!ValidEvmPayload(payload)||memcmp(payload.data()+13,genesisRoot.data(),32))) return false;
     // 完整交易和合约输入共同标识验签结果，缓存独立于交易池和分支状态。
     array<uint8_t,32> fingerprint;
-    crypto_generichash_state state;
-    crypto_generichash_init(&state,nullptr,0,fingerprint.size());
-    crypto_generichash_update(&state,data.data(),data.size());
-    if (!payload.empty()) crypto_generichash_update(&state,payload.data(),payload.size());
-    crypto_generichash_final(&state,fingerprint.data(),fingerprint.size());
+    // Network callers reuse the fingerprint computed from these exact bytes
+    // before queue admission. It is never taken from a message hash field.
+    if (receivedFingerprint) fingerprint=*receivedFingerprint;
+    else {
+        crypto_generichash_state state;
+        crypto_generichash_init(&state,nullptr,0,fingerprint.size());
+        crypto_generichash_update(&state,data.data(),data.size());
+        if (!payload.empty()) crypto_generichash_update(&state,payload.data(),payload.size());
+        crypto_generichash_final(&state,fingerprint.data(),fingerprint.size());
+    }
     auto& cache=verifiedTransactions[fingerprint[0]%verifiedTransactions.size()];
     {
         unique_lock lock(cache.lock);
@@ -195,8 +205,9 @@ bool VerifyTransaction(const array<uint8_t,176>& data,span<const uint8_t> payloa
 
 // ------------------------------------------------交易处理入口------------------------------------------------
 // 锁外批量验签，锁内检查账户状态并更新交易池。
-size_t ProcessTxPackage(span<const uint8_t> data,vector<uint8_t>* results=nullptr) {
+size_t ProcessTxPackage(span<const uint8_t> data,vector<uint8_t>* results=nullptr,span<const array<uint8_t,32>> fingerprints={}) {
     if (data.empty()||data.size()%176!=0||data.size()/176>maxProtocolTx) return 0;
+    if (!fingerprints.empty()&&fingerprints.size()!=data.size()/176) throw invalid_argument("Transaction fingerprint count");
     if (results) results->assign(data.size()/176,TxInvalid);
     uint64_t expected=0;
     firstTxTime.compare_exchange_strong(expected,GetSteadyTime());
@@ -208,7 +219,7 @@ size_t ProcessTxPackage(span<const uint8_t> data,vector<uint8_t>* results=nullpt
     for (size_t offset=0;offset<data.size();offset+=176) {
         array<uint8_t,176> tx;
         memcpy(tx.data(),data.data()+offset,176);
-        if (!VerifyTransaction(tx)) { invalidTx++; continue; }
+        if (!VerifyTransaction(tx,{},fingerprints.empty()?nullptr:&fingerprints[offset/176])) { invalidTx++; continue; }
         checked.push_back({GetTransactionHash(tx),tx,offset/176});
     }
     verifyNs+=GetSteadyTime()-start;
@@ -260,13 +271,13 @@ size_t ProcessTxPackage(span<const uint8_t> data,vector<uint8_t>* results=nullpt
     return added;
 }
 void ProcessTx(const array<uint8_t,176>& tx) { ProcessTxPackage(span<const uint8_t>(tx)); }
-bool ProcessEvmTx(span<const uint8_t> data) {
+bool ProcessEvmTx(span<const uint8_t> data,const array<uint8_t,32>* fingerprint=nullptr) {
     if (data.size()<221||data.size()>176+45+maxEvmInput) return false;
     uint64_t expected=0; firstTxTime.compare_exchange_strong(expected,GetSteadyTime()); receivedTx++;
     array<uint8_t,176> tx; memcpy(tx.data(),data.data(),176);
     auto payload=data.subspan(176);
     auto start=GetSteadyTime();
-    if (!VerifyTransaction(tx,payload)) { invalidTx++; return false; }
+    if (!VerifyTransaction(tx,payload,fingerprint)) { invalidTx++; return false; }
     verifyNs+=GetSteadyTime()-start;
     auto hash=GetTransactionHash(tx);
     array<uint8_t,32> key; memcpy(key.data(),tx.data(),32);

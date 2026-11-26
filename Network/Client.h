@@ -323,6 +323,7 @@ void BroadcastData(vector<uint8_t> data,uint64_t source=0) {
 awaitable<void> ProcessMessage(shared_ptr<Peer> peer,uint8_t type,vector<uint8_t> data);
 #include "Blocks.h"
 #include "TransactionRelay.h"
+#include "TxWork.h"
 #include "Vdf.h"
 #include "VdfPeers.h"
 EarlyRelayBudget earlyRelayBudget;
@@ -867,6 +868,7 @@ nlohmann::json GetNodeStats() {
         {"ingress_wait_ms",ingressWaitNs.load()/1e6},{"clock",GetClockStats()},{"experiment_index",experimentIndex}};
     stats.update(GetProcessResources());
     stats.update(TxBodyWaitStats());
+    stats.update(TxWorkStats());
     return stats;
 }
 #endif

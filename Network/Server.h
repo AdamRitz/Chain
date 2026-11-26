@@ -75,6 +75,9 @@ struct VerifyReservation {
     }
 };
 awaitable<void> ProcessMessage(shared_ptr<Peer> peer,uint8_t type,vector<uint8_t> data) {
+    bool blockMessage=type!=1&&type!=10&&type!=17&&type!=18&&type!=44;
+    vector<TxWorkInput> txInputs;
+    if (!blockMessage&&!ParseTxWork(type,data,txInputs)) { ClosePeer(peer);co_return; }
     vector<vector<uint8_t>> blocks;
     if (type==43&&!ReadBlockBatch(data,blocks)) { ClosePeer(peer); co_return; }
     auto num=(type==1||type==10||type==44)?data.size()/176:(type==17||type==18||type==43)?1:max(size_t(1),min(maxProtocolTx,(data.size()-112)/176));
@@ -82,18 +85,9 @@ awaitable<void> ProcessMessage(shared_ptr<Peer> peer,uint8_t type,vector<uint8_t
         num=0;
         for (const auto& block:blocks) num+=max(uint64_t(1),min(uint64_t(maxProtocolTx),ReadU64(block.data()+72)));
     }
-    if (type==18) {
-        num=0; size_t offset=0;
-        while (offset<data.size()) {
-            if (data.size()-offset<4) { ClosePeer(peer); co_return; }
-            auto length=ReadU32(data.data()+offset); offset+=4;
-            if (length<221||length>221+maxEvmInput||length>data.size()-offset||++num>maxProtocolTx) { ClosePeer(peer); co_return; }
-            offset+=length;
-        }
-    }
+    if (!blockMessage) num=txInputs.size();
     bool metadata=type==39||type==41||type==51||type==52;
     if (metadata) num=1;
-    bool blockMessage=type!=1&&type!=10&&type!=17&&type!=18&&type!=44;
     auto& byteCounter=blockMessage?pendingBlockBytes:pendingTxBytes;
     auto byteLimit=blockMessage?size_t(16*1024*1024):size_t(48*1024*1024);
     steady_timer timer(co_await this_coro::executor);
@@ -101,10 +95,38 @@ awaitable<void> ProcessMessage(shared_ptr<Peer> peer,uint8_t type,vector<uint8_t
     uint64_t expected=0;
     if (type==1||type==10) firstTxTime.compare_exchange_strong(expected,queuedAt);
     // 队列满时暂停该连接读取，利用 TCP 背压，不无限堆积异步任务。
-    if (num>(metadata?size_t(64):(blockMessage?maxProtocolTx*4:maxPendingVerify))) { ClosePeer(peer); co_return; }
+    if (blockMessage&&num>(metadata?size_t(64):maxProtocolTx*4)) { ClosePeer(peer); co_return; }
+    shared_ptr<TxWorkBatch> txBatch;
+    shared_ptr<TxWorkReply> txReply;
+    vector<array<uint8_t,32>> fingerprints;
+    if (!blockMessage) {
+        if (type==44) {
+            auto order=peer->admissionRead++;
+            while (!(txReply=ReserveTxWorkReply(peer,order,num))) {
+                if (peer->closed||!nodeRunning) co_return;
+                timer.expires_after(milliseconds(1));co_await timer.async_wait(use_awaitable);
+            }
+        }
+        while (!(txBatch=TryReserveTxWork(peer,type==17||type==18,txInputs,data,txReply))) {
+            if (peer->closed||!nodeRunning) co_return;
+            timer.expires_after(milliseconds(1));co_await timer.async_wait(use_awaitable);
+        }
+        if (txBatch->owners.empty()) co_return;
+        num=txBatch->owners.size();
+        if (num>maxPendingVerify) { ClosePeer(peer);co_return; }
+        vector<uint8_t> unique;
+        for (auto index:txBatch->indices) {
+            const auto& input=txInputs[index];
+            if (type==18) {auto offset=unique.size();unique.resize(offset+4);WriteU32(unique.data()+offset,uint32_t(input.bytes));}
+            unique.insert(unique.end(),data.begin()+input.offset,data.begin()+input.offset+input.bytes);
+            fingerprints.push_back(input.fingerprint);
+        }
+        data=std::move(unique);
+    }
+    auto cancelled=[&] {return !nodeRunning||(peer->closed&&(!txBatch||txBatch->CancelIfUnshared()));};
     // The complete body is already here, even while admission waits below.
     // This lease only pauses inventory requests; it never skips validation.
-    auto txBodies=ReserveTxBodies(peer,type,data);
+    auto txBodies=ReserveTxBodies(peer,type,data,fingerprints);
     shared_ptr<BlockWork> work;
     if (type==2||type==7||type==22||type==43) {
         auto fingerprint=GetBlockFingerprint(data,type==43);
@@ -112,7 +134,7 @@ awaitable<void> ProcessMessage(shared_ptr<Peer> peer,uint8_t type,vector<uint8_t
             bool duplicate=false; work=ReserveBlockWork(data,fingerprint,duplicate);
             if (duplicate) co_return;
             if (work) break;
-            if (peer->closed||!nodeRunning) co_return;
+            if (cancelled()) co_return;
             timer.expires_after(milliseconds(1)); co_await timer.async_wait(use_awaitable);
         }
     }
@@ -121,11 +143,11 @@ awaitable<void> ProcessMessage(shared_ptr<Peer> peer,uint8_t type,vector<uint8_t
         while (true) {
             bool busy;
             { lock_guard lock(txpoolMutex); busy=readyPoolTx>0&&txpool.size()>=maxPoolTx-max(size_t(1),maxPoolTx/10); }
-            if (!busy||peer->closed||!nodeRunning) break;
+            if (!busy||cancelled()) break;
             timer.expires_after(milliseconds(1)); co_await timer.async_wait(use_awaitable);
         }
         ingressWaitNs+=GetSteadyTime()-waitStart;
-        if (peer->closed||!nodeRunning) co_return;
+        if (cancelled()) co_return;
     }
     bool reserved=false;
     auto reservation=make_shared<VerifyReservation>();
@@ -138,13 +160,12 @@ awaitable<void> ProcessMessage(shared_ptr<Peer> peer,uint8_t type,vector<uint8_t
             else pendingVerifyBytes+=data.size();
         }
         if (reserved) { reservation->active=true; break; }
-        if (peer->closed||!nodeRunning) co_return;
+        if (cancelled()) co_return;
         timer.expires_after(milliseconds(1));
         co_await timer.async_wait(use_awaitable);
     }
-    auto admissionOrder=type==44?peer->admissionRead++:0;
     auto& workers=blockMessage&&candidateThreads?*candidateThreads:*verifyThreads;
-    post(workers,[peer,type,queuedAt,blockMessage,metadata,admissionOrder,reservation=std::move(reservation),txBodies=std::move(txBodies),work=std::move(work),data=std::move(data),blocks=std::move(blocks)]() mutable {
+    post(workers,[peer,type,queuedAt,blockMessage,metadata,txBatch=std::move(txBatch),fingerprints=std::move(fingerprints),reservation=std::move(reservation),txBodies=std::move(txBodies),work=std::move(work),data=std::move(data),blocks=std::move(blocks)]() mutable {
         (void)work;
         auto wait=GetSteadyTime()-queuedAt; queueWaitNs+=wait;
         (metadata?metadataQueueWaitNs:(blockMessage?blockQueueWaitNs:txQueueWaitNs))+=wait;
@@ -153,8 +174,9 @@ awaitable<void> ProcessMessage(shared_ptr<Peer> peer,uint8_t type,vector<uint8_t
             if (type==1||type==10||type==44) {
                 vector<uint8_t> results;
                 const bool relay=!produceBlocks||relayTransactions;
-                auto added=ProcessTxPackage(data,&results);
+                auto added=ProcessTxPackage(data,&results,fingerprints);
                 RecordVerifiedNativeTransactions(peer,data,results);
+                for (size_t i=0;i<results.size();++i) CompleteTxWork(txBatch->owners[i],results[i]);
                 if (relay&&added) {
                     vector<uint8_t> accepted; accepted.reserve(added*176);
                     for (size_t i=0;i<results.size();i++) if (results[i]==TxAccepted)
@@ -163,23 +185,24 @@ awaitable<void> ProcessMessage(shared_ptr<Peer> peer,uint8_t type,vector<uint8_t
                     RelayAcceptedTransactions(peer,accepted,false);
                 }
                 if (relay) skippedRelayTransactions+=data.size()/176-added;
-                if (type==44) SendAdmission(peer,admissionOrder,std::move(results));
             } else if (type==17) {
-                if (ProcessEvmTx(data)) {
+                if (ProcessEvmTx(data,&fingerprints[0])) {
                     RecordVerifiedEvmTransaction(peer,data);
+                    CompleteTxWork(txBatch->owners[0],TxAccepted);
                     if (!produceBlocks||relayTransactions) RelayAcceptedTransactions(peer,data,true);
-                } else ObserveKnownEvmTransaction(peer,data);
+                } else CompleteTxWork(txBatch->owners[0],ObserveKnownEvmTransaction(peer,data)?TxKnown:TxInvalid);
             } else if (type==18) {
-                size_t offset=0;
+                size_t offset=0,index=0;
                 while (data.size()-offset>=4) {
                     auto size=ReadU32(data.data()+offset); offset+=4;
                     if (size<221||size>176+45+maxEvmInput||size>data.size()-offset) break;
                     auto tx=span<const uint8_t>(data).subspan(offset,size);
-                    if (ProcessEvmTx(tx)) {
+                    if (ProcessEvmTx(tx,&fingerprints[index])) {
                         RecordVerifiedEvmTransaction(peer,tx);
+                        CompleteTxWork(txBatch->owners[index],TxAccepted);
                         if (!produceBlocks||relayTransactions) RelayAcceptedTransactions(peer,tx,true);
-                    } else ObserveKnownEvmTransaction(peer,tx);
-                    offset+=size;
+                    } else CompleteTxWork(txBatch->owners[index],ObserveKnownEvmTransaction(peer,tx)?TxKnown:TxInvalid);
+                    offset+=size;++index;
                 }
             } else if (type==39) ReceiveCompactBlock(peer,data);
             else if (type==51) ReceiveShortCompactBlock(peer,data);
@@ -223,7 +246,7 @@ awaitable<void> ProcessMessage(shared_ptr<Peer> peer,uint8_t type,vector<uint8_t
             nodeRunning=false;
             if (nodeIO) nodeIO->stop();
         }
-        txBodies.reset();reservation.reset(); work.reset();
+        txBodies.reset();reservation.reset(); work.reset();txBatch.reset();
         WakeMainLoop();
     });
 }

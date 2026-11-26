@@ -137,7 +137,7 @@ struct TxBodyReservation {
         }
     }
 };
-shared_ptr<TxBodyReservation> ReserveTxBodies(const shared_ptr<Peer>& peer,uint8_t type,span<const uint8_t> data) {
+shared_ptr<TxBodyReservation> ReserveTxBodies(const shared_ptr<Peer>& peer,uint8_t type,span<const uint8_t> data,span<const array<uint8_t,32>> fingerprints={}) {
     if (!txInventory) return {};
     vector<pair<span<const uint8_t>,bool>> bodies;
     if (type==1||type==10||type==44) {
@@ -155,8 +155,10 @@ shared_ptr<TxBodyReservation> ReserveTxBodies(const shared_ptr<Peer>& peer,uint8
             bodies.emplace_back(data.subspan(offset,length),true);offset+=length;
         }
     } else return {};
+    if (!fingerprints.empty()&&fingerprints.size()!=bodies.size()) throw invalid_argument("Transaction body fingerprint count");
     auto reservation=make_shared<TxBodyReservation>();
-    for (const auto& [body,evm]:bodies) {
+    for (size_t index=0;index<bodies.size();++index) {
+        const auto& [body,evm]=bodies[index];
         array<uint8_t,32> hash{},fingerprint{};
         if (evm) {
             auto payload=body.subspan(176);
@@ -165,7 +167,8 @@ shared_ptr<TxBodyReservation> ReserveTxBodies(const shared_ptr<Peer>& peer,uint8
         } else crypto_generichash(hash.data(),32,body.data(),80,nullptr,0);
         // A forged hash field cannot suspend requests for unrelated content.
         if (sodium_memcmp(hash.data(),body.data()+80,32)) continue;
-        crypto_generichash(fingerprint.data(),32,body.data(),body.size(),nullptr,0);
+        if (fingerprints.empty()) fingerprint=GetTransactionFingerprint(body);
+        else fingerprint=fingerprints[index];
         TxInventoryKey key{uint8_t(evm),hash};auto now=GetSteadyTime();
         lock_guard lock(txInventoryMutex);
         if (txRecentBodies.count(key)) continue;

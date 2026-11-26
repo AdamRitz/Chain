@@ -1,5 +1,6 @@
 #include <filesystem>
 #include <iostream>
+#include <future>
 #include "../Network/Server.h"
 using namespace std;
 void Require(bool value,const char* message) { if (!value) throw runtime_error(message); }
@@ -40,13 +41,176 @@ vector<pair<uint8_t,vector<uint8_t>>> ReadMessages(boost::asio::io_context& io,C
     }
     return result;
 }
-vector<uint8_t> MakeEvmBody(const Wallet& wallet) {
+vector<uint8_t> MakeEvmBody(const Wallet& wallet,uint64_t nonce=1) {
     vector<uint8_t> payload(46,0);memcpy(payload.data(),"EVM1",4);WriteU64(payload.data()+5,100000);
     memcpy(payload.data()+13,genesisRoot.data(),32);payload.back()=0;
-    array<uint8_t,176> tx{};memcpy(tx.data(),wallet.public_key.data(),32);WriteU64(tx.data()+72,1);
+    array<uint8_t,176> tx{};memcpy(tx.data(),wallet.public_key.data(),32);WriteU64(tx.data()+72,nonce);
     auto hash=EvmTransactionHash(tx,payload);memcpy(tx.data()+80,hash.data(),32);
     crypto_sign_detached(tx.data()+112,nullptr,hash.data(),32,wallet.private_key.data());
     vector<uint8_t> body(tx.begin(),tx.end());body.insert(body.end(),payload.begin(),payload.end());return body;
+}
+// Hold the only verification worker so every duplicate is received while its
+// original transaction is still queued. No timing assumption is needed.
+struct PausedVerification {
+    promise<void> released;
+    bool finished=false;
+    PausedVerification() {
+        Require(!verifyThreads,"verification pool must be idle before test");
+        verifyThreads=make_unique<thread_pool>(1);
+        auto ready=released.get_future().share();post(*verifyThreads,[ready]{ready.wait();});
+    }
+    void Finish() {
+        if (finished) return;
+        released.set_value();verifyThreads->join();verifyThreads.reset();finished=true;
+    }
+    ~PausedVerification() { Finish(); }
+};
+vector<uint8_t> NativeBatch(initializer_list<array<uint8_t,176>> bodies) {
+    vector<uint8_t> result;for (const auto& body:bodies) result.insert(result.end(),body.begin(),body.end());return result;
+}
+vector<uint8_t> EvmBatch(initializer_list<vector<uint8_t>> bodies) {
+    vector<uint8_t> result;
+    for (const auto& body:bodies) {auto at=result.size();result.resize(at+4);WriteU32(result.data()+at,uint32_t(body.size()));result.insert(result.end(),body.begin(),body.end());}
+    return result;
+}
+void SubmitWork(boost::asio::io_context& io,Connection& connection,uint8_t kind,vector<uint8_t> body) {
+    co_spawn(connection.peer->strand,ProcessMessage(connection.peer,kind,std::move(body)),detached);
+    io.restart();io.poll();
+}
+void RequireAck(const pair<uint8_t,vector<uint8_t>>& frame,initializer_list<uint8_t> expected) {
+    Require(frame.first==45&&frame.second==vector<uint8_t>(expected),"type44 response preserves every position and request order");
+}
+void TestMergedWork(boost::asio::io_context& io,const Wallet& wallet,const Wallet& receiver,const Wallet& evmWallet) {
+    // Keep relay output away from these admission-response assertions.
+    {lock_guard lock(peerMutex);peerPool.clear();}
+    auto a=GenerateTx(wallet.public_key,receiver.public_key,1,10,wallet);
+    auto b=GenerateTx(wallet.public_key,receiver.public_key,1,11,wallet);
+    auto c=GenerateTx(wallet.public_key,receiver.public_key,1,12,wallet);
+    auto bad=a;bad[112]^=1;
+    Connection admission(io);
+    auto validBefore=validTx.load(),invalidBefore=invalidTx.load(),signaturesBefore=signatureChecks.load();
+    {
+        PausedVerification workers;
+        SubmitWork(io,admission,44,NativeBatch({bad,a,a,b,b}));
+        Require(pendingTxVerify==3&&pendingTxBytes==3*176,"same batch reserves only its three distinct complete bodies");
+        SubmitWork(io,admission,44,NativeBatch({a,b,a}));
+        Require(pendingTxVerify==3,"all-duplicate batch adds no verification work");
+        SubmitWork(io,admission,44,NativeBatch({b,c,bad}));
+        Require(pendingTxVerify==4&&pendingTxBytes==4*176,"mixed batch reserves only its one new complete body");
+        workers.Finish();
+    }
+    auto replies=ReadMessages(io,admission,3);
+    Require(replies.size()==3,"each original admission batch receives one response");
+    RequireAck(replies[0],{TxInvalid,TxAccepted,TxKnown,TxAccepted,TxKnown});
+    RequireAck(replies[1],{TxKnown,TxKnown,TxKnown});
+    RequireAck(replies[2],{TxKnown,TxAccepted,TxInvalid});
+    Require(validTx-validBefore==3&&invalidTx-invalidBefore==1,"merged work counts unique accepted and invalid bodies once");
+    Require(signatureChecks-signaturesBefore==4,"bad signature does not hide the valid body sharing its transaction hash");
+    Require(pendingTxVerify==0&&pendingTxBytes==0&&txReceivingBytes==0,"completed batches release verification and receipt quotas");
+    {
+        PausedVerification workers;
+        auto checks=signatureChecks.load();
+        SubmitWork(io,admission,44,NativeBatch({a,b,a}));
+        Require(pendingTxVerify==0,"verified pool duplicates skip verification admission");
+        workers.Finish();
+        auto known=ReadMessages(io,admission);
+        Require(known.size()==1,"all-known batch still receives acknowledgement");
+        RequireAck(known[0],{TxKnown,TxKnown,TxKnown});
+        Require(signatureChecks==checks,"known-body response does not repeat signature checks");
+    }
+    {
+        auto body=GenerateTx(wallet.public_key,receiver.public_key,1,13,wallet);
+        Connection cancelled(io),follower(io);
+        auto limit=maxPendingVerify;maxPendingVerify=1;pendingTxVerify=1;
+        PausedVerification workers;
+        SubmitWork(io,cancelled,44,NativeBatch({body}));
+        SubmitWork(io,follower,44,NativeBatch({body,body}));
+        Require(pendingTxVerify==1,"duplicate waiters do not reserve an occupied verification slot");
+        cancelled.peer->closed=true;
+        io.restart();io.run_for(milliseconds(20));
+        Require(txReceivingBytes==176,"duplicate source keeps complete body available after original connection closes");
+        pendingTxVerify=0;maxPendingVerify=limit;
+        auto until=steady_clock::now()+seconds(2);
+        while (pendingTxVerify==0&&steady_clock::now()<until) {io.restart();io.run_for(milliseconds(10));}
+        Require(pendingTxVerify==1,"duplicate source allows queued body to continue after original connection closes");
+        workers.Finish();
+        auto completed=ReadMessages(io,follower);
+        Require(completed.size()==1,"surviving duplicate source receives its complete admission response");RequireAck(completed[0],{TxKnown,TxKnown});
+        Require(txReceivingBytes==0,"completed work releases the original receipt after connection cancellation");
+        cancelled.peer->socket.close();follower.peer->socket.close();
+    }
+    {
+        auto body=GenerateTx(wallet.public_key,receiver.public_key,1,14,wallet);
+        auto poolLimit=maxPoolTx;
+        {lock_guard lock(txpoolMutex);maxPoolTx=txpool.size();}
+        {
+            PausedVerification workers;SubmitWork(io,admission,44,NativeBatch({body,body}));workers.Finish();
+        }
+        maxPoolTx=poolLimit;
+        auto busy=ReadMessages(io,admission);
+        Require(busy.size()==1,"full transaction pool returns a complete batch response");RequireAck(busy[0],{TxBusy,TxBusy});
+        {
+            PausedVerification workers;SubmitWork(io,admission,44,NativeBatch({body}));
+            Require(pendingTxVerify==1,"busy response is not retained as a completed duplicate");workers.Finish();
+        }
+        auto retry=ReadMessages(io,admission);Require(retry.size()==1,"pool retry has an acknowledgement");RequireAck(retry[0],{TxAccepted});
+    }
+    {
+        auto body=GenerateTx(wallet.public_key,receiver.public_key,1,15,wallet);
+        auto accepted=validTx.load(),checks=signatureChecks.load();
+        PausedVerification workers;
+        SubmitWork(io,admission,10,NativeBatch({body,body}));
+        SubmitWork(io,admission,44,NativeBatch({body}));
+        Require(pendingTxVerify==1,"ordinary relay and admission share one verification owner");
+        workers.Finish();
+        auto reply=ReadMessages(io,admission);
+        Require(reply.size()==1,"type44 duplicate of ordinary relay receives a response");RequireAck(reply[0],{TxKnown});
+        Require(validTx-accepted==1&&signatureChecks-checks==1,"ordinary and admission duplicates count one accepted transaction");
+    }
+    {
+        auto body=MakeEvmBody(evmWallet,2),badBody=body;badBody[112]^=1;
+        auto accepted=validTx.load(),invalid=invalidTx.load(),checks=signatureChecks.load();
+        PausedVerification workers;
+        SubmitWork(io,admission,18,EvmBatch({badBody,body,body}));
+        SubmitWork(io,admission,17,body);
+        Require(pendingTxVerify==2,"EVM batch and single-body duplicates share complete-body verification");
+        workers.Finish();io.restart();io.poll();
+        Require(validTx-accepted==1&&invalidTx-invalid==1&&signatureChecks-checks==2,"EVM signature variants are verified independently and exact duplicates once");
+        auto key=TransactionInventoryKey(body,true);
+        Require(ReadTxRelayBody(key)&&*ReadTxRelayBody(key)==body,"EVM accepted cache retains the complete input");
+    }
+    {
+        auto first=GenerateTx(wallet.public_key,receiver.public_key,1,16,wallet);
+        auto second=GenerateTx(wallet.public_key,receiver.public_key,1,17,wallet);
+        auto bytes=NativeBatch({first,second});vector<TxWorkInput> inputs;
+        Require(ParseTxWork(10,bytes,inputs),"capacity test batch parses completely");
+        {lock_guard lock(txWorkMutex);Require(txWork.empty()&&txWorkBytes==0,"capacity test starts without active owners");txWorkBytes=maxTxWorkBytes-176;}
+        auto limited=TryReserveTxWork(admission.peer,false,inputs,bytes);
+        Require(!limited,"whole batch waits when only one of two bodies fits");
+        {lock_guard lock(txWorkMutex);Require(txWork.empty()&&txWorkBytes==maxTxWorkBytes-176,"failed batch registration leaves no partial owner or byte charge");txWorkBytes=0;}
+        auto retry=TryReserveTxWork(admission.peer,false,inputs,bytes);
+        Require(retry&&retry->owners.size()==2,"batch can retry both bodies after capacity returns");retry.reset();
+    }
+    {
+        auto checks=signatureChecks.load(),invalid=invalidUserTx.load();
+        User previous;
+        {unique_lock lock(poolUsersMutex);previous=poolUsers.at(wallet.public_key);poolUsers.at(wallet.public_key).balance=0;}
+        {lock_guard lock(txpoolMutex);DropUserPoolFrom(wallet.public_key,10);}
+        {
+            PausedVerification workers;SubmitWork(io,admission,44,NativeBatch({a}));
+            Require(pendingTxVerify==1,"verified body absent from pool still enters account validation");workers.Finish();
+        }
+        {unique_lock lock(poolUsersMutex);poolUsers.at(wallet.public_key)=previous;}
+        auto reply=ReadMessages(io,admission);
+        Require(reply.size()==1,"state-invalid replay receives an admission response");RequireAck(reply[0],{TxInvalid});
+        Require(signatureChecks==checks&&invalidUserTx-invalid==1,"cached signature does not bypass the changed account balance");
+        {lock_guard lock(txpoolMutex);Require(!txpool.count(GetTransactionHash(a)),"state-invalid transaction is not restored to the pool");}
+    }
+    Require(pendingTxVerify==0&&pendingTxBytes==0&&txReceivingBytes==0,"all merged-work tests release bounded quotas");
+    auto active=TxWorkStats();
+    Require(active["tx_work_active"]==0&&active["tx_work_bytes"]==0&&active["tx_work_waiters"]==0,
+        "completed and cancelled work releases registry records, bytes and response slots");
+    admission.peer->socket.close();
 }
 int main(int argc,char** argv) {
     try {
@@ -246,6 +410,7 @@ int main(int argc,char** argv) {
             Require(txReceivingBytes==0,"successful validation and failed worker release all body bytes");
             admission.peer->socket.close();
         }
+        TestMergedWork(io,wallet,receiver,evmWallet);
         for (auto peer:{first.peer,second.peer,third.peer,legacy.peer}) {peer->closePosted=true;peer->socket.close();}
         peerPool.clear();db.reset();
         cout<<"Transaction inventory codec, retries, malformed signatures, EVM bodies, legacy relay, cache and request limits passed\n";
