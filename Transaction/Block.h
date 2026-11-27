@@ -114,7 +114,7 @@ vector<uint8_t> SerializeBlockALL(Block& block) {
 }
 
 // ------------------------------------------------区块生成和验证------------------------------------------------
-vector<uint8_t> GenerateBlock(size_t txStep=0,bool allowPartial=true) {
+vector<uint8_t> GenerateBlock() {
     auto start=GetSteadyTime();
     Block block;
     vector<pair<array<uint8_t,32>,array<uint8_t,176>>> selected;
@@ -177,16 +177,6 @@ vector<uint8_t> GenerateBlock(size_t txStep=0,bool allowPartial=true) {
         for (const auto& [key,nonce]:dropped) DropUserPoolFrom(key,nonce);
     }
     if (selected.empty()&&!block.vdf) return {};
-    if (txStep>1) {
-        auto count=selected.size()/txStep*txStep;
-        if (!count&&!allowPartial) {
-            blockBuildNs+=GetSteadyTime()-start;
-            return {};
-        }
-        // Selection already contains a prefix for each sender. Trimming its tail
-        // preserves nonce continuity and leaves all uncommitted pool entries intact.
-        if (count) selected.resize(count);
-    }
     // 先按序号、再按发送者排序，保证每个账户的交易严格依次执行。
     sort(selected.begin(),selected.end(),[](const auto& a,const auto& b){
         auto left=ReadU64(a.second.data()+72),right=ReadU64(b.second.data()+72);

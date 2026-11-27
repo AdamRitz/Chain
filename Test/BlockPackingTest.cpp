@@ -36,7 +36,7 @@ int main(int argc,char** argv) {
     try {
         if (sodium_init()<0) return 1;
         spdlog::set_level(spdlog::level::off);
-        auto root=filesystem::path(argc>1?argv[1]:"tx-step-data")/to_string(GetSteadyTime());
+        auto root=filesystem::path(argc>1?argv[1]:"block-packing-data")/to_string(GetSteadyTime());
         filesystem::create_directories(root);
         auto alice=GenerateWallet(),bob=GenerateWallet(),receiver=GenerateWallet();
         auto poor=GenerateWallet(),gasOwner=GenerateWallet(),bytesOwner=GenerateWallet();
@@ -46,82 +46,74 @@ int main(int argc,char** argv) {
         accounts.push_back({{"public_key",U32ToHex(poor.public_key)},{"balance",4}});
         SetGenesisUsers({{"base_fee",1},{"accounts",accounts}});
         InitDB(root.string(),true); GenerateGenesisBlock();
-        maxBlockTx=maxProtocolTx;
+        maxBlockTx=6000;
+        AddNative(alice,receiver,1,2250);
+        AddNative(bob,receiver,1,2250);
+        auto partial=GenerateBlock();
+        Require(UnSerializeBlock(partial).txNum==4500,"all 4500 ready transactions fit a 6000-transaction block");
+        Require(GenerateBlock()==partial,"identical parent and pool produce an identical block");
+        Require(txpool.size()==4500&&readyPoolTx==4500,"building preserves the pool until commit");
+        Commit(partial);
+        Require(txpool.empty()&&txUserPool.empty()&&readyPoolTx==0,"all 4500 transactions leave both indexes after commit");
+        Require(GetUser(users,alice.public_key).nonce==2250&&GetUser(users,bob.public_key).nonce==2250,
+                "both senders retain continuous nonces");
 
-        for (size_t step:{500U,1000U,2000U}) {
-            maxBlockTx=2*step+3; // A non-multiple cap must also be rounded after valid selection.
-            auto firstAlice=GetUser(users,alice.public_key).nonce+1;
-            auto firstBob=GetUser(users,bob.public_key).nonce+1;
-            AddNative(alice,receiver,firstAlice,step+4);
-            AddNative(bob,receiver,firstBob,step+3);
-            auto pending=txpool.size();
-            auto bytes=GenerateBlock(step,false);
-            auto block=UnSerializeBlock(bytes);
-            Require(block.txNum==2*step,"round down selected count at K="+to_string(step));
-            Require(txpool.size()==pending&&readyPoolTx==pending,"building preserves complete pool including rounded remainder");
-            Require(GenerateBlock(step,true)==bytes,"deadline cannot append remainder to an already full step");
-            Require(GenerateBlock(step,false)==bytes,"identical parent and pool produce identical rounded block");
-            Commit(bytes);
-            Require(txpool.size()==7&&readyPoolTx==7,"exact seven-transaction remainder stays ready after full steps commit");
-            Require(GetUser(users,alice.public_key).nonce==firstAlice+step-1&&
-                    GetUser(users,bob.public_key).nonce==firstBob+step-1,"rounding retains each sender's contiguous nonce prefix");
-            Require(GenerateBlock(step,false).empty(),"sub-step remainder waits before deadline");
-            auto tail=GenerateBlock(step,true);
-            Require(UnSerializeBlock(tail).txNum==7,"deadline releases all seven remaining transactions");
-            Commit(tail);
-            Require(txpool.empty()&&txUserPool.empty()&&readyPoolTx==0,"both indexes empty after tail commits");
-            Require(GetUser(users,alice.public_key).nonce==firstAlice+step+3&&
-                    GetUser(users,bob.public_key).nonce==firstBob+step+2,"tail consumes exact next nonces");
-        }
+        maxBlockTx=6001;
+        auto firstAlice=GetUser(users,alice.public_key).nonce+1;
+        auto firstBob=GetUser(users,bob.public_key).nonce+1;
+        AddNative(alice,receiver,firstAlice,3004);
+        AddNative(bob,receiver,firstBob,3003);
+        auto full=GenerateBlock();
+        Require(UnSerializeBlock(full).txNum==6001,"capacity is used exactly when it is not a multiple of 2000");
+        Commit(full);
+        Require(txpool.size()==6&&readyPoolTx==6,"only transactions beyond capacity remain ready");
+        auto remainder=GenerateBlock();
+        Require(UnSerializeBlock(remainder).txNum==6,"the next block includes every remaining transaction");
+        Commit(remainder);
+        Require(GetUser(users,alice.public_key).nonce==firstAlice+3003&&
+                GetUser(users,bob.public_key).nonce==firstBob+3002,"capacity boundaries preserve exact sender nonces");
+        Require(txpool.empty()&&txUserPool.empty()&&readyPoolTx==0,"both indexes empty after the remainder commits");
         maxBlockTx=maxProtocolTx;
-
-        for (size_t step:{0U,1U}) {
-            AddNative(alice,receiver,GetUser(users,alice.public_key).nonce+1,3);
-            auto bytes=GenerateBlock(step,false);
-            Require(UnSerializeBlock(bytes).txNum==3&&GenerateBlock()==bytes,"zero and one preserve legacy producer behavior");
-            Commit(bytes);
-        }
 
         // Admission checks individual affordability; selection must use its cumulative affordable count.
         AddNative(poor,receiver,1,501,3);
         Require(readyPoolTx==501,"ready count can exceed cumulative affordable count");
-        Require(GenerateBlock(500,false).empty(),"ready count alone cannot trigger a sub-step block");
+        auto affordable=GenerateBlock();
         Require(txpool.size()==1&&readyPoolTx==1,"unaffordable suffix is removed without deleting the affordable tail");
-        auto affordable=GenerateBlock(500,true);
-        Require(UnSerializeBlock(affordable).txNum==1,"deadline releases the actual affordable prefix");
+        Require(UnSerializeBlock(affordable).txNum==1,"block includes the complete affordable prefix");
         Commit(affordable);
         Require(GetUser(users,poor.public_key)==User{0,1},"affordable tail preserves exact balance and nonce");
 
-        // Reserving transaction gas can cap the candidate below K even with K or more ready items.
+        // Reserving transaction gas can limit the block below its transaction capacity.
         for (uint64_t nonce=1;nonce<=5;++nonce) {
             auto tx=MakeEvmTx(gasOwner,{},vector<uint8_t>{0},nonce,0,maxEvmGas,true);
             Require(ProcessEvmTx(tx),"gas-limited EVM transaction admitted");
         }
-        Require(readyPoolTx==5&&GenerateBlock(4,false).empty(),"gas-limited selection waits even when ready count exceeds K");
-        auto gasTail=GenerateBlock(4,true);
+        Require(readyPoolTx==5,"all gas-limited transactions are ready");
+        auto gasTail=GenerateBlock();
         auto gasBlock=UnSerializeBlock(gasTail);
-        Require(gasBlock.txNum==3&&gasBlock.evm.size()==3,"deadline observes total gas cap and preserves EVM payload indexes");
+        Require(gasBlock.txNum==3&&gasBlock.evm.size()==3,"selection observes total gas cap and preserves EVM payload indexes");
         Commit(gasTail);
-        Require(readyPoolTx==2&&GenerateBlock(4,false).empty(),"gas remainder remains ready for a later deadline");
-        Commit(GenerateBlock(4,true));
+        Require(readyPoolTx==2,"gas remainder remains ready for the next block");
+        Commit(GenerateBlock());
         Require(GetUser(users,gasOwner.public_key).nonce==5,"all gas-limited transactions eventually commit");
 
         // Large signed inputs reach the encoded byte limit before the gas limit or count limit.
         vector<uint8_t> largeInput(maxEvmInput,0);
         for (uint64_t nonce=1;nonce<=64;++nonce)
             Require(ProcessEvmTx(MakeEvmTx(bytesOwner,{},largeInput,nonce,0,400000,true)),"large EVM input admitted");
-        Require(readyPoolTx==64&&GenerateBlock(64,false).empty(),"byte-limited selection waits despite a full ready step");
-        auto byteTail=GenerateBlock(64,true);
+        Require(readyPoolTx==64,"all byte-limited transactions are ready");
+        auto byteTail=GenerateBlock();
         auto byteBlock=UnSerializeBlock(byteTail);
-        Require(byteBlock.txNum>0&&byteBlock.txNum<64&&byteTail.size()<=maxBlockBytes,"deadline tail respects encoded byte budget");
+        Require(byteBlock.txNum>0&&byteBlock.txNum<64&&byteTail.size()<=maxBlockBytes,"selection respects encoded byte budget");
         Require(byteBlock.txNum*400000<maxBlockGas,"large-input scenario is constrained by bytes, not gas");
         Require(byteBlock.evm.size()==byteBlock.txNum,"every selected large input keeps its matching transaction index");
         Commit(byteTail);
         Require(readyPoolTx==64-byteBlock.txNum,"unselected large inputs remain in the pool");
-        Commit(GenerateBlock(64,true));
+        Commit(GenerateBlock());
         Require(GetUser(users,bytesOwner.public_key).nonce==64&&txpool.empty(),"large-input remainder commits with continuous nonce");
 
-        // Producer step policy must not alter the protocol's same-count hash tie breaker.
+        // Packing changes preserve the protocol's same-count hash tie breaker.
         auto left=MakeCandidate(alice,receiver,2),right=MakeCandidate(alice,receiver,3);
         auto leftHash=UnSerializeBlock(left).hash,rightHash=UnSerializeBlock(right).hash;
         Require(leftHash!=rightHash,"different valid transaction contents yield distinct candidate hashes");
@@ -133,7 +125,7 @@ int main(int argc,char** argv) {
         Require(CommitBlock(UnSerializeBlock(smaller),smaller),"hash-selected candidate commits normally");
 
         db.reset();
-        cout<<"PASS "<<checks<<" transaction step checks. Database: "<<root.string()<<'\n';
+        cout<<"PASS "<<checks<<" block packing checks. Database: "<<root.string()<<'\n';
         return 0;
     } catch (const exception& error) {
         cerr<<error.what()<<'\n'; return 1;

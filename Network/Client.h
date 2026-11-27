@@ -60,7 +60,6 @@ atomic<uint64_t> networkSentBytes{0},localProposals{0};
 atomic<uint64_t> txPostProcessNs{0},txPostProcessTasks{0};
 array<atomic<uint64_t>,3> prioritySentMessages{},prioritySentBytes{};
 atomic<uint64_t> gossipDropped{0},broadcastSelected{0},broadcastExcluded{0};
-atomic<uint64_t> blockStepWaitNs{0},blockStepProposals{0},blockTailProposals{0};
 size_t maxSendBytes=8*1024*1024;
 SendQueueBudget sendQueueBudget(128*1024*1024,8192,1024,4*1024*1024,128,256*1024,16);
 unsigned short listenPort=8089;
@@ -651,40 +650,29 @@ bool WaitBlockSchedule(steady_clock::time_point deadline) {
         txpoolCondition.wait_until(lock,min(deadline,steady_clock::now()+milliseconds(5)));
     return nodeRunning&&!forkReady;
 }
-vector<uint8_t> GenerateSteppedBlock(steady_clock::time_point deadline,bool stopOnCandidate=false) {
+vector<uint8_t> GenerateScheduledBlock(steady_clock::time_point deadline,bool stopOnCandidate=false) {
     size_t attemptedReady=SIZE_MAX;
     while (true) {
         unique_lock lock(txpoolMutex);
         if (forkReady||(stopOnCandidate&&blockReady)) return {};
         if (!nodeRunning||steady_clock::now()>=deadline) {
             lock.unlock();
-            return GenerateBlock(blockTxStep,true);
+            return GenerateBlock();
         }
         auto ready=readyPoolTx;
-        // The largest permitted step multiple is a full block. Smaller
-        // multiples keep collecting transactions until the send time.
-        auto fullCount=(maxBlockTx/blockTxStep)*blockTxStep;
-        if (fullCount&&ready>=fullCount&&ready!=attemptedReady) {
+        if (ready>=maxBlockTx&&ready!=attemptedReady) {
             attemptedReady=ready;
             lock.unlock();
-            auto data=GenerateBlock(blockTxStep,false);
-            if (!data.empty()&&ReadU64(data.data()+72)>=fullCount) return data;
+            auto data=GenerateBlock();
+            if (!data.empty()&&ReadU64(data.data()+72)>=maxBlockTx) return data;
             // Ready nonces can exceed the actually selectable byte/gas/balance
-            // budget. Retry on pool progress or at the fixed partial deadline.
+            // budget. Retry on pool progress or at the send time.
             continue;
         }
-        auto start=GetSteadyTime();
         txpoolCondition.wait_until(lock,min(deadline,steady_clock::now()+milliseconds(5)),[&] {
             return !nodeRunning||forkReady||(stopOnCandidate&&blockReady)||
-                (fullCount&&readyPoolTx>=fullCount&&readyPoolTx!=attemptedReady);
+                (readyPoolTx>=maxBlockTx&&readyPoolTx!=attemptedReady);
         });
-        blockStepWaitNs+=GetSteadyTime()-start;
-    }
-}
-void RecordSteppedProposal(uint64_t txCount) {
-    if (blockTxStep>1) {
-        if (txCount<blockTxStep) blockTailProposals++;
-        else blockStepProposals++;
     }
 }
 void MainLoop() {
@@ -698,14 +686,10 @@ void MainLoop() {
                 txpoolCondition.wait(lock,[]{return !nodeRunning||forkReady||blockReady||(produceBlocks&&readyPoolTx>0);});
                 if (forkReady) continue;
                 if (!nodeRunning&&!blockReady&&(!produceBlocks||txpool.empty())) break;
-                if (blockTxStep<=1&&!nodeClock.roundMs&&produceBlocks&&!blockReady&&nodeRunning&&readyPoolTx<maxBlockTx) {
-                    txpoolCondition.wait_for(lock,milliseconds(blockInterval),[]{return !nodeRunning||forkReady||blockReady||readyPoolTx>=maxBlockTx;});
-                }
-                if (forkReady) continue;
             }
             if (nodeClock.roundMs&&nodeRunning) {
                 auto period=int64_t(nodeClock.roundMs)*1000;
-                if (blockTxStep>1&&produceBlocks) {
+                if (produceBlocks) {
                     auto logicalNow=GetLogicalTimeUs();
                     auto steadyNow=steady_clock::now();
                     auto window=int64_t(nodeClock.candidateMs)*1000;
@@ -716,11 +700,11 @@ void MainLoop() {
                     WaitBlockSchedule(roundStart);
                     if (forkReady) continue;
                     lastRound=round;
-                    auto data=GenerateSteppedBlock(deadline);
+                    auto data=GenerateScheduledBlock(deadline);
                     if (forkReady) continue;
                     if (data.empty()&&!nodeRunning&&!blockReady) break;
                     if (!data.empty()&&ProcessBlock(data)) {
-                        localProposals++; RecordSteppedProposal(ReadU64(data.data()+72)); AnnounceBlock(data);
+                        localProposals++; AnnounceBlock(data);
                     }
                     // Preserve a full propagation window even when construction
                     // or execution itself takes longer than its scheduled start.
@@ -730,19 +714,14 @@ void MainLoop() {
                     auto round=max(lastRound+1,GetLogicalTimeUs()/period+1);
                     WaitLogicalTime(round*period);
                     lastRound=round;
-                    if (produceBlocks) {
-                        auto data=GenerateBlock();
-                        if (!data.empty()&&ProcessBlock(data)) { localProposals++; AnnounceBlock(data); }
-                    }
                     WaitLogicalTime(round*period+int64_t(nodeClock.candidateMs)*1000);
                 }
             } else if (produceBlocks&&!blockReady) {
-                auto data=blockTxStep>1?GenerateSteppedBlock(steady_clock::now()+milliseconds(blockInterval),true):GenerateBlock();
+                auto data=GenerateScheduledBlock(steady_clock::now()+milliseconds(blockInterval),true);
                 if (forkReady) continue;
                 if (data.empty()&&!nodeRunning&&!blockReady) break;
                 if (!data.empty()) {
-                    localProposals++; auto count=ReadU64(data.data()+72);
-                    if (ProcessBlock(std::move(data))) RecordSteppedProposal(count);
+                    localProposals++; ProcessBlock(std::move(data));
                 }
             }
             pair<Block,vector<uint8_t>> selected;
@@ -822,8 +801,6 @@ nlohmann::json GetNodeStats() {
         {"chain_transactions",chainTx},{"reorganizations",reorgCount.load()},{"max_reorg_depth",maxReorgDepth.load()},
         {"evm_accounts",evmCount}, {"peers",peers},{"short_compact_peers",shortCompactPeers},{"failed",nodeFailed.load()},
         {"network_sent_bytes",networkSentBytes.load()},{"local_proposals",localProposals.load()},
-        {"block_tx_step",blockTxStep},{"block_step_wait_ms",blockStepWaitNs.load()/1e6},
-        {"block_step_proposals",blockStepProposals.load()},{"block_tail_proposals",blockTailProposals.load()},
         {"send_queued_bytes",sends.bytes},{"send_queued_tasks",sends.tasks},
         {"send_peak_bytes",sends.peakBytes},{"send_peak_tasks",sends.peakTasks},
         {"send_byte_limit",sends.byteLimit},{"send_task_limit",sends.taskLimit},

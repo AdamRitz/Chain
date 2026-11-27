@@ -577,9 +577,7 @@ class ClassroomApp {
                                        "--candidate-ms",
                                        "12",
                                        "--max-block-txs",
-                                       "6000",
-                                       "--block-tx-step",
-                                       "2000"};
+                                       "6000"};
                 args.push_back("--seeds-file"); args.push_back(PathUtf8(node / "seeds.json"));
                 args.push_back("--network-info"); args.push_back(PathUtf8(directory / "network-info.json"));
                 if (ipv6) {

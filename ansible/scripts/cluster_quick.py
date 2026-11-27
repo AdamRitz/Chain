@@ -272,7 +272,7 @@ def Execute(args, invoke=subprocess.run):
     if args.action == 'deploy':
         variables['chain_cluster_genesis'] = json.loads(args.genesis.read_text(encoding='utf-8'))
         variables['chain_cluster_arguments'] = ['--produce', '1', '--sync', '1', '--block-ms', '200',
-                                               '--max-block-txs', '6000', '--block-tx-step', '2000']
+                                               '--max-block-txs', '6000']
     if args.action in ('prepare', 'test'):
         if args.action == 'test':
             VerifySender(package, args.sender.resolve(strict=True))

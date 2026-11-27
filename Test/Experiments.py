@@ -517,7 +517,7 @@ def ValidatePlan(plan):
         raise ValueError('latency_batch must be 1..10000')
     limits={'candidate-threads':(1,64),'candidate-ms':(0,5000),'block-verify-threads':(1,64),'query-threads':(1,4),'db-profile':(0,1),
             'signature-cache':(16,4194304),'recent-tx-cache':(16,2097152),
-            'recent-tx-bytes':(176,512*1024*1024),'sync-window':(4,64),'block-tx-step':(0,10000)}
+            'recent-tx-bytes':(176,512*1024*1024),'sync-window':(4,64)}
     for name,value in plan.get('node_settings',{}).items():
         if name not in limits or not isinstance(value,int) or isinstance(value,bool) or not limits[name][0]<=value<=limits[name][1]:
             raise ValueError(f'Invalid node setting: {name}')

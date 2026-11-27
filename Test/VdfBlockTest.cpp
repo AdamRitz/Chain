@@ -277,7 +277,7 @@ int main(int argc,char** argv) {
             signature=consensus::SignHash(hash,producer.private_key);
             return true;
         };
-        const auto empty=GenerateBlock(500,true);
+        const auto empty=GenerateBlock();
         Require(!empty.empty()&&UnSerializeBlock(empty).txNum==0,"VDF chain generates a signed empty block");
         TestCommitment(empty); TestTailParsing(empty);
         auto genesisWithTail=genesis;
@@ -291,7 +291,7 @@ int main(int argc,char** argv) {
         memcpy(input.data()+input.size()-8,"VDB1",4);
         WriteU32(input.data()+input.size()-4,120);
         Require(ProcessEvmTx(MakeEvmTx(sender,{},input,1,0,100000,true)),"EVM transaction containing trailer marker admitted");
-        const auto mixed=GenerateBlock(500,true);
+        const auto mixed=GenerateBlock();
         const auto mixedBlock=UnSerializeBlock(mixed);
         Require(mixedBlock.txNum==2&&mixedBlock.evm.size()==1,"native and EVM transactions coexist with VDF");
         TestCommitment(mixed); TestTailParsing(mixed);

@@ -510,10 +510,11 @@ class BenchmarkTests(unittest.TestCase):
     def test_arguments_keep_graph_and_lifecycle_values(self):
         import cluster_benchmark as benchmark
         plan = planner.MakePlan(Nodes(20), 'test')
-        arguments = benchmark.Arguments(plan, {'block-tx-step': 1000})
+        arguments = benchmark.Arguments(plan, {'max-block-txs': 4500})
         for node in plan['nodes']:
             args = arguments[node['id']]
-            self.assertEqual(args[args.index('--block-tx-step') + 1], '1000')
+            self.assertEqual(args[args.index('--max-block-txs') + 1], '4500')
+            self.assertNotIn('--block-tx-step', args)
             self.assertEqual(args[args.index('--peer-discovery') + 1], '0')
             self.assertEqual(args[args.index('--max-peers') + 1], '12')
             self.assertEqual(args[args.index('--target-peers') + 1], '8')

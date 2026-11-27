@@ -191,7 +191,7 @@ def Arguments(plan, settings, producer_ids=None):
         values = {'io-threads': 1, 'verify-threads': 1, 'candidate-threads': 1,
                   'block-verify-threads': 1, 'query-threads': 1, 'sync': 1, 'produce': 1,
                   'experiment-index': 1, 'block-ms': 200, 'max-block-txs': 6000,
-                  'block-tx-step': 2000, 'clock-sync': 0, **settings, 'port': node['port'], 'bind': node['bind'],
+                  'clock-sync': 0, **settings, 'port': node['port'], 'bind': node['bind'],
                   'peer-discovery': 0, 'max-peers': len(node['neighbors']) + 4, 'target-peers': len(node['neighbors']),
                   'max-connections': len(node['neighbors']) + 36, 'relay-transactions': 1}
         if producer_ids is not None:

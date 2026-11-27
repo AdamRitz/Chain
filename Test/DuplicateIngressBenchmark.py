@@ -65,7 +65,7 @@ def run_case(label, binary, args, work, dataset, transactions, helpers):
                 'io-threads': 2, 'verify-threads': 2, 'candidate-threads': 2,
                 'block-verify-threads': 2, 'query-threads': 1, 'max-pending': 32768,
                 'max-pool': max(200000, count + 6000), 'block-ms': 200,
-                'round-ms': 0, 'max-block-txs': 6000, 'block-tx-step': 2000,
+                'round-ms': 0, 'max-block-txs': 6000,
                 'clock-sync': 0, 'tx-push-peers': 0,
                 'run-seconds': int(args.seconds + args.drain_seconds + 180)}
     node = StartNode(binary, case, 'node', **settings)

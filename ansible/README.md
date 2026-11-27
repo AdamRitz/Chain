@@ -54,13 +54,7 @@ context 的 `releases[].sha256`、`binary_sha256` 都是实际 boost 哈希，`p
 
 context 与回收结果保存在 `chain_result_dir`；driver 独占全新的 `chain_result_dir/benchmark` 子目录。同一次测试不要重复使用已有 benchmark 目录，新测试使用新的 run ID 和输出目录。
 
-默认比较两个 release：每个输入速率 20,000、30,000 TPS 按 release 顺序分别测量，再以 20,000 TPS 各测一轮延迟，共六轮。比较同一版本的打包步长时，`chain_releases` 只提供一个支持该参数的 release，并添加：
-
-```yaml
-chain_block_tx_steps: [0, 500, 1000, 2000]
-```
-
-模板将其写入 context 的 `block_tx_steps`；步长必须是不重复的 0–10,000 整数，顺序即执行顺序。先在 20,000 TPS 下逐个步长测吞吐，再在 30,000 TPS 下逐个步长测吞吐，最后在 20,000 TPS 下逐个步长独立测延迟，共十二轮。每轮预热 2 秒、测量 10 秒、最多等待 5 秒，各一次，均核对二十节点的持久化账户和规范链。延迟观测额外 RPC 不进入吞吐轮次。case 目录、启动 argv、参数记录和结果都包含步长；`0` 也显式传入，以覆盖版本自带配置。未设置 `chain_block_tx_steps` 时保留原两版本流程，启动 argv 不添加该参数，兼容旧二进制。
+默认比较两个 release：每个输入速率 20,000、30,000 TPS 按 release 顺序分别测量，再以 20,000 TPS 各测一轮延迟，共六轮。每轮预热 2 秒、测量 10 秒、最多等待 5 秒，各一次，均核对二十节点的持久化账户和规范链。延迟测量额外 RPC 不进入吞吐轮次。
 
 ## Worker 与恢复接口
 
@@ -81,7 +75,7 @@ chain_block_tx_steps: [0, 500, 1000, 2000]
 
 禁止 arguments 覆盖 `--data`、`--genesis`、`--metrics`。start 保留实际 `binary_sha256`。export-headers 在归属核对且停止的同一 DB 上，使用保留的 HeaderReader 和该 release 的 RocksDB 库只读导出块头与分数。
 
-使用支持整数步长打包的版本时，可在 `chain_worker_arguments` 或各节点的 `chain_worker_arguments_by_node` 中加入 `--block-tx-step 500`（也可为 1000、2000，0 关闭）。时间轮次参数例如 `--round-ms 50 --candidate-ms 12`。同一实验的生产节点应统一设置步长；旧版二进制不认识此参数，原版对照应省略。一键对照 driver 使用上述 `chain_block_tx_steps` 配置，不读取手工 worker 参数作为比较档位。
+区块交易容量使用 `--max-block-txs` 设置。发块时按容量、字节数和燃料上限打包可执行交易。
 
 ```bash
 ../.venv/bin/ansible-playbook -i /srv/chain/inventory.yml cleanup.yml -e @/srv/chain/run.yml \

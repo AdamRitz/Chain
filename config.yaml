@@ -7,7 +7,5 @@ node:
   io_threads: 4
   verify_threads: 8
   block_ms: 50
-  # Pack full multiples; use 0 to compare with the original packing policy.
-  block_tx_step: 500
   sync: true
   produce: true

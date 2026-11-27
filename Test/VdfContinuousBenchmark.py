@@ -270,7 +270,7 @@ def Main(args):
     Save(work / 'genesis.json', genesis)
     settings = {'produce': 1, 'sync': 1, 'io-threads': 1, 'verify-threads': 1,
                 'candidate-threads': 1, 'block-verify-threads': 1, 'query-threads': 1,
-                'max-block-txs': 6000, 'block-tx-step': 2000, 'block-ms': 200,
+                'max-block-txs': 6000, 'block-ms': 200,
                 'relay-transactions': 1, 'clock-sync': 0, 'experiment-index': 1,
                 'run-seconds': int(args.duration + warmup + 900)}
     nodes = Lifecycle.LocalInventory(binary, work / 'nodes', 5)

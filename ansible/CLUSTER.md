@@ -115,7 +115,7 @@ python3 -B ansible/scripts/cluster_release.py \
   "chain_package_sha256": "填入打包命令返回的 sha256",
   "chain_python": "/usr/bin/python3.11",
   "chain_cluster_genesis": {"base_fee":0,"accounts":[]},
-  "chain_cluster_arguments": ["--sync","1","--produce","1","--io-threads","1","--verify-threads","1","--candidate-threads","1","--block-verify-threads","1","--block-ms","50","--max-block-txs","6000","--block-tx-step","2000"]
+  "chain_cluster_arguments": ["--sync","1","--produce","1","--io-threads","1","--verify-threads","1","--candidate-threads","1","--block-verify-threads","1","--block-ms","50","--max-block-txs","6000"]
 }
 ```
 
@@ -184,7 +184,7 @@ sha256sum /srv/chain/transactions.bin /srv/chain/transactions.bin.genesis.json
   "chain_cluster_forks":32,
   "chain_cluster_readiness_timeout":300,
   "chain_cluster_bootstrap_producers":1,
-  "chain_cluster_node_settings":{"block-tx-step":2000}
+  "chain_cluster_node_settings":{"max-block-txs":6000}
 }
 ```
 

@@ -78,8 +78,8 @@ def Main(args):
         AssertConfig(first, config)
         command = creator.NodeProcesses()[0].cmdline()
         assert command[command.index('--max-block-txs') + 1] == '6000'
-        assert command[command.index('--block-tx-step') + 1] == '2000'
-        assert first['stats']['block_tx_step'] == 2000
+        assert '--block-tx-step' not in command
+        assert 'block_tx_step' not in first['stats']
         checks.append('GUI creates a 200 ms chain with 32-block turns, eight-slot timeout and 160-block epochs')
 
         invite = creator.Api('invite', seeds=[f"127.0.0.1:{profile['ports'][0]}"])

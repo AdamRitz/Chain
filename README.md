@@ -133,7 +133,6 @@ build/sender.exe --wallet secrets/alice.wallet.json --receiver <Bob公钥> --amo
 | `--sync-window` | 8 | 节点统一同步窗口，可配置 4..64 块 |
 | `--block-ms` | 50 | 凑交易等待目标，可执行交易满块时提前触发 |
 | `--max-block-txs` | 6000 | 每块交易上限，可配置至 10000，单块字节预算同时生效 |
-| `--block-tx-step` | 0；仓库 `config.yaml` 示例为 500 | 本地打包数量步长，范围 0..10000；可设 500、1000、2000，0/1 保持原打包方式 |
 | `--max-pending` | 32768 | 待验证任务上限，满时暂停连接读取 |
 | `--max-pool` | 200000 | 交易池容量 |
 | `--sync` | 1 | 同步写入预写日志（Write-Ahead Log，WAL） |
@@ -145,29 +144,26 @@ build/sender.exe --wallet secrets/alice.wallet.json --receiver <Bob公钥> --amo
 
 先加载 `config.yaml`，再由命令行覆盖。默认监听本机回环地址。
 
-### 整数步长打包与低负载出块
+### 交易打包与发块时间
 
-例如使用 `--block-tx-step 500`，本轮实际可选 1,300 笔有效交易时打包 1,000 笔，剩余交易保留在池中。数量按余额、连续 nonce、Gas、字节上限和 `--max-block-txs` 检查后的实际选择结果取整，不按交易池总数取整。同数量候选继续选择哈希更小者；同父候选排名、跨分支累计交易数排名及接收验证规则保持原有行为。
+发块时按余额、连续 nonce、Gas、字节上限和 `--max-block-txs` 选择交易，全部装入当前区块。例如每块上限 6000 笔、当前可打包 4500 笔时，区块包含 4500 笔。超出容量的交易留在池中等待后续区块。
 
-不足一个步长时允许周期末出小块：普通模式以 `--block-ms` 为最长凑交易等待时间；时间轮次模式以本轮结束前 `--candidate-ms` 为最晚开始生成时刻，为候选传播保留窗口。新交易不会重新开始这次等待，同一轮已经生成整倍数区块后不会再追加非整倍数尾批。截止控制的是开始生成的等待时间，验证、传播、排队和写盘仍会计入实际上链延迟。
+达到交易数量上限时可以提前发块。普通模式在 `--block-ms` 等待结束时打包；时间轮次模式在本轮结束前 `--candidate-ms` 开始打包。VDF 链按创世配置的时间片调度，200 ms 时间片在第 188 ms 开始打包。每个时间片最多生成一个本地区块。
 
 ```powershell
-build/boost.exe --data data/step-500 --genesis bench-results/transactions.bin.genesis.json `
-  --block-tx-step 500 --max-block-txs 6000 --round-ms 50 --candidate-ms 12 --sync 1
+build/boost.exe --data data/packing --genesis bench-results/transactions.bin.genesis.json `
+  --max-block-txs 6000 --round-ms 50 --candidate-ms 12 --sync 1
 ```
 
 也可在启动配置中调整，命令行参数优先：
 
 ```yaml
 node:
-  block_tx_step: 1000
   max_block_txs: 6000
   block_ms: 50
   round_ms: 50
   candidate_ms: 12
 ```
-
-`--block-tx-step 0` 可作为原行为对照。尾批允许非整数倍，其他节点仍完整验证并接收合法小块；该设置控制本地产生候选，不根据本地时钟拒绝收到的区块。启动日志及节点统计中的 `block_tx_step` 显示生效值。多节点对照应为所有生产节点显式设置相同参数，并使用独立数据库。
 
 ## 性能测试
 

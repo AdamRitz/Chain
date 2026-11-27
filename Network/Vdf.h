@@ -326,7 +326,7 @@ void RunVdfBlockLoop() {
             auto phase=uint64_t(GetLogicalTimeUs()/1000)%VdfConsensus::config.slotMs;
             size_t ready;
             { lock_guard lock(txpoolMutex); ready=readyPoolTx; }
-            auto full=blockTxStep>1?maxBlockTx/blockTxStep*blockTxStep:maxBlockTx;
+            auto full=maxBlockTx;
             const bool atDeadline=phase>=VdfConsensus::config.slotMs-propagationMs;
             const auto head=ReadChainHead();
             const auto stateVersion=head.version;
@@ -338,7 +338,7 @@ void RunVdfBlockLoop() {
                 !WasVdfAttemptDeclined(MakeVdfAttempt(head.height+1,head.hash,slot))) {
                 attemptedSlot=slot; attemptedReady=ready; attemptedVersion=stateVersion;
                 attemptedProofVersion=proofVersion;
-                auto data=GenerateBlock(blockTxStep,atDeadline);
+                auto data=GenerateBlock();
                 if (!data.empty()&&(atDeadline||ReadU64(data.data()+72)>=full)) {
                     // Record the slot actually signed by GenerateBlock. A valid
                     // block may finish execution after that slot has ended.
@@ -350,8 +350,6 @@ void RunVdfBlockLoop() {
                     lastProducedSlot=slot;
                     if (ProcessBlock(data)) {
                         localProposals++;
-                        auto count=ReadU64(data.data()+72);
-                        if (blockTxStep>1&&count) { if (count<blockTxStep) blockTailProposals++; else blockStepProposals++; }
                         AnnounceBlock(data);
                     }
                 }
