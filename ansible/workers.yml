@@ -11,10 +11,68 @@
           - chain_run_group is match('^[A-Za-z0-9_-]{1,100}$')
           - chain_run_owner is match('^[0-9a-f]{32}$')
           - chain_worker_release_id is match('^[A-Za-z0-9][A-Za-z0-9_.-]{0,79}$')
+    - name: Create this test's private identity directory
+      ansible.builtin.file:
+        path: "{{ chain_test_root }}/.work-identities/{{ chain_run_id }}"
+        state: directory
+        mode: '0700'
+      when: chain_worker_action == 'start' and chain_node_id in (chain_worker_identity_files | default({}))
+    - name: Copy only this node's Work identity
+      ansible.builtin.copy:
+        src: "{{ chain_worker_identity_files[chain_node_id] }}"
+        dest: "{{ chain_test_root }}/.work-identities/{{ chain_run_id }}/{{ chain_node_id }}.seed"
+        mode: '0600'
+        force: false
+      no_log: true
+      when: chain_worker_action == 'start' and chain_node_id in (chain_worker_identity_files | default({}))
+    - name: Check free space and operating system clock before starting a Work test
+      ansible.builtin.command:
+        argv: ["{{ chain_python }}", -c, "import json,shutil,sys,time; free=shutil.disk_usage(sys.argv[1]).free; print(json.dumps({'free_bytes':free,'unix_ms':time.time_ns()//1000000})); assert free>=int(sys.argv[2]), 'Insufficient free disk space'", "{{ chain_test_root }}", "{{ chain_worker_minimum_free_bytes | default(0) }}"]
+      register: chain_worker_resources
+      changed_when: false
+      when: chain_worker_action == 'start' and chain_worker_minimum_free_bytes | default(0) | int > 0
+    - name: Install snapshot restore helpers for this start
+      ansible.builtin.copy:
+        src: "{{ item.source }}"
+        dest: "{{ chain_tools_root }}/{{ item.name }}"
+        mode: '0755'
+      loop:
+        - {source: scripts/managed_worker.py, name: managed_worker.py}
+        - {source: scripts/work_snapshot.py, name: work_snapshot.py}
+        - {source: ../Test/ClusterWorker.py, name: ClusterWorker.py}
+      when: chain_worker_action == 'start' and chain_worker_snapshot | default({}) | length > 0
+    - name: Create the retained snapshot directory
+      ansible.builtin.file:
+        path: "{{ chain_test_root }}/.work-snapshots/{{ chain_run_id }}"
+        state: directory
+        mode: '0700'
+      when: chain_worker_action == 'start' and chain_worker_snapshot | default({}) | length > 0
+    - name: Copy the shared stopped ledger and only this node's Work proofs
+      ansible.builtin.copy:
+        src: "{{ item.source }}"
+        dest: "{{ chain_test_root }}/.work-snapshots/{{ chain_run_id }}/{{ item.name }}"
+        mode: '0600'
+        force: false
+      loop:
+        - source: "{{ (chain_worker_snapshot | default({})).get('ledger_archive', '') }}"
+          name: ledger.tar.gz
+        - source: "{{ (chain_worker_snapshot | default({})).get('work_archives', {}).get(chain_node_id, {}).get('archive', '') }}"
+          name: "{{ chain_node_id }}.tar.gz"
+      when: chain_worker_action == 'start' and chain_worker_snapshot | default({}) | length > 0
+    - name: Select this node's snapshot hashes and identity
+      ansible.builtin.set_fact:
+        chain_worker_node_snapshot:
+          chain_id: "{{ chain_worker_snapshot.chain_id }}"
+          public_key: "{{ chain_worker_snapshot.work_archives[chain_node_id].public_key }}"
+          rounds: "{{ chain_worker_snapshot.rounds | int }}"
+          iterations: "{{ chain_worker_snapshot.iterations | int }}"
+          ledger_sha256: "{{ chain_worker_snapshot.ledger_sha256 }}"
+          work_sha256: "{{ chain_worker_snapshot.work_archives[chain_node_id].sha256 }}"
+      when: chain_worker_action == 'start' and chain_worker_snapshot | default({}) | length > 0
     - name: Invoke the existing worker with per-node arguments
       ansible.builtin.command:
         argv: ["{{ chain_python }}", "{{ chain_tools_root }}/managed_worker.py"]
-        stdin: "{{ {'action': chain_worker_action, 'root': chain_test_root, 'run': chain_run_id, 'run_group': chain_run_group, 'owner': chain_run_owner, 'node': chain_node_id, 'release_root': chain_release_root, 'release_dir': chain_release_root + '/' + chain_worker_release_id, 'arguments': (chain_worker_arguments_by_node | default({})).get(chain_node_id, chain_worker_arguments | default([])), 'genesis': chain_worker_genesis | default({}), 'test_port': chain_test_port, 'guard_seconds': chain_guard_seconds | default(300), 'restart': chain_worker_restart | default(false)} | to_json }}"
+        stdin: "{{ {'action': chain_worker_action, 'root': chain_test_root, 'run': chain_run_id, 'run_group': chain_run_group, 'owner': chain_run_owner, 'node': chain_node_id, 'release_root': chain_release_root, 'release_dir': chain_release_root + '/' + chain_worker_release_id, 'arguments': (chain_worker_arguments_by_node | default({})).get(chain_node_id, chain_worker_arguments | default([])), 'genesis': chain_worker_genesis | default({}), 'test_port': chain_test_port, 'guard_seconds': chain_guard_seconds | default(300), 'restart': chain_worker_restart | default(false), 'work_identity': chain_node_id in (chain_worker_identity_files | default({})), 'snapshot': chain_worker_node_snapshot | default({})} | to_json }}"
       environment:
         LD_LIBRARY_PATH: "{{ chain_release_root }}/{{ chain_worker_release_id }}/lib"
       register: chain_worker_result

@@ -1,0 +1,9 @@
+{
+  "base_commit": "54b5bb62726ec710c8255c264b771d0453d06d03",
+  "files": {
+    "Crypto/WorkElection.h": "ed01c26e10b83c1f74066ca1cb6b2d2ee4e674d704a0b536ad0db9d213d06b49",
+    "Crypto/WorkProofVerifier.h": "feb03fc2a88c98a7ec7a7da0e1df0010413ed46c98e8cc6e2f7e673481447da1",
+    "Crypto/VDF.cpp": "8439b108ccde68eff8c92f3cb66ded7142f34d5c1661f0ad9ea664b6537d3ff0",
+    "Test/WorkVdfBenchmark.cpp": "48348c8f252c3adb3854317846f3fc7446db6ad451a20558411eb0215c3eb024"
+  }
+}

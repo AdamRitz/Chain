@@ -1,5 +1,15 @@
 # Chain 模块与修改指南
 
+## 2026-11-28 选举票排序与双线程验证
+
+`Network/WorkTicketQueue.h` 对等待验证的票按选举分数、公钥和消息哈希排序。网络轻检查线程解析并验证签名，协调线程每次取分数最小的票；完整验证前再次比较已验证的前十名，无法进入前十的票跳过数学运算。原有 32 张票和 2 MiB 消息总限额继续生效，未验证票不影响前十名门槛。
+
+`Crypto/WorkProofVerifier.h` 使用两个常驻线程验证同一张票中的不同证明组，组内顺序验证。网络票和区块中的票通过 `Consensus/WorkRules.h::GetProofVerifier()` 共用这两个线程，保留整票缓存。验证完成后，在同一个数据库读锁内检查当前轮次、历史摘要和排名并保存，随后释放锁再广播。停止节点时先结束轻检查，再释放优先队列中的消息；数学线程保留到区块验证也结束。
+
+当前票验证完成后，等待的区块先使用数学线程。本节点在随机种子确定后提前验证自己的票，广播与写入区块继续检查 `WorkBroadcastScore`，到达对应时间后立即发送，未写入区块时每秒重发。
+
+定向回归与 Linux 验证耗时见 [测试报告](reports/2026-11-28-work-ticket-priority/REPORT.md)。
+
 ## 2026-11-28 Work VDF 参数测试
 
 `Test/WorkVdfBenchmark.cpp` 单独编译真实 Work 生成和验证代码，分别测量 VDF 输出、完整证明、32 份 Work 选举票及验证缓存。`--compare-stored` 对同一输入比较保存中间结果的证明生成方法，要求完整证明相同且验证通过。复现方法见 [Test/WorkVdfBenchmark.md](Test/WorkVdfBenchmark.md)，Linux 测量见 [参数测试报告](reports/2026-11-28-work-vdf-calibration/REPORT.md)。本次只运行独立测试，生产证明算法、创世默认参数及节点运行状态未改变。

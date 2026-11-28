@@ -44,7 +44,7 @@ def ArrivalTime(index, rate, pattern):
 
 
 class Load:
-    def __init__(self, cluster, dataset, rate, total_seconds, pattern, ingress, sample_hz, batch=128, parallel_ingress=False):
+    def __init__(self, cluster, dataset, rate, total_seconds, pattern, ingress, sample_hz, batch=128, parallel_ingress=False, dataset_offset=0):
         self.cluster, self.dataset = cluster, Path(dataset)
         self.rate, self.count = rate, int(rate*total_seconds)
         self.pattern, self.ingress, self.batch = pattern, ingress, batch
@@ -55,6 +55,9 @@ class Load:
         self.error, self.late_ms = None, []
         self.started = 0
         self.parallel_ingress = parallel_ingress
+        if type(dataset_offset) is not int or dataset_offset < 0:
+            raise ValueError('dataset_offset must be a nonnegative transaction index')
+        self.dataset_offset = dataset_offset
 
     def Run(self):
         sockets = {}
@@ -77,7 +80,7 @@ class Load:
                 return 0
         try:
             with self.dataset.open('rb') as source, mmap.mmap(source.fileno(), 0, access=mmap.ACCESS_READ) as data:
-                if len(data) < self.count*176:
+                if len(data) < (self.dataset_offset+self.count)*176:
                     raise ValueError('Dataset is smaller than offered load')
                 self.started = time.monotonic()
                 for begin in range(0, self.count, self.batch):
@@ -94,7 +97,7 @@ class Load:
                     active = [i for i in range(len(self.cluster.nodes)) if i not in self.cluster.offline]
                     if not active:
                         raise RuntimeError('No live ingress nodes')
-                    package = data[begin*176:end*176]
+                    package = data[(self.dataset_offset+begin)*176:(self.dataset_offset+end)*176]
                     if self.ingress == 'broadcast':
                         packages = {i: package for i in active}
                     else:
@@ -115,7 +118,9 @@ class Load:
                         self.late_ms.append(max(0, sent_at-scheduled)*1000)
                         for index in range(begin, end):
                             if index % self.every == 0:
-                                self.samples.append({'index': index, 'hash': data[index*176+80:index*176+112].hex(),
+                                position = (self.dataset_offset+index)*176
+                                self.samples.append({'index': index, 'dataset_index': self.dataset_offset+index,
+                                                     'hash': data[position+80:position+112].hex(),
                                                      'scheduled': self.started+ArrivalTime(index, self.rate, self.pattern),
                                                      'sent_at': sent_at, 'included_at': None})
         except Exception as error:
@@ -163,14 +168,16 @@ def CheckSamples(cluster, load, flush=False):
 
 RESOURCE_COUNTERS = ('process_cpu_seconds', 'network_bytes', 'network_sent_bytes',
                      'process_write_bytes', 'db_write_ms')
+WORK_COUNTERS = ('work_generation_ms', 'work_proof_verify_ms', 'proof_checks',
+                 'work_ticket_checks', 'work_ticket_skipped', 'queue_rejected')
 
 
 class NodeResources:
     """Accumulate counter differences without retaining complete node stats."""
     def __init__(self):
         self.previous = None
-        self.seconds = {key: 0.0 for key in RESOURCE_COUNTERS}
-        self.deltas = {key: 0.0 for key in RESOURCE_COUNTERS}
+        self.seconds = {key: 0.0 for key in RESOURCE_COUNTERS+WORK_COUNTERS}
+        self.deltas = {key: 0.0 for key in RESOURCE_COUNTERS+WORK_COUNTERS}
         self.peak_resident_bytes = None
         self.reorganizations = 0
         self.intervals = 0
@@ -185,6 +192,7 @@ class NodeResources:
         source = 'node_raw_us' if isinstance(raw_us, (int, float)) and math.isfinite(raw_us) else 'controller'
         timestamp = raw_us / 1e6 if source == 'node_raw_us' else controller_seconds
         current = {key: row.get(key) for key in RESOURCE_COUNTERS}
+        current.update({key: row.get('vdf', {}).get(key) for key in WORK_COUNTERS})
         current.update(timestamp=timestamp, source=source, reorganizations=row.get('reorganizations', 0))
         previous = self.previous
         if previous is not None:
@@ -197,7 +205,7 @@ class NodeResources:
                 self.clock_sources.add(source)
                 self.intervals += 1
                 self.reorganizations += max(0, current['reorganizations'] - previous['reorganizations'])
-                for key in RESOURCE_COUNTERS:
+                for key in RESOURCE_COUNTERS+WORK_COUNTERS:
                     value, before = current[key], previous[key]
                     if value is not None and before is not None and value >= before:
                         self.seconds[key] += seconds
@@ -217,6 +225,8 @@ class NodeResources:
                 'sent_bytes_per_second': Rate('network_sent_bytes'),
                 'process_write_bytes_per_second': Rate('process_write_bytes'),
                 'db_write_ms_per_second': Rate('db_write_ms'),
+                'work': {key: {'delta': self.deltas[key] if self.seconds[key] else None,
+                               'per_second': Rate(key)} for key in WORK_COUNTERS},
                 'measurement_reorganizations': self.reorganizations,
                 'statistics_seconds': self.seconds['process_cpu_seconds'],
                 'statistics_intervals': self.intervals, 'statistics_resets': self.resets,
@@ -345,10 +355,18 @@ def RecoverFault(cluster, fault):
 
 def LoadCase(cluster, case, plan, dataset, genesis, output):
     warmup, duration = plan['warmup'], plan['duration']
+    dataset_offset = plan.get('dataset_offset', 0)
+    if type(dataset_offset) is not int or dataset_offset < 0:
+        raise ValueError('dataset_offset must be a nonnegative transaction index')
+    if dataset_offset:
+        before = cluster.Common()
+        if not before or before['transactions'] != dataset_offset:
+            raise ValueError('The previous rate must finish before the next dataset segment')
     requested_duration, early_stop = duration, None
     load = Load(cluster, dataset, case['rate'], warmup+duration, case.get('pattern', 'steady'),
                 'shard' if case.get('fault', {}).get('kind') == 'partition' else plan['ingress'],
                 plan['sample_hz'], plan.get('latency_batch', plan['batch']) if case['suite'] in ['latency', 'fault'] else plan['batch'], plan.get('parallel_ingress', False))
+    load.dataset_offset = dataset_offset
     thread = threading.Thread(target=load.Run, daemon=True)
     metrics, events = LoadMetrics(warmup, duration, cluster.nodes), []
     applied = recovered = False
@@ -379,6 +397,8 @@ def LoadCase(cluster, case, plan, dataset, genesis, output):
                 if any(row and row['failed'] for row in stats):
                     raise RuntimeError('A node reported an execution failure')
                 common = cluster.Common(stats)
+                if common:
+                    common = {**common, 'transactions': common['transactions']-dataset_offset}
                 point = {'seconds': time.monotonic()-load.started, 'sent': load.sent,
                          'common': common, 'nodes': stats}
                 metrics.Add(point); timeline.write(json.dumps(point)+'\n'); timeline.flush()
@@ -412,7 +432,8 @@ def LoadCase(cluster, case, plan, dataset, genesis, output):
             RecoverFault(cluster, fault); recovered = True
         common = cluster.Common()
         CheckSamples(cluster, load, flush=True)
-        checks = VerifyNativeState(cluster, dataset, genesis, load.sent, plan['wallets']) if common and common['transactions'] == load.sent else None
+        cumulative_count = dataset_offset+load.sent
+        checks = VerifyNativeState(cluster, dataset, genesis, cumulative_count, plan['wallets']) if common and common['transactions'] == cumulative_count else None
         samples = [row for row in load.samples if warmup <= row['scheduled']-load.started < warmup+duration]
         completed = [row for row in samples if row['included_at'] is not None]
         latency = [(row['included_at']-row['scheduled'])*1000 for row in completed]
@@ -435,6 +456,7 @@ def LoadCase(cluster, case, plan, dataset, genesis, output):
         invalid = metrics.invalid_or_rejected_sum
         within = sum(value <= plan['deadline_ms'] for value in latency)
         summary = {'offered_tps': case['rate'], 'achieved_send_tps': achieved, 'common_commit_tps': throughput,
+                   'dataset_offset': dataset_offset, 'cumulative_sent_unique': cumulative_count,
                    'sent_unique': load.sent, 'sent_wire_copies': load.wire_transactions,
                    'p50_ms': Percentile(latency, .5), 'p95_ms': Percentile(latency, .95), 'p99_ms': Percentile(latency, .99),
                    'p99_after_send_ms': Percentile(sent_latency, .99), 'samples': len(samples),

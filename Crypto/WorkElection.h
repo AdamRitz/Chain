@@ -1,6 +1,7 @@
 #pragma once
 
 #include "VdfElection.h"
+#include "WorkProofVerifier.h"
 
 #include <functional>
 #include <future>
@@ -269,6 +270,11 @@ inline void SignCommit(Commit& record, const SecretKey& key) { detail::Sign(reco
 inline void SignReveal(Reveal& record, const SecretKey& key) { detail::Sign(record, key, "Chain/WorkElection/RevealSignature/v1"); }
 inline void SignTicket(Ticket& record, const SecretKey& key) { detail::Sign(record, key, "Chain/WorkElection/TicketSignature/v1"); }
 
+[[nodiscard]] inline bool VerifyTicketSignature(const Ticket& record) noexcept {
+    try { return detail::VerifySignature(record, "Chain/WorkElection/TicketSignature/v1"); }
+    catch (...) { return false; }
+}
+
 [[nodiscard]] inline Commit CreateCommit(const BeaconContext& context, const SecretKey& key, const Digest& value) {
     Commit record; record.context = context;
     crypto_sign_ed25519_sk_to_pk(record.publicKey.data(), key.data());
@@ -417,7 +423,9 @@ public:
 
 [[nodiscard]] inline bool VerifyTicket(const Ticket& ticket, const Context& expected,
                                       const AnchorLookup& lookup, Digest* verifiedScore = nullptr,
-                                      VerificationCache* cache = nullptr) noexcept {
+                                      VerificationCache* cache = nullptr,
+                                      ProofVerifier* verifier = nullptr,
+                                      ProofPriority priority = ProofPriority::Normal) noexcept {
     if (ticket.context != expected || !detail::ValidContext(expected) || expected.matureRounds == 0 ||
         ticket.works.empty() || ticket.works.size() > kMaxWorks || !lookup) return false;
     try {
@@ -436,11 +444,21 @@ public:
             }
         }
         const auto verify = [&] {
-            if (!detail::VerifySignature(ticket, "Chain/WorkElection/TicketSignature/v1")) return false;
-            for (const auto& work : ticket.works) {
-                if (!vdf::Verify(DeriveWorkChallenge(expected.chainId, ticket.publicKey, work, expected.iterations),
-                                 expected.iterations, work.proof)) return false;
-            }
+            if (!VerifyTicketSignature(ticket)) return false;
+            std::vector<std::size_t> starts;
+            starts.reserve(groups.size());
+            std::size_t start = 0;
+            for (const auto& group : groups) { starts.push_back(start); start += group.count; }
+            const auto verifyGroup = [&](std::size_t index) {
+                for (std::size_t i = starts[index]; i < starts[index] + groups[index].count; ++i) {
+                    const auto& work = ticket.works[i];
+                    if (!vdf::Verify(DeriveWorkChallenge(expected.chainId, ticket.publicKey, work, expected.iterations),
+                                     expected.iterations, work.proof)) return false;
+                }
+                return true;
+            };
+            if (verifier) return verifier->VerifyGroups(groups.size(), verifyGroup, priority);
+            for (std::size_t i = 0; i < groups.size(); ++i) if (!verifyGroup(i)) return false;
             return true;
         };
         bool valid;

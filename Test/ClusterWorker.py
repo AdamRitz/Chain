@@ -43,12 +43,37 @@ def FindProcess(record):
         return None
 
 
+def NativePath(value):
+    path = Path(value)
+    if os.name == 'nt' and not str(path).startswith('\\\\?\\'):
+        path = Path('\\\\?\\'+str(path.absolute()))
+    return path
+
+
+def PreparedDatabase(value):
+    source = Path(value)
+    if not source.is_absolute() or source.is_symlink() or source.resolve() != source or not source.is_dir():
+        raise ValueError('Prepared database must be an absolute ordinary directory')
+    if not (source/'CURRENT').is_file() or not any(source.glob('MANIFEST-*')):
+        raise ValueError('Prepared database lacks RocksDB metadata')
+    for entry in NativePath(source).rglob('*'):
+        if entry.is_symlink() or not (entry.is_file() or entry.is_dir()):
+            raise ValueError('Prepared database contains a link or special file')
+        if entry.name.endswith('.seed') or entry.name in ('process.json', 'genesis.json'):
+            raise ValueError('Prepared database contains identity or process data')
+    return source
+
+
 def Handle(request):
     directory = CaseDirectory(request)
     record_file = directory / 'process.json'
     action = request['action']
     if action == 'start':
         binary = Path(request['binary']).expanduser().resolve(strict=True)
+        prepared = request.get('prepared_database')
+        if prepared and request.get('restart'):
+            raise ValueError('Restore a prepared database only into a new experiment')
+        source = PreparedDatabase(prepared) if prepared else None
         if directory.exists():
             if not request.get('restart'):
                 raise FileExistsError(f'Experiment directory already exists: {directory}')
@@ -57,6 +82,14 @@ def Handle(request):
                 raise RuntimeError('Node is already running')
         else:
             directory.mkdir(parents=True)
+        if source:
+            try:
+                shutil.copytree(NativePath(source), NativePath(directory/'db'))
+            except Exception:
+                # This case was just created exclusively, before any process exists.
+                if directory.resolve() == directory and not directory.is_symlink():
+                    shutil.rmtree(NativePath(directory))
+                raise
         genesis = directory / 'genesis.json'
         if genesis.exists() and json.loads(genesis.read_text()) != request['genesis']:
             raise ValueError('Restart genesis mismatch')

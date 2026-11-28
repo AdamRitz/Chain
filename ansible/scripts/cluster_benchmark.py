@@ -82,7 +82,7 @@ def ValidateSettings(settings):
         raise ValueError('node_settings must be an object')
     forbidden = {'data', 'genesis', 'metrics', 'config', 'port', 'bind', 'seed', 'seeds-file',
                  'peer-discovery', 'max-peers', 'max-connections', 'target-peers', 'backup-seed',
-                 'relay-transactions', 'run-seconds', 'stop-file', 'vdf-key', 'vdf-bootstrap-produce'}
+                 'relay-transactions', 'run-seconds', 'stop-file', 'vdf-key', 'vdf-bootstrap-produce', 'block-tx-step'}
     if any(not isinstance(key, str) or not re.fullmatch(r'[a-z][a-z0-9-]+', key) or key in forbidden or
            not isinstance(value, (str, int, float, bool)) for key, value in settings.items()):
         raise ValueError('Node settings cannot replace lifecycle, topology or identity arguments')
@@ -150,6 +150,14 @@ def Validate(context):
     readiness = context.get('readiness_timeout', 300)
     if isinstance(readiness, bool) or not isinstance(readiness, (int, float)) or not math.isfinite(readiness) or not 1 <= readiness <= 600:
         raise ValueError('Invalid readiness_timeout')
+    consensus_timeout = context.get('consensus_timeout', readiness)
+    if (isinstance(consensus_timeout, bool) or not isinstance(consensus_timeout, (int, float)) or
+            not math.isfinite(consensus_timeout) or not 1 <= consensus_timeout <= 2400):
+        raise ValueError('Invalid consensus_timeout')
+    rates = context.get('rates') or [context['rate']]
+    if (not isinstance(rates, list) or not 1 <= len(rates) <= 20 or len(set(rates)) != len(rates) or
+            any(type(rate) is not int or not 1 <= rate <= 10000000 for rate in rates)):
+        raise ValueError('Use 1..20 distinct rates in 1..10000000')
     if type(context.get('bootstrap_producers', 1)) is not int or not 0 <= context.get('bootstrap_producers', 1) <= 64:
         raise ValueError('Invalid bootstrap_producers')
     if type(context.get('early_stop_enabled', True)) is not bool:
@@ -162,9 +170,9 @@ def Validate(context):
             raise ValueError('Invalid ' + key)
     if type(context.get('early_stop_windows', 3)) is not int or not 1 <= context.get('early_stop_windows', 3) <= 20:
         raise ValueError('Invalid early_stop_windows')
-    if context['warmup'] + context['duration'] + context['drain_seconds'] + 2 * readiness > 3000:
+    if len(rates)*(context['warmup'] + context['duration'] + context['drain_seconds']) + readiness + consensus_timeout > 3000:
         raise ValueError('Leave time for deployment and cleanup before the one-hour process guard')
-    count = int(context['rate'] * (context['warmup'] + context['duration']))
+    count = sum(math.ceil(rate*(context['warmup'] + context['duration'])) for rate in rates)
     if count < 1 or Path(context['dataset']).stat().st_size % 176 or Path(context['dataset']).stat().st_size < count * 176:
         raise ValueError('Prepared dataset is too small')
     plan = json.loads(Path(context['plan']).read_text(encoding='utf-8'))
@@ -180,6 +188,34 @@ def Validate(context):
     genesis = json.loads(Path(context['genesis']).read_text(encoding='utf-8'))
     if len(genesis.get('accounts', [])) != context['wallets'] or type(genesis.get('base_fee')) is not int:
         raise ValueError('Use a sender --prepare genesis with the declared wallet count')
+    if genesis.get('vdf', {}).get('work_election'):
+        identities = context.get('identity_files', {})
+        if set(identities) != set(context['node_ids']) or any(
+                not isinstance(path, str) or not Path(path).is_absolute() or not Path(path).is_file()
+                for path in identities.values()):
+            raise ValueError('Every Work node requires its own prepared identity file')
+        from nacl.signing import SigningKey
+        keys = [bytes(SigningKey(bytes.fromhex(Path(identities[node]).read_text().strip())).verify_key).hex()
+                for node in context['node_ids']]
+        if len(set(keys)) != len(keys) or keys[:5] != genesis['vdf'].get('bootstrap_producers'):
+            raise ValueError('Work identities must be distinct and match the bootstrap committee')
+        snapshot = context.get('snapshot', {})
+        if snapshot:
+            from work_snapshot import File, Hash
+            minimum_height = 1+(1+genesis['vdf']['work_groups']*genesis['vdf']['work_group_size'])*160
+            if (snapshot.get('schema') != 1 or snapshot.get('transactions') != 0 or
+                    type(snapshot.get('height')) is not int or snapshot['height'] < minimum_height or
+                    snapshot.get('rounds') != (snapshot['height']-1)//160 or
+                    snapshot.get('iterations') != genesis['vdf']['work_iterations'] or
+                    set(snapshot.get('work_archives', {})) != set(context['node_ids'])):
+                raise ValueError('Invalid prepared Work snapshot metadata')
+            Hash(snapshot['chain_id']); Hash(snapshot['head'])
+            if Digest(File(snapshot['ledger_archive'])) != Hash(snapshot['ledger_sha256']):
+                raise ValueError('Prepared ledger archive changed')
+            for node, key in zip(context['node_ids'], keys):
+                work = snapshot['work_archives'][node]
+                if work.get('public_key') != key or Digest(File(work['archive'])) != Hash(work['sha256']):
+                    raise ValueError('Prepared Work archive changed or belongs to another identity')
     ValidateSettings(context.get('node_settings', {}))
     return plan, genesis
 
@@ -229,11 +265,39 @@ def ConsensusReady(rows, genesis):
                 state.get('consecutive_blocks') != config['consecutive_blocks'] or
                 state.get('producer_timeout_slots') != config.get('producer_timeout_slots', 8)):
             return False
+        if config.get('work_election'):
+            samples = config.get('work_groups', 4)*config.get('work_group_size', 8)
+            if (not state.get('work_election') or state.get('work_sample_count', 0) != samples or
+                    state.get('work_mature_rounds', 0) < samples or state.get('work_completed', 0) < samples or
+                    state.get('work_iterations') != config.get('work_iterations', 65536) or
+                    state.get('work_groups') != config.get('work_groups', 4) or
+                    state.get('work_group_size') != config.get('work_group_size', 8)):
+                return False
         committee = tuple(producers)
         if epoch in committees and committees[epoch] != committee:
             return False
         committees[epoch] = committee
     return True
+
+
+def MatureElection(rows):
+    states = [row.get('vdf', {}) for row in rows]
+    if not states or len({row.get('epoch') for row in states}) != 1:
+        return None
+    first = states[0]
+    committee = first.get('next_producers', [])
+    if len(committee) != min(5, len(rows)) or len(set(committee)) != len(committee):
+        return None
+    if not all(row.get('election_frozen') and len(row.get('candidates', [])) >= len(committee) and
+               row.get('next_producers') == committee for row in states):
+        return None
+    return {'election_epoch': first['epoch'], 'committee': committee,
+            'sample_count': first['work_sample_count']}
+
+
+def ElectionAdopted(rows, election):
+    return bool(election and all(row.get('vdf', {}).get('epoch') == election['election_epoch']+1 and
+                                row['vdf'].get('producers') == election['committee'] for row in rows))
 
 
 class Workers:
@@ -250,6 +314,13 @@ class Workers:
                          chain_run_owner=self.context['owner'], chain_worker_results_dir=str(output),
                          chain_worker_genesis=genesis or {}, chain_worker_arguments_by_node=arguments or {},
                          chain_guard_seconds=3600, chain_test_port=self.plan['nodes'][0]['port'])
+        if action == 'start' and self.context.get('identity_files'):
+            count = sum(math.ceil(rate*(self.context['warmup']+self.context['duration']))
+                        for rate in (self.context.get('rates') or [self.context['rate']]))
+            variables.update(chain_worker_identity_files=self.context['identity_files'],
+                             chain_worker_minimum_free_bytes=1024**3+count*1024)
+            if self.context.get('snapshot'):
+                variables['chain_worker_snapshot'] = self.context['snapshot']
         request = output / 'request.json'
         Save(request, variables)
         command = [self.context['ansible_playbook']]
@@ -368,9 +439,11 @@ class SparseCluster(ExistingCluster.Cluster):
             raise TimeoutError(f'{len(names)} nodes did not become ready within {timeout}s: {names[:8]}; inspect readiness-errors.json')
 
     def WaitConnected(self, name):
-        timeout = self.workers.context.get('readiness_timeout', 300)
+        timeout = self.workers.context.get('consensus_timeout', self.workers.context.get('readiness_timeout', 300))
         deadline = time.monotonic() + timeout
-        error, rows, common = '', [], None
+        error, rows, common, mature_election = '', [], None, None
+        snapshot = self.workers.context.get('snapshot', {})
+        minimum_election = (snapshot['height']-2)//160+1 if snapshot else 0
         while True:
             try:
                 # Force fresh counters here: cached head-only replies retain old VDF lists.
@@ -381,8 +454,15 @@ class SparseCluster(ExistingCluster.Cluster):
                     common = self.Common(rows)
                     config = self.genesis.get('vdf', {})
                     required = 1 + 2 * int(config.get('epoch_blocks', 32)) if config.get('enabled', bool(config)) else 1
-                    if common and common['height'] >= required:
-                        Save(self.output / name, {'nodes': rows, 'common': common})
+                    if config.get('work_election'):
+                        required = 1+(1+config['work_groups']*config['work_group_size'])*config['epoch_blocks']
+                        if not ElectionAdopted(rows, mature_election):
+                            candidate = MatureElection(rows)
+                            if candidate and candidate['election_epoch'] >= minimum_election:
+                                mature_election = candidate
+                    election_ready = not config.get('work_election') or ElectionAdopted(rows, mature_election)
+                    if common and common['height'] >= required and election_ready:
+                        Save(self.output / name, {'nodes': rows, 'common': common, 'mature_election': mature_election})
                         self.cached_stats, self.last_stats = None, 0
                         return rows
             except (OSError, ValueError, RuntimeError, ConnectionError) as failure:
@@ -393,17 +473,49 @@ class SparseCluster(ExistingCluster.Cluster):
                 raise TimeoutError('Peer graph and common VDF producer list did not become ready; inspect consensus-readiness-errors.json')
             time.sleep(.5)
 
+    def CheckClock(self):
+        samples = [[] for _ in self.nodes]
+        for _ in range(3):
+            def Probe(index):
+                wall, tick = time.time_ns()/1000, time.monotonic_ns()
+                token, begin, end = struct.unpack('<QQQ', self.clients[index].Query(27, struct.pack('<Q', tick), raw=True))
+                elapsed = (time.monotonic_ns()-tick)/1000
+                if token != tick:
+                    raise ValueError('Clock probe token mismatch')
+                return {'offset_ms': ((begin+end)/2-(wall+elapsed/2))/1000,
+                        'round_trip_ms': max(0, elapsed-(end-begin))/1000}
+            for group, row in zip(samples, self.All(Probe)):
+                group.append(row)
+        rows = [min(group, key=lambda row: row['round_trip_ms']) for group in samples]
+        spread = max(row['offset_ms'] for row in rows)-min(row['offset_ms'] for row in rows)
+        Save(self.output/'clock-preflight.json', {'spread_ms': spread, 'limit_ms': 20,
+             'nodes': {node['id']: row for node, row in zip(self.nodes, rows)}})
+        if spread > 20:
+            raise RuntimeError('Node clocks differ by more than 20 ms; synchronize clocks before the next test')
+
     def Start(self):
         self.touched = True
         config = self.genesis.get('vdf', {})
         count = self.workers.context.get('bootstrap_producers', 1)
-        bootstrap = bool(config.get('producer_rotation') and 0 < count < len(self.nodes))
+        bootstrap = bool(not config.get('work_election') and config.get('producer_rotation') and 0 < count < len(self.nodes))
         producers = {node['id'] for node in self.plan['nodes'][:count]} if bootstrap else None
         machines = self.workers.Call('start', self.genesis, Arguments(self.plan, self.settings, producers))
         if {row['binary_sha256'] for row in machines.values()} != {self.workers.context['binary_sha256']}:
             raise ValueError('Cluster binaries differ from the pinned release')
         Save(self.output / 'machines.json', machines)
         self.WaitReady(range(len(self.nodes)), timeout=self.workers.context.get('readiness_timeout', 300))
+        snapshot = self.workers.context.get('snapshot', {})
+        if snapshot:
+            def CheckSnapshot(index):
+                head = self.clients[index].Query(19, raw=True)
+                anchor = self.clients[index].Query(29, struct.pack('<Q', snapshot['height']))
+                if (len(head) != 80 or head[:32].hex() != snapshot['chain_id'] or not isinstance(anchor, dict) or anchor.get('hash') != snapshot['head'] or
+                        anchor.get('transactions') != 0):
+                    raise ValueError('Restored chain differs from the prepared empty ledger')
+                return anchor
+            Save(self.output/'snapshot-restored.json', {'nodes': self.All(CheckSnapshot), 'height': snapshot['height']})
+        if config.get('work_election'):
+            self.CheckClock()
         self.WaitConnected('readiness.json')
 
     def Close(self):
@@ -442,15 +554,37 @@ def Run(context):
         parameters = {key: context[key] for key in ('warmup', 'duration', 'drain_seconds', 'poll_seconds', 'sample_hz', 'batch', 'wallets')}
         parameters.update(ingress='shard', deadline_ms=1000, max_backlog_growth=context.get('max_backlog_growth', 10),
                           parallel_ingress=True)
-        if context.get('early_stop_enabled', True):
-            parameters['stop_when'] = LowTpsStop(context['rate'], context['warmup'],
-                ratio=context.get('early_stop_ratio', .7), start=context.get('early_stop_start_seconds', 30),
-                window=context.get('early_stop_window_seconds', 15), windows=context.get('early_stop_windows', 3))
-        result['metrics'] = Experiments.LoadCase(cluster, {'rate': context['rate'], 'suite': 'throughput'},
-                                                parameters, context['dataset'], genesis, output)
-        result['ok'] = bool(result['metrics']['drained'] and not result['metrics']['unresolved_samples'] and
-                            not result['metrics'].get('early_stop'))
-        result['status'] = 'stopped_early' if result['metrics'].get('early_stop') else ('complete' if result['ok'] else 'failed')
+        offset, cases = 0, []
+        rates = context.get('rates') or [context['rate']]
+        for index, rate in enumerate(rates):
+            case_output = output / f'{index+1:02}-{rate}' if context.get('rates') else output
+            case_output.mkdir(exist_ok=True)
+            parameters['dataset_offset'] = offset
+            if context.get('early_stop_enabled', True):
+                parameters['stop_when'] = LowTpsStop(rate, context['warmup'],
+                    ratio=context.get('early_stop_ratio', .7), start=context.get('early_stop_start_seconds', 30),
+                    window=context.get('early_stop_window_seconds', 15), windows=context.get('early_stop_windows', 3))
+            cluster.cached_stats = None
+            metrics = Experiments.LoadCase(cluster, {'rate': rate, 'suite': 'throughput'},
+                                           parameters, context['dataset'], genesis, case_output)
+            result['metrics'] = metrics
+            finished = bool(metrics['drained'] and not metrics['unresolved_samples'] and not metrics.get('early_stop'))
+            passed = finished and metrics.get('sustainable', False) and metrics.get('p50_ms') is not None and metrics['p50_ms'] <= 1000
+            cases.append({'rate': rate, 'dataset_offset': offset, 'completed': finished,
+                          'passed': passed, 'metrics': metrics})
+            if context.get('rates'):
+                Save(case_output/'result.json', cases[-1])
+                result['cases'] = cases
+                Save(output/'series.json', cases)
+            offset += metrics.get('sent_unique', 0)
+            result['ok'] = passed if context.get('rates') else finished
+            result['status'] = 'stopped_early' if metrics.get('early_stop') else ('complete' if result['ok'] else 'failed')
+            if not result['ok']:
+                break
+        if context.get('rates'):
+            result['completed_rates'] = len(cases)
+            result['requested_rates'] = rates
+            result['cumulative_sent_unique'] = offset
     except Exception as error:
         result.update(error=str(error), phase=phase, error_type=type(error).__name__,
                       error_location=[{'file': Path(frame.filename).name, 'function': frame.name, 'line': frame.lineno}

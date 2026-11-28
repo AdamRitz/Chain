@@ -20,13 +20,22 @@ class App:
     def Api(self,action,**kw):
         req=urllib.request.Request(self.origin+'/api',json.dumps(dict(action=action,**kw)).encode(),headers={'Authorization':'Bearer '+self.token,'Content-Type':'application/json'})
         return json.load(urllib.request.urlopen(req,timeout=60))
-    def Wait(self,predicate):
-        deadline=time.monotonic()+25
+    def Wait(self,predicate,timeout=25):
+        deadline=time.monotonic()+timeout
         while time.monotonic()<deadline:
             value=self.Api('status')
             if predicate(value):return value
             time.sleep(.15)
         raise AssertionError(json.dumps(value,ensure_ascii=False)[:1500])
+    def WaitForProducer(self):
+        # The creating node remains online until this member's Work ticket has
+        # elected it into the active committee. Joining alone does not elect it.
+        state = self.Wait(lambda state: bool(state.get('vdf',{}).get('public_key')) and
+                          state['vdf']['public_key'] in state['vdf'].get('producers',[]), timeout=140)
+        (self.root/'producer-ready.json').write_text(json.dumps({
+            'epoch':state['vdf']['epoch'], 'public_key':state['vdf']['public_key'],
+            'producers':state['vdf']['producers'], 'height':state['stats']['height']},indent=2),encoding='utf-8')
+        return state
     def Stop(self):
         records=[]
         if self.process.poll() is None:
@@ -83,6 +92,7 @@ def Main(args):
         member.Api('join',invite=memberInvite)
         assert member.Api('status')['network']['id']==same['network']['id'] and member.NodeProcesses()[0].pid==pid
         checks.append('importing an invitation for the connected chain reuses the current identity, node and ledger')
+        member.WaitForProducer()
         creator.Api('stop')
         peer=App(args.bin.resolve(),source,root/'peer');apps.append(peer);peer.Api('join',invite=memberInvite)
         peer.Wait(lambda s:s.get('contract_ready'))

@@ -1,7 +1,10 @@
 #include "../Crypto/WorkElection.h"
 
 #include <atomic>
+#include <chrono>
+#include <condition_variable>
 #include <iostream>
+#include <set>
 #include <thread>
 
 namespace {
@@ -120,6 +123,9 @@ void TestTicket(const SecretKey& key) {
     };
     const AnchorLookup anchors = [](std::uint64_t round, Digest& digest) { digest = Anchor(round); return true; };
     const auto ticket = CreateTicket(context, key, workLookup);
+    Require(VerifyTicketSignature(ticket), "Valid queue signature rejected");
+    auto invalidSignature = ticket; invalidSignature.signature[0] ^= 1;
+    Require(!VerifyTicketSignature(invalidSignature), "Invalid queue signature accepted");
     VerificationCache cache(2);
     Digest score{};
     Require(VerifyTicket(ticket, context, anchors, &score, &cache), "Valid grouped ticket rejected");
@@ -225,6 +231,161 @@ void TestCacheCoalescing() {
     Require(owner.get() && clearing.Size() == 0, "Clearing interrupted or republished an in-flight result");
 }
 
+void TestParallelExecutor() {
+    ProofVerifier verifier;
+    Require(verifier.VerifyGroups(0, {}), "Empty proof batch rejected");
+    Require(!verifier.VerifyGroups(1, {}), "Missing proof verifier accepted");
+    std::mutex mutex;
+    std::condition_variable ready;
+    std::set<std::thread::id> threads;
+    std::array<unsigned, 4> calls{};
+    unsigned firstGroups = 0;
+    const auto caller = std::this_thread::get_id();
+    Require(verifier.VerifyGroups(4, [&](std::size_t group) {
+        std::unique_lock lock(mutex);
+        ++calls[group]; threads.insert(std::this_thread::get_id());
+        if (group < 2) {
+            ++firstGroups; ready.notify_all();
+            if (!ready.wait_for(lock, std::chrono::seconds(2), [&] { return firstGroups == 2; })) return false;
+        }
+        return true;
+    }), "Two proof workers did not process independent groups concurrently");
+    Require(threads.size() == 2 && !threads.count(caller), "Proof batch did not use exactly two worker threads");
+    Require(std::all_of(calls.begin(), calls.end(), [](unsigned count) { return count == 1; }),
+            "Proof group was skipped or processed twice");
+    std::atomic<unsigned> completed{0};
+    Require(!verifier.VerifyGroups(4, [&](std::size_t group) {
+        ++completed;
+        if (group == 1) throw std::runtime_error("test proof failure");
+        return true;
+    }) && completed == 4, "Exception did not fail and finish the proof batch");
+    Require(verifier.VerifyGroups(4, [](std::size_t) { return true; }), "Executor not reusable after exception");
+    Require(!verifier.VerifyGroups(4, [](std::size_t group) { return group != 3; }), "Invalid group accepted");
+    Require(verifier.VerifyGroups(2, [&](std::size_t) {
+        return verifier.VerifyGroups(2, [](std::size_t) { return true; }, ProofPriority::Block);
+    }), "Nested block verification failed");
+    Require(!verifier.VerifyGroups(1, [&](std::size_t) {
+        return verifier.VerifyGroups(1, [](std::size_t) -> bool { throw std::runtime_error("nested failure"); },
+                                     ProofPriority::Block);
+    }), "Nested block exception was not returned as failure");
+    auto valid = std::async(std::launch::async, [&] {
+        return verifier.VerifyGroups(4, [](std::size_t) { return true; });
+    });
+    auto invalid = std::async(std::launch::async, [&] {
+        return verifier.VerifyGroups(4, [](std::size_t group) { return group != 2; });
+    });
+    Require(valid.get() && !invalid.get(), "Concurrent callers mixed proof batch results");
+}
+
+void TestBlockPriority(bool throwInBlock) {
+    ProofVerifier verifier;
+    std::promise<void> enteredPromise, releasePromise;
+    auto entered = enteredPromise.get_future();
+    auto release = releasePromise.get_future().share();
+    std::vector<unsigned> order;
+    std::mutex orderMutex;
+    std::future<bool> first, normal, block;
+    // Declared after the futures: on every failure the gate opens before any
+    // async future is destroyed and joins its caller.
+    struct OpenGate {
+        std::promise<void>& promise;
+        bool opened = false;
+        void Open() { if (!opened) { opened = true; promise.set_value(); } }
+        ~OpenGate() { Open(); }
+    } gate{releasePromise};
+    const auto waitPending = [&](ProofPriority priority) {
+        const auto deadline = std::chrono::steady_clock::now() + std::chrono::seconds(2);
+        while (std::chrono::steady_clock::now() < deadline) {
+            if (verifier.Pending(priority) == 1) return true;
+            std::this_thread::sleep_for(std::chrono::milliseconds(1));
+        }
+        return false;
+    };
+    first = std::async(std::launch::async, [&] {
+        return verifier.VerifyGroups(1, [&](std::size_t) {
+            enteredPromise.set_value(); release.wait(); return true;
+        });
+    });
+    Require(entered.wait_for(std::chrono::seconds(2)) == std::future_status::ready,
+            "First proof batch did not start");
+    normal = std::async(std::launch::async, [&] {
+        return verifier.VerifyGroups(1, [&](std::size_t) {
+            std::lock_guard lock(orderMutex); order.push_back(1); return true;
+        });
+    });
+    Require(waitPending(ProofPriority::Normal), "Ordinary ticket did not queue behind active batch");
+    block = std::async(std::launch::async, [&] {
+        return verifier.VerifyGroups(1, [&](std::size_t) {
+            std::lock_guard lock(orderMutex); order.push_back(2);
+            if (throwInBlock) throw std::runtime_error("priority block failure");
+            return true;
+        }, ProofPriority::Block);
+    });
+    Require(waitPending(ProofPriority::Block), "Block ticket did not queue after ordinary ticket");
+    gate.Open();
+    const bool firstResult = first.get(), normalResult = normal.get(), blockResult = block.get();
+    Require(firstResult && normalResult && blockResult == !throwInBlock, "Priority batch result changed");
+    Require(order == std::vector<unsigned>({2, 1}), "Waiting ordinary ticket ran before a later block");
+    Require(verifier.Pending(ProofPriority::Normal) == 0 && verifier.Pending(ProofPriority::Block) == 0,
+            "Priority wait counters were not released");
+    Require(verifier.VerifyGroups(2, [](std::size_t) { return true; }), "Executor unusable after priority batch");
+}
+
+void TestParallelTicket(const SecretKey& key) {
+    Context context; context.chainId[0] = 43; context.targetEpoch = 34; context.anchor[0] = 14;
+    context.randomSeed[0] = 29; context.matureRounds = 32;
+    context.iterations = chain::vdf_election::kMinIterations;
+    const auto publicKey = Public(key);
+    std::vector<Work> history;
+    Output previous{};
+    for (std::uint64_t round = 0; round < context.matureRounds; ++round) {
+        history.push_back(CreateWork(context.chainId, publicKey, round, Anchor(round), previous, context.iterations));
+        previous = WorkOutput(history.back());
+    }
+    const auto ticket = CreateTicket(context, key, [&](std::uint64_t round, Work& work) {
+        if (round >= history.size()) return false;
+        work = history[round]; return true;
+    });
+    const AnchorLookup anchors = [](std::uint64_t round, Digest& digest) { digest = Anchor(round); return true; };
+    Require(ticket.works.size() == 32 && SampleGroups(context, publicKey).size() == 4,
+            "Parallel fixture is not four groups of eight");
+    ProofVerifier verifier;
+    Digest serialScore{}, parallelScore{};
+    Require(VerifyTicket(ticket, context, anchors, &serialScore), "Serial 32-proof ticket rejected");
+    VerificationCache cache(2);
+    Require(VerifyTicket(ticket, context, anchors, &parallelScore, &cache, &verifier), "Parallel 32-proof ticket rejected");
+    Require(serialScore == parallelScore && cache.Size() == 1, "Parallel verification changed score or cache");
+    Require(VerifyTicket(ticket, context, anchors, nullptr, &cache, &verifier), "Parallel cached ticket rejected");
+    for (std::size_t group = 0; group < 4; ++group) {
+        auto invalid = ticket;
+        invalid.works[group * 8].proof.back() ^= 1;
+        SignTicket(invalid, key);
+        Require(!VerifyTicket(invalid, context, anchors, nullptr, &cache, &verifier),
+                "Parallel verification accepted an invalid group");
+        Require(cache.Size() == 1, "Invalid proof added a ticket cache entry");
+    }
+    auto invalid = ticket; invalid.signature[0] ^= 1;
+    Require(!VerifyTicket(invalid, context, anchors, nullptr, &cache, &verifier), "Parallel verification ignored signature");
+    invalid = ticket; invalid.works[1].previousOutput[0] ^= 1; SignTicket(invalid, key);
+    Require(!VerifyTicket(invalid, context, anchors, nullptr, &cache, &verifier), "Parallel verification ignored group connection");
+    const AnchorLookup forked = [](std::uint64_t round, Digest& digest) {
+        digest = Anchor(round); if (round == 16) digest[0] ^= 1; return true;
+    };
+    Require(!VerifyTicket(ticket, context, forked, nullptr, &cache, &verifier), "Parallel cache accepted changed history");
+    auto otherContext = context; ++otherContext.targetEpoch;
+    Require(!VerifyTicket(ticket, otherContext, anchors, nullptr, &cache, &verifier), "Parallel cache accepted changed round");
+    Require(VerifyTicket(ticket, context, anchors, nullptr, nullptr, &verifier), "Parallel executor unusable after failed tickets");
+    Require(VerifyTicket(ticket, context, anchors, nullptr, nullptr, &verifier, ProofPriority::Block),
+            "Block-priority real ticket rejected");
+    auto first = std::async(std::launch::async, [&] {
+        return VerifyTicket(ticket, context, anchors, nullptr, nullptr, &verifier);
+    });
+    auto second = std::async(std::launch::async, [&] {
+        return VerifyTicket(ticket, context, anchors, nullptr, nullptr, &verifier);
+    });
+    Require(first.get() && second.get(), "Concurrent real proof callers failed");
+}
+
 } // namespace
 
 int main() {
@@ -232,6 +393,7 @@ int main() {
         Require(sodium_init() >= 0, "libsodium initialization failed");
         const auto key = MakeKey(42);
         TestBeacon(key); TestSampling(key); TestTicket(key); TestCacheCoalescing();
+        TestParallelExecutor(); TestBlockPriority(false); TestBlockPriority(true); TestParallelTicket(key);
         std::cout << "Work election checks passed\n";
         return 0;
     } catch (const std::exception& error) {

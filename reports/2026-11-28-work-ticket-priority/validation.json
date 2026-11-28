@@ -1,0 +1,132 @@
+{
+  "windows_work_tests": [
+    {
+      "name": "WorkElectionCorrectness",
+      "seconds": 10.3207,
+      "passed": true
+    },
+    {
+      "name": "WorkRulesCorrectness",
+      "seconds": 0.0315824,
+      "passed": true
+    },
+    {
+      "name": "WorkTicketQueueCorrectness",
+      "seconds": 0.0324646,
+      "passed": true
+    },
+    {
+      "name": "WorkStateCorrectness",
+      "seconds": 2.06402,
+      "passed": true
+    }
+  ],
+  "windows_network": {
+    "status": "passed",
+    "elapsed_seconds": 57.03100000001723,
+    "process_count": 4,
+    "audit": {
+      "adopted_committees": 5,
+      "blocks": 181,
+      "elections_with_tickets": 4,
+      "first_nonbootstrap_ticket": {
+        "committee": [
+          "5c14365d4746dd31619fe6274583ab60f38ebec16f2bf439264c6746856cf5a8",
+          "787f62484456f6ac5cb7adcaed5bb15476b30daa62685a12bdd4519e7110db88"
+        ],
+        "epoch": 2,
+        "hash": "f2c9d40a4c2ba0a028d97fe259965d06b31c35e27846ae576568c379894a0446",
+        "height": 77,
+        "producer": "5c14365d4746dd31619fe6274583ab60f38ebec16f2bf439264c6746856cf5a8",
+        "public_key": "39847ea9d8e2643a0601898841e71312abb2578edbef8f79858383b0e7235fc2",
+        "target_epoch": 3
+      },
+      "four_group_tickets": 3,
+      "tickets": 12
+    },
+    "accounts": {
+      "accounts": 4,
+      "burned": 2,
+      "transactions": 2
+    },
+    "checks": [
+      "observer verifies historical tickets and the joining node enters the committee",
+      "a current committee member first includes the joining node ticket received over the network",
+      "four historical proof groups are written in signed blocks and elect the following committee",
+      "four restarted nodes share the canonical chain, balances and nonces"
+    ]
+  },
+  "linux_ansible_unit_tests": {
+    "tests": 158,
+    "passed": 158,
+    "seconds": 9.43
+  },
+  "ansible_syntax_check": "passed",
+  "fleet_tps_started": false,
+  "source_package_sha256": "79a39aef2071b248851258bb33c71180c29a13c75950e4ccd5d30218a07c91ad",
+  "linux_release": "work-priority-003",
+  "linux_complete_regression": {
+    "attempt": "full-002",
+    "status": "passed",
+    "previous_attempt": {
+      "attempt": "full-001",
+      "passed": 47,
+      "total": 48,
+      "seconds": 714.39,
+      "failed": [
+        "WorkNetwork"
+      ],
+      "reason": "Ticket delivery through a block can complete before its standalone message. The test now requires a noncommittee node to submit a ticket over the network."
+    },
+    "passed": 48,
+    "total": 48,
+    "seconds": 676.23,
+    "binary_sha256": "06fb402886141e6d1adacc54635f828b53701925d0a72756b73d94d7842531ae",
+    "source_manifest_sha256": "cf47ef8d811b40fdffd02b917b2f6c4a159554b896de925d31bd463cb352ce07"
+  },
+  "snapshot_restore_after_scheduler_change": {
+    "windows": "passed",
+    "windows_seconds": 265.813,
+    "linux": "passed",
+    "linux_single_host_4cpu": "timed_out",
+    "linux_single_host_4cpu_seconds": 180.3335964960006,
+    "linux_seconds": 64.17604473199998,
+    "linux_platform": "Ubuntu under WSL, same Linux deployment package",
+    "linux_nodes": 5,
+    "linux_work_proofs_per_ticket": 32,
+    "linux_accounts_checked_per_node": 1024,
+    "linux_all_processes_stopped": true
+  },
+  "source_patch_sha256": "7ac6aa725d68f64409fff2465c69813255e099abbd228c4f9a93566b95702bcf",
+  "source_patch_files": [
+    "Network/WorkElection.h",
+    "Test/WorkStateTest.cpp",
+    "Test/WorkNetworkTest.py"
+  ],
+  "offline_snapshot_prepare": {
+    "status": "passed",
+    "nodes": 100,
+    "restored_height": 5282,
+    "sample_count": 32,
+    "output": "/opt/chain-work-priority-20261128/prepared/work100-ready-003",
+    "fleet_connected": false,
+    "no_argument_wrapper_exit_code": 2
+  },
+  "linux_source_manifest_sha256": "cf47ef8d811b40fdffd02b917b2f6c4a159554b896de925d31bd463cb352ce07",
+  "linux_source_matches_local_code": true,
+  "local_changes_after_source_archive": [
+    "MODULE_GUIDE.md",
+    "WORK_ELECTION_GUIDE.md",
+    "ansible/RUN_WORK_100.md",
+    "reports/2026-11-28-work-ticket-priority/REPORT.md",
+    "reports/2026-11-28-work-ticket-priority/run-tps.sh",
+    "reports/2026-11-28-work-ticket-priority/validation.json",
+    "reports/2026-11-28-work-ticket-priority/preparation.json"
+  ],
+  "linux_package": {
+    "sha256": "3fbf76ce48246acf23ce78394b5aed511d1374f349b8a939cb6f00136cc5a30b",
+    "bytes": 60338880,
+    "binary_sha256": "06fb402886141e6d1adacc54635f828b53701925d0a72756b73d94d7842531ae",
+    "tests": 48
+  }
+}

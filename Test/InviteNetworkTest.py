@@ -60,6 +60,7 @@ def Main(args):
         b.Api('join',preview_id=updated['id'])
         updated_status=b.Wait(lambda s:s.get('last_connection')==newseed)
         assert b.NodeProcesses()[0].pid==pid and newseed in updated_status['network']['seeds'] and updated_status['last_connection']==newseed
+        b.WaitForProducer()
         a.Api('stop')
         b.Wait(lambda s:any(p['port']==peer.Api('status')['network']['ports'][0] for n in s.get('nodes',[]) for p in n.get('connections',[])))
         Included(b,b.Api('message',room=1,body='更新入口后无需重启节点'))

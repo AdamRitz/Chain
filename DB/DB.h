@@ -721,8 +721,8 @@ array<uint8_t,32> DBWorkAnchor(uint64_t round) {
         if (auto found=workAnchors.find(last);found!=workAnchors.end()) { workAnchorCacheHits++; return found->second; }
     }
     vector<uint8_t> bytes(16+settings.epochBlocks*32);
-    detail::Write64(bytes.data(),round);
-    detail::Write64(bytes.data()+8,settings.epochBlocks);
+    chain::vdf_consensus::detail::Write64(bytes.data(),round);
+    chain::vdf_consensus::detail::Write64(bytes.data()+8,settings.epochBlocks);
     for (uint64_t i=0;i<settings.epochBlocks;++i) {
         const auto hash=DBReadBlockHashByHeight(start+i);
         if (hash==array<uint8_t,32>{}) throw runtime_error("Missing Work round header");

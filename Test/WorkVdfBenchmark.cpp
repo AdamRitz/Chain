@@ -99,7 +99,7 @@ std::uint64_t Number(const std::string& value) {
     if (used != value.size()) throw std::invalid_argument("Invalid number"); return n;
 }
 struct Options {
-    std::uint64_t iterations = 65536, rounds = 1, repeats = 5;
+    std::uint64_t iterations = 65536, rounds = 1, repeats = 5, verifyThreads = 1;
     bool skipEval = false, verifyOnly = false, compareStored = false;
     std::filesystem::path corpus;
 };
@@ -115,6 +115,7 @@ Options Parse(int argc, char** argv) {
         if (arg == "--iterations") o.iterations = Number(value);
         else if (arg == "--rounds") o.rounds = Number(value);
         else if (arg == "--verify-repeats") o.repeats = Number(value);
+        else if (arg == "--verify-threads") o.verifyThreads = Number(value);
         else if (arg == "--corpus-dir") o.corpus = value;
         else throw std::invalid_argument("Unknown argument: " + arg);
     }
@@ -122,6 +123,7 @@ Options Parse(int argc, char** argv) {
         o.rounds == 0 || o.rounds > 100000 || o.repeats == 0 || o.repeats > 10000)
         throw std::invalid_argument("Iterations 4096..100000000; rounds 1..100000; verify-repeats 1..10000");
     if (o.verifyOnly && o.corpus.empty()) throw std::invalid_argument("--verify-only requires --corpus-dir");
+    if (o.verifyThreads != 1 && o.verifyThreads != 2) throw std::invalid_argument("--verify-threads must be 1 or 2");
     if (o.verifyOnly && o.compareStored) throw std::invalid_argument("--compare-stored requires proof generation");
     return o;
 }
@@ -154,7 +156,8 @@ int main(int argc, char** argv) {
         std::vector<double> evalTimes, proveTimes, storedTimes, verifyTimes;
         if (!o.corpus.empty() && !o.verifyOnly) std::filesystem::create_directories(o.corpus);
         std::cout << "{\"type\":\"config\",\"iterations\":" << o.iterations << ",\"rounds\":" << o.rounds
-                  << ",\"verify_repeats\":" << o.repeats << ",\"public_test_fixture\":true,\"verify_only\":"
+                  << ",\"verify_repeats\":" << o.repeats << ",\"verify_threads\":" << o.verifyThreads
+                  << ",\"public_test_fixture\":true,\"verify_only\":"
                   << (o.verifyOnly ? "true" : "false") << ",\"compare_stored\":"
                   << (o.compareStored ? "true" : "false") << "}\n" << std::flush;
         work::Output previous{};
@@ -229,14 +232,16 @@ int main(int argc, char** argv) {
                   << ",\"encoded_bytes\":" << work::EncodeTicket(ticket).size() << "}\n";
         std::vector<double> coldTimes, cachedTimes;
         work::VerificationCache cache;
+        std::unique_ptr<work::ProofVerifier> verifier;
+        if (o.verifyThreads == 2) verifier = std::make_unique<work::ProofVerifier>();
         for (unsigned repeat = 0; repeat < o.repeats; ++repeat) {
             bool valid = false;
-            const auto timing = Measure([&] { valid = work::VerifyTicket(ticket, context, anchors); });
+            const auto timing = Measure([&] { valid = work::VerifyTicket(ticket, context, anchors, nullptr, nullptr, verifier.get()); });
             PrintTiming("verify_ticket_cold", o.iterations, o.rounds, repeat, timing, valid);
             if (!valid) throw std::runtime_error("Cold ticket verification failed"); coldTimes.push_back(timing.wall);
         }
         bool valid = false;
-        const auto fill = Measure([&] { valid = work::VerifyTicket(ticket, context, anchors, nullptr, &cache); });
+        const auto fill = Measure([&] { valid = work::VerifyTicket(ticket, context, anchors, nullptr, &cache, verifier.get()); });
         PrintTiming("verify_ticket_cache_fill", o.iterations, o.rounds, 0, fill, valid);
         if (!valid) throw std::runtime_error("Cache fill verification failed");
         for (unsigned repeat = 0; repeat < o.repeats; ++repeat) {

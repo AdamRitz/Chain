@@ -154,6 +154,23 @@ def RotationGenesis(accounts_genesis, now_ms=None, *, consecutive_blocks=32, pro
     return value
 
 
+def WorkIdentities(plan, output):
+    from nacl.signing import SigningKey
+    directory = output / 'identities'
+    directory.mkdir(mode=0o700)
+    identities, files = [], {}
+    for node in plan['nodes']:
+        key = SigningKey.generate()
+        path = directory / (node['id'] + '.seed')
+        descriptor = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+        with os.fdopen(descriptor, 'w', encoding='ascii') as stream:
+            stream.write(bytes(key).hex() + '\n')
+        identities.append({'id': node['id'], 'public_key': bytes(key.verify_key).hex()})
+        files[node['id']] = str(path)
+    Save(output / 'identities.json', identities)
+    return identities, files
+
+
 def VerifySender(package, sender):
     with tarfile.open(package, 'r:gz') as archive:
         member = archive.getmember('manifest.json')
@@ -193,6 +210,13 @@ def Parser():
     parser.add_argument('--dataset-manifest', type=Path, help='Portable dataset.json from a previous offline prepare')
     parser.add_argument('--cache', type=Path, help='Shared controller dataset cache, default OUTPUT parent/datasets')
     parser.add_argument('--rate', type=int, default=10000)
+    parser.add_argument('--rates', type=int, nargs='+', help='Measure these rates on one chain, using consecutive signed transactions')
+    parser.add_argument('--work-election', action='store_true', help='Create the historical Work election test chain')
+    parser.add_argument('--work-snapshot', type=Path, help='Reuse a prepared empty ledger, original genesis/identities and Work proofs')
+    parser.add_argument('--work-iterations', type=int, default=65536)
+    parser.add_argument('--work-groups', type=int, default=4)
+    parser.add_argument('--work-group-size', type=int, default=8)
+    parser.add_argument('--consensus-timeout', type=float, help='Wait for Work history once; default 1800 seconds for Work')
     parser.add_argument('--duration', type=float, default=300, help='Formal measurement seconds, excludes warmup and drain')
     parser.add_argument('--warmup', type=float, default=2)
     parser.add_argument('--drain-seconds', type=float, default=5)
@@ -215,6 +239,8 @@ def Parser():
 
 
 def Execute(args, invoke=subprocess.run):
+    if args.work_snapshot:
+        args.work_election = True
     if not 1 <= args.forks <= 128 or not 1 <= args.query_workers <= 128:
         raise ValueError('Ansible forks and query workers must be in 1..128')
     output, package = args.output.resolve(), None
@@ -227,6 +253,10 @@ def Execute(args, invoke=subprocess.run):
             raise ValueError('Package SHA256 mismatch')
     if args.staged and args.action != 'test':
         raise ValueError('--staged is only used with test')
+    if (args.work_election or args.rates) and args.action not in ('prepare', 'test'):
+        raise ValueError('Work election and rate series require prepare or test')
+    if args.consensus_timeout is not None and (not math.isfinite(args.consensus_timeout) or not 1 <= args.consensus_timeout <= 2400):
+        raise ValueError('consensus-timeout must be in 1..2400 seconds')
     for value, lower, upper in ((args.early_stop_ratio, .01, .99),
             (args.early_stop_start_seconds, 0, 600), (args.early_stop_window_seconds, .1, 600),
             (args.max_backlog_growth, 0, 10000000)):
@@ -276,23 +306,43 @@ def Execute(args, invoke=subprocess.run):
     if args.action in ('prepare', 'test'):
         if args.action == 'test':
             VerifySender(package, args.sender.resolve(strict=True))
-        count = RequiredTransactions(args.rate, args.warmup, args.duration)
+        rates = args.rates or [args.rate]
+        if len(rates) > 20 or len(set(rates)) != len(rates):
+            raise ValueError('Use at most 20 distinct rates')
+        count = sum(RequiredTransactions(rate, args.warmup, args.duration) for rate in rates)
+        if count > 100000000:
+            raise ValueError('The rate series requires more than 100,000,000 transactions')
         dataset = PreparedDataset(args.dataset, args.dataset_genesis or Path(str(args.dataset) + '.genesis.json'),
             count, args.wallets, args.dataset_manifest) if args.dataset else PrepareDataset(
                 args.sender, args.cache or output.parent / 'datasets', count, args.wallets)
         if args.action == 'prepare' and not args.dataset:
             dataset = PreparedDataset(dataset['dataset'], dataset['genesis'], count, args.wallets)
         genesis_path = output / 'genesis.json'
-        Save(genesis_path, RotationGenesis(json.loads(Path(dataset['genesis']).read_text(encoding='utf-8')),
-             consecutive_blocks=args.consecutive_blocks, producer_timeout_slots=args.producer_timeout_slots,
-             epoch_blocks=args.epoch_blocks))
+        accounts = json.loads(Path(dataset['genesis']).read_text(encoding='utf-8'))
+        identity_files, snapshot = {}, {}
+        if args.work_snapshot:
+            from work_snapshot import Prepare
+            genesis, identity_files, snapshot = Prepare(args.work_snapshot, plan, accounts, output)
+        elif args.work_election:
+            from work_genesis import MakeGenesis
+            identities, identity_files = WorkIdentities(plan, output)
+            genesis = MakeGenesis(accounts, identities, int(time.time()*1000)//200*200,
+                work_iterations=args.work_iterations, work_groups=args.work_groups, work_group_size=args.work_group_size)
+        else:
+            genesis = RotationGenesis(accounts, consecutive_blocks=args.consecutive_blocks,
+                producer_timeout_slots=args.producer_timeout_slots, epoch_blocks=args.epoch_blocks)
+        Save(genesis_path, genesis)
         settings = json.loads(args.node_settings.read_text(encoding='utf-8')) if args.node_settings else {}
         from cluster_benchmark import ValidateSettings
         ValidateSettings(settings)
         variables.update(chain_run_id=Identifier(output.name), chain_result_dir=str(output),
                          chain_cluster_plan=str(output / 'plan.json'), chain_dataset=dataset['dataset'],
                          chain_dataset_sha256=dataset['dataset_sha256'], chain_genesis_file=str(genesis_path),
-                         chain_genesis_sha256=Digest(genesis_path), chain_cluster_rate=args.rate,
+                         chain_genesis_sha256=Digest(genesis_path), chain_cluster_rate=rates[0],
+                         chain_cluster_rates=rates if args.rates else [],
+                         chain_cluster_identity_files=identity_files,
+                         chain_cluster_snapshot=snapshot,
+                         chain_cluster_consensus_timeout=args.consensus_timeout or (1800 if args.work_election else args.readiness_timeout),
                          chain_cluster_wallets=args.wallets, chain_cluster_duration=args.duration,
                          chain_cluster_warmup=args.warmup, chain_cluster_drain_seconds=args.drain_seconds,
                          chain_cluster_readiness_timeout=args.readiness_timeout,
@@ -307,6 +357,19 @@ def Execute(args, invoke=subprocess.run):
                          chain_cluster_early_stop_windows=args.early_stop_windows,
                          chain_cluster_max_backlog_growth=args.max_backlog_growth)
         Save(output / 'dataset.json', dataset)
+        samples = genesis['vdf']['work_groups']*genesis['vdf']['work_group_size'] if args.work_election else 0
+        startup = (32 if (snapshot['height']-1) % 160 == 0 else 64) if snapshot else ((samples+2)*32 if args.work_election else 64)
+        Save(output / 'test-plan.json', {
+            'nodes': len(plan['nodes']), 'rates': rates, 'measurement_seconds_per_rate': args.duration,
+            'warmup_seconds_per_rate': args.warmup, 'drain_seconds_per_rate': args.drain_seconds,
+            'required_transactions': count, 'signed_dataset_bytes': count*176,
+            'work_sample_count': samples,
+            'minimum_work_startup_seconds': startup, 'restored_height': snapshot.get('height'),
+            'minimum_free_bytes_per_node': 1024**3+count*1024 if args.work_election else None,
+            'estimated_database_bytes_per_node': count*1024,
+            'estimated_test_seconds': startup+len(rates)*(args.warmup+args.duration+args.drain_seconds),
+            'work_iterations': genesis['vdf']['work_iterations'] if args.work_election else None,
+            'stop_after_failed_rate': bool(args.rates), 'restart_between_rates': False if args.rates else None})
     Save(output / 'variables.json', variables)
     if args.action == 'prepare':
         Save(output / 'operation.json', {'action': 'prepare', 'offline': True, 'required_transactions': count,

@@ -69,10 +69,11 @@ def RecordedProcess(ledger, case):
     return actual
 
 
-def Worker(release):
+def Worker(release, prepared=False):
     source = Path(release) / 'source' / 'Test'
     sys.path.insert(0, str(source))
-    spec = importlib.util.spec_from_file_location('ChainAnsibleClusterWorker', source / 'ClusterWorker.py')
+    helper = Path(__file__).with_name('ClusterWorker.py') if prepared else source/'ClusterWorker.py'
+    spec = importlib.util.spec_from_file_location('ChainAnsibleClusterWorker', helper)
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return module
@@ -177,7 +178,10 @@ def One(request):
         raise ValueError('Case path contains a symbolic link')
     reservation = root / '.ansible-case-owners' / f'{run}--{node}.json'
     work = {'root': str(root), 'run': run, 'node': node, 'action': action}
-    worker = Worker(release)
+    snapshot = request.get('snapshot', {}) if action == 'start' else {}
+    if snapshot and (request.get('restart') or not request.get('work_identity')):
+        raise ValueError('A snapshot requires a fresh case and its original Work identity')
+    worker = Worker(release, prepared=True) if snapshot else Worker(release)
     if action == 'start':
         restart = bool(request.get('restart', False))
         if not restart and (case.exists() or ledger_file.exists() or reservation.exists()):
@@ -191,6 +195,14 @@ def One(request):
         for value in arguments:
             if any(value == option or value.startswith(option + '=') for option in ('--data', '--genesis', '--metrics')):
                 raise ValueError('Worker owns data, genesis and metrics paths')
+        if request.get('work_identity'):
+            identity = root / '.work-identities' / run / (node + '.seed')
+            if (identity.is_symlink() or identity.resolve() != identity or not identity.is_file() or
+                    identity.stat().st_size > 128 or not re.fullmatch(rb'[0-9a-fA-F]{64}\s*', identity.read_bytes())):
+                raise ValueError('Missing or unsafe Work identity file')
+            if any(value == '--vdf-key' or value.startswith('--vdf-key=') for value in arguments):
+                raise ValueError('The worker owns the Work identity argument')
+            arguments += ['--vdf-key', str(identity)]
         port = int(request.get('test_port', 18089))
         if port == 8089 or not 1024 <= port <= 65535 or arguments.count('--port') != 1 or any(value.startswith('--port=') for value in arguments):
             raise ValueError('An isolated non-production test port is required')
@@ -211,6 +223,9 @@ def One(request):
         # timeout leaves a fresh case unclaimed and an audit restart ledger intact.
         port_probe = dict(address=bind_address, port=port, timeout_seconds=70,
                           wait_seconds=WaitBindablePort(bind_address, port))
+        if snapshot:
+            from work_snapshot import Restore
+            work['prepared_database'] = str(Restore(root, run, node, snapshot))
         if not restart:
             reservation.parent.mkdir(parents=True, exist_ok=True)
             if not reservation.resolve().is_relative_to(root):

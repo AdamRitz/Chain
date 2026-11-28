@@ -28,6 +28,7 @@ mkdir -p build-work-vdf-calibration
 | `--iterations N` | 65536 | 每份 Work 的迭代次数，范围 4096～100000000 |
 | `--rounds K` | 1 | 连续生成或读取 K 份 Work，范围 1～100000 |
 | `--verify-repeats N` | 5 | 每份 Work、完整 Ticket 和缓存命中各验证 N 次，范围 1～10000 |
+| `--verify-threads 1\|2` | 1 | 完整 Ticket 使用一个或两个线程验证；两个线程按抽查组分配任务 |
 | `--skip-eval` | 关闭 | 跳过单独计算输出的计时，仍生成和验证完整证明 |
 | `--corpus-dir PATH` | 未设置 | 保存公开 Work 记录；已有同名记录时拒绝覆盖 |
 | `--verify-only` | 关闭 | 从 `--corpus-dir` 读取记录，只验证，不生成 Work |
@@ -62,6 +63,8 @@ taskset -c 0 ./build-work-vdf-calibration/work_vdf_benchmark \
 记录名为 `work-<iterations>-<round>.bin`，内容使用生产代码的 `EncodeWork` 编码，只有周期编号、历史摘要、前一份输出和证明。读取时检查长度、编码、周期、历史摘要、前后输出关系和数学证明。
 
 程序使用这些记录调用生产代码的 `CreateTicket`，抽查参数为四组、每组八份。历史达到 32 份时，每张票携带 32 份 Work；不足 32 份时，按生产规则携带全部已有记录。记录多于 32 份时，按生产规则抽取四组历史记录。`--verify-only` 会重新构造公开测试票，测量完整验证及缓存命中。
+
+对同一份语料分别指定 `--verify-threads 1` 和 `--verify-threads 2`，即可比较完整票验证时间。两个线程在计时前创建，逐组验证，一组内部依次验证各份 Work；单份 Work 验证和缓存命中保持原有计时方式。Linux 使用两个不同物理核心进行比较，例如确认 CPU 拓扑后使用 `taskset -c 0,2`。
 
 ## 比较保存中间值的证明算法
 

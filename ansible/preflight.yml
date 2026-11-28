@@ -36,7 +36,7 @@
         src: "scripts/{{ item }}"
         dest: "{{ chain_tools_root }}/{{ item }}"
         mode: '0755'
-      loop: [stage_release.py, managed_worker.py, activate_release.py]
+      loop: [stage_release.py, managed_worker.py, activate_release.py, work_snapshot.py]
     - name: Install the preserved read-only canonical header exporter
       ansible.builtin.copy:
         src: ../reports/2026-11-16-ten-twenty-retest/methods/r2/HeaderReader.py

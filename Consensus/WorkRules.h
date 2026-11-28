@@ -18,6 +18,12 @@ using work_election::AnchorLookup;
 
 inline constexpr std::size_t kPoolSize = 10;
 inline work_election::VerificationCache proofCache;
+// Network tickets and block verification share the same two mathematical
+// workers. Keep them alive until block verification has also stopped.
+inline work_election::ProofVerifier& GetProofVerifier() {
+    static work_election::ProofVerifier verifier;
+    return verifier;
+}
 
 struct Finalization {
     Digest seed{};
@@ -262,7 +268,8 @@ struct Schedule {
             (state.pool.size() == kPoolSize && !TicketLess(ticket, *state.pool.back())))
             throw std::invalid_argument("Invalid or noncompetitive Work ticket");
         const auto context = TicketContextFor(state, config);
-        if (!context.matureRounds || !work_election::VerifyTicket(ticket, context, lookup, nullptr, &proofCache))
+        if (!context.matureRounds || !work_election::VerifyTicket(ticket, context, lookup, nullptr,
+                &proofCache, &GetProofVerifier(), work_election::ProofPriority::Block))
             throw std::invalid_argument("Invalid Work history proof");
         state.pool.push_back(std::make_shared<const Ticket>(ticket));
         std::sort(state.pool.begin(), state.pool.end(), [](const auto& a, const auto& b) { return TicketLess(*a, *b); });
@@ -318,7 +325,8 @@ struct Schedule {
                 anchor = found->anchor;
                 return true;
             };
-            if (!work_election::VerifyTicket(ticket, ticket.context, lookup, nullptr, &proofCache)) return false;
+            if (!work_election::VerifyTicket(ticket, ticket.context, lookup, nullptr,
+                    &proofCache, &GetProofVerifier(), work_election::ProofPriority::Block)) return false;
         }
         return true;
     } catch (...) { return false; }

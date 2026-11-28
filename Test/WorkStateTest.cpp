@@ -20,6 +20,111 @@ Wallet Seeded(std::uint8_t value) {
     return wallet;
 }
 
+void TestOwnTicketVerificationTiming() {
+    struct Restore {
+        legacy::Config config = legacy::config;
+        election::PublicKey publicKey = vdfPublicKey;
+        bool ready = vdfIdentityReady;
+        ~Restore() {
+            legacy::config = config;
+            vdfPublicKey = publicKey;
+            vdfIdentityReady = ready;
+        }
+    } restore;
+    legacy::config.epochBlocks = 160;
+    legacy::config.commitStartSlot = 80;
+    legacy::config.commitEndSlot = 90;
+    legacy::config.revealEndSlot = 100;
+    legacy::config.ticketEndSlot = 120;
+    legacy::config.proofEndSlot = 140;
+
+    rules::State state;
+    state.chainId[0] = 17;
+    state.anchor[0] = 23;
+    state.epoch = 34;
+    state.startSlot = 1000;
+    state.seed[0] = 41;
+    state.seedReady = true;
+    const auto context = rules::TicketContextFor(state, legacy::config);
+    // Fixed inputs select score ranges deterministically; no clock or random
+    // generator is used, and these checks do not run VDF calculations.
+    auto ticketInRange = [&](unsigned lower, unsigned upper) {
+        election::Ticket ticket;
+        ticket.context = context;
+        for (unsigned key = 1; key <= 4096; ++key) {
+            ticket.publicKey[0] = static_cast<std::uint8_t>(key);
+            ticket.publicKey[1] = static_cast<std::uint8_t>(key >> 8);
+            const auto score = election::DeriveScore(context, ticket.publicKey);
+            const std::uint64_t prefix = (std::uint64_t(score[0]) << 24) |
+                (std::uint64_t(score[1]) << 16) | (std::uint64_t(score[2]) << 8) | score[3];
+            if (prefix * 100 >= (std::uint64_t{1} << 32) * lower &&
+                prefix * 100 < (std::uint64_t{1} << 32) * upper) return ticket;
+        }
+        throw std::runtime_error("Fixed ticket fixtures do not cover the requested score range");
+    };
+    const auto high = ticketInRange(15, 100);
+    const auto middle = ticketInRange(5, 15);
+    const auto low = ticketInRange(0, 5);
+    vdfPublicKey = high.publicKey;
+    vdfIdentityReady = true;
+    constexpr std::uint64_t remote = 17;
+    auto slot = [&](std::uint64_t phase) { return state.startSlot + phase; };
+
+    for (const auto phase : {100u, 110u, 119u}) {
+        Require(WorkTicketVerificationAllowed(high, state, slot(phase), 0),
+            "Own ticket did not start verification when the seed became available");
+        Require(!WorkBroadcastScore(high, state, slot(phase)),
+            "Own ticket was allowed to broadcast before its score threshold");
+        Require(!WorkTicketVerificationAllowed(high, state, slot(phase), remote),
+            "Remote copy of our ticket bypassed its score threshold");
+    }
+    vdfPublicKey[31] ^= 1;
+    Require(!WorkTicketVerificationAllowed(high, state, slot(100), 0),
+        "Local source with another public key bypassed its score threshold");
+    vdfPublicKey = high.publicKey;
+    vdfIdentityReady = false;
+    Require(!WorkTicketVerificationAllowed(high, state, slot(100), 0),
+        "Uninitialized local identity bypassed the score threshold");
+    vdfIdentityReady = true;
+
+    Require(WorkTicketVerificationAllowed(low, state, slot(100), remote),
+        "Remote ticket below five percent was delayed");
+    Require(!WorkTicketVerificationAllowed(middle, state, slot(100), remote) &&
+            WorkTicketVerificationAllowed(middle, state, slot(110), remote),
+        "Remote fifteen-percent threshold changed");
+    for (const auto phase : {120u, 139u}) {
+        Require(WorkTicketVerificationAllowed(high, state, slot(phase), 0) &&
+                WorkTicketVerificationAllowed(high, state, slot(phase), remote) &&
+                WorkBroadcastScore(high, state, slot(phase)),
+            "Ticket was delayed after all scores were allowed");
+    }
+    for (const auto phase : {99u, 140u}) {
+        Require(!WorkTicketCurrent(high, state, slot(phase)) &&
+                !WorkTicketVerificationAllowed(high, state, slot(phase), 0) &&
+                !WorkTicketVerificationAllowed(high, state, slot(phase), remote) &&
+                !WorkBroadcastScore(high, state, slot(phase)),
+            "Ticket crossed the seed or proof deadline");
+    }
+    auto refused = [&](const rules::State& current, const election::Ticket& ticket) {
+        return !WorkTicketCurrent(ticket, current, slot(120)) &&
+            !WorkTicketVerificationAllowed(ticket, current, slot(120), 0) &&
+            !WorkTicketVerificationAllowed(ticket, current, slot(120), remote) &&
+            !WorkBroadcastScore(ticket, current, slot(120));
+    };
+    auto changed = state;
+    changed.frozen = true;
+    Require(refused(changed, high), "Frozen election admitted a ticket");
+    changed = state; changed.seedReady = false;
+    Require(refused(changed, high), "Election without a seed admitted a ticket");
+    auto stale = high;
+    ++stale.context.targetEpoch;
+    Require(refused(state, stale), "Another election context admitted a ticket");
+    stale = high; stale.context.anchor[0] ^= 1;
+    Require(refused(state, stale), "Another branch anchor admitted a ticket");
+    stale = high; stale.context.randomSeed[0] ^= 1;
+    Require(refused(state, stale), "Another election seed admitted a ticket");
+}
+
 bool SameState(const rules::State& a, const rules::State& b) {
     if (a.chainId != b.chainId || a.epoch != b.epoch || a.startSlot != b.startSlot || a.lastSlot != b.lastSlot ||
         a.anchor != b.anchor || a.committee != b.committee || a.commits != b.commits || a.reveals != b.reveals ||
@@ -80,7 +185,7 @@ struct Branch {
         return value;
     }
 
-    const ForkEntry& Add() {
+    const ForkEntry& Add(const std::vector<election::Ticket>& tickets = {}) {
         const auto height = hashes.rbegin()->first + 1;
         const auto slot = legacy::StartSlot() + blocks.size();
         const auto parent = hashes.rbegin()->second;
@@ -91,6 +196,7 @@ struct Branch {
         const auto offset = rules::Offset(state, slot);
         const auto beacon = rules::BeaconContextFor(state);
         rules::Delta delta;
+        delta.tickets = tickets;
         if (offset == legacy::config.commitStartSlot) {
             for (const auto& key : state.committee)
                 delta.commits.push_back(election::CreateCommit(beacon, WalletFor(key).private_key, Secret(key)));
@@ -99,7 +205,7 @@ struct Branch {
             for (const auto& key : state.committee)
                 delta.reveals.push_back(election::CreateReveal(beacon, WalletFor(key).private_key, Secret(key)));
         }
-        if (state.epoch == 2 && offset == legacy::config.revealEndSlot) {
+        if (state.epoch == 2 && offset == legacy::config.revealEndSlot && tickets.empty()) {
             const auto context = rules::TicketContextFor(state, legacy::config);
             Require(context.matureRounds == 1, "Test maturity assumption changed");
             const auto& wallet = wallets->at(elected);
@@ -132,6 +238,102 @@ struct Branch {
         return blocks.back();
     }
 };
+
+void TestPreparedTicketBroadcastTiming(const std::filesystem::path& directory,
+                                     const std::vector<Wallet>& wallets) {
+    struct Restore {
+        legacy::Config config = legacy::config;
+        decltype(legacy::currentTimeMs) clock = legacy::currentTimeMs;
+        election::PublicKey publicKey = vdfPublicKey;
+        bool ready = vdfIdentityReady;
+        bool producing = produceBlocks;
+        ~Restore() {
+            db.reset();
+            ClearVdfExtensionCache(); ClearWorkStateCache();
+            { std::lock_guard lock(workRuntimeMutex); workRuntimeSets.clear(); }
+            legacy::config = config; legacy::currentTimeMs = clock;
+            vdfPublicKey = publicKey; vdfIdentityReady = ready; produceBlocks = producing;
+        }
+    } restore;
+    auto bootstrap = nlohmann::json::array();
+    for (std::size_t i = 0; i < 5; ++i) bootstrap.push_back(U32ToHex(wallets[i].public_key));
+    SetGenesisUsers({{"base_fee", 0}, {"accounts", nlohmann::json::array()},
+        {"vdf", {{"enabled", true}, {"producer_rotation", true}, {"epoch_blocks", 160},
+            {"consecutive_blocks", 32}, {"producer_timeout_slots", 8}, {"slot_ms", 200},
+            {"start_time_ms", 200000}, {"fallback_slots", 20}, {"future_slots", 1}, {"producers", 5},
+            {"iterations", chain::vdf_election::kMinIterations}, {"work_election", true},
+            {"work_iterations", chain::vdf_election::kMinIterations}, {"work_groups", 4}, {"work_group_size", 8},
+            {"commit_start_slot", 80}, {"commit_end_slot", 90}, {"reveal_end_slot", 100},
+            {"ticket_end_slot", 120}, {"proof_end_slot", 140}, {"bootstrap_producers", bootstrap}}}});
+    ClearVdfExtensionCache(); ClearWorkStateCache();
+    InitDB(directory.string(), true); GenerateGenesisBlock();
+    Branch branch(DBReadCurrentBlock(), wallets, 0, 5);
+    const auto commit = [&](const std::vector<election::Ticket>& tickets = std::vector<election::Ticket>{}) {
+        const auto& entry = branch.Add(tickets);
+        Require(DBCheckBlockUsers(entry.second) && DBCommitBlock(entry.first.hash, entry.second),
+            "Broadcast boundary fixture block was rejected");
+    };
+    for (unsigned phase = 0; phase < 2 * 160 + 100; ++phase) commit();
+    const auto startSlot = branch.state.startSlot;
+    const auto state = rules::ForSlot(branch.state, startSlot + 100, legacy::config);
+    const auto context = rules::TicketContextFor(state, legacy::config);
+    Require(context.matureRounds == 1, "Broadcast fixture should require one historical Work");
+    std::vector<election::Ticket> high;
+    for (unsigned seed = 8; seed <= 255 && high.size() < 2; ++seed) {
+        const auto wallet = Seeded(static_cast<std::uint8_t>(seed));
+        const auto score = election::DeriveScore(context, wallet.public_key);
+        const std::uint64_t prefix = (std::uint64_t(score[0]) << 24) |
+            (std::uint64_t(score[1]) << 16) | (std::uint64_t(score[2]) << 8) | score[3];
+        if (prefix * 100 < (std::uint64_t{1} << 32) * 15) continue;
+        const auto work = election::CreateWork(genesisRoot, wallet.public_key, 0,
+            branch.Anchor(0), {}, context.iterations);
+        high.push_back(election::CreateTicket(context, wallet.private_key,
+            [&](std::uint64_t round, election::Work& output) {
+                if (round != 0) return false;
+                output = work; return true;
+            }));
+        Require(election::VerifyTicket(high.back(), context,
+            [&](std::uint64_t round, election::Digest& anchor) {
+                if (round != 0) return false;
+                anchor = branch.Anchor(0); return true;
+            }, nullptr, &rules::proofCache), "Broadcast fixture ticket is invalid");
+    }
+    Require(high.size() == 2, "Fixed identities did not produce two high-score tickets");
+    Require(StoreWorkTicket(std::make_shared<const election::Ticket>(high[0]), state),
+        "Verified high-score fixture was not stored");
+    vdfIdentityReady = true; produceBlocks = true;
+    const auto prepare = [&](unsigned phase, std::size_t expectedTickets) {
+        const auto slot = startSlot + phase;
+        legacy::currentTimeMs = [slot] { return slot * legacy::config.slotMs; };
+        const auto current = rules::ForSlot(branch.state, slot, legacy::config);
+        const auto schedule = rules::Preview(current, slot, legacy::config);
+        Require(bool(schedule), "Broadcast fixture has no scheduled producer");
+        vdfPublicKey = schedule->producer;
+        legacy::Extension extension;
+        Require(PrepareWorkBlock(DBReadBlockHeight() + 1, DBReadCurrentBlock(), extension),
+            "Scheduled producer could not prepare the broadcast fixture block");
+        rules::Delta delta;
+        Require(extension.work && rules::DecodeDelta(*extension.work, delta),
+            "Prepared broadcast delta could not be decoded");
+        Require(delta.tickets.size() == expectedTickets,
+            "Prepared block did not respect the ticket broadcast threshold");
+        if (expectedTickets) Require(delta.tickets.front() == high[0],
+            "Prepared block omitted the newly eligible ticket or repeated an existing ticket");
+        Require(SameState(CurrentState(), branch.state), "Preparing a block changed the existing ticket pool");
+    };
+    prepare(100, 0);
+    // An already accepted ticket stays in the parent pool even if this node
+    // also holds its runtime copy. Block preparation must not send it again.
+    legacy::currentTimeMs = [] { return std::uint64_t{100000} * legacy::config.slotMs; };
+    commit({high[1]});
+    Require(StoreWorkTicket(std::make_shared<const election::Ticket>(high[1]), branch.state),
+        "Existing pool ticket could not be copied into the runtime fixture");
+    for (unsigned phase = 101; phase < 119; ++phase) commit();
+    Require(branch.state.pool.size() == 1 && *branch.state.pool.front() == high[1],
+        "Accepted fixture ticket was not preserved in the parent pool");
+    prepare(119, 0);
+    prepare(120, 1);
+}
 
 void ClearForkCache() {
     std::lock_guard lock(forkMutex);
@@ -177,6 +379,7 @@ int main(int argc, char** argv) {
                 {"work_iterations", chain::vdf_election::kMinIterations}, {"work_groups", 4}, {"work_group_size", 8},
                 {"commit_start_slot", 1}, {"commit_end_slot", 2}, {"reveal_end_slot", 3},
                 {"ticket_end_slot", 4}, {"proof_end_slot", 5}, {"bootstrap_producers", bootstrap}}}});
+        TestOwnTicketVerificationTiming();
         legacy::currentTimeMs = [] { return std::uint64_t{100000} * legacy::config.slotMs; };
         InitDB(directory.string(), true); GenerateGenesisBlock();
         const auto genesis = DBReadCurrentBlock();
@@ -237,6 +440,7 @@ int main(int argc, char** argv) {
         Require(CurrentState().committee == std::vector<election::PublicKey>{wallets[6].public_key},
                 "Restart restored the wrong branch committee");
         db.reset(); ClearForkCache();
+        TestPreparedTicketBroadcastTiming(directory / "broadcast", wallets);
         std::cout << "Work state checks passed. Database: " << directory.string() << '\n';
         return 0;
     } catch (const std::exception& error) {

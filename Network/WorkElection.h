@@ -4,6 +4,7 @@
 // and received proof verification have their own workers; neither uses the
 // transaction verification pool or waits on a socket coroutine.
 #include "../Consensus/WorkRules.h"
+#include "WorkTicketQueue.h"
 #include <condition_variable>
 #include <filesystem>
 #include <fstream>
@@ -25,11 +26,15 @@ deque<WorkRuntimeSet> workRuntimeSets;
 map<pair<uint64_t,array<uint8_t,32>>,WorkElection::Work> workLocalCache;
 filesystem::path workCacheDirectory,workSecretDirectory;
 unique_ptr<thread_pool> workVerifyThreads,workBeaconThreads;
-thread workControlThread;
+thread workControlThread,workTicketThread;
+chain::work_queue::TicketQueue workTicketQueue;
+condition_variable workTicketReady;
+bool workTicketStopping=false;
 set<array<uint8_t,32>> workActiveMessages,workVerifiedMessages;
 deque<array<uint8_t,32>> workVerifiedOrder;
 size_t workPendingBytes=0,workPendingTickets=0,workPendingBeacons=0;
 atomic<uint64_t> workQueueRejected{0},workDuplicateMessages{0},workVerifiedTickets{0},workInvalidMessages{0};
+atomic<uint64_t> workSkippedTickets{0};
 atomic<uint64_t> workDiskHits{0},workComputedRounds{0},workComputeNs{0};
 atomic<uint64_t> workProofVerifyNs{0},workProofChecks{0};
 atomic<uint64_t> workLocalCompleted{0};
@@ -59,9 +64,7 @@ WorkRuntimeSet ReadWorkSet(const WorkElection::BeaconContext& context) {
     return {context,{},{},{}};
 }
 bool WorkTicketLess(const WorkElection::Ticket& left,const WorkElection::Ticket& right) {
-    const auto a=WorkElection::DeriveScore(left.context,left.publicKey);
-    const auto b=WorkElection::DeriveScore(right.context,right.publicKey);
-    return a==b?left.publicKey<right.publicKey:a<b;
+    return chain::work_queue::TicketLess(left,right);
 }
 vector<shared_ptr<const WorkElection::Ticket>> MergeWorkTickets(
         vector<shared_ptr<const WorkElection::Ticket>> records) {
@@ -94,10 +97,14 @@ bool WorkMember(const WorkRules::State& state,const WorkElection::PublicKey& key
 uint64_t WorkPhase(const WorkRules::State& state,uint64_t slot) {
     return slot>=state.startSlot?slot-state.startSlot:0;
 }
-bool WorkBroadcastScore(const WorkElection::Ticket& ticket,const WorkRules::State& state,uint64_t slot) {
+bool WorkTicketCurrent(const WorkElection::Ticket& ticket,const WorkRules::State& state,uint64_t slot) {
     const auto phase=WorkPhase(state,slot);
-    if (!state.seedReady||state.frozen||phase<VdfConsensus::config.revealEndSlot||phase>=VdfConsensus::config.proofEndSlot||
-            ticket.context!=WorkRules::TicketContextFor(state,VdfConsensus::config)) return false;
+    return state.seedReady&&!state.frozen&&phase>=VdfConsensus::config.revealEndSlot&&phase<VdfConsensus::config.proofEndSlot&&
+        ticket.context==WorkRules::TicketContextFor(state,VdfConsensus::config);
+}
+bool WorkBroadcastScore(const WorkElection::Ticket& ticket,const WorkRules::State& state,uint64_t slot) {
+    if (!WorkTicketCurrent(ticket,state,slot)) return false;
+    const auto phase=WorkPhase(state,slot);
     unsigned percent=phase<VdfConsensus::config.revealEndSlot+10?5:
         (phase<VdfConsensus::config.ticketEndSlot?15:100);
     const auto score=WorkElection::DeriveScore(ticket.context,ticket.publicKey);
@@ -105,12 +112,19 @@ bool WorkBroadcastScore(const WorkElection::Ticket& ticket,const WorkRules::Stat
     const uint64_t prefix=(uint64_t(score[0])<<24)|(uint64_t(score[1])<<16)|(uint64_t(score[2])<<8)|score[3];
     return percent==100||prefix*100<(uint64_t(1)<<32)*percent;
 }
+bool WorkTicketVerificationAllowed(const WorkElection::Ticket& ticket,const WorkRules::State& state,uint64_t slot,uint64_t source) {
+    // Prepare our own signed proof bundle as soon as the election seed exists.
+    // Only its broadcast follows the score threshold; all mathematical and
+    // branch checks still run before the ticket enters the verified records.
+    if (source==0&&vdfIdentityReady&&ticket.publicKey==vdfPublicKey)
+        return WorkTicketCurrent(ticket,state,slot);
+    return WorkBroadcastScore(ticket,state,slot);
+}
 bool WorkTicketCompetitive(const WorkElection::Ticket& ticket,const WorkRules::State& state) {
     auto records=ReadWorkSet(WorkRules::BeaconContextFor(state)).tickets;
     erase_if(records,[&](const auto& item){return item->context!=ticket.context;});
     records.insert(records.end(),state.pool.begin(),state.pool.end());records=MergeWorkTickets(std::move(records));
-    for (const auto& item:records) if (item->publicKey==ticket.publicKey) return false;
-    return records.size()<10||WorkTicketLess(ticket,*records.back());
+    return chain::work_queue::IsCompetitive(ticket,records);
 }
 bool StoreWorkTicket(shared_ptr<const WorkElection::Ticket> record,const WorkRules::State& state) {
     lock_guard lock(workRuntimeMutex);auto& set=WorkSetLocked(WorkRules::BeaconContextFor(state));
@@ -203,15 +217,19 @@ WorkElection::Digest LoadWorkSecret(const WorkElection::BeaconContext& context) 
     return secret;
 }
 
-map<uint64_t,WorkElection::Digest> ReadWorkAnchors(const WorkElection::Context& context,const WorkElection::PublicKey& key) {
+// The caller holds dbCommitMutex so these anchors belong to one branch.
+map<uint64_t,WorkElection::Digest> ReadWorkAnchorsLocked(const WorkElection::Context& context,const WorkElection::PublicKey& key) {
     const auto samples=WorkElection::SampleGroups(context,key);
     map<uint64_t,WorkElection::Digest> result;
-    shared_lock lock(dbCommitMutex);
     for (const auto& group:samples) for (uint64_t n=0;n<group.count;++n) {
         const auto round=group.start+n;
         if (!result.count(round)) result.emplace(round,DBWorkAnchor(round));
     }
     return result;
+}
+map<uint64_t,WorkElection::Digest> ReadWorkAnchors(const WorkElection::Context& context,const WorkElection::PublicKey& key) {
+    shared_lock lock(dbCommitMutex);
+    return ReadWorkAnchorsLocked(context,key);
 }
 void FinishWorkMessage(const array<uint8_t,32>& hash,size_t bytes,bool ticket,bool valid) {
     lock_guard lock(workQueueMutex);workActiveMessages.erase(hash);workPendingBytes-=bytes;
@@ -219,6 +237,58 @@ void FinishWorkMessage(const array<uint8_t,32>& hash,size_t bytes,bool ticket,bo
     if (valid&&workVerifiedMessages.insert(hash).second) {
         workVerifiedOrder.push_back(hash);
         if (workVerifiedOrder.size()>4096) {workVerifiedMessages.erase(workVerifiedOrder.front());workVerifiedOrder.pop_front();}
+    }
+}
+void VerifyPendingWorkTicket(chain::work_queue::PendingTicket pending) {
+    bool valid=false;
+    struct Release { const chain::work_queue::PendingTicket& pending;bool& valid;
+        ~Release(){FinishWorkMessage(pending.hash,pending.bytes.size(),true,valid);} } release{pending,valid};
+    try {
+        if (!nodeRunning) return;
+        auto& record=pending.record;
+        auto slot=VdfConsensus::CurrentSlot();auto state=ReadWorkState(slot);
+        if (!WorkTicketVerificationAllowed(record,state,slot,pending.source)) return;
+        // The threshold may have improved since this ticket entered the queue.
+        // Unverified scores determine order only; they cannot exclude a ticket.
+        if (!WorkTicketCompetitive(record,state)) {workSkippedTickets++;return;}
+        auto anchors=ReadWorkAnchors(record.context,record.publicKey);
+        const auto started=GetSteadyTime();
+        const bool verified=WorkElection::VerifyTicket(record,record.context,[&](uint64_t round,WorkElection::Digest& anchor) {
+                auto found=anchors.find(round);if (found==anchors.end()) return false;anchor=found->second;return true;
+            },nullptr,&WorkRules::proofCache,&WorkRules::GetProofVerifier());
+        workProofVerifyNs+=GetSteadyTime()-started;workProofChecks+=record.works.size();
+        if (!verified) {workInvalidMessages++;return;}
+        // Proof checking can span slots or a reorganization. Check the current
+        // branch, time and verified top ten again before publishing the result.
+        bool publish=false;
+        {
+            shared_lock lock(dbCommitMutex);
+            slot=VdfConsensus::CurrentSlot();auto current=ReadWorkStateLocked(slot);
+            if (!nodeRunning||!WorkTicketVerificationAllowed(record,current,slot,pending.source)) return;
+            if (anchors!=ReadWorkAnchorsLocked(record.context,record.publicKey)) return;
+            if (!WorkTicketCompetitive(record,current)) {workSkippedTickets++;return;}
+            valid=true;workVerifiedTickets++;
+            const bool broadcast=WorkBroadcastScore(record,current,slot);
+            publish=StoreWorkTicket(make_shared<const WorkElection::Ticket>(std::move(record)),current)&&broadcast&&pending.source!=0;
+        }
+        if (publish) PublishWorkMessage(62,pending.bytes,pending.source);
+        WakeMainLoop();
+    } catch (const exception& error) {workInvalidMessages++;spdlog::warn("Work ticket verification: {}",error.what());}
+}
+void RunWorkTicketVerification() {
+    for (;;) {
+        optional<chain::work_queue::PendingTicket> pending;
+        {
+            unique_lock lock(workQueueMutex);
+            workTicketReady.wait(lock,[]{return workTicketStopping||workTicketQueue.Size()!=0;});
+            if (workTicketStopping) {
+                auto abandoned=workTicketQueue.Drain();lock.unlock();
+                for (const auto& item:abandoned) FinishWorkMessage(item.hash,item.bytes.size(),true,false);
+                return;
+            }
+            pending=workTicketQueue.TakeBest();
+        }
+        if (pending) VerifyPendingWorkTicket(std::move(*pending));
     }
 }
 bool QueueWorkMessage(uint8_t type,vector<uint8_t> bytes,uint64_t source) {
@@ -233,10 +303,10 @@ bool QueueWorkMessage(uint8_t type,vector<uint8_t> bytes,uint64_t source) {
         if (ticket) ++workPendingTickets;else ++workPendingBeacons;
     }
     try {
-        post(ticket?*workVerifyThreads:*workBeaconThreads,[type,source,hash,size,ticket,bytes=std::move(bytes)] {
-            bool valid=false;
-            struct Release { const array<uint8_t,32>& hash;size_t size;bool ticket;bool& valid;
-                ~Release(){FinishWorkMessage(hash,size,ticket,valid);} } release{hash,size,ticket,valid};
+        post(ticket?*workVerifyThreads:*workBeaconThreads,[type,source,hash,size,ticket,bytes=std::move(bytes)]() mutable {
+            bool valid=false,transferred=false;
+            struct Release { const array<uint8_t,32>& hash;size_t size;bool ticket;bool& valid;bool& transferred;
+                ~Release(){if (!transferred) FinishWorkMessage(hash,size,ticket,valid);} } release{hash,size,ticket,valid,transferred};
             try {
                 if (!nodeRunning) return;
                 auto slot=VdfConsensus::CurrentSlot();auto state=ReadWorkState(slot);
@@ -258,24 +328,17 @@ bool QueueWorkMessage(uint8_t type,vector<uint8_t> bytes,uint64_t source) {
                 } else if (type==62) {
                     WorkElection::Ticket record;
                     if (!WorkElection::DecodeTicket(bytes,record)) {workInvalidMessages++;return;}
-                    if (!state.seedReady||record.context!=WorkRules::TicketContextFor(state,VdfConsensus::config)||
-                            !WorkBroadcastScore(record,state,slot)||!WorkTicketCompetitive(record,state)) return;
-                    auto anchors=ReadWorkAnchors(record.context,record.publicKey);
-                    const auto started=GetSteadyTime();
-                    const bool verified=WorkElection::VerifyTicket(record,record.context,[&](uint64_t round,WorkElection::Digest& anchor) {
-                            auto found=anchors.find(round);if (found==anchors.end()) return false;anchor=found->second;return true;
-                        },nullptr,&WorkRules::proofCache);
-                    workProofVerifyNs+=GetSteadyTime()-started;workProofChecks+=record.works.size();
-                    if (!verified) {workInvalidMessages++;return;}
-                    // Proof checking can span slots or a reorganization. Admit
-                    // only against the current branch and election context.
-                    slot=VdfConsensus::CurrentSlot();auto current=ReadWorkState(slot);
-                    if (!current.seedReady||record.context!=WorkRules::TicketContextFor(current,VdfConsensus::config)||
-                            !WorkBroadcastScore(record,current,slot)) return;
-                    auto currentAnchors=ReadWorkAnchors(record.context,record.publicKey);
-                    if (anchors!=currentAnchors) return;
-                    valid=true;workVerifiedTickets++;
-                    if (StoreWorkTicket(make_shared<const WorkElection::Ticket>(std::move(record)),current)) PublishWorkMessage(type,bytes,source);
+                    if (!WorkTicketVerificationAllowed(record,state,slot,source)) return;
+                    if (!WorkTicketCompetitive(record,state)) {workSkippedTickets++;return;}
+                    if (!WorkElection::VerifyTicketSignature(record)) {workInvalidMessages++;return;}
+                    // Parsing and signature verification run off the socket
+                    // thread. The expensive checks take tickets in score order.
+                    {
+                        lock_guard lock(workQueueMutex);
+                        if (workTicketStopping||!workTicketQueue.Push({std::move(record),std::move(bytes),hash,source})) return;
+                        transferred=true;
+                    }
+                    workTicketReady.notify_one();
                 }
                 if (valid) WakeMainLoop();
             } catch (const exception& error) {workInvalidMessages++;spdlog::warn("Work election message: {}",error.what());}
@@ -320,7 +383,8 @@ bool PrepareWorkBlock(uint64_t height,const array<uint8_t,32>& parent,VdfConsens
         }
     if (phase>=VdfConsensus::config.revealEndSlot&&phase<VdfConsensus::config.proofEndSlot) {
         auto merged=state.pool;
-        for (const auto& record:records.tickets) if (record->context==WorkRules::TicketContextFor(state,VdfConsensus::config)) merged.push_back(record);
+        for (const auto& record:records.tickets) if (record->context==WorkRules::TicketContextFor(state,VdfConsensus::config)&&
+                WorkBroadcastScore(*record,state,slot)) merged.push_back(record);
         merged=MergeWorkTickets(std::move(merged));
         size_t bytes=5;
         const size_t budget=min(size_t(VdfConsensus::kMaxWorkDeltaBytes),size_t(256*1024));
@@ -362,7 +426,7 @@ void RunWorkComputation() {
 }
 void RunWorkControl() {
     try {
-        uint64_t lastRequest=0,lastBroadcast=0,lastTicketAttempt=0;
+        uint64_t lastRequest=0,lastBroadcast=0,lastTicketAttempt=0,lastTicketBroadcast=0;
         optional<WorkElection::Context> attemptedTicket;
         shared_ptr<const WorkElection::Ticket> ownTicket;
         optional<WorkElection::BeaconContext> secretContext;
@@ -400,10 +464,10 @@ void RunWorkControl() {
             }
             if (vdfIdentityReady&&state.seedReady&&!state.frozen&&phase<VdfConsensus::config.proofEndSlot) {
                 const auto context=WorkRules::TicketContextFor(state,VdfConsensus::config);
-                if (!attemptedTicket||*attemptedTicket!=context) {attemptedTicket=context;ownTicket.reset();lastTicketAttempt=0;}
+                if (!attemptedTicket||*attemptedTicket!=context) {attemptedTicket=context;ownTicket.reset();lastTicketAttempt=0;lastTicketBroadcast=0;}
                 WorkElection::Ticket ranked;ranked.context=context;ranked.publicKey=vdfPublicKey;
                 if (context.matureRounds&&!ownTicket&&now-lastTicketAttempt>=500'000'000ULL&&
-                        WorkBroadcastScore(ranked,state,slot)&&WorkTicketCompetitive(ranked,state)) {
+                        WorkTicketCurrent(ranked,state,slot)&&WorkTicketCompetitive(ranked,state)) {
                     lastTicketAttempt=now;
                     auto anchors=ReadWorkAnchors(context,vdfPublicKey);map<uint64_t,WorkElection::Work> works;bool complete=true;
                     for (const auto& [round,anchor]:anchors) {WorkElection::Work work;if (!ReadLocalWork(round,anchor,work)) {complete=false;break;}works.emplace(round,work);}
@@ -414,21 +478,20 @@ void RunWorkControl() {
                         ownTicket=make_shared<const WorkElection::Ticket>(std::move(ticket));
                     }
                 }
-                if (ownTicket&&WorkBroadcastScore(*ownTicket,state,slot)&&WorkTicketCompetitive(*ownTicket,state))
+                if (ownTicket&&WorkTicketCurrent(*ownTicket,state,slot)&&WorkTicketCompetitive(*ownTicket,state))
                     QueueWorkMessage(62,WorkElection::EncodeTicket(*ownTicket),0);
             }
-            if (now-lastBroadcast>=1'000'000'000ULL) {
-                // Relay new verified pool entries once. Only the originating
-                // node retries its own missing ticket, rather than every node
-                // broadcasting all ten proof bundles every second.
-                if (ownTicket&&WorkBroadcastScore(*ownTicket,state,slot)&&
+            // Publish a prepared local ticket immediately when its score may
+            // be broadcast, then retry once per second until it is in a block.
+            if (ownTicket&&now-lastTicketBroadcast>=1'000'000'000ULL&&WorkBroadcastScore(*ownTicket,state,slot)&&
                         none_of(state.pool.begin(),state.pool.end(),[](const auto& item){return item->publicKey==vdfPublicKey;})) {
-                    const auto records=ReadWorkSet(beacon);
-                    if (any_of(records.tickets.begin(),records.tickets.end(),[&](const auto& item){return item->publicKey==vdfPublicKey&&item->context==ownTicket->context;}))
-                        PublishWorkMessage(62,WorkElection::EncodeTicket(*ownTicket));
+                const auto records=ReadWorkSet(beacon);
+                if (any_of(records.tickets.begin(),records.tickets.end(),[&](const auto& item){return item->publicKey==vdfPublicKey&&item->context==ownTicket->context;})) {
+                    PublishWorkMessage(62,WorkElection::EncodeTicket(*ownTicket));
+                    lastTicketBroadcast=now;
                 }
-                lastBroadcast=now;
             }
+            if (now-lastBroadcast>=1'000'000'000ULL) lastBroadcast=now;
             if (phase>=VdfConsensus::config.commitStartSlot&&phase<VdfConsensus::config.proofEndSlot&&now-lastRequest>=2'000'000'000ULL) {
                 array<uint8_t,32> salt{};randombytes_buf(salt.data(),salt.size());
                 auto peers=SelectBroadcastPeers(0,salt,1,true);
@@ -442,13 +505,23 @@ void RunWorkControl() {
     }
 }
 void InitializeWorkRuntime(const string& dataPath) {
-    const auto base=Utf8Path(dataPath)/"work-vdf"/U32ToHex(genesisRoot)/U32ToHex(vdfPublicKey)/to_string(VdfConsensus::config.workIterations);
+    auto base=Utf8Path(dataPath)/"work-vdf"/U32ToHex(genesisRoot)/U32ToHex(vdfPublicKey)/to_string(VdfConsensus::config.workIterations);
+#ifdef _WIN32
+    // Work paths contain full chain, identity and historical hashes. Use an
+    // extended path only for these files; RocksDB keeps its original data path.
+    auto native=filesystem::absolute(base).lexically_normal().make_preferred().wstring();
+    if (!native.starts_with(L"\\\\?\\"))
+        native=native.starts_with(L"\\\\")?L"\\\\?\\UNC\\"+native.substr(2):L"\\\\?\\"+native;
+    base=filesystem::path(native);
+#endif
     workCacheDirectory=base/"proofs";workSecretDirectory=base/"secrets";
     filesystem::create_directories(workCacheDirectory);filesystem::create_directories(workSecretDirectory);
     filesystem::permissions(workSecretDirectory,filesystem::perms::owner_all,filesystem::perm_options::replace);
     workStoredProofs=0;
     for (const auto& file:filesystem::directory_iterator(workCacheDirectory)) if (file.is_regular_file()&&file.path().extension()==".work") workStoredProofs++;
     workVerifyThreads=make_unique<thread_pool>(1);workBeaconThreads=make_unique<thread_pool>(1);
+    {lock_guard lock(workQueueMutex);workTicketStopping=false;}
+    workTicketThread=thread(RunWorkTicketVerification);
     if (produceBlocks) vdfComputeThread=thread(RunWorkComputation);
     workControlThread=thread(RunWorkControl);
 }
@@ -456,6 +529,9 @@ void StopWorkRuntime() {
     if (workControlThread.joinable()) workControlThread.join();
     if (vdfComputeThread.joinable()) vdfComputeThread.join();
     if (workVerifyThreads) {workVerifyThreads->join();workVerifyThreads.reset();}
+    {lock_guard lock(workQueueMutex);workTicketStopping=true;}
+    workTicketReady.notify_all();
+    if (workTicketThread.joinable()) workTicketThread.join();
     if (workBeaconThreads) {workBeaconThreads->join();workBeaconThreads.reset();}
 }
 nlohmann::json GetWorkStats() {
@@ -467,8 +543,8 @@ nlohmann::json GetWorkStats() {
     for (const auto& record:state.pool) candidates.push_back({{"public_key",U32ToHex(record->publicKey)},{"score",U32ToHex(WorkElection::DeriveScore(record->context,record->publicKey))}});
     const auto scheduled=WorkRules::Preview(state,previewSlot,VdfConsensus::config);
     const auto matureRounds=state.epoch?state.epoch-1:0;
-    size_t pendingTickets,pendingBeacons,pendingBytes;
-    {lock_guard lock(workQueueMutex);pendingTickets=workPendingTickets;pendingBeacons=workPendingBeacons;pendingBytes=workPendingBytes;}
+    size_t pendingTickets,pendingBeacons,pendingBytes,priorityPending;
+    {lock_guard lock(workQueueMutex);pendingTickets=workPendingTickets;pendingBeacons=workPendingBeacons;pendingBytes=workPendingBytes;priorityPending=workTicketQueue.Size();}
     return {{"enabled",true},{"work_election",true},{"public_key",vdfIdentityReady?U32ToHex(vdfPublicKey):string{}},
         {"producer_rotation",true},{"consecutive_blocks",VdfConsensus::config.consecutiveBlocks},
         {"producer_timeout_slots",VdfConsensus::config.producerTimeoutSlots},{"epoch",state.epoch},{"next_epoch",state.epoch+1},
@@ -478,6 +554,7 @@ nlohmann::json GetWorkStats() {
         {"work_mature_rounds",matureRounds},{"work_sample_count",min(matureRounds,VdfConsensus::config.workGroups*VdfConsensus::config.workGroupSize)},
         {"work_computed",workComputedRounds.load()},{"work_completed",workLocalCompleted.load()},{"work_stored",workStoredProofs.load()},{"work_disk_hits",workDiskHits.load()},
         {"work_generation_ms",workComputeNs.load()/1e6},{"pending_proofs",pendingTickets},{"pending_beacons",pendingBeacons},{"pending_bytes",pendingBytes},
+        {"work_verify_threads",2},{"work_priority_pending",priorityPending},{"work_ticket_skipped",workSkippedTickets.load()},
         {"proof_checks",workProofChecks.load()},{"work_ticket_checks",workVerifiedTickets.load()},{"work_proof_verify_ms",workProofVerifyNs.load()/1e6},
         {"prepare_attempts",vdfPrepareAttempts.load()},{"declined_attempt_hits",vdfDeclinedAttemptHits.load()},
         {"work_state_cache_hits",workStateCacheHits.load()},{"work_state_replays",workStateReplays.load()},

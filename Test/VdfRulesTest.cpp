@@ -274,13 +274,13 @@ void TestEncoding(const election::Candidate& record, const election::SecretKey& 
     Require(rules::MerkleRoot(NumberHash(77), changed) == root, "Signature creates a circular block commitment");
     Require(rules::MerkleRoot(NumberHash(78), extension) != root, "Transaction root is not bound to block root");
     extension.candidates.assign(5, record);
-    Require(rules::Encode(extension).size() == rules::kMaxEncodedBytes - rules::kTurnEncodedBytes,
+    Require(rules::Encode(extension).size() == rules::kLegacyMaxEncodedBytes - rules::kTurnEncodedBytes,
             "Legacy maximum extension size changed");
     Require(rules::Parse(rules::Encode(extension), decoded), "Maximum-size extension cannot be decoded");
     const auto legacyMaximum = rules::Encode(extension);
     extension.turn = rules::ProducerTurn{17, 31};
     const auto turnBytes = rules::Encode(extension);
-    Require(turnBytes.size() == rules::kMaxEncodedBytes && turnBytes[8] == 2 && turnBytes[9] == 0,
+    Require(turnBytes.size() == rules::kLegacyMaxEncodedBytes && turnBytes[8] == 2 && turnBytes[9] == 0,
             "Producer turn did not use extension version 2");
     Require(rules::Parse(turnBytes, decoded) && decoded == extension, "Producer turn roundtrip failed");
     Require(rules::detail::Read64(turnBytes.data() + 52) == 17 &&
