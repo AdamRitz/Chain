@@ -1,0 +1,145 @@
+{
+  "run": "work100-20261128-002",
+  "runtime_commit": "106bc325cd29e707a1ff8822238ef9b4ecf97082",
+  "release": "work-priority-003",
+  "nodes": 100,
+  "logical_cpu_distribution": {
+    "4": 100
+  },
+  "node_binary_sha256": [
+    "06fb402886141e6d1adacc54635f828b53701925d0a72756b73d94d7842531ae"
+  ],
+  "rates_requested": [
+    8000,
+    9000,
+    10000,
+    11000
+  ],
+  "rates_run": [
+    8000
+  ],
+  "requested_duration_seconds": 30,
+  "warmup_seconds": 2,
+  "raw_measurement": {
+    "offered_tps": 8000,
+    "achieved_send_tps": 8000.761971961926,
+    "common_commit_tps": 5760.548619812586,
+    "dataset_offset": 0,
+    "cumulative_sent_unique": 256000,
+    "sent_unique": 256000,
+    "sent_wire_copies": 256000,
+    "p50_ms": 413.7912549995235,
+    "p95_ms": 13234.235615000216,
+    "p99_ms": 14384.235614999852,
+    "p99_after_send_ms": 14380.045411999163,
+    "samples": 600,
+    "unresolved_samples": 0,
+    "deadline_ms": 1000,
+    "deadline_success_fraction": 0.6266666666666667,
+    "send_lateness_p99_ms": 11.752234000596218,
+    "backlog_growth_per_second": 5870.693846222529,
+    "tx_backlog_growth_per_second": 3682.381150794379,
+    "logical_backlog_growth_per_second": 341.45327550643236,
+    "candidate_backlog_growth_per_second": 2205.930700359329,
+    "metadata_queue_growth_per_second": 1.9692217074338478,
+    "logical_backlog_end": 61312,
+    "max_backlog_sum": 858916,
+    "reorganizations_sum": 1273,
+    "measurement_reorganizations_sum": 9,
+    "max_reorg_depth": 35,
+    "invalid_or_rejected_sum": 0,
+    "drained": true,
+    "recovery_seconds": null,
+    "sample_poll_seconds": 0.1,
+    "measurement_seconds": 26.39748573200086,
+    "measurement_samples": 126,
+    "parallel_ingress": true,
+    "requested_duration_seconds": 30.0,
+    "controller_cpu_core_equivalents": 0.20332773284320868,
+    "sustainable": false,
+    "tx_sustainable": false
+  },
+  "measurement_issue": "Batch write time excluded late replies collected inside the load interval; raw TPS covers 26.3975 seconds and raw measurement_reorganizations_sum is incomplete. See diagnosis.json.",
+  "early_stop": {
+    "reason": "TPS below threshold and transaction backlog increased in consecutive windows",
+    "threshold_tps": 5600.0,
+    "windows": [
+      {
+        "begin_seconds": 22.4363710180005,
+        "end_seconds": 28.47086345200114,
+        "tps": 0.0,
+        "backlog_growth": 48256
+      },
+      {
+        "begin_seconds": 28.47086345200114,
+        "end_seconds": 35.4559884650007,
+        "tps": 2257.5114934454778,
+        "backlog_growth": 12519
+      }
+    ],
+    "seconds": 35.4559884650007,
+    "sent": 256000
+  },
+  "state_checks": {
+    "accounts_per_node": 1024,
+    "state": {
+      "burned": 0,
+      "state_hash": "5dc388d293f9ecb789531f988ff67d58c5b7571507bab8b68cdd6abaf293c48d",
+      "supply": 1024000000000,
+      "transactions": 256000
+    },
+    "nodes": 100,
+    "state_hashes": [
+      "5dc388d293f9ecb789531f988ff67d58c5b7571507bab8b68cdd6abaf293c48d"
+    ]
+  },
+  "cleanup": {
+    "nodes": 100,
+    "cleanup_ok": 100,
+    "stopped": 100,
+    "databases_removed": 100,
+    "failed_nodes": 0,
+    "heights": {
+      "6150": 5,
+      "6141": 12,
+      "6142": 12,
+      "6139": 5,
+      "6140": 2,
+      "6144": 2,
+      "6145": 5,
+      "6148": 5,
+      "6147": 3,
+      "6151": 49
+    },
+    "chain_transactions": {
+      "256000": 100
+    },
+    "errors": [],
+    "snapshot_preserved": true,
+    "work_preserved": true
+  },
+  "evidence_archives": [
+    {
+      "name": "rate-evidence.tar.gz",
+      "bytes": 30291359,
+      "sha256": "e4cd905ba2ba3e67c78dbc0a0506a58c0d2b8a8d0082b8b5e1d9b08f5f5dea00"
+    },
+    {
+      "name": "final-evidence.tar.gz",
+      "bytes": 484191,
+      "sha256": "ee5c3917c1730a0f2912244cd7dd1f949d797b12902372682d7f7f31fd62e89a"
+    }
+  ],
+  "verified_metrics": {
+    "tps": 5760.548619812586,
+    "tps_interval_start_seconds": 2.07337772000028,
+    "tps_interval_end_seconds": 28.47086345200114,
+    "tps_interval_seconds": 26.39748573200086,
+    "full_30_second_tps": null,
+    "confirmation_median_ms": 413.7912549995235,
+    "latency_samples": 600,
+    "measurement_reorganizations_lower_bound": 384,
+    "reorganizations_by_35_61_seconds": 501,
+    "raw_reorganizations_field_incomplete": true
+  }
+}
