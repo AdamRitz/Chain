@@ -1,8 +1,12 @@
 # Chain 模块与修改指南
 
+## 2026-11-28 Work VDF 参数测试
+
+`Test/WorkVdfBenchmark.cpp` 单独编译真实 Work 生成和验证代码，分别测量 VDF 输出、完整证明、32 份 Work 选举票及验证缓存。`--compare-stored` 对同一输入比较保存中间结果的证明生成方法，要求完整证明相同且验证通过。复现方法见 [Test/WorkVdfBenchmark.md](Test/WorkVdfBenchmark.md)，Linux 测量见 [参数测试报告](reports/2026-11-28-work-vdf-calibration/REPORT.md)。本次只运行独立测试，生产证明算法、创世默认参数及节点运行状态未改变。
+
 ## 2026-11-28 历史 Work 与公开随机数选举
 
-新创世配置通过 `vdf.work_election` 启用历史 Work 选举。`Crypto/WorkElection.h` 处理 Work、签名承诺和揭露、四组八份历史证明、票的编码与验证缓存；`Consensus/WorkRules.h` 按区块记录重建随机数、前十张有效票、下一轮五人名单及连续出块顺序。`Network/WorkElection.h` 分别计算 Work、验证收到的证明和传播选举记录。默认迭代次数暂设 65536，未做时长标定。
+新创世配置通过 `vdf.work_election` 启用历史 Work 选举。`Crypto/WorkElection.h` 处理 Work、签名承诺和揭露、四组八份历史证明、票的编码与验证缓存；`Consensus/WorkRules.h` 按区块记录重建随机数、前十张有效票、下一轮五人名单及连续出块顺序。`Network/WorkElection.h` 分别计算 Work、验证收到的证明和传播选举记录。默认迭代次数暂设 65536，独立时长标定见上一节。
 
 `DB/DB.h` 按完整区块哈希缓存不可变的 Work 共识状态，分叉重放复用相同哈希的状态；缓存不包含账户数据。冷恢复最多重放当前周期的 160 个区块。历史摘要按该周期末块哈希缓存，读取经过 `branchBatch`。收到区块的证明在 `Transaction/Block.h` 中先做数学验证，之后数据库路径仍检查本分支的周期、随机数和历史摘要。新增票仅随一个区块记录，后续区块不重复携带已有证明。
 
