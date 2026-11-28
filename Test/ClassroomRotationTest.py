@@ -55,6 +55,9 @@ def Main(args):
                     'start_time_ms', 'fallback_slots', 'future_slots', 'consecutive_blocks', 'producer_timeout_slots']:
             assert actual[key] == expected[key], (key, actual, expected)
         assert actual['producer_limit'] == 5
+        if expected.get('work_election'):
+            for key in ['work_election', 'work_iterations', 'work_groups', 'work_group_size']:
+                assert actual[key] == expected[key], (key, actual, expected)
 
     def WaitFor(app, predicate, timeout):
         deadline = time.monotonic() + timeout
@@ -72,15 +75,22 @@ def Main(args):
         config = profile['genesis']['vdf']
         assert config == dict(enabled=True, producer_rotation=True, epoch_blocks=160,
                              iterations=65536, slot_ms=200, start_time_ms=config['start_time_ms'],
-                             fallback_slots=20, future_slots=2, producers=5,
-                             consecutive_blocks=32, producer_timeout_slots=8)
+                             fallback_slots=20, future_slots=1, producers=5,
+                             consecutive_blocks=32, producer_timeout_slots=2,
+                             work_election=True, work_iterations=65536, work_groups=4, work_group_size=8,
+                             commit_start_slot=80, commit_end_slot=90, reveal_end_slot=100,
+                             ticket_end_slot=120, proof_end_slot=140,
+                             bootstrap_producers=config['bootstrap_producers'])
+        assert len(config['bootstrap_producers']) == 1
+        assert len(bytes.fromhex(config['bootstrap_producers'][0])) == 32
+        assert first['vdf']['public_key'] == config['bootstrap_producers'][0]
         assert config['start_time_ms'] > 0 and config['start_time_ms'] % config['slot_ms'] == 0
         AssertConfig(first, config)
         command = creator.NodeProcesses()[0].cmdline()
         assert command[command.index('--max-block-txs') + 1] == '6000'
         assert '--block-tx-step' not in command
         assert 'block_tx_step' not in first['stats']
-        checks.append('GUI creates a 200 ms chain with 32-block turns, eight-slot timeout and 160-block epochs')
+        checks.append('GUI creates a Work election chain with 200 ms slots, 32-block turns and two-slot timeout')
 
         invite = creator.Api('invite', seeds=[f"127.0.0.1:{profile['ports'][0]}"])
         assert invite['genesis'] == profile['genesis']

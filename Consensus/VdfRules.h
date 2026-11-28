@@ -32,6 +32,16 @@ struct Config {
     std::uint64_t futureSlots = 2;
     std::uint64_t consecutiveBlocks = 0;
     std::uint64_t producerTimeoutSlots = 8;
+    bool workElection = false;
+    std::uint64_t workIterations = 65536;
+    std::uint64_t workGroups = 4;
+    std::uint64_t workGroupSize = 8;
+    std::uint64_t commitStartSlot = 80;
+    std::uint64_t commitEndSlot = 90;
+    std::uint64_t revealEndSlot = 100;
+    std::uint64_t ticketEndSlot = 120;
+    std::uint64_t proofEndSlot = 140;
+    std::vector<PublicKey> bootstrapProducers;
 
     bool operator==(const Config&) const = default;
 };
@@ -39,11 +49,14 @@ struct Config {
 inline Config config;
 inline constexpr std::uint16_t kVersion = 1;
 inline constexpr std::uint16_t kTurnVersion = 2;
+inline constexpr std::uint16_t kWorkVersion = 3;
 inline constexpr std::size_t kMaxCandidates = 5;
 inline constexpr std::size_t kUnsignedFixedBytes = 2 + 8 + 32 + 1 + 1;
 inline constexpr std::size_t kTurnEncodedBytes = 16;
 inline constexpr std::size_t kMinEncodedBytes = 8 + kUnsignedFixedBytes + 64;
-inline constexpr std::size_t kMaxEncodedBytes = kMinEncodedBytes + kTurnEncodedBytes + 6 * vdf_election::kEncodedBytes;
+inline constexpr std::size_t kLegacyMaxEncodedBytes = kMinEncodedBytes + kTurnEncodedBytes + 6 * vdf_election::kEncodedBytes;
+inline constexpr std::size_t kMaxWorkDeltaBytes = 1024 * 1024;
+inline constexpr std::size_t kMaxEncodedBytes = kMinEncodedBytes + kTurnEncodedBytes + 4 + kMaxWorkDeltaBytes;
 
 struct ProducerTurn {
     std::uint64_t number = 0;
@@ -59,6 +72,8 @@ struct Extension {
     std::optional<Candidate> producerProof;
     Signature signature{};
     std::optional<ProducerTurn> turn;
+    // Encoded work_consensus::Delta. Kept as bytes to avoid a rules include cycle.
+    std::optional<std::vector<std::uint8_t>> work;
 
     bool operator==(const Extension&) const = default;
 };
@@ -81,6 +96,23 @@ inline void ValidateConfig(const Config& value) {
             value.epochBlocks != value.consecutiveBlocks * kMaxCandidates ||
             value.producerTimeoutSlots <= value.futureSlots || value.producerTimeoutSlots > 65536))) {
         throw std::invalid_argument("Invalid VDF consensus configuration");
+    }
+    if (value.workElection) {
+        if (!value.enabled || !value.producerRotation || !value.consecutiveBlocks ||
+            value.workIterations < vdf_election::kMinIterations || value.workIterations > vdf::kMaxIterations ||
+            !value.workGroups || value.workGroups > 32 || !value.workGroupSize || value.workGroupSize > 64 ||
+            value.workGroups * value.workGroupSize > 256 ||
+            value.bootstrapProducers.empty() || value.bootstrapProducers.size() > kMaxCandidates ||
+            value.commitStartSlot >= value.commitEndSlot || value.commitEndSlot >= value.revealEndSlot ||
+            value.revealEndSlot >= value.ticketEndSlot || value.ticketEndSlot >= value.proofEndSlot ||
+            value.proofEndSlot >= value.epochBlocks)
+            throw std::invalid_argument("Invalid Work election configuration");
+        for (std::size_t i = 0; i < value.bootstrapProducers.size(); ++i) {
+            if (value.bootstrapProducers[i] == PublicKey{} ||
+                std::find(value.bootstrapProducers.begin(), value.bootstrapProducers.begin() + i,
+                    value.bootstrapProducers[i]) != value.bootstrapProducers.begin() + i)
+                throw std::invalid_argument("Invalid bootstrap producer");
+        }
     }
 }
 
@@ -114,8 +146,9 @@ inline constexpr std::size_t kProofCacheLimit = 4096;
     // Keep the original 72 bytes exactly for every existing VDF genesis.
     // Consecutive production uses version 3; legacy bytes stay identical.
     const bool turns = value.consecutiveBlocks != 0;
-    std::vector<std::uint8_t> bytes(turns ? 96 : (value.producerRotation ? 80 : 72), 0);
-    const std::array<std::uint64_t, 9> fields{turns ? 3ULL : (value.producerRotation ? 2ULL : kVersion), value.enabled ? 1ULL : 0ULL,
+    std::vector<std::uint8_t> bytes(value.workElection ? 176 + value.bootstrapProducers.size() * 32 :
+        (turns ? 96 : (value.producerRotation ? 80 : 72)), 0);
+    const std::array<std::uint64_t, 9> fields{value.workElection ? 4ULL : (turns ? 3ULL : (value.producerRotation ? 2ULL : kVersion)), value.enabled ? 1ULL : 0ULL,
         value.epochBlocks, value.iterations, value.slotMs, value.fallbackSlots, value.futureSlots,
         kMaxCandidates, value.startTimeMs};
     for (std::size_t i = 0; i < fields.size(); ++i) detail::Write64(bytes.data() + i * 8, fields[i]);
@@ -123,6 +156,14 @@ inline constexpr std::size_t kProofCacheLimit = 4096;
     if (turns) {
         detail::Write64(bytes.data() + 80, value.consecutiveBlocks);
         detail::Write64(bytes.data() + 88, value.producerTimeoutSlots);
+    }
+    if (value.workElection) {
+        const std::array<std::uint64_t, 10> workFields{1, value.workIterations, value.workGroups,
+            value.workGroupSize, value.commitStartSlot, value.commitEndSlot, value.revealEndSlot,
+            value.ticketEndSlot, value.proofEndSlot, value.bootstrapProducers.size()};
+        for (std::size_t i = 0; i < workFields.size(); ++i) detail::Write64(bytes.data() + 96 + i * 8, workFields[i]);
+        for (std::size_t i = 0; i < value.bootstrapProducers.size(); ++i)
+            std::copy(value.bootstrapProducers[i].begin(), value.bootstrapProducers[i].end(), bytes.begin() + 176 + i * 32);
     }
     return bytes;
 }
@@ -285,6 +326,21 @@ using ReadHash = std::function<std::optional<Digest>(std::uint64_t)>;
 }
 
 [[nodiscard]] inline std::vector<std::uint8_t> EncodeUnsigned(const Extension& extension) {
+    if (extension.work) {
+        if (!extension.turn || !extension.candidates.empty() || extension.producerProof ||
+            extension.work->size() > kMaxWorkDeltaBytes)
+            throw std::invalid_argument("Invalid Work block extension");
+        std::vector<std::uint8_t> bytes(kUnsignedFixedBytes + kTurnEncodedBytes + 4 + extension.work->size(), 0);
+        bytes[0] = kWorkVersion;
+        detail::Write64(bytes.data() + 2, extension.slot);
+        std::copy(extension.producer.begin(), extension.producer.end(), bytes.begin() + 10);
+        detail::Write64(bytes.data() + kUnsignedFixedBytes, extension.turn->number);
+        detail::Write64(bytes.data() + kUnsignedFixedBytes + 8, extension.turn->blocks);
+        detail::Write32(bytes.data() + kUnsignedFixedBytes + kTurnEncodedBytes,
+            static_cast<std::uint32_t>(extension.work->size()));
+        std::copy(extension.work->begin(), extension.work->end(), bytes.begin() + kUnsignedFixedBytes + kTurnEncodedBytes + 4);
+        return bytes;
+    }
     if (extension.candidates.size() > kMaxCandidates) throw std::invalid_argument("Too many VDF block candidates");
     const auto records = extension.candidates.size() + (extension.producerProof ? 1 : 0);
     const auto version = extension.turn ? kTurnVersion : kVersion;
@@ -329,6 +385,21 @@ using ReadHash = std::function<std::optional<Digest>(std::uint64_t)>;
             !std::equal(bytes.begin(), bytes.begin() + 4, "VDB1") || detail::Read32(bytes.data() + 4) != bytes.size() - 8 ||
             bytes[50] > kMaxCandidates || bytes[51] > 1) return false;
         const auto version = static_cast<std::uint16_t>(bytes[8]) | (static_cast<std::uint16_t>(bytes[9]) << 8);
+        if (version == kWorkVersion) {
+            constexpr auto fixed = 8 + kUnsignedFixedBytes + kTurnEncodedBytes + 4;
+            if (bytes.size() < fixed + 64 || bytes[50] || bytes[51]) return false;
+            const auto size = detail::Read32(bytes.data() + fixed - 4);
+            if (size > kMaxWorkDeltaBytes || bytes.size() != fixed + size + 64) return false;
+            Extension parsed;
+            parsed.slot = detail::Read64(bytes.data() + 10);
+            std::copy_n(bytes.begin() + 18, parsed.producer.size(), parsed.producer.begin());
+            parsed.turn = ProducerTurn{detail::Read64(bytes.data() + 8 + kUnsignedFixedBytes),
+                detail::Read64(bytes.data() + 8 + kUnsignedFixedBytes + 8)};
+            parsed.work = std::vector<std::uint8_t>(bytes.begin() + fixed, bytes.begin() + fixed + size);
+            std::copy_n(bytes.end() - 64, 64, parsed.signature.begin());
+            extension = std::move(parsed);
+            return true;
+        }
         if (version != kVersion && version != kTurnVersion) return false;
         const auto records = static_cast<std::size_t>(bytes[50]) + bytes[51];
         const auto turnBytes = version == kTurnVersion ? kTurnEncodedBytes : 0;
@@ -433,7 +504,7 @@ inline void ClearProofCache() {
     bool sameEpoch = false) noexcept {
     try {
         ValidateConfig(value);
-        if (!value.enabled || currentContext.iterations != value.iterations || extension.slot <= parentSlot ||
+        if (value.workElection || extension.work || !value.enabled || currentContext.iterations != value.iterations || extension.slot <= parentSlot ||
             minimumSlot < StartSlot(value) || extension.slot < minimumSlot ||
             extension.candidates.size() > kMaxCandidates || previousCandidates.size() > kMaxCandidates ||
             activeCandidates.size() > kMaxCandidates) return false;

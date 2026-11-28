@@ -14,6 +14,8 @@ C++20 区块链原型，使用 Boost.Asio、libsodium、默克尔树、RocksDB �
 
 ## 构建与测试
 
+历史 Work、委员会公开承诺和揭露、五人连续出块的新模式见 [WORK_ELECTION_GUIDE.md](WORK_ELECTION_GUIDE.md)。该模式需要新创世配置；本轮源码尚未编译或运行，Work 迭代次数暂设 65536。
+
 新链可在创世配置中启用基于类群 VDF 的五节点出块选择，参数、证明编码、运行规则及 Ansible 部署步骤见 [VDF_GUIDE.md](VDF_GUIDE.md)。未启用 VDF 的已有链继续使用原有规则。构建新增 GMP/GMPXX 依赖；Windows MSYS2 UCRT 安装 `mingw-w64-ucrt-x86_64-gmp`，Ubuntu 安装 `libgmp-dev`。
 
 区块传播支持短 ID、验证后立即转发、按优先级发送和换节点补传。参数与消息格式见 [PROPAGATION_GUIDE.md](PROPAGATION_GUIDE.md)；1000 个以上节点的固定连接图、一次构建分发、Ansible 启停和压测见 [ansible/CLUSTER.md](ansible/CLUSTER.md)。

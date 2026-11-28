@@ -421,7 +421,7 @@ awaitable<void> session(uint64_t key,shared_ptr<Peer> peer) {
         // Extra slots only admit authenticated selected producers. Until the
         // challenge completes, process negotiation and identity frames only.
         if (IsPendingVdfPeer(peer)&&type!=13&&type!=14&&type!=56&&type!=57) continue;
-        if (peer->blockOnly&&(MessageSendPriority(type)==SendPriority::Transaction||type==49||type==50)) { ClosePeer(peer);co_return; }
+        if (peer->blockOnly&&(MessageSendPriority(type)==SendPriority::Transaction||type==49||type==50||type==60||type==61||type==62)) { ClosePeer(peer);co_return; }
         if (type==1||type==10||type==44||type==2||type==7||type==17||type==18||type==22) {
             co_await ProcessMessage(peer,type,std::move(data));
         } else if ((type==39||type==51||type==52)&&peer->port) {
@@ -438,7 +438,7 @@ awaitable<void> session(uint64_t key,shared_ptr<Peer> peer) {
             if (peer->compact) co_await SendBlockReply(peer,type,std::move(data));
         } else if (type==43&&peer->compact) {
             co_await ProcessMessage(peer,type,std::move(data));
-        } else if (type==49&&VdfConsensus::config.enabled) {
+        } else if (type==49&&VdfConsensus::config.enabled&&!VdfConsensus::config.workElection) {
             VdfElection::Candidate record;
             if (!VdfElection::DecodeCandidate(data,record)) { VdfConsensus::invalidProofs++; continue; }
             steady_timer wait(co_await this_coro::executor);
@@ -448,6 +448,10 @@ awaitable<void> session(uint64_t key,shared_ptr<Peer> peer) {
             }
         } else if (type==50&&VdfConsensus::config.enabled) {
             SendVdfCandidates(peer);
+        } else if ((type==60||type==61||type==62)&&VdfConsensus::config.workElection&&peer->port) {
+            // A saturated proof queue drops this copy. Type 50 retries and
+            // periodic gossip recover it without blocking later block frames.
+            QueueWorkMessage(type,std::move(data),PeerId(peer));
         } else if (type==56&&VdfProducerMeshEnabled()&&peer->port) {
             ReceiveVdfPeerChallenge(peer,data);
         } else if (type==57&&VdfProducerMeshEnabled()&&peer->port) {

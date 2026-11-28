@@ -646,6 +646,11 @@ class ClassroomApp {
                      {"title", request.value("title", string("学术交流"))}, {"contract", ""},
                      {"seeds", Json::array()}};
         auto identity = vault.secrets.contains("main") ? string("main") : active;
+        struct WorkSeed {
+            array<uint8_t,32> bytes{};
+            bool created=false;
+            ~WorkSeed() { sodium_memzero(bytes.data(),bytes.size()); }
+        } workSeed;
         // Validate everything that can be checked locally before touching the
         // running chain. Genesis parsing uses process-global account metadata.
         auto previousGenesis = GetGenesisConfig();
@@ -679,11 +684,26 @@ class ClassroomApp {
                 sodium_memzero(key.private_key.data(), key.private_key.size());
                 sodium_memzero(anchor.private_key.data(), anchor.private_key.size());
                 constexpr uint64_t slotMs = 200;
+                auto workIterations=request.contains("work_iterations")?ReadUserNumber(request.at("work_iterations")):65536;
+                auto workGroups=request.contains("work_groups")?ReadUserNumber(request.at("work_groups")):4;
+                auto workGroupSize=request.contains("work_group_size")?ReadUserNumber(request.at("work_group_size")):8;
+                array<uint8_t,32> producerKey{};
+                array<uint8_t,64> producerSecret{};
+                randombytes_buf(workSeed.bytes.data(),workSeed.bytes.size());
+                if (crypto_sign_seed_keypair(producerKey.data(),producerSecret.data(),workSeed.bytes.data())!=0)
+                    throw runtime_error("无法生成节点身份");
+                sodium_memzero(producerSecret.data(),producerSecret.size());
+                workSeed.created=true;
                 next["genesis"]["vdf"] = {{"enabled", true}, {"producer_rotation", true},
-                    {"epoch_blocks", 160}, {"consecutive_blocks", 32}, {"producer_timeout_slots", 8},
+                    {"epoch_blocks", 160}, {"consecutive_blocks", 32}, {"producer_timeout_slots", 2},
                     {"iterations", 65536}, {"slot_ms", slotMs},
                     {"start_time_ms", uint64_t(NowMs()) / slotMs * slotMs},
-                    {"fallback_slots", 20}, {"future_slots", 2}, {"producers", 5}};
+                    {"fallback_slots", 20}, {"future_slots", 1}, {"producers", 5},
+                    {"work_election",true}, {"work_iterations",workIterations},
+                    {"work_groups",workGroups}, {"work_group_size",workGroupSize},
+                    {"commit_start_slot",80}, {"commit_end_slot",90}, {"reveal_end_slot",100},
+                    {"ticket_end_slot",120}, {"proof_end_slot",140},
+                    {"bootstrap_producers",Json::array({U32ToHex(producerKey)})}};
                 SetGenesisUsers(next["genesis"]);
                 next["genesis_root"] = U32ToHex(genesisRoot);
             }
@@ -745,6 +765,19 @@ class ClassroomApp {
         next["active_wallet"] = identity;
         next["wallet_id"] = selectedWalletId;
         next["nickname"] = nickname;
+        try { if (workSeed.created) {
+            const auto directory=root/"networks"/next.at("id").get<string>()/"node1"/"db";
+            fs::create_directories(directory);
+            const auto path=directory/"vdf-identity.seed";
+            if (fs::exists(path)||fs::is_symlink(path)) throw runtime_error("节点身份文件已存在");
+            ofstream output(path,ios::binary|ios::out);
+            if (!output) throw runtime_error("无法保存节点身份");
+            fs::permissions(path,fs::perms::owner_read|fs::perms::owner_write,fs::perm_options::replace);
+            auto encoded=U32ToHex(workSeed.bytes);
+            output<<encoded<<'\n'; output.close();
+            sodium_memzero(encoded.data(),encoded.size());
+            if (!output) throw runtime_error("无法保存节点身份");
+        } } catch (...) { SetGenesisUsers(previousGenesis); throw; }
         SelectProfile(next);
         if (!joining) {
             auto code = EvmBytes(ChatArtifact(ChatVersion()).at("evm").at("bytecode").at("object"));
@@ -1280,6 +1313,12 @@ class ClassroomApp {
             {"start_time_ms", ReadUserNumber(settings.at("start_time_ms"))},
             {"fallback_slots", number("fallback_slots", defaults.fallbackSlots)},
             {"future_slots", number("future_slots", defaults.futureSlots)}, {"producer_limit", 5}};
+        if (settings.value("work_election",false)) {
+            result["work_election"]=true;
+            result["work_iterations"]=number("work_iterations",defaults.workIterations);
+            result["work_groups"]=number("work_groups",defaults.workGroups);
+            result["work_group_size"]=number("work_group_size",defaults.workGroupSize);
+        }
         if (cache.value("running", false) && cache.contains("stats") && cache.at("stats").contains("vdf"))
             result.update(cache.at("stats").at("vdf"));
         return result;

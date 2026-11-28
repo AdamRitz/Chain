@@ -250,6 +250,19 @@ bool VerifyBlock(const vector<uint8_t>& data,Block* result=nullptr) {
         if (block.vdf) expectedRoot=chain::vdf_consensus::MerkleRoot(expectedRoot,*block.vdf);
         if (expectedRoot!=block.merkleRoot) return false;
     }
+    if (block.vdf && chain::vdf_consensus::config.workElection) {
+        chain::work_consensus::Delta delta;
+        if (!block.vdf->work || !chain::work_consensus::DecodeDelta(*block.vdf->work,delta)) return false;
+        const auto round=chain::vdf_consensus::Epoch(block.height);
+        if (round==UINT64_MAX) return false;
+        for (const auto& ticket:delta.tickets) {
+            if (ticket.context.chainId!=genesisRoot || ticket.context.targetEpoch!=round+1 ||
+                ticket.context.matureRounds!=(round?round-1:0)) return false;
+        }
+        if (!chain::work_consensus::VerifyDeltaProofs(delta,chain::vdf_consensus::config)) return false;
+        // ProcessBlock runs this before acquiring dbCommitMutex. Advance later
+        // checks the ticket context and every anchor against the actual branch.
+    }
     if (result) *result=std::move(block);
     blockVerifyNs+=GetSteadyTime()-start;
     return true;

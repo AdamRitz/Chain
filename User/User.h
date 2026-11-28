@@ -41,6 +41,20 @@ nlohmann::json GetGenesisConfig() {
         result["vdf"]["consecutive_blocks"]=vdf.consecutiveBlocks;
         result["vdf"]["producer_timeout_slots"]=vdf.producerTimeoutSlots;
     }
+    if (vdf.workElection) {
+        auto& settings=result["vdf"];
+        settings["work_election"]=true;
+        settings["work_iterations"]=vdf.workIterations;
+        settings["work_groups"]=vdf.workGroups;
+        settings["work_group_size"]=vdf.workGroupSize;
+        settings["commit_start_slot"]=vdf.commitStartSlot;
+        settings["commit_end_slot"]=vdf.commitEndSlot;
+        settings["reveal_end_slot"]=vdf.revealEndSlot;
+        settings["ticket_end_slot"]=vdf.ticketEndSlot;
+        settings["proof_end_slot"]=vdf.proofEndSlot;
+        settings["bootstrap_producers"]=nlohmann::json::array();
+        for (const auto& key:vdf.bootstrapProducers) settings["bootstrap_producers"].push_back(U32ToHex(key));
+    }
     return result;
 }
 void SetGenesisUsers(const nlohmann::json& config) {
@@ -56,7 +70,11 @@ void SetGenesisUsers(const nlohmann::json& config) {
         for (const auto& [name,value]:settings.items()) {
             if (name!="enabled"&&name!="epoch_blocks"&&name!="iterations"&&name!="slot_ms"&&name!="start_time_ms"&&
                 name!="fallback_slots"&&name!="future_slots"&&name!="producers"&&name!="producer_rotation"&&
-                name!="consecutive_blocks"&&name!="producer_timeout_slots") throw invalid_argument("Unknown genesis vdf parameter: "+name);
+                name!="consecutive_blocks"&&name!="producer_timeout_slots"&&name!="work_election"&&
+                name!="work_iterations"&&name!="work_groups"&&name!="work_group_size"&&
+                name!="commit_start_slot"&&name!="commit_end_slot"&&name!="reveal_end_slot"&&
+                name!="ticket_end_slot"&&name!="proof_end_slot"&&name!="bootstrap_producers")
+                throw invalid_argument("Unknown genesis vdf parameter: "+name);
         }
         vdf.enabled=settings.value("enabled",true);
         if (settings.contains("producer_rotation")) {
@@ -72,6 +90,28 @@ void SetGenesisUsers(const nlohmann::json& config) {
         if (settings.contains("future_slots")) vdf.futureSlots=ReadUserNumber(settings.at("future_slots"));
         if (settings.contains("consecutive_blocks")) vdf.consecutiveBlocks=ReadUserNumber(settings.at("consecutive_blocks"));
         if (settings.contains("producer_timeout_slots")) vdf.producerTimeoutSlots=ReadUserNumber(settings.at("producer_timeout_slots"));
+        if (settings.contains("work_election")) {
+            if (!settings.at("work_election").is_boolean()) throw invalid_argument("work_election must be a boolean");
+            vdf.workElection=settings.at("work_election").get<bool>();
+        }
+        if (settings.contains("work_iterations")) vdf.workIterations=ReadUserNumber(settings.at("work_iterations"));
+        if (settings.contains("work_groups")) vdf.workGroups=ReadUserNumber(settings.at("work_groups"));
+        if (settings.contains("work_group_size")) vdf.workGroupSize=ReadUserNumber(settings.at("work_group_size"));
+        if (settings.contains("commit_start_slot")) vdf.commitStartSlot=ReadUserNumber(settings.at("commit_start_slot"));
+        if (settings.contains("commit_end_slot")) vdf.commitEndSlot=ReadUserNumber(settings.at("commit_end_slot"));
+        if (settings.contains("reveal_end_slot")) vdf.revealEndSlot=ReadUserNumber(settings.at("reveal_end_slot"));
+        if (settings.contains("ticket_end_slot")) vdf.ticketEndSlot=ReadUserNumber(settings.at("ticket_end_slot"));
+        if (settings.contains("proof_end_slot")) vdf.proofEndSlot=ReadUserNumber(settings.at("proof_end_slot"));
+        if (settings.contains("bootstrap_producers")) {
+            const auto& keys=settings.at("bootstrap_producers");
+            if (!keys.is_array()||keys.empty()||keys.size()>5) throw invalid_argument("bootstrap_producers requires 1..5 public keys");
+            for (const auto& key:keys) vdf.bootstrapProducers.push_back(HexToU32(key.get<string>()));
+        }
+        if (!vdf.workElection) for (const auto& [name,value]:settings.items()) {
+            if ((name.starts_with("work_")&&name!="work_election")||name=="bootstrap_producers"||
+                name=="commit_start_slot"||name=="commit_end_slot"||name=="reveal_end_slot"||
+                name=="ticket_end_slot"||name=="proof_end_slot") throw invalid_argument("Work parameters require work_election");
+        }
         if (settings.contains("producers")&&ReadUserNumber(settings.at("producers"))!=5) throw invalid_argument("VDF consensus selects at most five producers");
         chain::vdf_consensus::ValidateConfig(vdf);
         if (!vdf.enabled&&settings.size()!=1) throw invalid_argument("Disabled genesis vdf must omit its parameters");

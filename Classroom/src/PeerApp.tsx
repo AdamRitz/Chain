@@ -194,6 +194,12 @@ function ChainView({ s, request, drafts, transition, externalError, clearExterna
   const [notice, setNotice] = useState("");
   const [password, setPassword] = useState("");
   const [title, setTitle] = useChainField(drafts, chainId, "title");
+  const [workIterations, setWorkIterations] = useState(65536);
+  const [workGroups, setWorkGroups] = useState(4);
+  const [workGroupSize, setWorkGroupSize] = useState(8);
+  const validWorkParameters = Number.isInteger(workIterations) && workIterations >= 4096 && workIterations <= 100000000 &&
+    Number.isInteger(workGroups) && workGroups >= 1 && workGroups <= 32 &&
+    Number.isInteger(workGroupSize) && workGroupSize >= 1 && workGroupSize <= 64 && workGroups * workGroupSize <= 256;
   const [nickname, setNickname] = useChainField(drafts, chainId, "nickname");
   const [invite, setInvite] = useChainField(drafts, chainId, "invite");
   const [joinPreview, setJoinPreview] = useState<Row | null>(null);
@@ -293,6 +299,7 @@ function ChainView({ s, request, drafts, transition, externalError, clearExterna
     let scope = apiView.Capture();
     try {
       if (joining && !CanJoinPreview(joinPreview, joinPreview?.id || "")) throw Error("正在连接节点并获取链配置，请稍候。");
+      if (!joining && !validWorkParameters) throw Error("请检查 Work 参数，抽查总数最多 256 份。");
       if (!s.unlocked)
         await request(
           s.has_wallet ? "unlock" : "wallet_create",
@@ -307,7 +314,7 @@ function ChainView({ s, request, drafts, transition, externalError, clearExterna
         throw Error("加入地址已更改，请重新检查后连接。");
       await request(
         joining ? "join" : "create",
-        joining ? { preview_id: joinPreview!.id } : { title },
+        joining ? { preview_id: joinPreview!.id } : { title, work_iterations: workIterations, work_groups: workGroups, work_group_size: workGroupSize },
         joining ? "正在加入链" : "正在创建链",
       );
       setModal("");
@@ -922,14 +929,19 @@ function ChainView({ s, request, drafts, transition, externalError, clearExterna
               <section className="panel padded">
                 <PanelTitle icon={Layers3} title="出块状态" />
                 <dl className="consensus-status">
-                  <div><dt>出块方式</dt><dd>{s.vdf?.enabled === undefined ? "—" : s.vdf.enabled ? s.vdf.producer_rotation ? "VDF 轮流出块" : "VDF 竞争出块" : "竞争出块"}</dd></div>
+                  <div><dt>出块方式</dt><dd>{s.vdf?.enabled === undefined ? "—" : s.vdf.enabled ? s.vdf.work_election ? "历史 Work 选举" : s.vdf.producer_rotation ? "VDF 轮流出块" : "VDF 竞争出块" : "竞争出块"}</dd></div>
                   {s.vdf?.enabled && <>
                     <div><dt>时间片</dt><dd>{s.vdf.slot_ms} ms</dd></div>
                     {s.vdf.consecutive_blocks > 0 && <>
                       <div><dt>连续出块</dt><dd>{s.vdf.consecutive_blocks} 块</dd></div>
-                      <div><dt>出块超时</dt><dd>{s.vdf.producer_timeout_slots} 周期</dd></div>
+                      <div><dt>出块超时</dt><dd>{s.vdf.producer_timeout_slots} 个时间片</dd></div>
                     </>}
                     <div><dt>已选成员</dt><dd>{s.running && !s.connection_error && Array.isArray(s.vdf.producers) ? `${s.vdf.producers.length} / ${s.vdf.producer_limit}` : "—"}</dd></div>
+                    {s.vdf.work_election && <>
+                      <div><dt>Work 迭代次数</dt><dd>{number(s.vdf.work_iterations)}</dd></div>
+                      <div><dt>历史抽查</dt><dd>{s.vdf.work_groups} 组 × {s.vdf.work_group_size} 份</dd></div>
+                      <div><dt>本地 Work</dt><dd>{s.running ? number(s.vdf.work_stored || 0) : "—"}</dd></div>
+                    </>}
                     {s.vdf.producer_rotation && <div><dt>当前生产者</dt><dd className="mono" title={s.running && !s.connection_error ? s.vdf.scheduled_producer || "" : ""}>{s.running && !s.connection_error && s.vdf.scheduled_producer ? short(s.vdf.scheduled_producer, 12) : "—"}</dd></div>}
                   </>}
                 </dl>
@@ -1057,6 +1069,12 @@ function ChainView({ s, request, drafts, transition, externalError, clearExterna
                     />
                   </label>
                 )}
+                {modal === "create" && <details>
+                  <summary>共识参数</summary>
+                  <label className="field">Work 迭代次数<input aria-label="Work 迭代次数" type="number" min={4096} max={100000000} step={1} value={workIterations} onChange={event => setWorkIterations(Number(event.target.value))} /></label>
+                  <label className="field">抽查组数<input aria-label="抽查组数" type="number" min={1} max={32} step={1} value={workGroups} onChange={event => setWorkGroups(Number(event.target.value))} /></label>
+                  <label className="field">每组 Work 数<input aria-label="每组 Work 数" type="number" min={1} max={64} step={1} value={workGroupSize} onChange={event => setWorkGroupSize(Number(event.target.value))} /></label>
+                </details>}
                 <label className="field">
                   显示昵称
                   <input
@@ -1087,7 +1105,7 @@ function ChainView({ s, request, drafts, transition, externalError, clearExterna
                   className="button primary full"
                   disabled={
                     !!busy ||
-                    (modal === "join" ? !CanJoinPreview(joinPreview, joinPreview?.id || "") : !title.trim()) ||
+                    (modal === "join" ? !CanJoinPreview(joinPreview, joinPreview?.id || "") : !title.trim() || !validWorkParameters) ||
                     bytes(nickname) > 48 ||
                     (!s.unlocked &&
                       (!password || (!s.has_wallet && bytes(password) < 8)))

@@ -1,5 +1,13 @@
 # Chain 模块与修改指南
 
+## 2026-11-28 历史 Work 与公开随机数选举
+
+新创世配置通过 `vdf.work_election` 启用历史 Work 选举。`Crypto/WorkElection.h` 处理 Work、签名承诺和揭露、四组八份历史证明、票的编码与验证缓存；`Consensus/WorkRules.h` 按区块记录重建随机数、前十张有效票、下一轮五人名单及连续出块顺序。`Network/WorkElection.h` 分别计算 Work、验证收到的证明和传播选举记录。默认迭代次数暂设 65536，未做时长标定。
+
+`DB/DB.h` 按完整区块哈希缓存不可变的 Work 共识状态，分叉重放复用相同哈希的状态；缓存不包含账户数据。冷恢复最多重放当前周期的 160 个区块。历史摘要按该周期末块哈希缓存，读取经过 `branchBatch`。收到区块的证明在 `Transaction/Block.h` 中先做数学验证，之后数据库路径仍检查本分支的周期、随机数和历史摘要。新增票仅随一个区块记录，后续区块不重复携带已有证明。
+
+GUI 创建新链可设置 Work 迭代次数、抽查组数和每组数量，创建人的独立节点公钥写入初始出块名单。既有链继续使用原创世编码和规则。协议、参数、存储及离线配置工具见 [WORK_ELECTION_GUIDE.md](WORK_ELECTION_GUIDE.md)。本轮只修改源码和测试代码，按用户要求未编译、未运行节点或测试。
+
 ## 2026-11-27 删除交易打包步长
 
 `Transaction/Block.h` 的 `GenerateBlock()` 将按余额、nonce、Gas、字节和交易数量上限选出的交易全部装入区块，删除向下取整数倍的逻辑。`Network/Client.h` 统一使用 `GenerateScheduledBlock` 按容量和发块时间调度；`Network/Vdf.h` 保留满块提前生成和时间片末生成。CLI、配置、GUI 启动命令、节点统计和 Ansible 测试入口删除步长参数。旧报告保留原测试参数。回归代码同步更新为完整打包检查，本轮按用户要求暂不编译或运行测试。

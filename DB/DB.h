@@ -26,6 +26,7 @@
 #include "../Tool/Tool.h"
 #include "../Time/Time.h"
 #include "../User/User.h"
+#include "../Consensus/WorkRules.h"
 #include "../EVM/Execute.h"
 using namespace std;
 
@@ -104,6 +105,18 @@ unordered_map<array<uint8_t,32>,shared_ptr<const chain::vdf_consensus::Extension
 deque<array<uint8_t,32>> vdfExtensionOrder;
 constexpr size_t maxVdfExtensions=512;
 atomic<uint64_t> vdfExtensionCacheHits{0},vdfExtensionLoads{0},vdfExtensionReadBytes{0};
+mutex workStateMutex;
+unordered_map<array<uint8_t,32>,shared_ptr<const chain::work_consensus::State>,GetMapHash> workStates;
+deque<array<uint8_t,32>> workStateOrder;
+mutex workAnchorMutex;
+unordered_map<array<uint8_t,32>,array<uint8_t,32>,GetMapHash> workAnchors;
+deque<array<uint8_t,32>> workAnchorOrder;
+atomic<uint64_t> workStateCacheHits{0},workStateReplays{0},workAnchorCacheHits{0};
+void ClearWorkStateCache() {
+    { lock_guard lock(workStateMutex); workStates.clear(); workStateOrder.clear(); }
+    { lock_guard lock(workAnchorMutex); workAnchors.clear(); workAnchorOrder.clear(); }
+    chain::work_consensus::proofCache.Clear();
+}
 void ClearVdfExtensionCache() {
     lock_guard lock(vdfExtensionMutex);
     vdfExtensions.clear(); vdfExtensionOrder.clear();
@@ -135,6 +148,7 @@ bool DBGet(const string& key,string& value) {
 }
 void InitDB(const string& path="test",bool sync=true) {
     ClearVdfExtensionCache();
+    ClearWorkStateCache();
     dbSync=sync;
     options=rocksdb::Options();
     options.create_if_missing=true;
@@ -690,6 +704,120 @@ optional<chain::vdf_election::Context> DBVdfNextContext(uint64_t height) {
     if (epoch==UINT64_MAX) throw runtime_error("VDF target epoch overflow");
     return DBVdfContext(epoch+1);
 }
+
+// Callers hold dbCommitMutex. Every lookup uses the current branchBatch view.
+// A round's last hash commits to its complete parent path and keys the cache.
+array<uint8_t,32> DBWorkAnchor(uint64_t round) {
+    using namespace chain::vdf_consensus;
+    const auto& settings=chain::vdf_consensus::config;
+    const auto start=EpochStart(round,settings);
+    if (settings.epochBlocks-1>UINT64_MAX-start) throw runtime_error("Work round height overflow");
+    const auto end=start+settings.epochBlocks-1;
+    if (end>DBReadBlockHeight()) throw runtime_error("Work round is incomplete");
+    auto last=DBReadBlockHashByHeight(end);
+    if (last==array<uint8_t,32>{}) throw runtime_error("Missing Work round header");
+    {
+        lock_guard lock(workAnchorMutex);
+        if (auto found=workAnchors.find(last);found!=workAnchors.end()) { workAnchorCacheHits++; return found->second; }
+    }
+    vector<uint8_t> bytes(16+settings.epochBlocks*32);
+    detail::Write64(bytes.data(),round);
+    detail::Write64(bytes.data()+8,settings.epochBlocks);
+    for (uint64_t i=0;i<settings.epochBlocks;++i) {
+        const auto hash=DBReadBlockHashByHeight(start+i);
+        if (hash==array<uint8_t,32>{}) throw runtime_error("Missing Work round header");
+        copy(hash.begin(),hash.end(),bytes.begin()+16+i*32);
+    }
+    const auto anchor=chain::vdf_election::detail::Hash("Chain/VdfConsensus/Anchor/v1",{genesisRoot,bytes});
+    {
+        lock_guard lock(workAnchorMutex);
+        if (workAnchors.emplace(last,anchor).second) {
+            workAnchorOrder.push_back(last);
+            while (workAnchorOrder.size()>16384) {workAnchors.erase(workAnchorOrder.front());workAnchorOrder.pop_front();}
+        }
+    }
+    return anchor;
+}
+void DBRememberWorkState(const array<uint8_t,32>& hash,shared_ptr<const chain::work_consensus::State> state) {
+    // The complete block hash binds its parent history and election records.
+    // This immutable consensus state contains no mutable account/database data.
+    lock_guard lock(workStateMutex);
+    if (workStates.emplace(hash,std::move(state)).second) {
+        workStateOrder.push_back(hash);
+        while (workStateOrder.size()>512) {workStates.erase(workStateOrder.front());workStateOrder.pop_front();}
+    }
+}
+vector<array<uint8_t,32>> DBWorkCommittee(uint64_t epoch) {
+    const auto& settings=chain::vdf_consensus::config;
+    if (!epoch) return settings.bootstrapProducers;
+    const auto start=chain::vdf_consensus::EpochStart(epoch-1,settings);
+    const auto end=chain::vdf_consensus::EpochStart(epoch,settings)-1;
+    for (auto height=end;;--height) {
+        const auto extension=DBVdfExtension(DBReadBlockHashByHeight(height));
+        chain::work_consensus::Delta delta;
+        if (!extension->work||!chain::work_consensus::DecodeDelta(*extension->work,delta))
+            throw runtime_error("Missing Work election history");
+        if (delta.finalization) return delta.finalization->nextCommittee;
+        if (height==start) break;
+    }
+    throw runtime_error("Missing previous Work election result");
+}
+shared_ptr<const chain::work_consensus::State> DBWorkState() {
+    namespace rules=chain::work_consensus;
+    const auto& settings=chain::vdf_consensus::config;
+    const auto height=DBReadBlockHeight();
+    if (!settings.workElection||height<2) return {};
+    const auto hash=DBReadCurrentBlock();
+    const auto cached=[&](const array<uint8_t,32>& key)->shared_ptr<const rules::State> {
+        lock_guard lock(workStateMutex);
+        if (auto found=workStates.find(key);found!=workStates.end()) {workStateCacheHits++;return found->second;}
+        return {};
+    };
+    if (auto state=cached(hash)) return state;
+    const auto epoch=chain::vdf_consensus::Epoch(height,settings);
+    const auto start=chain::vdf_consensus::EpochStart(epoch,settings);
+    vector<pair<array<uint8_t,32>,shared_ptr<const chain::vdf_consensus::Extension>>> replay;
+    shared_ptr<const rules::State> state;
+    for (auto h=height;;--h) {
+        const auto blockHash=DBReadBlockHashByHeight(h);
+        if ((state=cached(blockHash))) break;
+        replay.emplace_back(blockHash,DBVdfExtension(blockHash));
+        if (h==start) break;
+    }
+    if (!state) {
+        const auto anchor=DBReadBlockHashByHeight(start-1);
+        const auto parentSlot=start==2?chain::vdf_consensus::StartSlot(settings)-1:DBVdfExtension(anchor)->slot;
+        state=make_shared<const rules::State>(rules::Initialize(settings,genesisRoot,epoch,
+            replay.back().second->slot,anchor,DBWorkCommittee(epoch),parentSlot));
+    }
+    const chain::work_election::AnchorLookup lookup=[](uint64_t round,array<uint8_t,32>& anchor) {
+        try {anchor=DBWorkAnchor(round);return true;} catch (...) {return false;}
+    };
+    for (auto it=replay.rbegin();it!=replay.rend();++it) {
+        const auto& extension=*it->second;
+        rules::Delta delta;
+        if (!extension.work||!extension.turn||!extension.candidates.empty()||extension.producerProof||
+            !rules::DecodeDelta(*extension.work,delta)) throw runtime_error("Invalid stored Work extension");
+        state=make_shared<const rules::State>(rules::Advance(*state,delta,extension.slot,
+            extension.producer,*extension.turn,lookup,settings));
+        workStateReplays++;
+        DBRememberWorkState(it->first,state);
+    }
+    return state;
+}
+chain::work_consensus::State DBWorkStateForNextBlock(uint64_t height,uint64_t slot) {
+    namespace rules=chain::work_consensus;
+    const auto& settings=chain::vdf_consensus::config;
+    if (!settings.workElection||height<2||DBReadBlockHeight()==UINT64_MAX||height!=DBReadBlockHeight()+1)
+        throw runtime_error("Invalid Work block height");
+    if (height==2) return rules::Initialize(settings,genesisRoot,0,slot,DBReadCurrentBlock(),
+        settings.bootstrapProducers,chain::vdf_consensus::StartSlot(settings)-1);
+    const auto parent=DBWorkState();
+    if (!parent) throw runtime_error("Missing Work parent state");
+    if (chain::vdf_consensus::Epoch(height,settings)!=parent->epoch)
+        return rules::ForNextEpoch(*parent,slot,DBReadCurrentBlock(),settings);
+    return *parent;
+}
 // Generic block encoding, transaction signatures and the bound Merkle root are
 // checked before this function. Eligibility is checked again for this parent
 // before either a cached execution or fork replay can commit the block.
@@ -708,6 +836,23 @@ bool DBValidateVdfBlock(const vector<uint8_t>& data,bool committing) {
     try {
         Digest hash{}; memcpy(hash.data(),data.data()+80,32);
         if (!VerifySignature(*extension,hash)) return false;
+        if (chain::vdf_consensus::config.workElection) {
+            if (!extension->work||!extension->turn||extension->producerProof||!extension->candidates.empty()||
+                extension->slot<MinimumSlot(height)) return false;
+            const auto now=CurrentSlot();
+            if (extension->slot>now&&extension->slot-now>chain::vdf_consensus::config.futureSlots) return false;
+            chain::work_consensus::Delta delta;
+            if (!chain::work_consensus::DecodeDelta(*extension->work,delta)) return false;
+            const auto parent=DBWorkStateForNextBlock(height,extension->slot);
+            const chain::work_election::AnchorLookup lookup=[](uint64_t round,Digest& anchor) {
+                try {anchor=DBWorkAnchor(round);return true;} catch (...) {return false;}
+            };
+            const auto state=chain::work_consensus::Advance(parent,delta,extension->slot,
+                extension->producer,*extension->turn,lookup,chain::vdf_consensus::config);
+            DBRememberWorkState(hash,make_shared<const chain::work_consensus::State>(state));
+            return true;
+        }
+        if (extension->work) return false;
         const auto current=DBVdfContext(Epoch(height));
         const auto next=DBVdfNextContext(height);
         const auto previousCandidates=DBVdfCandidatesForNextBlock();

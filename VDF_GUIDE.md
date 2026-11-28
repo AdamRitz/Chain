@@ -1,5 +1,7 @@
 # VDF 新链：协议、参数和部署
 
+2026-11-28 新增历史 Work 与公开承诺、揭露选举，见 [WORK_ELECTION_GUIDE.md](WORK_ELECTION_GUIDE.md)。以下保留既有 VDF 选举的参数和运行说明。
+
 当前实现用类群重复平方和 Wesolowski 证明生成候选值，按候选值选择最多五个正常出块身份。配置写入创世摘要，只用于采用这套协议的新链。实现入口为 [VdfElection.h](Crypto/VdfElection.h)、[VdfRules.h](Consensus/VdfRules.h) 和 [Network/Vdf.h](Network/Vdf.h)。
 
 ## 选举与出块

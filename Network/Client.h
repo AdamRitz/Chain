@@ -100,7 +100,7 @@ struct Peer:enable_shared_from_this<Peer> {
     string remoteInstance; // protected by peerMutex
     bool vdfPeerProtocol=false,vdfChallengeSent=false,vdfChallengeAnswered=false,vdfChainMatched=false; // strand only
     array<uint8_t,32> vdfChallenge{};
-    uint64_t vdfChallengeAt=0,vdfHintsAt=0;
+    uint64_t vdfChallengeAt=0,vdfHintsAt=0,workRecordsSentAt=0;
     bool vdfAuthenticated=false,vdfReserved=false,vdfPending=false; // protected by peerMutex
     array<uint8_t,32> vdfPeerKey{};
     optional<array<uint8_t,32>> expectedVdfKey;
@@ -335,7 +335,7 @@ void BroadcastData(vector<uint8_t> data,uint64_t source=0) {
     auto limit=MessageSendPriority(data.front())==SendPriority::Transaction?txRelayPeers:0;
     array<uint8_t,32> hash{};
     if (limit) crypto_generichash(hash.data(),hash.size(),data.data(),data.size(),nullptr,0);
-    auto peers=SelectBroadcastPeers(source,hash,limit,MessageSendPriority(data.front())==SendPriority::Transaction||data.front()==49||data.front()==50);
+    auto peers=SelectBroadcastPeers(source,hash,limit,MessageSendPriority(data.front())==SendPriority::Transaction||data.front()==49||data.front()==50||data.front()==60||data.front()==61||data.front()==62);
     auto shared=make_shared<const vector<uint8_t>>(std::move(data));
     for (const auto& peer:peers) TrySendGossip(peer,shared);
 }

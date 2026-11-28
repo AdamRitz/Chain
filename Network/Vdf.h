@@ -19,6 +19,7 @@ atomic<uint64_t> vdfComputed{0},vdfSkippedProofs{0},vdfGeneratedNs{0};
 atomic<uint64_t> vdfOwnProofVersion{0},vdfPrepareAttempts{0},vdfDeclinedAttemptHits{0};
 bool vdfIdentityReady=false;
 bool vdfBootstrapProduce=true;
+#include "WorkElection.h"
 struct VdfAttempt {
     array<uint8_t,32> parent{},identity{};
     uint64_t height=0,slot=0,proofVersion=0;
@@ -96,7 +97,7 @@ vector<VdfElection::Context> ReadVdfContexts() {
     return {DBVdfContext(current),DBVdfContext(current+1)};
 }
 bool IsExpectedVdfContext(const VdfElection::Context& context) {
-    if (!VdfConsensus::config.enabled) return false;
+    if (!VdfConsensus::config.enabled||VdfConsensus::config.workElection) return false;
     for (const auto& expected:ReadVdfContexts()) if (expected==context) return true;
     return false;
 }
@@ -127,6 +128,7 @@ bool QueueVdfCandidate(const VdfElection::Candidate& record,uint64_t source) {
 }
 void SendVdfCandidates(const shared_ptr<Peer>& peer) {
     if (!VdfConsensus::config.enabled) return;
+    if (VdfConsensus::config.workElection) {SendWorkRecords(peer);return;}
     vector<VdfElection::Candidate> records;
     for (const auto& context:ReadVdfContexts()) {
         auto best=ReadVdfCandidates(context);
@@ -143,6 +145,12 @@ void SendVdfCandidates(const shared_ptr<Peer>& peer) {
 
 // Called by GenerateBlock with dbCommitMutex held, before taking txpoolMutex.
 bool PrepareVdfBlock(uint64_t height,const array<uint8_t,32>& parent,VdfConsensus::Extension& extension) {
+    if (VdfConsensus::config.workElection) {
+        const auto attempt=MakeVdfAttempt(height,parent,VdfConsensus::CurrentSlot());
+        if (WasVdfAttemptDeclined(attempt)) return false;
+        vdfPrepareAttempts++;
+        return PrepareWorkBlock(height,parent,extension)||DeclineVdfAttempt(attempt);
+    }
     if (!vdfIdentityReady||!produceBlocks||DBReadCurrentBlock()!=parent) return false;
     const auto attempt=MakeVdfAttempt(height,parent,VdfConsensus::CurrentSlot());
     if (WasVdfAttemptDeclined(attempt)) return false;
@@ -216,6 +224,7 @@ void InitializeVdfRuntime(const string& dataPath,const string& identityPath) {
         if (!vdfIdentityReady) return false;
         signature=VdfConsensus::SignHash(hash,vdfSecretKey); return true;
     };
+    if (VdfConsensus::config.workElection) {InitializeWorkRuntime(dataPath);return;}
     vdfVerifyThreads=make_unique<thread_pool>(1);
     if (!produceBlocks) return;
     vdfComputeThread=thread([] {
@@ -247,12 +256,14 @@ void InitializeVdfRuntime(const string& dataPath,const string& identityPath) {
     });
 }
 void StopVdfRuntime() {
+    StopWorkRuntime();
     if (vdfComputeThread.joinable()) vdfComputeThread.join();
     if (vdfVerifyThreads) { vdfVerifyThreads->join(); vdfVerifyThreads.reset(); }
     sodium_memzero(vdfSecretKey.data(),vdfSecretKey.size());
 }
 nlohmann::json GetVdfStats() {
     if (!VdfConsensus::config.enabled) return {{"enabled",false}};
+    if (VdfConsensus::config.workElection) {auto result=GetWorkStats();result.update(GetVdfPeerStats());return result;}
     shared_lock lock(dbCommitMutex);
     auto height=DBReadBlockHeight()+1,epoch=VdfConsensus::Epoch(height);
     auto producers=nlohmann::json::array(),candidates=nlohmann::json::array();

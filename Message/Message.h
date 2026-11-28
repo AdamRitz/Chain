@@ -58,6 +58,8 @@ bool VerifyMessageSize(uint8_t type,uint32_t size) {
         case 56:return size==chain::vdf_peer::kChallengeBytes;
         case 57:return size==chain::vdf_peer::kIdentityBytes;
         case 58:return size>0&&size%chain::vdf_peer::kHintBytes==0&&size<=chain::vdf_peer::kHintBytes*chain::vdf_peer::kMaxHints;
+        case 60:case 61:return size==chain::work_election::kBeaconBytes;
+        case 62:return size>=chain::work_election::kTicketHeaderBytes+crypto_sign_BYTES+chain::work_election::kWorkBytes&&size<=chain::work_election::kMaxTicketBytes;
         case 45:return size>0&&size<=maxProtocolTx;
         default:return false;
     }

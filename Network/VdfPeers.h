@@ -196,11 +196,22 @@ vector<VdfPeerTarget> RefreshVdfProducerPeers() {
     {
         shared_lock lock(dbCommitMutex);
         auto height=DBReadBlockHeight()+1;
-        for (const auto& record:DBVdfActiveCandidates(height)) current.push_back(record.publicKey);
-        auto candidates=DBVdfCandidatesForNextBlock();
-        auto runtime=ReadVdfCandidates(DBVdfContext(VdfConsensus::Epoch(height)+1));
-        candidates.insert(candidates.end(),runtime.begin(),runtime.end());
-        for (const auto& record:MergeVdfCandidates(std::move(candidates))) next.push_back(record.publicKey);
+        if (VdfConsensus::config.workElection) {
+            const auto state=ReadWorkStateLocked(VdfConsensus::CurrentSlot());
+            current=state.committee;
+            if (state.frozen) next=state.nextCommittee;
+            else {
+                auto records=state.pool;const auto received=ReadWorkSet(WorkRules::BeaconContextFor(state));
+                for (const auto& item:received.tickets) if (state.seedReady&&item->context==WorkRules::TicketContextFor(state,VdfConsensus::config)) records.push_back(item);
+                for (const auto& item:MergeWorkTickets(std::move(records))) {next.push_back(item->publicKey);if (next.size()==5) break;}
+            }
+        } else {
+            for (const auto& record:DBVdfActiveCandidates(height)) current.push_back(record.publicKey);
+            auto candidates=DBVdfCandidatesForNextBlock();
+            auto runtime=ReadVdfCandidates(DBVdfContext(VdfConsensus::Epoch(height)+1));
+            candidates.insert(candidates.end(),runtime.begin(),runtime.end());
+            for (const auto& record:MergeVdfCandidates(std::move(candidates))) next.push_back(record.publicKey);
+        }
     }
     vector<shared_ptr<Peer>> close,broadcast;
     vector<VdfPeerTarget> targets;
@@ -266,22 +277,35 @@ vector<shared_ptr<Peer>> PrioritizeVdfBlockPeers(const vector<uint8_t>& data,vec
     if (!ReadVdfExtension(data,extension)||!extension) return ordinary;
     const auto height=ReadU64(data.data()+64),epoch=VdfConsensus::Epoch(height);
     vector<array<uint8_t,32>> order;
+    vector<array<uint8_t,32>> workNext;
     {
         shared_lock lock(dbCommitMutex);
-        for (const auto& candidate:DBVdfActiveCandidates(height)) order.push_back(candidate.publicKey);
+        if (VdfConsensus::config.workElection) {
+            const auto state=DBWorkState();
+            order=DBWorkCommittee(epoch);
+            if (state) workNext=state->nextCommittee;
+            if (extension->work) {
+                WorkRules::Delta delta;
+                if (WorkRules::DecodeDelta(*extension->work,delta)&&delta.finalization) workNext=delta.finalization->nextCommittee;
+            }
+        } else for (const auto& candidate:DBVdfActiveCandidates(height)) order.push_back(candidate.publicKey);
     }
     vector<shared_ptr<Peer>> result;
     lock_guard lock(peerMutex);
     auto next=order;
     if (VdfConsensus::Epoch(height+1)!=epoch) {
-        next.clear();for (const auto& candidate:extension->candidates) next.push_back(candidate.publicKey);
+        next.clear();
+        if (VdfConsensus::config.workElection) next=workNext;
+        else for (const auto& candidate:extension->candidates) next.push_back(candidate.publicKey);
     }
     if (!next.empty()) {
         auto key=next.front();
         if (VdfConsensus::config.consecutiveBlocks&&extension->turn) {
             if (VdfConsensus::Epoch(height+1)==epoch) {
                 const auto index=extension->turn->number%next.size();
-                key=next[(index+(extension->turn->blocks?1:0))%next.size()];
+                const bool nextTurn=VdfConsensus::config.workElection?
+                    extension->turn->blocks>=VdfConsensus::config.consecutiveBlocks:extension->turn->blocks!=0;
+                key=next[(index+(nextTurn?1:0))%next.size()];
             }
         } else key=next[(extension->slot+1-VdfConsensus::StartSlot())%next.size()];
         erase(order,key);order.insert(order.begin(),key);
